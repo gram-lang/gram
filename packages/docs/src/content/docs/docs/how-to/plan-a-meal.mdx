@@ -109,8 +109,8 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    #### Day-by-day detail
    Each visit has its own actionable checklist, grouped under the day it falls on:
 
-   - **To take out**: the required ingredients, preparations made during an earlier visit (`Sponge, made Thursday`), stocked items (`glaze, in stock`), and cookware, which is listed once per visit. Check them off during your mise en place. Where it goes follows your [mise en place mode](/docs/explanation/mise-en-place-and-planning/): by section (the default), there is no list at the top of the visit: each section carries its own things to take out, right before its steps, and the cookware is named once, at the first section that uses it; per working day, one block at the top of the visit sums the raw ingredients (e.g. `sugar 90 g (60 + 30)`); upfront, that block holds everything raw at the first visit. A preparation is always listed at the visit of the first step that uses it.
-   - **To do**: one line per section giving the steps this visit covers (`steps 1 to 2`, as well as the source file for imports), with the section's things to take out under it when you plan by section. This view does not repeat the recipe text: it points you directly to where you need to look.
+   - **Mise en place**: the required ingredients, preparations made during an earlier visit (`Sponge, made Thursday`), stocked items (`glaze, in stock`), and cookware, which is listed once per visit. Check them off while you set up. Where it goes follows your [mise en place mode](/docs/explanation/mise-en-place-and-planning/): by section (the default), each section is a station with its own mise en place, right above its steps, and the cookware is named once, at the first section that uses it; per working day, one block at the top of the visit sums the raw ingredients (e.g. `sugar 90 g (60 + 30)`); upfront, that block holds everything raw at the first visit. A preparation is always listed at the visit of the first step that uses it.
+   - **Execution**: the steps of each section, written out as in the recipe and numbered the same way, with their action, temperatures and timers, and the time the section starts (`Start: 13:40`, only when the plan has a serving time). A section that comes from an import names its source file, a section that goes on from an earlier visit is marked "continued", and a standalone note stays where the recipe puts it. The mise en place has check boxes; the steps do not.
    - **Before leaving**: passive processes that continue unattended, and the exact time of your next kitchen visit.
    - **Possible from... / Fixed times**: shows how early this visit could start without affecting the rest of the schedule, or names the fixed wait holding it in place.
    - **Adjusted waits**: any passive rest that the scheduler shortened or lengthened to fit your available hours is reported at the top of that day.
@@ -118,7 +118,7 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    ```text
    FRIDAY, OCTOBER 16  13:35 → 14:00
      Possible from 08:00.
-     To take out
+     MISE EN PLACE
        [ ] cream 250 g
        [ ] sugar 30 g
        [ ] milk 100 g
@@ -126,12 +126,16 @@ The recipe says **how** to do things. The work plan says **when to come** and **
        [ ] Insert, made Thursday
        [ ] stand mixer
        [ ] 20 cm ring
-     To do
-       Mousse (steps 1 to 2)
-     Before leaving
+     EXECUTION
+       MOUSSE (Start: 13:40)
+         1. [Whip] Whip the cream with the sugar and the milk.
+         2. [Assemble] Fold in the sponge and the insert, in the 20 cm ring.
+     BEFORE LEAVING
        Mousse : Assemble 12h to 48h, until 02:00
-       Next visit: Saturday 13:55
+     Next visit: Saturday 13:55
    ```
+
+   This example illustrates the per-working-day mode; in per-section mode, each section forms a distinct block with its mise en place above its steps.
 
    Any constraints the engine could not resolve (a start time already in the past, work outside your available hours, or an incompatible rest) are listed under **"To fix"** at the top. See [Diagnostics and unresolved constraints](/docs/explanation/planning-in-real-time/#diagnostics-and-unresolved-constraints).
 

@@ -109,8 +109,8 @@ La recette décrit **comment** réaliser chaque étape. Le planning de préparat
    #### Le détail jour par jour
    Chaque passage dispose ensuite de sa propre fiche d'action, rangée sous la journée où il a lieu :
 
-   - **À sortir** : les ingrédients requis, les préparations issues d'un passage précédent (`Biscuit, fait jeudi`), les éléments préexistants (`glaçage, en stock`) et le matériel nécessaire, mentionné une seule fois par passage. Cochez-les au fur et à mesure de votre mise en place. Leur disposition varie selon votre [mode de mise en place](/fr/docs/explanation/mise-en-place-and-planning/) : par section (mode par défaut), il n'y a pas de liste en haut du passage — chaque section regroupe ses propres éléments à sortir juste avant ses étapes, et le matériel n'est mentionné qu'une fois, lors de la première section qui l'utilise ; par journée de travail, un bloc en haut de passage cumule les ingrédients bruts (ex. `sucre 90 g (60 + 30)`) ; en amont (`upfront`), ce bloc rassemble tous les ingrédients bruts dès le premier passage. Une préparation, quant à elle, est toujours listée lors du premier passage où elle est utilisée.
-   - **Au programme** : une ligne par section qui renvoie aux étapes de ce passage (`étapes 1 à 2`, avec le fichier source pour un import), complétée par les éléments à sortir correspondants lorsque vous planifiez par section. Cette vue ne recopie pas la recette : elle vous indique exactement où vous reporter.
+   - **Mise en place** : les ingrédients requis, les préparations issues d'un passage précédent (`Biscuit, fait jeudi`), les éléments préexistants (`glaçage, en stock`) et le matériel nécessaire, mentionné une seule fois par passage. Cochez-les au fur et à mesure de vos préparatifs. Leur disposition varie selon votre [mode de mise en place](/fr/docs/explanation/mise-en-place-and-planning/) : par section (mode par défaut), chaque section forme un poste avec sa propre mise en place, juste au-dessus de ses étapes, et le matériel n'est mentionné qu'une fois, lors de la première section qui l'utilise ; par journée de travail, un bloc en haut de passage cumule les ingrédients bruts (ex. `sucre 90 g (60 + 30)`) ; en amont (`upfront`), ce bloc rassemble tous les ingrédients bruts dès le premier passage. Une préparation, quant à elle, est toujours listée lors du premier passage où elle est utilisée.
+   - **Exécution** : les étapes de chaque section, détaillées comme dans la recette et numérotées à l'identique, avec leur action, leurs températures et leurs minuteurs, ainsi que l'heure à laquelle la section commence (`Début : 13:40`, uniquement lorsque le planning comporte une heure de service). Une section importée indique son fichier source, une section qui se poursuit depuis un passage précédent porte la mention « suite », et une note isolée reste là où la recette la place. La mise en place comporte des cases à cocher, contrairement aux étapes.
    - **En partant** : les processus passifs qui continuent sans surveillance et l'horaire précis de votre prochain passage en cuisine.
    - **Possible dès... / Heures fixes** : indique la marge d'anticipation possible pour ce passage sans perturber le reste de la recette, ou nomme le temps d'attente incompressible qui bloque son horaire.
    - **Ajustements de repos** : tout temps d'attente passif que le moteur a dû prolonger ou raccourcir pour respecter vos plages disponibles est signalé en tête de la journée concernée.
@@ -118,7 +118,7 @@ La recette décrit **comment** réaliser chaque étape. Le planning de préparat
    ```text
    VENDREDI 16 OCTOBRE  13:35 → 14:00
      Possible dès 08:00.
-     À sortir
+     MISE EN PLACE
        [ ] crème 250 g
        [ ] sucre 30 g
        [ ] lait 100 g
@@ -126,12 +126,16 @@ La recette décrit **comment** réaliser chaque étape. Le planning de préparat
        [ ] Insert, fait jeudi
        [ ] batteur
        [ ] cercle de 20 cm
-     Au programme
-       Mousse (étapes 1 à 2)
-     En partant
+     EXÉCUTION
+       MOUSSE (Début : 13:40)
+         1. [Monter] Monter la crème avec le sucre et le lait.
+         2. [Assembler] Incorporer le biscuit et l'insert, dans le cercle de 20 cm.
+     EN PARTANT
        Mousse : Monter l'entremets 12h à 48h, jusqu'à 02:00
-       Prochain passage : samedi 13:55
+     Prochain passage : samedi 13:55
    ```
+
+   Cet exemple illustre le mode par journée de travail ; en mode par section, chaque section forme un bloc distinct avec sa mise en place au-dessus de ses étapes.
 
    Si certaines contraintes s'avèrent impossibles à résoudre (démarrage dans le passé, travail hors de vos plages autorisées ou repos incompatible), Gram les regroupe dans une section **« À régler »** en en-tête. Pour en savoir plus, consultez [Diagnostics et contraintes non résolues](/fr/docs/explanation/planning-in-real-time/#diagnostics-et-contraintes-non-résolues).
 

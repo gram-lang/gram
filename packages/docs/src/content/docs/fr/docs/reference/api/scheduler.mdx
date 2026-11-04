@@ -286,6 +286,8 @@ interface RunSheetVisit {
   startLocal?: string;         // "2026-10-10T21:40", avec une heure de service
   endLocal?: string;
   sections: number[];          // sections avec du travail dans le passage, dans l'ordre de la recette
+  worked: number[];            // sections ayant une étape dans ce passage
+  sectionStarts: { section: number; start: number; startLocal?: string }[];  // début de la première étape de chaque section de `worked` dans ce passage
   tasks: string[];             // identifiants des préparations et étapes du graphe
   window?: { advance: number; earliest: number; earliestLocal: string }; // fenêtre d'anticipation (calculée dès 15 min)
   fixedBy?: RunSheetFixedBy;   // l'attente qui maintient ce passage en place

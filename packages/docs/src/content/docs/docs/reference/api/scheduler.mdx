@@ -286,6 +286,8 @@ interface RunSheetVisit {
   startLocal?: string;         // "2026-10-10T21:40", with a target serving time
   endLocal?: string;
   sections: number[];          // section indices with work in this visit, in recipe order
+  worked: number[];            // sections with a step in this visit
+  sectionStarts: { section: number; start: number; startLocal?: string }[];  // when each section of `worked` starts its first step in this visit
   tasks: string[];             // task IDs for prep and step blocks from graph
   window?: { advance: number; earliest: number; earliestLocal: string }; // anticipation margin (computed when >= 15 min)
   fixedBy?: RunSheetFixedBy;   // the wait that holds this visit in place
