@@ -137,6 +137,19 @@
           ],
           "default": "shortest",
           "description": "How long a rest written as a range lasts. An exact rest and an active timer (~{20-25min}, planned on its longest figure) are not affected. Drives the total time in the preview, the work plan and the title hint."
+        },
+        "gram.comments": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "enumDescriptions": [
+            "The comments of the recipe (// like this) are shown in the preview and the work plan, discreetly in the work plan.",
+            "The comments of the recipe are left out of the preview and the work plan."
+          ],
+          "default": "show",
+          "description": "Whether the preview and the work plan show the comments of the recipe: the notes alone on a line and the ones at the end of a line."
         }
       }
     },

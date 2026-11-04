@@ -344,6 +344,9 @@ const activeModifiersCount = computed(() => {
 	if (options.value.bakersMath) {
 		count++;
 	}
+	if (options.value.comments === "hide") {
+		count++;
+	}
 	if (
 		!options.value.enableMassStandardization ||
 		options.value.enableYieldCalculation ||
@@ -371,6 +374,7 @@ function resetAllStudioOptions() {
 		bakersMath: false,
 		bakersMathOnly: false,
 		bakersReference: undefined,
+		comments: "show",
 	};
 	stockedUris.value = new Set();
 	trackEvent("playground-reset-studio-options");
@@ -383,6 +387,7 @@ const options = ref({
 	bakersMath: false,
 	bakersMathOnly: false,
 	bakersReference: undefined as string | undefined,
+	comments: "show" as "show" | "hide",
 });
 
 // URIs (already resolved, matching `ModuleHost.resolve()`'s own output —
@@ -738,6 +743,7 @@ async function updateGram() {
 			content.value = renderSExpr(composed.ast);
 		} else if (viewMode.value === "markdown") {
 			content.value = toMarkdown(result, {
+				comments: options.value.comments,
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
 				rests: rests.value,
@@ -747,6 +753,7 @@ async function updateGram() {
 				interactiveScaling: true,
 				interactiveNutrition: true,
 				bakersMathOnly: options.value.bakersMathOnly,
+				comments: options.value.comments,
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
 				rests: rests.value,
@@ -834,6 +841,7 @@ function placeOnCalendar(result: any) {
 		}
 		runSheetHtml.value = runSheetToHTML(sheet, result, {
 			lang: currentLang.value,
+			comments: options.value.comments,
 		});
 	} catch (e: any) {
 		planError.value = e?.message ?? String(e);

@@ -35,6 +35,7 @@ import {
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
 import {
+	parseCommentsSetting,
 	parseMiseEnPlaceSetting,
 	parseRestsSetting,
 } from "./utils/mise-en-place-setting";
@@ -44,6 +45,7 @@ import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
 import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
 import {
+	type CommentsMode,
 	escapeHtml,
 	runSheetToHTML,
 	toGanttHTML,
@@ -170,6 +172,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 // change.
 let miseEnPlace: MiseEnPlaceMode = DEFAULT_MISE_EN_PLACE_MODE;
 let rests: RestChoice = DEFAULT_REST_CHOICE;
+// `gram.comments`: whether the preview and the work plan show the comments of the recipe.
+let comments: CommentsMode = "show";
 
 // Never rejects (same rule as reloadDbAndRefreshDiagnostics below): a client
 // without workspace configuration just keeps the default.
@@ -178,9 +182,14 @@ async function loadMiseEnPlace(): Promise<boolean> {
 		const config = await connection.workspace.getConfiguration("gram");
 		const nextMode = parseMiseEnPlaceSetting(config);
 		const nextRests = parseRestsSetting(config);
-		const changed = nextMode !== miseEnPlace || nextRests !== rests;
+		const nextComments = parseCommentsSetting(config);
+		const changed =
+			nextMode !== miseEnPlace ||
+			nextRests !== rests ||
+			nextComments !== comments;
 		miseEnPlace = nextMode;
 		rests = nextRests;
+		comments = nextComments;
 		return changed;
 	} catch {
 		return false;
@@ -337,6 +346,7 @@ function renderViews(uri: string, state: DocumentState): void {
 				interactiveNutrition: true,
 				miseEnPlace,
 				rests,
+				comments,
 			});
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
@@ -355,6 +365,7 @@ function renderViews(uri: string, state: DocumentState): void {
 				});
 				const lang = state.compilation.meta?.language;
 				const workPlanHtml = runSheetToHTML(sheet, state.compilation, {
+					comments,
 					...(typeof lang === "string" && { lang }),
 				});
 				connection.sendNotification("gram/runSheetUpdated", {

@@ -55,6 +55,8 @@ class Client {
 	setting: unknown = "perSection";
 	/** And to `gram.rests`. */
 	rests: unknown = "shortest";
+	/** And to `gram.comments`. */
+	comments: unknown = "show";
 	/** How long the client takes to answer it (ms). */
 	configDelay = 0;
 
@@ -105,6 +107,7 @@ class Client {
 						result: items.map(() => ({
 							miseEnPlace: this.setting,
 							rests: this.rests,
+							comments: this.comments,
 						})),
 					}),
 				this.configDelay,
@@ -418,5 +421,57 @@ describe("the work plan in the language server", () => {
 			h.includes("Syntax Error"),
 		);
 		expect(html).toContain("gram-preview-error-state");
+	}, 20_000);
+});
+
+const NOTED = `---
+title: Cake
+---
+
+## Cake
+
+Mix @flour{100g} // keep it cold
+and stir ~{5min}.
+
+// Do not overmix.
+
+Bake ~{20min}.
+`;
+
+describe("gram.comments in the language server", () => {
+	it("shows the comments in the preview and the work plan until told otherwise", async () => {
+		client = new Client();
+		await client.start();
+		client.open(NOTED);
+		const html = await client.previewMatching((h) =>
+			h.includes("Do not overmix."),
+		);
+		expect(html).toContain("keep it cold");
+		const plan = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Do not overmix."),
+		);
+		expect(plan).toContain("inline-comment");
+	}, 20_000);
+
+	it("leaves them out of both when set to hide, and shows them again when it changes", async () => {
+		client = new Client();
+		client.comments = "hide";
+		client.configDelay = 300;
+		await client.start();
+		client.open(NOTED);
+		const preview = await client.previewMatching(
+			(h) => h.includes("Cake") && !h.includes("Do not overmix."),
+		);
+		expect(preview).not.toContain("keep it cold");
+		// The plan sent before the setting was read still has them: wait for the next.
+		const plan = await client.htmlOf(
+			"gram/runSheetUpdated",
+			(h) => h.includes("Work plan") && !h.includes("Do not overmix."),
+		);
+		expect(plan).not.toContain("keep it cold");
+
+		client.comments = "show";
+		client.settingChanged();
+		await client.previewMatching((h) => h.includes("Do not overmix."));
 	}, 20_000);
 });

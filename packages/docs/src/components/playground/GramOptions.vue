@@ -45,6 +45,7 @@ const props = defineProps<{
 		bakersMath: boolean;
 		bakersMathOnly: boolean;
 		bakersReference: string | undefined;
+		comments?: "show" | "hide";
 	};
 	shoppingList?: Array<{
 		id: string;
@@ -91,6 +92,7 @@ const openSections = ref<Record<string, boolean>>({
 	schedule: props.initialSection === "schedule",
 	scale: props.initialSection === "scale" || !props.initialSection,
 	bakersMath: props.initialSection === "bakersMath",
+	display: props.initialSection === "display",
 	physics: props.initialSection === "physics",
 	stock: props.initialSection === "stock",
 });
@@ -676,6 +678,25 @@ const bakersReference = computed({
 		}),
 });
 
+// The comments of the recipe: shown unless this is switched off.
+// biome-ignore lint/correctness/noUnusedVariables: showComments is used in the <template> block below, which Biome's Vue support doesn't see.
+const showComments = computed({
+	get: () => props.options.comments !== "hide",
+	set: (val) =>
+		emit("update:options", {
+			...props.options,
+			comments: val ? "show" : "hide",
+		}),
+});
+
+// biome-ignore lint/correctness/noUnusedVariables: isDisplayModified is used in the <template> block below, which Biome's Vue support doesn't see.
+const isDisplayModified = computed(() => props.options.comments === "hide");
+
+// biome-ignore lint/correctness/noUnusedVariables: resetDisplaySection is used in the <template> block below, which Biome's Vue support doesn't see.
+function resetDisplaySection() {
+	emit("update:options", { ...props.options, comments: "show" });
+}
+
 // biome-ignore lint/correctness/noUnusedVariables: bakersBadgeTitle is used in the <template> block below, which Biome's Vue support doesn't see.
 const bakersBadgeTitle = computed(() => {
 	const title = t.value.playground.sections?.bakersMath || "Baker's Math";
@@ -1240,6 +1261,50 @@ function resetStockSection() {
             </option>
           </select>
         </div>
+      </div>
+    </div>
+
+    <!-- Affichage : les commentaires de la recette -->
+    <div class="studio-section" :class="{ 'is-open': openSections.display }">
+      <div class="studio-section-header">
+        <button
+          type="button"
+          class="studio-section-trigger"
+          :aria-expanded="openSections.display"
+          @click="toggleSection('display')"
+        >
+          <svg class="chevron-icon" :class="{ rotated: openSections.display }" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+          <span class="section-title">{{ t.playground.sections?.display || 'Display' }}</span>
+          <span
+            v-if="isDisplayModified"
+            class="section-dot"
+            aria-hidden="true"
+          ></span>
+        </button>
+        <button
+          v-if="isDisplayModified"
+          type="button"
+          class="section-reset-btn"
+          @click.stop="resetDisplaySection"
+          :title="t.playground.resetSection || 'Reset'"
+        >
+          {{ t.playground.resetSection || 'Reset' }}
+        </button>
+      </div>
+
+      <div v-show="openSections.display" class="studio-section-body">
+        <label class="option-item">
+          <input type="checkbox" v-model="showComments" />
+          <div class="option-text">
+            <div class="studio-label-row">
+              <span class="option-name">{{ t.playground.options.showComments }}</span>
+              <PlaygroundTooltip :text="t.playground.help.comments" />
+            </div>
+            <span class="option-desc">{{ t.playground.options.commentsDesc }}</span>
+          </div>
+        </label>
       </div>
     </div>
 

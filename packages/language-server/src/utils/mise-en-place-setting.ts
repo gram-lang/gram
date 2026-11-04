@@ -1,3 +1,4 @@
+import type { CommentsMode } from "@gram-lang/renderer";
 import {
 	DEFAULT_MISE_EN_PLACE_MODE,
 	DEFAULT_REST_CHOICE,
@@ -27,4 +28,14 @@ export function parseMiseEnPlaceSetting(config: unknown): MiseEnPlaceMode {
 export function parseRestsSetting(config: unknown): RestChoice {
 	const value = (config as { rests?: unknown } | null | undefined)?.rests;
 	return isRestChoice(value) ? value : DEFAULT_REST_CHOICE;
+}
+
+/**
+ * Reads `gram.comments` the same way: whether the preview and the work plan
+ * show the comments of the recipe. Anything but `"hide"` shows them, so a bad
+ * setting never hides a note by accident.
+ */
+export function parseCommentsSetting(config: unknown): CommentsMode {
+	const value = (config as { comments?: unknown } | null | undefined)?.comments;
+	return value === "hide" ? "hide" : "show";
 }
