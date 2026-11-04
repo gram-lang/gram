@@ -18,9 +18,9 @@
 	font-size: 8.5pt;
 	font-weight: 700;
 	text-transform: uppercase;
-	border-top: 0.5pt solid #000;
-	border-bottom: 0.5pt solid #000;
-	padding: 4pt 0;
+	border: 0.5pt solid #000;
+	border-radius: 2pt;
+	padding: 4pt 8pt;
 	margin-bottom: 10pt;
 }
 .gram-run-sheet ul,
@@ -112,8 +112,6 @@
 	margin-left: 12pt;
 }
 .gram-run-sheet .work-plan-day {
-	border: 1pt solid #000;
-	padding: 10pt 12pt;
 	margin-bottom: 12pt;
 	page-break-before: always;
 }
@@ -124,7 +122,6 @@
 	border-bottom: 1.5pt solid #000;
 	padding-bottom: 3pt;
 	display: block;
-	text-transform: uppercase;
 }
 .gram-run-sheet .work-plan-day .day-slot {
 	float: right;
@@ -158,6 +155,7 @@
 .gram-run-sheet .box-123,
 .gram-run-sheet .section-station-card {
 	border: 0.75pt solid #000;
+	border-radius: 2pt;
 	margin-top: 7pt;
 }
 .gram-run-sheet .box-123 {
@@ -185,7 +183,7 @@
 	display: flex;
 	align-items: center;
 	gap: 5pt;
-	margin: 0 0 4pt;
+	margin: 0 0 5pt;
 	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 8.5pt;
 	font-weight: 800;
@@ -201,14 +199,12 @@
 	height: 11pt;
 	border: 0.75pt solid #000;
 	border-radius: 50%;
-	font-size: 7.5pt;
-	font-weight: 800;
-}
-.gram-run-sheet .badge-num {
 	background: #000;
 	color: #fff;
 	-webkit-print-color-adjust: exact;
 	print-color-adjust: exact;
+	font-size: 7.5pt;
+	font-weight: 800;
 }
 .gram-run-sheet .station-header,
 .gram-run-sheet .section-exec-header {
@@ -221,11 +217,12 @@
 }
 .gram-run-sheet .section-exec-card {
 	border: 0.75pt solid #000;
+	border-radius: 2pt;
 	margin-top: 5pt;
 }
 .gram-run-sheet .sec-title {
+	font-size: 11pt;
 	font-weight: 800;
-	text-transform: uppercase;
 }
 .gram-run-sheet .sec-cont,
 .gram-run-sheet .sec-origin {
@@ -237,6 +234,7 @@
 }
 .gram-run-sheet .sec-time-pill {
 	border: 0.75pt solid #000;
+	border-radius: 2pt;
 	padding: 0 4pt;
 	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 8.5pt;
@@ -276,7 +274,7 @@
 	width: 8pt;
 	height: 8pt;
 	border: 1pt solid #000;
-	border-radius: 1pt;
+	border-radius: 1.5pt;
 	margin-right: 6pt;
 	vertical-align: -1pt;
 }
@@ -301,9 +299,13 @@
 }
 .gram-run-sheet .step-action-badge {
 	display: inline-block;
-	margin-right: 4pt;
+	margin-right: 3pt;
 	padding: 0 3pt;
 	border: 0.5pt solid #000;
+	border-radius: 2pt;
+	background: #f2f2f2;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
 	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 7.5pt;
 	font-weight: 700;
@@ -317,8 +319,9 @@
 .gram-run-sheet .step-content .temp,
 .gram-run-sheet .step-content .timer {
 	display: inline-block;
-	padding: 0 3pt;
+	padding: 0 2.5pt;
 	border: 1.25pt solid #000;
+	border-radius: 2pt;
 	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 8.5pt;
 	font-weight: 700;
@@ -364,7 +367,7 @@
 	align-self: flex-end;
 	min-width: 8pt;
 	margin-bottom: 2pt;
-	border-bottom: 1pt dotted #000;
+	border-bottom: 1pt dotted #aaa;
 }
 .gram-run-sheet .kit-qty,
 .gram-run-sheet .kit-note {
@@ -400,13 +403,16 @@
 	align-self: flex-end;
 	min-width: 8pt;
 	margin-bottom: 2pt;
-	border-bottom: 1pt dotted #000;
+	border-bottom: 1pt dotted #888;
 }
 .gram-run-sheet .wait-length {
 	order: 2;
 	padding: 0 3pt;
-	border: 0.75pt solid #000;
-	border-radius: 1pt;
+	border-radius: 2pt;
+	background: #000;
+	color: #fff;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
 	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 8pt;
 	font-weight: 600;
@@ -427,10 +433,12 @@
 	text-transform: uppercase;
 	padding: 4pt 8pt;
 	margin: 6pt 0 0;
+	border-radius: 2pt;
 	page-break-inside: avoid;
 }
 .gram-run-sheet .work-plan-problems {
-	border: 1pt solid #000;
+	border: 0.75pt dashed #000;
+	border-radius: 2pt;
 	padding: 6pt 9pt;
 	margin: 0 0 10pt;
 	background: #fafafa;
