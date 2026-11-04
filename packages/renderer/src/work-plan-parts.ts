@@ -1,6 +1,12 @@
 import { getDictionary } from "@gram-lang/i18n";
+import type { StepToken } from "@gram-lang/kitchen";
 import { formatElement } from "./formatters/element";
-import type { RenderableCompilationResult, RenderContext } from "./types";
+import { showsComments } from "./comments";
+import type {
+	CommentsMode,
+	RenderableCompilationResult,
+	RenderContext,
+} from "./types";
 import {
 	escapeHtml,
 	escapeMarkdownHtml,
@@ -391,11 +397,12 @@ export function sectionSteps(
 	data: RenderableCompilationResult,
 	section: number,
 	stepIndexes: number[],
-	options: { lang?: string } = {},
+	options: { lang?: string; comments?: CommentsMode } = {},
 ): ProgramStep[] {
 	const source = data.sections?.[section];
 	if (!source) return [];
 	const wanted = new Set(stepIndexes);
+	const withComments = showsComments(options.comments);
 	const context: RenderContext = {
 		lang: options.lang,
 		registry: data.registry,
@@ -416,7 +423,7 @@ export function sectionSteps(
 	source.steps.forEach((item, index) => {
 		if (item.type === "comment") {
 			const value = String(item.value ?? "").trim();
-			if (!value) return;
+			if (!value || !withComments) return;
 			const note: ProgramStep = {
 				comment: true,
 				html: escapeHtml(value),
@@ -439,23 +446,33 @@ export function sectionSteps(
 		// The intermediate a step ends with ("->&dough") is not told here: the
 		// recipe says it, and a worksheet only needs what to do.
 		const tokens = (item.content ?? []).filter(
-			(c) => !(typeof c === "object" && c.type === "declaration"),
+			(c) =>
+				!(typeof c === "object" && c.type === "declaration") &&
+				(withComments || !(typeof c === "object" && c.type === "comment")),
 		);
-		const spaceable = (c: unknown) =>
+		const isComment = (c: unknown): c is { value?: string } =>
 			!!c &&
 			typeof c === "object" &&
-			(c as { type?: string }).type !== "comment";
+			(c as { type?: string }).type === "comment";
+		const spaceable = (c: unknown) =>
+			!!c && typeof c === "object" && !isComment(c);
+		// A comment at the end of a line is an aside, set apart in the sentence:
+		// the recipe views make a footnote of it, a worksheet has no room for one.
+		const aside = (c: { value?: string }) => (c.value ?? "").trim();
+		const renderHtml = (c: StepToken) =>
+			isComment(c)
+				? ` <span class="inline-comment">(${escapeHtml(aside(c))})</span>`
+				: formatElement(c, "html", context);
+		const renderMd = (c: StepToken) =>
+			isComment(c)
+				? ` *(${escapeMarkdownHtml(aside(c))})*`
+				: formatElement(c, "md", context);
 		// No tooltips either: a printed sheet cannot show them, and a screen has no use for them here.
-		const html = joinStepTokens(
-			tokens,
-			(c) => formatElement(c, "html", context),
-			spaceable,
-		).replace(/ data-tooltip="[^"]*"/g, "");
-		const md = joinStepTokens(
-			tokens,
-			(c) => formatElement(c, "md", context),
-			spaceable,
+		const html = joinStepTokens(tokens, renderHtml, spaceable).replace(
+			/ data-tooltip="[^"]*"/g,
+			"",
 		);
+		const md = joinStepTokens(tokens, renderMd, spaceable);
 		out.push({
 			number,
 			...(item.action && { action: item.action }),

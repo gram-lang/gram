@@ -1,4 +1,5 @@
 import type { RunSheet } from "@gram-lang/scheduler";
+import { showsComments, withoutComments } from "./comments";
 import type {
 	RendererOptions,
 	RenderContext,
@@ -100,8 +101,10 @@ export function renderRecipe(
 	options: RendererOptions,
 	backend: RenderBackend,
 ): string {
+	// Hiding comments is one rule for every view, so it is applied here once
+	// rather than in each backend: a comment is never collected as a footnote.
+	if (!showsComments(options.comments)) data = withoutComments(data);
 	const context = backend.buildContext(data, options);
-
 	const title = backend.renderTitle(data, context, options);
 	const meta = backend.renderMeta(data, context, options);
 	const shoppingList = backend.renderShoppingList(data, context, options);

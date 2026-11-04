@@ -180,6 +180,7 @@ export const en = {
 			schedule: "Schedule & Service",
 			scale: "Scale & Portions",
 			bakersMath: "Baker's math",
+			display: "Display",
 			physics: "Physical analysis & Nutrition",
 			stock: "Stock & Modules",
 		},
@@ -251,6 +252,9 @@ export const en = {
 			enableBakersMath: "Enable Baker's Math",
 			bakersMathDesc: "Shows ingredients as % of reference.",
 			hideAbsolute: "Hide absolute weights",
+			showComments: "Show comments",
+			commentsDesc:
+				"The notes of the recipe (// like this), in the recipe and in the work plan.",
 			forceReference: "Force Reference:",
 			autoDetect: "Auto (detect @*)",
 			physicalAnalysis: "Physical Analysis",
@@ -281,6 +285,8 @@ export const en = {
 				"Proportionally recalculates the entire recipe to match the exact quantity you have on hand for a specific ingredient (e.g. only 3 eggs or 250g of butter).",
 			bakersMath:
 				"Expresses each ingredient as a percentage of a base ingredient set at 100% (typically flour, or any chosen ingredient), making ratios and formulation easy to evaluate.",
+			comments:
+				"Shows or leaves out the comments written in the recipe with //: the notes alone on a line and the ones at the end of a line. They are set apart discreetly in the work plan.",
 			bakersMathOnly:
 				"Hides gram weights to display only relative percentages, turning the recipe into a pure ratio formula.",
 			bakersReference:

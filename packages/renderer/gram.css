@@ -1790,12 +1790,21 @@ flex-direction: column;
   margin-bottom: 0;
 }
 
+/*
+ * A comment is an aside, never a step: small, muted and italic, with no number
+ * and no box. One alone on a line sits under the step it belongs to, in line
+ * with its text; one at the end of a line stays in the sentence.
+ */
 .gram-run-sheet .exec-steps-list li.step-comment {
   display: block;
-  margin-left: -1.25rem;
-  padding: 0.25rem 0.6rem;
-  border-left: 2px solid var(--color-border-strong);
-  font-size: 0.82rem;
+  margin: -0.4rem 0 0.65rem;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .step-content .inline-comment {
+  font-size: 0.82em;
   font-style: italic;
   color: var(--color-text-muted);
 }
@@ -1843,6 +1852,10 @@ flex-direction: column;
 .gram-run-sheet .step-content .timer {
   background: var(--color-text);
   color: var(--color-bg);
+}
+
+.gram-run-sheet .step-content .timer .timer-text{
+  text-decoration: none;
 }
 
 /* Square corners, whatever the page around says. */

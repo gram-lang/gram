@@ -1,4 +1,5 @@
 import {
+	type CommentsMode,
 	describeEarliestServe,
 	describeRunSheet,
 	describeServeTimes,
@@ -115,6 +116,7 @@ export function formatPlan(
 	result: PlanResult,
 	format: PlanFormat,
 	lang?: string,
+	comments?: CommentsMode,
 ): string {
 	const { compiled, plan, sheet, earliest } = result;
 	const sentence = earliest
@@ -122,11 +124,11 @@ export function formatPlan(
 		: undefined;
 	switch (format) {
 		case "text":
-			return `${runSheetToText(sheet, compiled, { lang })}${sentence ? `\n${sentence}\n` : ""}`;
+			return `${runSheetToText(sheet, compiled, { lang, comments })}${sentence ? `\n${sentence}\n` : ""}`;
 		case "md":
-			return `${runSheetToMarkdown(sheet, compiled, { lang })}${sentence ? `\n${sentence}\n` : ""}`;
+			return `${runSheetToMarkdown(sheet, compiled, { lang, comments })}${sentence ? `\n${sentence}\n` : ""}`;
 		case "html":
-			return `${runSheetToHTML(sheet, compiled, { lang })}${sentence ? `<p class="work-plan-earliest">${escapeHtml(sentence)}</p>\n` : ""}`;
+			return `${runSheetToHTML(sheet, compiled, { lang, comments })}${sentence ? `<p class="work-plan-earliest">${escapeHtml(sentence)}</p>\n` : ""}`;
 		case "json":
 			return `${JSON.stringify(
 				{

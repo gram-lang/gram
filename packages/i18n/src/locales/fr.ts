@@ -171,6 +171,7 @@ export const fr: GramLocale = {
 			schedule: "Planification & Service",
 			scale: "Portions & Échelle",
 			bakersMath: "Boulangerie",
+			display: "Affichage",
 			physics: "Physique & Nutrition",
 			stock: "Stock & Modules",
 		},
@@ -243,6 +244,9 @@ export const fr: GramLocale = {
 			enableBakersMath: "Activer le pourcentage du boulanger",
 			bakersMathDesc: "Affiche les ingrédients en % de la référence.",
 			hideAbsolute: "Masquer les poids absolus",
+			showComments: "Afficher les commentaires",
+			commentsDesc:
+				"Les notes de la recette (// comme ceci), dans la recette et dans le planning.",
 			forceReference: "Forcer la référence :",
 			autoDetect: "Auto (détecte @*)",
 			physicalAnalysis: "Analyse physique",
@@ -273,6 +277,8 @@ export const fr: GramLocale = {
 				"Recalcule proportionnellement toute la recette pour l'ajuster à la quantité exacte dont vous disposez pour un ingrédient donné (ex. seulement 3 œufs ou 250 g de beurre).",
 			bakersMath:
 				"Exprime chaque ingrédient en pourcentage d'un ingrédient de base fixé à 100 % (par défaut la farine, ou l'ingrédient de votre choix), facilitant l'évaluation des équilibres et des ratios.",
+			comments:
+				"Affiche ou masque les commentaires écrits dans la recette avec // : les notes seules sur une ligne et celles en fin de ligne. Dans le planning, ils sont mis à part, discrètement.",
 			bakersMathOnly:
 				"Masque les poids en grammes pour n'afficher que les pourcentages relatifs, transformant la recette en une formule de proportions pure.",
 			bakersReference:

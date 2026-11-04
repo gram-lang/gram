@@ -289,9 +289,13 @@
 }
 .gram-run-sheet .exec-steps-list li.step-comment {
 	display: block;
-	margin-left: -12pt;
-	padding: 1pt 5pt;
-	border-left: 1.5pt solid #000;
+	margin: -2pt 0 4pt;
+	font-size: 8pt;
+	font-style: italic;
+	color: var(--grey);
+}
+.gram-run-sheet .step-content .inline-comment {
+	font-size: 0.9em;
 	font-style: italic;
 	color: var(--grey);
 }

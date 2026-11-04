@@ -11,7 +11,7 @@ import {
 } from "@gram-lang/scheduler";
 import { workingDayLabel } from "./mise-en-place";
 import { HTML_ICONS } from "./icons";
-import type { RenderableCompilationResult } from "./types";
+import type { CommentsMode, RenderableCompilationResult } from "./types";
 import {
 	type KitItem,
 	kitCookware,
@@ -34,6 +34,11 @@ export interface RunSheetRenderOptions {
 	 * own (the default), 2 when it follows a recipe, whose title is the `#`.
 	 */
 	headingLevel?: 1 | 2;
+	/**
+	 * Show (`"show"`, the default) or hide (`"hide"`) the comments of the
+	 * recipe in the steps: a note alone on a line, and one at the end of a line.
+	 */
+	comments?: CommentsMode;
 }
 
 /** One line of the planning of the days: a visit, what continues without the cook, or the service. */
@@ -504,7 +509,10 @@ export function describeRunSheet(
 					...(prog.origin && { origin: prog.origin }),
 					...(calendar && startAt && { startTime: clock(startAt) }),
 					...(worked.has(s) && { continued: true }),
-					steps: sectionSteps(data, s, indexes, { lang }),
+					steps: sectionSteps(data, s, indexes, {
+						lang,
+						comments: options.comments,
+					}),
 				};
 				program.push(entry);
 				programOf.set(s, entry);

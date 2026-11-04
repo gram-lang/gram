@@ -11,6 +11,10 @@ import {
 	MISE_EN_PLACE_FLAG_DESCRIPTION,
 	parseMiseEnPlace,
 } from "../services/mise-en-place-flag";
+import {
+	COMMENTS_FLAG_DESCRIPTION,
+	parseComments,
+} from "../services/comments-flag";
 import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
 import {
 	PLAN_FORMATS,
@@ -77,6 +81,10 @@ export default defineCommand({
 			type: "string",
 			description: RESTS_FLAG_DESCRIPTION,
 		},
+		comments: {
+			type: "string",
+			description: COMMENTS_FLAG_DESCRIPTION,
+		},
 		stock: {
 			type: "string",
 			description:
@@ -115,6 +123,7 @@ export default defineCommand({
 			}
 			const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
 			const rests = parseRests(args.rests);
+			const comments = parseComments(args.comments);
 			const stock = resolveStockFromConfig(args.stock, config);
 			const scaleFactor =
 				(await resolveScaleArg(
@@ -157,7 +166,9 @@ export default defineCommand({
 				process.exit(ExitCode.Ok);
 			}
 
-			process.stdout.write(formatPlan(result, format, config.language));
+			process.stdout.write(
+				formatPlan(result, format, config.language, comments),
+			);
 
 			if (args.ics) {
 				const path = resolve(args.ics as string);

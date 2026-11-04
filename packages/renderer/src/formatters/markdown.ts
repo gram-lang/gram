@@ -263,7 +263,11 @@ const markdownBackend: RenderBackend = {
 
 	renderRunSheet(data, options, sheet) {
 		// After a recipe whose title is the `#`: one level down.
-		return `\n${runSheetToMarkdown(sheet, data, { lang: options.lang, headingLevel: 2 })}`;
+		return `\n${runSheetToMarkdown(sheet, data, {
+			lang: options.lang,
+			headingLevel: 2,
+			comments: options.comments,
+		})}`;
 	},
 };
 

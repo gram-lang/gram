@@ -14,6 +14,7 @@ export type { NutrientGroup, NutrientRow, ResolvedBasis } from "./nutrition";
 export { formatElement } from "./formatters/element";
 export { DEFAULT_ICONS, HTML_ICONS, MD_ICONS, PRINT_ICONS } from "./icons";
 export { toMarkdown } from "./formatters/markdown";
+export type { CommentsMode } from "./types";
 export { toHTML } from "./formatters/html";
 export { toPrintHTML } from "./formatters/print";
 export {

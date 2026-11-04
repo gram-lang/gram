@@ -14,7 +14,12 @@ import type { IngredientData } from "@gram-lang/analyzer";
 // forwarded to the pipeline, not into RendererOptions.
 export type ExportOptions = Pick<
 	RendererOptions,
-	"hideStepQty" | "bakersMathOnly" | "nutritionBasis" | "miseEnPlace" | "rests"
+	| "hideStepQty"
+	| "bakersMathOnly"
+	| "nutritionBasis"
+	| "miseEnPlace"
+	| "rests"
+	| "comments"
 > & {
 	/** When it is served: what the work plan written after the recipe is made for. */
 	plan?: PlanContext;

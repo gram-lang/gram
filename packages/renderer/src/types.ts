@@ -123,11 +123,22 @@ export interface RendererClasses {
  */
 export type { MiseEnPlaceMode, RestChoice };
 
+/**
+ * Whether a view shows the comments of the recipe (`// like this`): the notes
+ * alone on a line and the ones at the end of a line. `"show"` is the default.
+ */
+export type CommentsMode = "show" | "hide";
+
 export interface RendererOptions {
 	icons?: RendererIcons;
 	classes?: RendererClasses;
 	formatFraction?: (value: number) => string;
 	formatDuration?: (minutes: number) => string;
+	/**
+	 * Show (`"show"`, the default) or hide (`"hide"`) the comments of the
+	 * recipe, in every view: the recipe, the work plan inside it, and the print.
+	 */
+	comments?: CommentsMode;
 	/** When true, ingredient quantities are omitted from step text (not from shopping list or section mise en place). */
 	hideStepQty?: boolean;
 	/**

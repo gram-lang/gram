@@ -622,7 +622,10 @@ const htmlBackend: RenderBackend = {
 	},
 
 	renderRunSheet(data, options, sheet) {
-		return runSheetToHTML(sheet, data, { lang: options.lang });
+		return runSheetToHTML(sheet, data, {
+			lang: options.lang,
+			comments: options.comments,
+		});
 	},
 };
 
