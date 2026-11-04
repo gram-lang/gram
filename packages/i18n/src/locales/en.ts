@@ -65,8 +65,10 @@ export const en = {
 		workPlanSteps: "steps {from} to {to}",
 		workPlanRange: "{min} to {max}",
 		workPlanPossibleFrom: "Possible from {time}.",
-		workPlanFixedService: "Fixed times: {wait}, before serving.",
-		workPlanFixedVisit: "Fixed times: {wait}, before {sections}.",
+		workPlanFixedService:
+			"Can't start earlier: the “{rest}” wait ({section}) can't be longer than {length} and ends when you serve.",
+		workPlanFixedVisit:
+			"Can't start earlier: the “{rest}” wait ({section}) can't be longer than {length} and must be over before {sections}.",
 		workPlanNextVisit: "Next visit: {when}",
 		workPlanNextVisitSameDay: "Next visit: later the same day",
 		workPlanServeAt: "Serve at {time}",

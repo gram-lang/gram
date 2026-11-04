@@ -168,7 +168,7 @@ Trois fonctions d'extraction de haut niveau exploitées par le planning de prép
 
 ```typescript
 visitKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
-// { kind: 'ingredient' | 'prepared' | 'cookware', name, quantity?, detail?, note? }
+// { kind: 'ingredient' | 'prepared' | 'cookware', name, quantity?, detail?, mass?, note? }
 
 sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): SectionProgram | undefined
 // { section, title, origin?, from, to }

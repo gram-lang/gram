@@ -459,3 +459,10 @@
 .gram-run-sheet .work-plan-problems li:last-child {
 	margin-bottom: 0;
 }
+.gram-run-sheet .kit-mass {
+	font-weight: 700;
+	color: #000;
+}
+.gram-run-sheet .kit-tools .has-extra label > span::after {
+	display: none;
+}

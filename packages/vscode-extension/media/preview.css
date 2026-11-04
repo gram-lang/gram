@@ -1591,6 +1591,17 @@ flex-direction: column;
   border-bottom: 2px dotted var(--color-border);
 }
 
+/* The weight, after the written quantity: what the mise en place is weighed on. */
+.gram-run-sheet .kit-mass {
+  font-weight: 700;
+  color: var(--color-text-strong);
+}
+
+/* A tool with a count or a size has its own dot leader: none after the name. */
+.gram-run-sheet .kit-tools .has-extra label > span::after {
+  display: none;
+}
+
 .gram-run-sheet .kit-qty {
   font-size: 0.82rem;
   font-weight: 600;

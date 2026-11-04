@@ -7,6 +7,7 @@ import {
 	formatDecimalToFraction,
 	getQty,
 	joinStepTokens,
+	round1,
 } from "./utils";
 
 /** A reference id and an intermediate's name are the same thing written two ways. */
@@ -56,7 +57,9 @@ export interface KitItem {
 	quantity?: string;
 	/** What the sum is made of, "60 + 30", when more than one section needs it. */
 	detail?: string;
-	/** "made Thursday", "in stock". */
+	/** "260 g": the weight of an ingredient written in another unit, when the mass standardization gave one. */
+	mass?: string;
+	/** "made Thursday", "in stock", the "24cm" of a tin. */
 	note?: string;
 }
 
@@ -71,6 +74,9 @@ export interface VisitKitOptions {
 }
 
 const SUM_EPS = 1e-9;
+
+/** Units that already are a weight: the standardized mass would only repeat them. */
+const MASS_UNITS = new Set(["g", "kg", "mg"]);
 
 const unitSuffix = (unit?: string | null) => (unit ? ` ${unit}` : "");
 
@@ -93,6 +99,8 @@ export function kitIngredients(
 		id: string;
 		unit: string;
 		numbers: number[];
+		/** The standardized weight of each of `numbers`, when it has one. */
+		masses: number[];
 		text?: string;
 	}
 	const lines: Line[] = [];
@@ -111,17 +119,24 @@ export function kitIngredients(
 				const key = `${id}|${unit}`;
 				let line = byKey.get(key);
 				if (!line) {
-					line = { id, unit, numbers: [] };
+					line = { id, unit, numbers: [], masses: [] };
 					byKey.set(key, line);
 					lines.push(line);
 				}
 				line.numbers.push(usage.qty);
+				if (
+					typeof usage.normalizedMass === "number" &&
+					usage.normalizedMass > 0
+				) {
+					line.masses.push(usage.normalizedMass);
+				}
 			} else {
 				const qty = getQty(usage);
 				lines.push({
 					id,
 					unit,
 					numbers: [],
+					masses: [],
 					...(qty?.text !== undefined && { text: qty.text }),
 				});
 			}
@@ -138,10 +153,19 @@ export function kitIngredients(
 				? `${line.text}${unitSuffix(line.unit)}`
 				: undefined;
 		const many = line.numbers.length > 1 && Math.abs(total) > SUM_EPS;
+		// A weight is told when every part of the line has one and the quantity
+		// is not already a weight: it is what the mise en place is weighed on.
+		const mass =
+			hasNumbers &&
+			line.masses.length === line.numbers.length &&
+			!MASS_UNITS.has(line.unit.toLowerCase())
+				? round1(line.masses.reduce((sum, n) => sum + n, 0))
+				: undefined;
 		return {
 			kind: "ingredient",
 			name,
 			...(quantity !== undefined && { quantity }),
+			...(mass !== undefined && mass > 0 && { mass: `${mass} g` }),
 			...(many && {
 				detail: line.numbers
 					.map((n) => formatDecimalToFraction(n, line.unit))
@@ -208,20 +232,42 @@ export function kitPrepared(
 	return prepared;
 }
 
-/** The cookware the given sections use, without duplicates. */
+/**
+ * The cookware the given sections use. The same tin asked by two sections is
+ * one tin used twice, not two: the most that is asked at once is what to take
+ * out. A tin written with another size, "(24cm)", is another tin.
+ */
 export function kitCookware(
 	data: RenderableCompilationResult,
 	sections: number[],
 ): KitItem[] {
-	const ids: string[] = [];
+	interface Line {
+		id: string;
+		preparation: string;
+		quantity?: number;
+	}
+	const lines = new Map<string, Line>();
 	for (const index of sortedSections(sections)) {
 		for (const usage of data.sections?.[index]?.cookware ?? []) {
-			if (!ids.includes(usage.id)) ids.push(usage.id);
+			const preparation = String(usage.preparation ?? "").trim();
+			const key = `${usage.id}|${preparation}`;
+			let line = lines.get(key);
+			if (!line) {
+				line = { id: usage.id, preparation };
+				lines.set(key, line);
+			}
+			if (typeof usage.qty === "number" && usage.qty > (line.quantity ?? 0)) {
+				line.quantity = usage.qty;
+			}
 		}
 	}
-	return ids.map((id) => ({
+	return [...lines.values()].map((line) => ({
 		kind: "cookware",
-		name: data.registry?.cookware?.[id]?.name ?? id,
+		name: data.registry?.cookware?.[line.id]?.name ?? line.id,
+		...(line.quantity !== undefined && {
+			quantity: `×${formatDecimalToFraction(line.quantity)}`,
+		}),
+		...(line.preparation && { note: line.preparation }),
 	}));
 }
 

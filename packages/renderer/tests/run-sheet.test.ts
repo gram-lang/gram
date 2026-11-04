@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { compile, scheduleFor } from "@gram-lang/kitchen";
+import { analyze } from "@gram-lang/analyzer";
 import { getAST } from "@gram-lang/parser";
 import { project, runSheet, visitSections } from "@gram-lang/scheduler";
 import type { MiseEnPlaceMode } from "@gram-lang/scheduler";
@@ -182,7 +183,7 @@ describe("a plan of several days", () => {
 		expect(first!.visits[0]!.margin).toBe("Possible from 08:00.");
 		const [, , saturday] = model.days;
 		expect(saturday!.visits[0]!.margin).toBe(
-			"Fixed times: Glaze : Cool 1h 30m, before Finish.",
+			"Can't start earlier: the “Cool” wait (Glaze) can't be longer than 1h 30m and must be over before Finish.",
 		);
 	});
 
@@ -882,4 +883,104 @@ describe("the work plan, whatever the mode and the clock", () => {
 			});
 		}
 	}
+});
+
+describe("the weight and the cookware of the mise en place", () => {
+	const DB = {
+		flour: { name: "Flour", physical: { density: 0.55 } },
+		"lemon-juice": { name: "Lemon juice", physical: { density: 1.03 } },
+	};
+	const SRC =
+		"## A\n\nMix @flour{2cup} with @lemon juice{120ml} and @sugar{50g} in a #tray{2}(large).\n\n## B\n\nAdd @flour{1cup} on the #tray{3}(large) and a #tin{}(24cm).\n";
+	const analyzedOf = (standardize: boolean) =>
+		analyze(compile(getAST(SRC)), DB as never, {
+			enableMassStandardization: standardize,
+		}).result;
+	const kitFor = (c: ReturnType<typeof compile>, mode: MiseEnPlaceMode) =>
+		describeRunSheet(planIn(c, mode), c).days.flatMap((d) =>
+			d.visits.flatMap((p) => [
+				...p.kit.flatMap((g) => g.items),
+				...p.program.flatMap((l) => l.kit ?? []),
+			]),
+		);
+
+	it("tells the weight of a quantity written in another unit, when standardized", () => {
+		const items = kitFor(analyzedOf(true), "perSection");
+		const flour = items.filter((i) => i.name === "flour");
+		expect(flour.map((i) => [i.quantity, i.mass])).toEqual([
+			["2 cup", "260.3 g"],
+			["1 cup", "130.1 g"],
+		]);
+		expect(items.find((i) => i.name === "lemon juice")).toMatchObject({
+			quantity: "120 ml",
+			mass: "123.6 g",
+		});
+		expect(items.find((i) => i.text.startsWith("flour 2 cup"))!.text).toBe(
+			"flour 2 cup · 260.3 g",
+		);
+	});
+
+	it("does not repeat a quantity that already is a weight, nor invent one", () => {
+		const items = kitFor(analyzedOf(true), "perSection");
+		expect(items.find((i) => i.name === "sugar")!.mass).toBeUndefined();
+		for (const i of kitFor(analyzedOf(false), "perSection")) {
+			expect(i.mass).toBeUndefined();
+		}
+	});
+
+	it("sums the weights of an ingredient asked by several sections", () => {
+		const items = kitFor(analyzedOf(true), "perDay");
+		const flour = items.find((i) => i.name === "flour")!;
+		expect(flour).toMatchObject({
+			quantity: "3 cup",
+			detail: "2 + 1",
+			mass: "390.4 g",
+		});
+	});
+
+	it("writes the weight in text, Markdown and HTML", () => {
+		const c = analyzedOf(true);
+		const sheet = planIn(c, "perSection");
+		expect(runSheetToText(sheet, c)).toContain("[ ] flour 2 cup · 260.3 g");
+		expect(runSheetToMarkdown(sheet, c)).toContain(
+			"- [ ] flour 2 cup · 260.3 g",
+		);
+		expect(runSheetToHTML(sheet, c)).toContain(
+			'<span class="kit-qty">2 cup<span class="kit-mass">260.3 g</span></span>',
+		);
+		const plain = analyzedOf(false);
+		expect(runSheetToHTML(planIn(plain, "perSection"), plain)).not.toContain(
+			"kit-mass",
+		);
+	});
+
+	it("tells how many of a tool and its size, the most asked at once", () => {
+		const c = compile(getAST(SRC));
+		const tools = kitFor(c, "perDay").filter((i) => i.kind === "cookware");
+		expect(tools.map((i) => [i.name, i.quantity, i.note, i.text])).toEqual([
+			["tray", "×3", "large", "tray ×3 (large)"],
+			["tin", undefined, "24cm", "tin (24cm)"],
+		]);
+	});
+
+	it("by section, tells a tool once with the most the visit asks of it", () => {
+		const c = compile(getAST(SRC));
+		const tools = kitFor(c, "perSection").filter((i) => i.kind === "cookware");
+		expect(tools.map((i) => i.text)).toEqual(["tray ×3 (large)", "tin (24cm)"]);
+	});
+
+	it("writes the tool details in the HTML and the text", () => {
+		const c = compile(getAST(SRC));
+		const sheet = planIn(c, "perDay");
+		const html = runSheetToHTML(sheet, c);
+		expect(html).toContain(
+			'<li class="kit-cookware has-extra"><label><input type="checkbox"><span>tray <span class="kit-qty">×3</span> <span class="kit-note">large</span></span></label></li>',
+		);
+		expect(runSheetToText(sheet, c)).toContain("[ ] tray ×3 (large)");
+		// A tool with nothing to add stays a name alone.
+		const bare = compile(getAST("## A\n\nHeat the #pan{}.\n"));
+		expect(runSheetToHTML(planOf(bare), bare)).toContain(
+			'<li class="kit-cookware"><label><input type="checkbox"><span>pan</span></label></li>',
+		);
+	});
 });

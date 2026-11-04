@@ -57,6 +57,8 @@ export interface RunSheetKitLine {
 	/** The parts of `text`, for a view that sets them apart: "milk", "100 g", "in stock". */
 	name: string;
 	quantity?: string;
+	/** "260 g": the weight, for a quantity written in another unit. */
+	mass?: string;
 	note?: string;
 }
 
@@ -433,17 +435,22 @@ export function describeRunSheet(
 				(s) => (firstWork.get(s) ?? firstSeen.get(s)) === p,
 			);
 			const line = (item: KitItem): RunSheetKitLine => {
-				const text = [
-					item.quantity ? `${item.name} ${item.quantity}` : item.name,
-					item.note,
-				]
-					.filter(Boolean)
-					.join(", ");
+				// A tin reads "tart tin ×2 (24cm)"; the rest "flour 2 cup · 260 g, made Thursday".
+				const text =
+					item.kind === "cookware"
+						? `${item.name}${item.quantity ? ` ${item.quantity}` : ""}${item.note ? ` (${item.note})` : ""}`
+						: [
+								`${item.quantity ? `${item.name} ${item.quantity}` : item.name}${item.mass ? ` · ${item.mass}` : ""}`,
+								item.note,
+							]
+								.filter(Boolean)
+								.join(", ");
 				return {
 					kind: item.kind,
 					text,
 					name: item.name,
 					...(item.quantity && { quantity: item.quantity }),
+					...(item.mass && { mass: item.mass }),
 					...(item.note && { note: item.note }),
 					...(item.detail && { detail: item.detail }),
 				};
@@ -512,6 +519,12 @@ export function describeRunSheet(
 				const own = [...new Set([...rawSections, ...preparedSections])].sort(
 					(a, b) => a - b,
 				);
+				// A tool is told once, at the first section that uses it, with the most
+				// the visit asks of it: the tray of the second section is the first one's.
+				const cookwareKey = (c: KitItem) => `${c.name}|${c.note ?? ""}`;
+				const mostCookware = new Map(
+					kitCookware(data, rawSections).map((c) => [cookwareKey(c), c]),
+				);
 				const seenCookware = new Set<string>();
 				for (const s of own) {
 					const lines = [
@@ -520,10 +533,11 @@ export function describeRunSheet(
 							: []),
 						...(preparedSections.includes(s) ? prepared([s]) : []),
 						...(rawSections.includes(s)
-							? kitCookware(data, [s]).filter((c) => {
-									if (seenCookware.has(c.name)) return false;
-									seenCookware.add(c.name);
-									return true;
+							? kitCookware(data, [s]).flatMap((c) => {
+									const key = cookwareKey(c);
+									if (seenCookware.has(key)) return [];
+									seenCookware.add(key);
+									return [mostCookware.get(key) ?? c];
 								})
 							: []),
 					];
@@ -590,12 +604,20 @@ export function describeRunSheet(
 					time: clock(p.window.earliestLocal),
 				});
 			} else if (p.fixedBy) {
-				const wait = `${waitName(p.fixedBy)} ${fmt(Math.round(p.fixedBy.planned))}`;
+				const wait = {
+					rest: restName(
+						t.runSheetRest,
+						p.fixedBy.track,
+						stepAction(p.fixedBy.section, p.fixedBy.step),
+					),
+					section: sectionTitle(p.fixedBy.section),
+					length: fmt(Math.round(p.fixedBy.planned)),
+				};
 				margin =
 					p.fixedBy.before === "service"
-						? fill(t.workPlanFixedService, { wait })
+						? fill(t.workPlanFixedService, wait)
 						: fill(t.workPlanFixedVisit, {
-								wait,
+								...wait,
 								sections: (p.fixedBy.sections ?? [])
 									.map(sectionTitle)
 									.join(", "),
@@ -790,14 +812,15 @@ function kitListsHtml(
 	if (tools.length > 0) {
 		let list = `          <ul class="kit-list kit-tools">\n`;
 		for (const l of tools) {
-			list += `            <li class="kit-cookware"><label><input type="checkbox"><span>${e(l.name)}</span></label></li>\n`;
+			const extra = l.quantity || l.note;
+			list += `            <li class="kit-cookware${extra ? " has-extra" : ""}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
 		}
 		html += group("tools", titles.tools, `${list}          </ul>\n`);
 	}
 	if (things.length > 0) {
 		let list = `          <ul class="kit-list">\n`;
 		for (const l of things) {
-			list += `            <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
+			list += `            <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}${l.mass ? `<span class="kit-mass">${e(l.mass)}</span>` : ""}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
 		}
 		html += group("ingredients", titles.things, `${list}          </ul>\n`);
 	}
