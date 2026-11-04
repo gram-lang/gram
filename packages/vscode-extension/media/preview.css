@@ -1245,7 +1245,7 @@ flex-direction: column;
   font-weight: 800;
   line-height: 1.15;
   text-wrap: balance;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .work-plan-subtitle {
@@ -1255,15 +1255,16 @@ flex-direction: column;
 }
 
 .gram-run-sheet .work-plan-summary {
-  margin: 0 0 1.5rem;
-  padding: 0.65rem 0 0.65rem 0.75rem;
-  border-block: 1px solid var(--color-border);
+  margin: 0 0 1.25rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--color-border);
   background: var(--color-bg-subtle);
   font-family: var(--gram-font-mono);
   font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--color-text-strong);
+  color: var(--color-text);
+  border-radius: 3px;
 }
 
 .gram-run-sheet h4 {
@@ -1278,6 +1279,7 @@ flex-direction: column;
 /* The days at a glance */
 .gram-run-sheet .work-plan-schedule {
   border: 1px solid var(--color-border);
+  border-radius: 3px;
 }
 
 .gram-run-sheet .schedule-group {
@@ -1300,7 +1302,7 @@ flex-direction: column;
   font-weight: 800;
   line-height: 1.2;
   text-transform: uppercase;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .schedule-day small {
@@ -1346,12 +1348,12 @@ flex-direction: column;
   display: inline-block;
   margin-right: 0.5em;
   font-size: 0.75em;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .schedule-visit .schedule-text {
   font-weight: 600;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .schedule-thread {
@@ -1370,14 +1372,14 @@ flex-direction: column;
   content: "★";
   margin-right: 0.4em;
   font-size: 0.85em;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .schedule-serve .schedule-text {
   font-family: var(--gram-font-mono);
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .work-plan-legend {
@@ -1395,7 +1397,7 @@ flex-direction: column;
   content: "■";
   margin-right: 0.45em;
   font-size: 0.8em;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .legend-thread::before {
@@ -1408,8 +1410,6 @@ flex-direction: column;
 /* One day: its visits, each with what to take out, the programme and what goes on */
 .gram-run-sheet .work-plan-day {
   margin-top: 2.5rem;
-  padding: 1.5rem;
-  border: 1px solid var(--color-border);
   background: var(--color-bg);
   break-inside: avoid;
 }
@@ -1422,14 +1422,13 @@ flex-direction: column;
   gap: 0.5rem 1rem;
   margin: 0 0 1.5rem;
   padding-bottom: 0.6rem;
-  border-bottom: 2px solid var(--color-text-strong);
-  text-transform: uppercase;
+  border-bottom: 2px solid var(--color-text);
 }
 
 .gram-run-sheet .day-heading {
   font-size: 1.35rem;
   font-weight: 800;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .work-plan-day .day-slot {
@@ -1529,7 +1528,7 @@ flex-direction: column;
   width: 12px;
   height: 12px;
   margin: 0;
-  border: 1.5px solid var(--color-text-strong);
+  border: 1.5px solid var(--color-text);
   border-radius: 2px;
   background: transparent;
   cursor: pointer;
@@ -1537,7 +1536,7 @@ flex-direction: column;
 }
 
 .gram-run-sheet .kit-list input[type="checkbox"]:checked {
-  background: var(--color-text-strong);
+  background: var(--color-text);
 }
 
 .gram-run-sheet .kit-list input[type="checkbox"]:checked::after {
@@ -1589,7 +1588,7 @@ flex-direction: column;
   align-self: flex-end;
   min-width: 0.75rem;
   margin-bottom: 0.3em;
-  border-bottom: 2px dotted var(--color-border-strong);
+  border-bottom: 2px dotted var(--color-border);
 }
 
 .gram-run-sheet .kit-qty {
@@ -1636,7 +1635,7 @@ flex-direction: column;
   font-family: var(--gram-font-mono);
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .step-123-title {
@@ -1644,9 +1643,9 @@ flex-direction: column;
 }
 
 .gram-run-sheet .step-123-sub-title {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .badge-num,
@@ -1662,7 +1661,7 @@ flex-direction: column;
 .gram-run-sheet .badge-num {
   width: 1.35rem;
   height: 1.35rem;
-  background: var(--color-text-strong);
+  background: var(--color-text);
   color: var(--color-bg);
   font-size: 0.75rem;
 }
@@ -1670,8 +1669,8 @@ flex-direction: column;
 .gram-run-sheet .badge-num-sm {
   width: 1.15rem;
   height: 1.15rem;
-  background: var(--color-border-strong);
-  color: var(--color-text-strong);
+  background: var(--color-text);
+  color: var(--color-bg);
   font-size: 0.68rem;
 }
 
@@ -1707,16 +1706,14 @@ flex-direction: column;
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.65rem 0.85rem;
-  background: var(--color-bg-subtle);
+  padding: 0.5rem 0.85rem 0.5rem 0.85rem;
   border-bottom: 1px solid var(--color-border);
 }
 
 .gram-run-sheet .sec-title {
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 800;
-  text-transform: uppercase;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .sec-cont {
@@ -1738,7 +1735,7 @@ flex-direction: column;
   background: var(--color-bg);
   font-family: var(--gram-font-mono);
   font-size: 0.78rem;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .station-sub-block {
@@ -1783,10 +1780,10 @@ flex-direction: column;
 
 .gram-run-sheet .step-action-badge {
   display: inline-block;
-  margin-right: 0.45rem;
+  margin-right: 0.25rem;
   padding: 0.1rem 0.4rem;
   border: 1px solid var(--color-border-strong);
-  background: var(--color-bg-muted);
+  background: var(--color-bg-subtle);
   font-family: var(--gram-font-mono);
   font-size: 0.72rem;
   font-weight: 700;
@@ -1800,7 +1797,7 @@ flex-direction: column;
 .gram-run-sheet .step-content .cookware,
 .gram-run-sheet .step-content .reference {
   font-weight: 600;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 /* A temperature is outlined, a timer is filled: told apart without colour. */
@@ -1808,21 +1805,21 @@ flex-direction: column;
 .gram-run-sheet .step-content .timer {
   display: inline-block;
   margin: 0 0.1rem;
-  padding: 0.08rem 0.4rem;
-  border: 1.5px solid var(--color-text-strong);
+  padding: 0 0.3rem;
+  border: 1.5px solid var(--color-text);
   font-family: var(--gram-font-mono);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .gram-run-sheet .step-content .temp {
   background: var(--color-bg);
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .step-content .timer {
-  background: var(--color-text-strong);
+  background: var(--color-text);
   color: var(--color-bg);
 }
 
@@ -1835,7 +1832,7 @@ flex-direction: column;
 .gram-run-sheet .step-content .temp,
 .gram-run-sheet .step-content .timer,
 .gram-run-sheet .kit-list input[type="checkbox"] {
-  border-radius: 0;
+    border-radius: 3px;
 }
 
 /* What goes on without the cook, then when to come back */
@@ -1844,7 +1841,7 @@ flex-direction: column;
   flex-direction: column;
   gap: 0.6rem;
   padding: 0.85rem 1.15rem;
-  border: 1.5px dashed var(--color-text-strong);
+  border: 1.5px dashed var(--color-text);
   background: var(--color-bg);
 }
 
@@ -1889,32 +1886,33 @@ flex-direction: column;
 .gram-run-sheet .wait-length {
   order: 2;
   padding: 0.12rem 0.38rem;
-  border: 1px solid var(--color-border-strong);
   border-radius: 2px;
-  background: var(--color-bg-muted);
+  background: var(--color-text);
   white-space: nowrap;
   font-family: var(--gram-font-mono);
   font-size: 0.74rem;
   font-weight: 600;
-  color: var(--color-text-strong);
+  color: var(--color-bg);
 }
 
 .gram-run-sheet .leaving-next {
   margin: 0.75rem 0 0;
   padding: 0.7rem 1.15rem;
-  background: var(--color-text-strong);
+  background: var(--color-text);
   font-family: var(--gram-font-mono);
   font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--color-bg);
+  border-radius: 3px;
 }
 
 .gram-run-sheet .work-plan-problems {
-  margin: 0 0 1.5rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--color-border);
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--color-border);
   background: var(--color-bg-subtle);
+  border-radius:3px;
 }
 
 .gram-run-sheet .work-plan-problems h3 {
@@ -1926,7 +1924,7 @@ flex-direction: column;
   font-size: 0.85rem;
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--color-text-strong);
+  color: var(--color-text);
 }
 
 .gram-run-sheet .work-plan-problems .problem-icon {
@@ -1935,7 +1933,7 @@ flex-direction: column;
   justify-content: center;
   font-size: 1.15rem;
   line-height: 1;
-  color: var(--color-text-strong);
+  color: var(--color-text);
   flex-shrink: 0;
 }
 
