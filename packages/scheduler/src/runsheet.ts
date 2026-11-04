@@ -72,6 +72,12 @@ export interface RunSheetVisit {
 	 * `visitSections`.
 	 */
 	worked: number[];
+	/**
+	 * When each section of `worked` starts its first step in this visit, in
+	 * recipe order. A section cooked over several visits starts again in each
+	 * one. Exact: rounding is for display.
+	 */
+	sectionStarts: RunSheetSectionStart[];
 	/** The tasks of the visit: preparations and steps, in the order they start. */
 	tasks: string[];
 	/**
@@ -88,6 +94,14 @@ export interface RunSheetVisit {
 	};
 	/** The wait that holds the visit in place, when there is no margin. */
 	fixedBy?: RunSheetFixedBy;
+}
+
+/** Where a section starts working in a visit. */
+export interface RunSheetSectionStart {
+	section: number;
+	/** Minutes from the service (<= 0). */
+	start: number;
+	startLocal?: string;
 }
 
 /** A wait that cannot give: the visit can't move without stretching or shrinking it. */
@@ -380,6 +394,7 @@ function buildRecipe(
 				if (!last.sections.includes(b.section)) last.sections.push(b.section);
 				if (b.kind === "step" && !last.worked.includes(b.section)) {
 					last.worked.push(b.section);
+					last.sectionStarts.push({ section: b.section, start: b.from });
 				}
 			} else {
 				visits.push({
@@ -387,6 +402,8 @@ function buildRecipe(
 					end: b.to,
 					sections: [b.section],
 					worked: b.kind === "step" ? [b.section] : [],
+					sectionStarts:
+						b.kind === "step" ? [{ section: b.section, start: b.from }] : [],
 					tasks: [b.task],
 				});
 			}
@@ -395,6 +412,11 @@ function buildRecipe(
 		for (const p of visits) {
 			p.sections.sort((a, b) => a - b);
 			p.worked.sort((a, b) => a - b);
+			p.sectionStarts.sort((a, b) => a.section - b.section);
+			for (const st of p.sectionStarts) {
+				const at = local(st.start);
+				if (at !== undefined) st.startLocal = at;
+			}
 			const startLocal = local(p.start);
 			const endLocal = local(p.end);
 			if (startLocal !== undefined) p.startLocal = startLocal;

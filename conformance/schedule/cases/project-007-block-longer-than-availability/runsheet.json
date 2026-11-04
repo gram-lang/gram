@@ -48,6 +48,13 @@
               "worked": [
                 0
               ],
+              "sectionStarts": [
+                {
+                  "section": 0,
+                  "start": -180,
+                  "startLocal": "2026-10-11T10:00"
+                }
+              ],
               "tasks": [
                 "s0.prep",
                 "s0.0"

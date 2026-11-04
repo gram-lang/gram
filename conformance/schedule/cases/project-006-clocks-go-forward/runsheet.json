@@ -76,6 +76,13 @@
               "worked": [
                 0
               ],
+              "sectionStarts": [
+                {
+                  "section": 0,
+                  "start": -1472,
+                  "startLocal": "2026-03-28T11:28"
+                }
+              ],
               "tasks": [
                 "s0.prep",
                 "s0.0",
@@ -140,6 +147,13 @@
               ],
               "worked": [
                 1
+              ],
+              "sectionStarts": [
+                {
+                  "section": 1,
+                  "start": -30,
+                  "startLocal": "2026-03-29T12:30"
+                }
               ],
               "tasks": [
                 "s1.prep.dough",

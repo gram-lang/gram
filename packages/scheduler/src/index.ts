@@ -49,6 +49,7 @@ export type {
 	RunSheetEntry,
 	RunSheetFixedBy,
 	RunSheetOptions,
+	RunSheetSectionStart,
 	RunSheetVisit,
 	RunSheetThread,
 } from "./runsheet";

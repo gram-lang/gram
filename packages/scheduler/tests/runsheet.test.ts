@@ -269,6 +269,62 @@ describe("runSheet days, visits and threads", () => {
 		expect(day.threads).toEqual([]);
 	});
 
+	it("tells when each section starts in its visit, on the calendar", () => {
+		const { days } = runSheet(entremetsPlan).recipes[0]!;
+		const last = days[2]!;
+		expect(last.visits[0]!.sectionStarts).toEqual([
+			{ section: 2, start: -120, startLocal: "2026-10-17T18:00" },
+		]);
+		expect(last.visits[1]!.sectionStarts).toEqual([
+			{ section: 3, start: -15, startLocal: "2026-10-17T19:45" },
+		]);
+	});
+
+	it("gives a section starts only for the visits where it has a step", () => {
+		for (const day of runSheet(entremetsPlan).recipes[0]!.days) {
+			for (const visit of day.visits) {
+				expect(visit.sectionStarts.map((s) => s.section)).toEqual(visit.worked);
+			}
+		}
+	});
+
+	it("gives each section of a shared visit its own start, in recipe order", () => {
+		const short: TaskGraph = {
+			...entremets,
+			tasks: entremets.tasks.map((t) =>
+				t.id === "s2.0.t0" ? { ...t, duration: { nominal: 45 } } : t,
+			),
+		};
+		const [visit] = runSheet(layout(short).schedule).recipes[0]!.days[2]!
+			.visits;
+		expect(visit!.sectionStarts).toEqual([
+			{ section: 2, start: visit!.start },
+			{ section: 3, start: -15 },
+		]);
+	});
+
+	for (const mode of MISE_EN_PLACE_MODES) {
+		it(`starts every worked section inside its visit in ${mode} mode`, () => {
+			const { schedule } = layout(canneles as unknown as TaskGraph, {
+				miseEnPlace: mode,
+			});
+			for (const day of runSheet(schedule).recipes[0]!.days) {
+				for (const visit of day.visits) {
+					const starts = visit.sectionStarts;
+					expect(starts.map((s) => s.section)).toEqual(visit.worked);
+					// A visit of mise en place only has no section to start.
+					if (visit.worked.length === 0) expect(starts).toEqual([]);
+					for (const s of starts) {
+						expect(s.start).toBeGreaterThanOrEqual(visit.start);
+						expect(s.start).toBeLessThanOrEqual(visit.end);
+						// No calendar, no clock.
+						expect(s.startLocal).toBeUndefined();
+					}
+				}
+			}
+		});
+	}
+
 	it("keeps a visit that crosses midnight whole, on the date it starts", () => {
 		const night: TaskGraph = {
 			tasks: [
