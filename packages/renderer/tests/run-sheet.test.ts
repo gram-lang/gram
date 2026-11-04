@@ -731,6 +731,26 @@ describe("the work plan carries the steps of the recipe", () => {
 		);
 	});
 
+	it("shows no tooltip and no intermediate at the end of a step", () => {
+		const made = compile(
+			getAST(
+				"## A\n\n[Mix] Mix @flour{100g} for ~{5min}. ->&batter{}\n\n## B\n\n[Bake] Bake &batter{} at ^{200C}.\n",
+			),
+		);
+		const sheetOf = planOf(made);
+		const html = runSheetToHTML(sheetOf, made);
+		expect(html).not.toContain("data-tooltip");
+		expect(html).not.toContain("declaration");
+		// The preparation used by a step is still named: only the one it makes is left out.
+		expect(html).toContain('<span class="reference"');
+		const [a] = describeRunSheet(sheetOf, made).days[0]!.visits[0]!.program;
+		expect(a!.steps[0]!.text).toBe("Mix flour for 5 min.");
+		expect(a!.steps[0]!.md).not.toContain("batter");
+		expect(runSheetToText(sheetOf, made)).toContain(
+			"1. [Mix] Mix flour for 5 min.\n",
+		);
+	});
+
 	it("goes on with a section already worked in an earlier visit", () => {
 		const doubled = structuredClone(sheet);
 		const [day] = doubled.recipes[0]!.days;
@@ -946,7 +966,7 @@ describe("the weight and the cookware of the mise en place", () => {
 			"- [ ] flour 2 cup · 260.3 g",
 		);
 		expect(runSheetToHTML(sheet, c)).toContain(
-			'<span class="kit-qty">2 cup<span class="kit-mass">260.3 g</span></span>',
+			'<span class="kit-qty"><span class="kit-orig">2 cup</span><span class="kit-mass">260.3 g</span></span>',
 		);
 		const plain = analyzedOf(false);
 		expect(runSheetToHTML(planIn(plain, "perSection"), plain)).not.toContain(
@@ -974,7 +994,7 @@ describe("the weight and the cookware of the mise en place", () => {
 		const sheet = planIn(c, "perDay");
 		const html = runSheetToHTML(sheet, c);
 		expect(html).toContain(
-			'<li class="kit-cookware has-extra"><label><input type="checkbox"><span>tray <span class="kit-qty">×3</span> <span class="kit-note">large</span></span></label></li>',
+			'<li class="kit-cookware has-qty"><label><input type="checkbox"><span>tray <span class="kit-detail">(large)</span> <span class="kit-qty">×3</span></span></label></li>',
 		);
 		expect(runSheetToText(sheet, c)).toContain("[ ] tray ×3 (large)");
 		// A tool with nothing to add stays a name alone.

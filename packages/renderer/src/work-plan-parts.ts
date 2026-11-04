@@ -436,31 +436,25 @@ export function sectionSteps(
 		out.push(...pending);
 		pending = [];
 		lastWasKept = true;
-		const tokens = item.content ?? [];
-		const isDeclaration = (c: (typeof tokens)[number]) =>
-			typeof c === "object" && c.type === "declaration";
-		const inline = tokens.filter((c) => !isDeclaration(c));
-		const declarations = tokens.filter(isDeclaration);
-		const spaceable = (c: unknown, skipDeclaration: boolean) =>
+		// The intermediate a step ends with ("->&dough") is not told here: the
+		// recipe says it, and a worksheet only needs what to do.
+		const tokens = (item.content ?? []).filter(
+			(c) => !(typeof c === "object" && c.type === "declaration"),
+		);
+		const spaceable = (c: unknown) =>
 			!!c &&
 			typeof c === "object" &&
-			(c as { type?: string }).type !== "comment" &&
-			(!skipDeclaration || (c as { type?: string }).type !== "declaration");
-		const html =
-			joinStepTokens(
-				inline,
-				(c) => formatElement(c, "html", context),
-				(c) => spaceable(c, true),
-			) +
-			joinStepTokens(
-				declarations,
-				(c) => formatElement(c, "html", context),
-				(c) => spaceable(c, true),
-			);
+			(c as { type?: string }).type !== "comment";
+		// No tooltips either: a printed sheet cannot show them, and a screen has no use for them here.
+		const html = joinStepTokens(
+			tokens,
+			(c) => formatElement(c, "html", context),
+			spaceable,
+		).replace(/ data-tooltip="[^"]*"/g, "");
 		const md = joinStepTokens(
 			tokens,
 			(c) => formatElement(c, "md", context),
-			(c) => spaceable(c, false),
+			spaceable,
 		);
 		out.push({
 			number,

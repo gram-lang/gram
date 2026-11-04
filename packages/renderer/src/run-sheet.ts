@@ -812,15 +812,15 @@ function kitListsHtml(
 	if (tools.length > 0) {
 		let list = `          <ul class="kit-list kit-tools">\n`;
 		for (const l of tools) {
-			const extra = l.quantity || l.note;
-			list += `            <li class="kit-cookware${extra ? " has-extra" : ""}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
+			// The size follows the name, small; the count sits at the end of the line.
+			list += `            <li class="kit-cookware${l.quantity ? " has-qty" : ""}"><label><input type="checkbox"><span>${e(l.name)}${l.note ? ` <span class="kit-detail">(${e(l.note)})</span>` : ""}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}</span>` : ""}</span></label></li>\n`;
 		}
 		html += group("tools", titles.tools, `${list}          </ul>\n`);
 	}
 	if (things.length > 0) {
 		let list = `          <ul class="kit-list">\n`;
 		for (const l of things) {
-			list += `            <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}${l.mass ? `<span class="kit-mass">${e(l.mass)}</span>` : ""}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
+			list += `            <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${l.mass ? `<span class="kit-orig">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}</span><span class="kit-mass">${e(l.mass)}</span>` : `${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}`}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
 		}
 		html += group("ingredients", titles.things, `${list}          </ul>\n`);
 	}

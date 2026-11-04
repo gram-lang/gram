@@ -1591,14 +1591,25 @@ flex-direction: column;
   border-bottom: 2px dotted var(--color-border);
 }
 
-/* The weight, after the written quantity: what the mise en place is weighed on. */
+/* The weight is what the mise en place is weighed on: the quantity as written is smaller, before it. */
 .gram-run-sheet .kit-mass {
   font-weight: 700;
   color: var(--color-text-strong);
 }
 
-/* A tool with a count or a size has its own dot leader: none after the name. */
-.gram-run-sheet .kit-tools .has-extra label > span::after {
+.gram-run-sheet .kit-orig {
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+/* The size of a tool, small, right after its name. */
+.gram-run-sheet .kit-detail {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* A tool with a count has its dot leader before the count: none after the name. */
+.gram-run-sheet .kit-tools .has-qty label > span::after {
   display: none;
 }
 

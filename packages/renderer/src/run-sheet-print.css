@@ -463,6 +463,14 @@
 	font-weight: 700;
 	color: #000;
 }
-.gram-run-sheet .kit-tools .has-extra label > span::after {
+.gram-run-sheet .kit-orig {
+	font-size: 7pt;
+	font-weight: 400;
+}
+.gram-run-sheet .kit-detail {
+	font-size: 7.5pt;
+	color: var(--grey);
+}
+.gram-run-sheet .kit-tools .has-qty label > span::after {
 	display: none;
 }
