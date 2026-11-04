@@ -1470,16 +1470,6 @@ flex-direction: column;
 }
 
 /* What to take out */
-.gram-run-sheet .work-plan-kit,
-.gram-run-sheet .program-kit {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-subtle);
-}
-
 .gram-run-sheet .kit-group {
   display: flex;
   flex-direction: column;
@@ -1612,61 +1602,240 @@ flex-direction: column;
   font-size: 0.75rem;
 }
 
-/* The programme */
-.gram-run-sheet .work-plan-program {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.gram-run-sheet .work-plan-program > ul {
-  border: 1px solid var(--color-border);
-}
-
-.gram-run-sheet .work-plan-program > ul > li {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.25rem 1.25rem;
+/*
+ * A visit as a worksheet: mise en place, execution, what to do on leaving.
+ * Plain boxes and square corners (the three numbers are the only circles),
+ * and the strong text colour for contrast, so the sheet reads the same on
+ * screen and on paper, light or dark.
+ */
+.gram-run-sheet .work-plan-visit-slot {
   margin: 0;
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.gram-run-sheet .work-plan-program > ul > li:last-child {
-  border-bottom: 0;
-}
-
-.gram-run-sheet .program-section {
-  font-size: 0.95rem;
+  font-family: var(--gram-font-mono);
+  font-size: 0.78rem;
   font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .box-123,
+.gram-run-sheet .section-station-card {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.gram-run-sheet .box-123 {
+  padding: 0.85rem 1rem;
+}
+
+.gram-run-sheet .step-123-title,
+.gram-run-sheet .step-123-sub-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  font-family: var(--gram-font-mono);
+  font-weight: 800;
   text-transform: uppercase;
   color: var(--color-text-strong);
 }
 
-/* By section: no table, each section is a title line over its own kit box, like the one at the top of a visit. */
-.gram-run-sheet .program-by-section > ul {
+.gram-run-sheet .step-123-title {
+  font-size: 0.82rem;
+}
+
+.gram-run-sheet .step-123-sub-title {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .badge-num,
+.gram-run-sheet .badge-num-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.gram-run-sheet .badge-num {
+  width: 1.35rem;
+  height: 1.35rem;
+  background: var(--color-text-strong);
+  color: var(--color-bg);
+  font-size: 0.75rem;
+}
+
+.gram-run-sheet .badge-num-sm {
+  width: 1.15rem;
+  height: 1.15rem;
+  background: var(--color-border-strong);
+  color: var(--color-text-strong);
+  font-size: 0.68rem;
+}
+
+.gram-run-sheet .mep-group + .mep-group {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dotted var(--color-border);
+}
+
+.gram-run-sheet .mep-sub-title {
+  margin: 0 0 0.4rem;
+  font-family: var(--gram-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* One station per section: its title and start, then its own mise en place and steps. */
+.gram-run-sheet .section-station-card,
+.gram-run-sheet .section-exec-card {
+  overflow: hidden;
+}
+
+.gram-run-sheet .section-exec-card + .section-exec-card {
+  margin-top: 0.65rem;
+}
+
+.gram-run-sheet .station-header,
+.gram-run-sheet .section-exec-header {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  border: 0;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.gram-run-sheet .program-by-section > ul > li {
-  padding: 0;
-  border: 0;
+.gram-run-sheet .sec-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--color-text-strong);
 }
 
-.gram-run-sheet .program-by-section .program-kit {
-  flex-basis: 100%;
-  margin-top: 0.35rem;
+.gram-run-sheet .sec-cont {
+  font-weight: 600;
+  text-transform: none;
+  color: var(--color-text-muted);
 }
 
-.gram-run-sheet .program-ref {
+.gram-run-sheet .sec-origin {
+  margin-left: 0.6rem;
+  font-family: var(--gram-font-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .sec-time-pill {
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
   font-family: var(--gram-font-mono);
   font-size: 0.78rem;
+  color: var(--color-text-strong);
+}
+
+.gram-run-sheet .station-sub-block {
+  padding: 0.75rem 0.85rem;
+}
+
+.gram-run-sheet .station-sub-block + .station-sub-block {
+  border-top: 1px dotted var(--color-border);
+}
+
+.gram-run-sheet .section-exec-card > .exec-steps-list {
+  padding: 0.75rem 1rem 0.75rem 2.25rem;
+}
+
+/* The steps: numbered as in the recipe, no check boxes (those are for the mise en place). */
+.gram-run-sheet .exec-steps-list {
+  margin: 0;
+  padding: 0 0 0 1.4rem;
+  list-style: decimal;
+}
+
+.gram-run-sheet .exec-steps-list li {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.gram-run-sheet .exec-steps-list li:last-child {
+  margin-bottom: 0;
+}
+
+.gram-run-sheet .exec-steps-list li.step-comment {
+  display: block;
+  margin-left: -1.25rem;
+  padding: 0.25rem 0.6rem;
+  border-left: 2px solid var(--color-border-strong);
+  font-size: 0.82rem;
+  font-style: italic;
   color: var(--color-text-muted);
+}
+
+.gram-run-sheet .step-action-badge {
+  display: inline-block;
+  margin-right: 0.45rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-muted);
+  font-family: var(--gram-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  color: var(--color-text);
+}
+
+.gram-run-sheet .step-content .ingredient,
+.gram-run-sheet .step-content .cookware,
+.gram-run-sheet .step-content .reference {
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+/* A temperature is outlined, a timer is filled: told apart without colour. */
+.gram-run-sheet .step-content .temp,
+.gram-run-sheet .step-content .timer {
+  display: inline-block;
+  margin: 0 0.1rem;
+  padding: 0.08rem 0.4rem;
+  border: 1.5px solid var(--color-text-strong);
+  font-family: var(--gram-font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.gram-run-sheet .step-content .temp {
+  background: var(--color-bg);
+  color: var(--color-text-strong);
+}
+
+.gram-run-sheet .step-content .timer {
+  background: var(--color-text-strong);
+  color: var(--color-bg);
+}
+
+/* Square corners, whatever the page around says. */
+.gram-run-sheet .box-123,
+.gram-run-sheet .section-station-card,
+.gram-run-sheet .section-exec-card,
+.gram-run-sheet .sec-time-pill,
+.gram-run-sheet .step-action-badge,
+.gram-run-sheet .step-content .temp,
+.gram-run-sheet .step-content .timer,
+.gram-run-sheet .kit-list input[type="checkbox"] {
+  border-radius: 0;
 }
 
 /* What goes on without the cook, then when to come back */
@@ -1731,7 +1900,7 @@ flex-direction: column;
 }
 
 .gram-run-sheet .leaving-next {
-  margin: -0.5rem 0 0;
+  margin: 0.75rem 0 0;
   padding: 0.7rem 1.15rem;
   background: var(--color-text-strong);
   font-family: var(--gram-font-mono);

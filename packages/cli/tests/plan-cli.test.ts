@@ -176,11 +176,13 @@ describe("gram plan", () => {
 			...more,
 		];
 		const firstVisit = (out: string, marker: RegExp) =>
-			(out.split(marker)[1] ?? "").split(/Before leaving|En partant/)[0] ?? "";
+			(out.split(marker)[1] ?? "").split(
+				/before leaving|en partant|work-plan-leaving/i,
+			)[0] ?? "";
 		for (const [format, marker] of [
-			["text", /To take out/],
-			["md", /\*\*To take out\*\*/],
-			["html", /work-plan-kit/],
+			["text", /SATURDAY|SAMEDI/],
+			["md", /^## Saturday/m],
+			["html", /work-plan-day/],
 		] as const) {
 			const by = gram(...args("per-section", "--format", format)).out;
 			const up = gram(...args("upfront", "--format", format)).out;
@@ -616,8 +618,8 @@ portions: 6
 	it("takes an imported base into the visits and names its file", () => {
 		const { code, out } = planIn();
 		expect(code).toBe(0);
-		expect(out).toContain("Sponge (sponge.gram, steps 1 to 2)");
-		expect(out).toContain("Glaze (glaze.gram, steps 1 to 2)");
+		expect(out).toContain("SPONGE — sponge.gram");
+		expect(out).toContain("GLAZE — glaze.gram");
 		// The sponge is made a day before it is used.
 		expect(out).toMatch(/Sponge, made \w+day/);
 	});
@@ -627,6 +629,6 @@ portions: 6
 		expect(code).toBe(0);
 		expect(out).toContain("glaze, in stock");
 		expect(out).not.toContain("glaze.gram, steps");
-		expect(out).toContain("Sponge (sponge.gram, steps 1 to 2)");
+		expect(out).toContain("SPONGE — sponge.gram");
 	});
 });

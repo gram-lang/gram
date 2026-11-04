@@ -242,8 +242,17 @@ describe("a section that comes from an import, and a base kept in stock", () => 
 	const model = describeRunSheet(entremetsSheet, imported);
 
 	it("names the file the steps are read in", () => {
-		expect(model.days[0]!.visits[0]!.program[0]!.reference).toBe(
-			"sponge.gram, steps 1 to 2",
+		const [line] = model.days[0]!.visits[0]!.program;
+		expect(line!.reference).toBe("sponge.gram, steps 1 to 2");
+		expect(line!.origin).toBe("sponge.gram");
+		expect(runSheetToText(entremetsSheet, imported)).toContain(
+			"SPONGE — sponge.gram (Start: ",
+		);
+		expect(runSheetToMarkdown(entremetsSheet, imported)).toContain(
+			"### Sponge · sponge.gram · Start: ",
+		);
+		expect(runSheetToHTML(entremetsSheet, imported)).toContain(
+			'<span class="sec-origin">sponge.gram</span>',
 		);
 	});
 
@@ -283,12 +292,23 @@ describe("runSheetToText", () => {
 		expect(text).toMatch(/★ 13:00\s+Serve/);
 	});
 
-	it("gives a block per day with its three lists", () => {
+	it("gives a block per day: what to take out, the steps, what to do on leaving", () => {
 		expect(text).toContain("SATURDAY, OCTOBER 10  21:40 → 22:00");
-		expect(text).toContain("[ ] flour 500 g");
-		expect(text).toContain("Dough (steps 1 to 2)");
-		expect(text).not.toContain("Mix 20 min");
+		expect(text).toContain("DOUGH (Start: 21:40)");
+		expect(text).toContain("    Mise en place\n      [ ] flour 500 g");
+		expect(text).toContain(
+			"      1. [Mix] Mix flour with water and knead 20 min.",
+		);
+		expect(text).toContain("      2. [Rise] Let it rise 8-16 h.");
+		expect(text).toContain("BEFORE LEAVING");
 		expect(text).toContain("Next visit: Sunday 12:30");
+	});
+
+	it("lays the mise en place out as a block of its own when it is told per day", () => {
+		const day = runSheetToText(planIn(compiled, "perDay"), compiled);
+		expect(day).toContain("MISE EN PLACE\n    [ ] flour 500 g");
+		expect(day).toContain("EXECUTION\n    DOUGH (Start:");
+		expect(day).toContain("BEFORE LEAVING");
 	});
 
 	it("speaks French, dates included", () => {
@@ -296,14 +316,12 @@ describe("runSheetToText", () => {
 		expect(fr).toContain("Planning de préparation — Country bread");
 		expect(fr).toContain("Pour le dimanche 11 octobre à 13:00 · 4 parts");
 		expect(fr).toContain("SAMEDI 10 OCTOBRE");
-		expect(runSheetToText(planOf(compiled), compiled)).not.toContain(
-			"To take out",
-		);
 		expect(
 			runSheetToText(planIn(compiled, "perDay"), compiled, { lang: "fr" }),
-		).toContain("À sortir");
-		expect(fr).toContain("Au programme");
-		expect(fr).toContain("En partant");
+		).toContain("MISE EN PLACE");
+		expect(fr).toContain("Exécution");
+		expect(fr).toContain("Début : ");
+		expect(fr).toContain("EN PARTANT");
 		expect(fr).toContain("Dough, fait samedi");
 		expect(fr).toContain("prolongé à");
 	});
@@ -313,14 +331,24 @@ describe("text, Markdown and HTML say the same", () => {
 	const visits = describeRunSheet(sheet, compiled).days.flatMap(
 		(d) => d.visits,
 	);
-	const withWaits = visits.filter((p) => p.waits.length > 0).length;
-	const count = (s: string) => s.split("Before leaving").length - 1;
+	const count = (s: string) => (s.match(/before leaving/gi) ?? []).length;
 
-	it("heads the lists of what goes on only for a visit that has some", () => {
-		expect(withWaits).toBeLessThan(visits.length);
-		expect(count(runSheetToText(sheet, compiled))).toBe(withWaits);
-		expect(count(runSheetToMarkdown(sheet, compiled))).toBe(withWaits);
-		expect(count(runSheetToHTML(sheet, compiled))).toBe(withWaits);
+	it("closes every visit with what to do on leaving, whatever it goes on with", () => {
+		expect(visits.some((p) => p.waits.length === 0)).toBe(true);
+		expect(count(runSheetToText(sheet, compiled))).toBe(visits.length);
+		expect(count(runSheetToMarkdown(sheet, compiled))).toBe(visits.length);
+		expect(count(runSheetToHTML(sheet, compiled))).toBe(visits.length);
+	});
+
+	it("tells the same steps, numbered the same", () => {
+		const text = runSheetToText(sheet, compiled);
+		const md = runSheetToMarkdown(sheet, compiled);
+		const html = runSheetToHTML(sheet, compiled);
+		expect(text).toContain("1. [Bake] Shape dough");
+		expect(md).toContain("1. **[Bake]** Shape");
+		expect(html).toContain(
+			'<li value="1"><span class="step-action-badge">Bake</span>',
+		);
 	});
 
 	it("still tells when to come back", () => {
@@ -386,7 +414,17 @@ describe("runSheetToMarkdown", () => {
 	it("has a title, a heading per day and checklists", () => {
 		expect(md).toContain("# Work plan — Country bread");
 		expect(md).toContain("## Saturday, October 10 · 21:40 → 22:00");
-		expect(md).toContain("- **Dough** (steps 1 to 2)\n  - [ ] flour 500 g");
+		expect(md).toContain(
+			"### Dough · Start: 21:40\n\n**Mise en place**\n\n- [ ] flour 500 g",
+		);
+		expect(md).toContain("**Execution**\n\n1. **[Mix]** Mix **flour** with");
+	});
+
+	it("numbers the three parts of a visit when the mise en place is told per day", () => {
+		const day = runSheetToMarkdown(planIn(compiled, "perDay"), compiled);
+		expect(day).toContain("### 1. Mise en place\n\n- [ ] flour 500 g");
+		expect(day).toContain("### 2. Execution\n\n**Dough** · Start:");
+		expect(day).toContain("### 3. Before leaving");
 	});
 
 	it("puts the adjustment under its day", () => {
@@ -414,7 +452,7 @@ describe("runSheetToHTML", () => {
 			'<input type="checkbox"><span>flour <span class="kit-qty">500 g</span></span>',
 		);
 		expect(html).toContain('<li class="schedule-group">');
-		expect(html).toContain('class="work-plan-leaving"');
+		expect(html).toContain('class="box-123 box-step-3 work-plan-leaving"');
 		expect(html).toContain('<p class="leaving-next">Serve at 13:00</p>');
 		expect(html).toContain('class="work-plan-notice"');
 	});
@@ -573,45 +611,151 @@ describe("the kit follows the mise en place mode of the sheet", () => {
 		const tart = compile(getAST(TART));
 		const sheet = planIn(tart, "perSection");
 		expect(runSheetToText(sheet, tart)).toContain(
-			"    Pastry (step 1)\n      [ ] flour 200 g",
+			"  PASTRY (Start: 19:55)\n    Mise en place\n      [ ] flour 200 g",
 		);
-		expect(runSheetToMarkdown(sheet, tart)).toContain(
-			"- **Filling** (step 1)\n  - [ ] flour 20 g",
-		);
+		expect(runSheetToMarkdown(sheet, tart)).toContain("### Filling · Start:");
+		expect(runSheetToMarkdown(sheet, tart)).toContain("- [ ] flour 20 g");
 		const html = runSheetToHTML(sheet, tart);
-		expect(html).toContain('<div class="program-kit">');
-		expect(html).not.toContain('class="work-plan-kit"');
-		expect(runSheetToPrintHTML(sheet, tart)).toContain(".program-kit");
+		expect(html).toContain('class="section-station-card"');
+		expect(html).toContain('<h5 class="mep-sub-title">Ingredients</h5>');
+		expect(html).not.toContain('class="box-123 box-step-1"');
+		expect(runSheetToPrintHTML(sheet, tart)).toContain(".section-station-card");
 		const [event] = describeRunSheet(sheet, tart).events;
 		expect(event!.description).toContain("- Pastry (step 1)\n  - flour 200 g");
-		// Per working day, one block at the top of the visit and nothing on the lines.
+		// Per working day, the visit is three boxes: take out, do, leave.
 		const one = planIn(tart, "perDay");
-		expect(runSheetToHTML(one, tart)).toContain('class="work-plan-kit"');
-		expect(runSheetToHTML(one, tart)).not.toContain('class="program-kit"');
-		expect(runSheetToText(one, tart)).toContain("To take out");
+		const boxes = runSheetToHTML(one, tart);
+		expect(boxes).toContain('class="box-123 box-step-1"');
+		expect(boxes).toContain('class="box-123 box-step-2"');
+		expect(boxes).not.toContain('class="section-station-card"');
+		expect(runSheetToText(one, tart)).toContain("MISE EN PLACE");
 	});
 });
 
-describe("the programme only points to the recipe", () => {
-	it("has no step summary in the HTML", () => {
+describe("the work plan carries the steps of the recipe", () => {
+	it("gives each section its steps, as the recipe numbers them, with their tokens", () => {
 		const html = runSheetToHTML(sheet, compiled);
-		expect(html).toContain('<span class="program-section">Dough</span>');
-		expect(html).toContain('<span class="program-ref">steps 1 to 2</span>');
-		for (const gone of ["program-step", "step-temp", "step-time"]) {
-			expect(html).not.toContain(gone);
+		expect(html).toContain('<ol class="exec-steps-list">');
+		expect(html).toContain(
+			'<li value="1"><span class="step-action-badge">Mix</span> <span class="step-content">Mix ',
+		);
+		expect(html).toContain(
+			'<span class="temp" data-value="230" data-unit="°C">',
+		);
+		expect(html).toContain('<span class="timer" ');
+		for (const icon of [
+			"gicon-timer",
+			"gicon-hourglass",
+			"gicon-thermometer",
+		]) {
+			expect(html).not.toContain(icon);
 		}
+		expect(html).not.toContain("program-ref");
 	});
 
-	it("keeps the section and the range for a recipe with no [Action]", () => {
+	it("tells when each section starts, text only, and only with a serving time", () => {
+		const model = describeRunSheet(sheet, compiled);
+		expect(model.days[0]!.visits[0]!.program[0]!.startTime).toBe("21:40");
+		expect(model.days[1]!.visits[0]!.program[0]!.startTime).toBe("12:30");
+		const html = runSheetToHTML(sheet, compiled);
+		expect(html).toContain(
+			'<span class="sec-time-pill">Start: <strong>21:40</strong></span>',
+		);
+		const relative = describeRunSheet(
+			runSheet(scheduleFor(compiled, "perSection")!, { graph: compiled.tasks }),
+			compiled,
+		);
+		for (const day of relative.days) {
+			for (const l of day.visits.flatMap((p) => p.program)) {
+				expect(l.startTime).toBeUndefined();
+			}
+		}
+		expect(
+			runSheetToHTML(
+				runSheet(scheduleFor(compiled, "perSection")!, {
+					graph: compiled.tasks,
+				}),
+				compiled,
+			),
+		).not.toContain("sec-time-pill");
+	});
+
+	it("rounds the start of a section like the rest of the display", () => {
+		const model = describeRunSheet(sheet, compiled, { roundTo: 15 });
+		expect(model.days[0]!.visits[0]!.program[0]!.startTime).toBe("21:45");
+	});
+
+	it("keeps the section and the range for a recipe with no [Action], the steps without a badge", () => {
 		const bare = compile(
 			getAST(
 				"## Bake\n\nHeat the oven to ^{180C}.\n\nBake ~{20min}.\n\nServe.\n",
 			),
 		);
 		const model = describeRunSheet(planOf(bare), bare);
-		expect(model.days[0]!.visits[0]!.program).toEqual([
-			{ section: "Bake", reference: "steps 1 to 3" },
+		const [line] = model.days[0]!.visits[0]!.program;
+		expect(line).toMatchObject({ section: "Bake", reference: "steps 1 to 3" });
+		expect(line!.steps.map((x) => [x.number, x.action])).toEqual([
+			[1, undefined],
+			[2, undefined],
+			[3, undefined],
 		]);
+		const html = runSheetToHTML(planOf(bare), bare);
+		expect(html).toContain(
+			'<li value="1"><span class="step-content">Heat the oven',
+		);
+		expect(html).not.toContain("step-action-badge");
+	});
+
+	it("shows a standalone comment where it stands, without a number", () => {
+		const noted = compile(
+			getAST(
+				"## Cake\n\n[Mix] Mix @flour{100g}.\n\n// Do not overmix.\n\n[Bake] Bake ~{20min}.\n",
+			),
+		);
+		const [line] = describeRunSheet(planOf(noted), noted).days[0]!.visits[0]!
+			.program;
+		expect(line!.steps.map((x) => [x.number, x.comment, x.text])).toEqual([
+			[1, undefined, "Mix flour."],
+			[undefined, true, "Do not overmix."],
+			[2, undefined, "Bake 20 min."],
+		]);
+		const html = runSheetToHTML(planOf(noted), noted);
+		expect(html).toContain('<li class="step-comment">Do not overmix.</li>');
+		expect(html).toContain('<li value="2">');
+		expect(runSheetToText(planOf(noted), noted)).toContain(
+			"      1. [Mix] Mix flour.\n        (Do not overmix.)\n      2. [Bake] Bake 20 min.",
+		);
+		expect(runSheetToMarkdown(planOf(noted), noted)).toContain(
+			"1. **[Mix]** Mix **flour**.\n> *Do not overmix.*\n\n2. **[Bake]**",
+		);
+	});
+
+	it("goes on with a section already worked in an earlier visit", () => {
+		const doubled = structuredClone(sheet);
+		const [day] = doubled.recipes[0]!.days;
+		const first = day!.visits[0]!;
+		day!.visits.push({
+			...structuredClone(first),
+			start: first.end + 120,
+			end: first.end + 140,
+			startLocal: "2026-10-10T23:50",
+			endLocal: "2026-10-11T00:10",
+			sectionStarts: [
+				{ section: 0, start: first.end + 120, startLocal: "2026-10-10T23:50" },
+			],
+		});
+		const [a, b] = describeRunSheet(doubled, compiled).days[0]!.visits;
+		expect(a!.program[0]!.continued).toBeUndefined();
+		expect(b!.program[0]).toMatchObject({
+			continued: true,
+			startTime: "23:50",
+		});
+		expect(runSheetToHTML(doubled, compiled)).toContain(
+			'<span class="sec-cont">(continued)</span>',
+		);
+		expect(runSheetToText(doubled, compiled)).toContain(
+			"DOUGH (CONTINUED) (Start: 23:50)",
+		);
 	});
 
 	it("sectionProgram counts steps as the recipe does, from the first to the last", () => {

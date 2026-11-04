@@ -34,15 +34,18 @@ export type {
 	RunSheetModel,
 	RunSheetRenderOptions,
 	RunSheetScheduleRow,
+	RunSheetStepLine,
 	RunSheetWaitLine,
 } from "./run-sheet";
 export {
 	intermediateMakers,
 	visitKit,
 	sectionProgram,
+	sectionSteps,
 } from "./work-plan-parts";
 export type {
 	KitItem,
+	ProgramStep,
 	VisitKitOptions,
 	SectionProgram,
 } from "./work-plan-parts";

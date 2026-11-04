@@ -1,6 +1,13 @@
 import { getDictionary } from "@gram-lang/i18n";
-import type { RenderableCompilationResult } from "./types";
-import { formatDecimalToFraction, getQty } from "./utils";
+import { formatElement } from "./formatters/element";
+import type { RenderableCompilationResult, RenderContext } from "./types";
+import {
+	escapeHtml,
+	escapeMarkdownHtml,
+	formatDecimalToFraction,
+	getQty,
+	joinStepTokens,
+} from "./utils";
 
 /** A reference id and an intermediate's name are the same thing written two ways. */
 const normalize = (value: string) =>
@@ -287,4 +294,137 @@ export function sectionProgram(
 		from: numbers[0]!,
 		to: numbers.at(-1)!,
 	};
+}
+
+/** One line of a section's steps in a visit: a step as the recipe numbers it, or a standalone note. */
+export interface ProgramStep {
+	/** The number the recipe view gives the step; absent for a note. */
+	number?: number;
+	/** The explicit action of the step (`[Mix]`), when it has one. */
+	action?: string;
+	/** True for a standalone comment: shown, never numbered. */
+	comment?: boolean;
+	/** The tokens as HTML: no icons, nothing that a printed sheet cannot show. */
+	html: string;
+	/** The same line as Markdown, without the action. */
+	md: string;
+	/** The same line as plain text, without the action. */
+	text: string;
+}
+
+const entities: Record<string, string> = {
+	"&amp;": "&",
+	"&lt;": "<",
+	"&gt;": ">",
+	"&quot;": '"',
+	"&#039;": "'",
+};
+
+/** The text of an HTML fragment this renderer wrote: tags dropped, entities back, spaces folded. */
+const htmlToText = (html: string) =>
+	html
+		.replace(/<[^>]*>/g, "")
+		.replace(/&(?:amp|lt|gt|quot|#039);/g, (m) => entities[m] ?? m)
+		.replace(/\s+/g, " ")
+		.replace(/\s+([.,!?:;)])/g, "$1")
+		.trim();
+
+/**
+ * The steps a section does in a visit, written out: for the work plan, which
+ * is read on paper. Each step is as the recipe view numbers it (comments
+ * excluded) and says the same thing; only the icons are left out, since a
+ * printed sheet has no use for them.
+ *
+ * A standalone comment goes with the step that follows it, so a note that
+ * warns about a step is read in the visit where the step is done; one at the
+ * very end goes with the step before it.
+ *
+ * `stepIndexes` are indexes in the section's `steps`, comments included.
+ */
+export function sectionSteps(
+	data: RenderableCompilationResult,
+	section: number,
+	stepIndexes: number[],
+	options: { lang?: string } = {},
+): ProgramStep[] {
+	const source = data.sections?.[section];
+	if (!source) return [];
+	const wanted = new Set(stepIndexes);
+	const context: RenderContext = {
+		lang: options.lang,
+		registry: data.registry,
+		hideIngredientQty: true,
+		icons: {
+			timer: "",
+			hourglass: "",
+			thermometer: "",
+			caretRight: "",
+			arrowRight: "",
+			arrowElbowDownRight: "",
+		},
+	};
+	const out: ProgramStep[] = [];
+	let pending: ProgramStep[] = [];
+	let number = 0;
+	let lastWasKept = false;
+	source.steps.forEach((item, index) => {
+		if (item.type === "comment") {
+			const value = String(item.value ?? "").trim();
+			if (!value) return;
+			const note: ProgramStep = {
+				comment: true,
+				html: escapeHtml(value),
+				md: escapeMarkdownHtml(value),
+				text: value,
+			};
+			// A note after the last kept step and before the next one waits for it.
+			pending.push(note);
+			return;
+		}
+		number++;
+		if (!wanted.has(index)) {
+			pending = [];
+			lastWasKept = false;
+			return;
+		}
+		out.push(...pending);
+		pending = [];
+		lastWasKept = true;
+		const tokens = item.content ?? [];
+		const isDeclaration = (c: (typeof tokens)[number]) =>
+			typeof c === "object" && c.type === "declaration";
+		const inline = tokens.filter((c) => !isDeclaration(c));
+		const declarations = tokens.filter(isDeclaration);
+		const spaceable = (c: unknown, skipDeclaration: boolean) =>
+			!!c &&
+			typeof c === "object" &&
+			(c as { type?: string }).type !== "comment" &&
+			(!skipDeclaration || (c as { type?: string }).type !== "declaration");
+		const html =
+			joinStepTokens(
+				inline,
+				(c) => formatElement(c, "html", context),
+				(c) => spaceable(c, true),
+			) +
+			joinStepTokens(
+				declarations,
+				(c) => formatElement(c, "html", context),
+				(c) => spaceable(c, true),
+			);
+		const md = joinStepTokens(
+			tokens,
+			(c) => formatElement(c, "md", context),
+			(c) => spaceable(c, false),
+		);
+		out.push({
+			number,
+			...(item.action && { action: item.action }),
+			html: html.trim(),
+			md: md.trim(),
+			text: htmlToText(html),
+		});
+	});
+	// What is left after the last step: it follows that step into the visit.
+	if (lastWasKept) out.push(...pending);
+	return out;
 }

@@ -1,6 +1,7 @@
 import { getDictionary } from "@gram-lang/i18n";
 import {
 	DEFAULT_MISE_EN_PLACE_MODE,
+	type MiseEnPlaceMode,
 	type ProjectionDiagnostic,
 	type RunSheet,
 	type RunSheetDay,
@@ -16,7 +17,9 @@ import {
 	kitCookware,
 	kitIngredients,
 	kitPrepared,
+	type ProgramStep,
 	sectionProgram,
+	sectionSteps,
 } from "./work-plan-parts";
 import { escapeHtml, escapeMarkdownHtml, formatDuration } from "./utils";
 
@@ -68,12 +71,27 @@ export interface RunSheetKitGroup {
 	items: RunSheetKitLine[];
 }
 
-/** What a visit asks of one section: where to read it in the recipe. */
+/**
+ * One step of a section in a visit, in words: the number the recipe view gives
+ * it, its action and its text as HTML, Markdown and plain text. A standalone
+ * comment is a line of its own, with no number.
+ */
+export type RunSheetStepLine = ProgramStep;
+
+/** What a visit asks of one section: where to read it in the recipe, and what to do. */
 export interface RunSheetProgramLine {
 	/** "Mousse" */
 	section: string;
 	/** "steps 1 to 3", "sponge.gram, steps 1 to 3" */
 	reference: string;
+	/** The file an imported section comes from, "sponge.gram". */
+	origin?: string;
+	/** "11:55": when the section starts in this visit. Only in a plan with a serving time. */
+	startTime?: string;
+	/** True when the section was already worked in an earlier visit: this one goes on with it. */
+	continued?: boolean;
+	/** The steps of the section done in this visit, in recipe order. */
+	steps: RunSheetStepLine[];
 	/** In `perSection` mode, what to take out for this section, right before its steps. */
 	kit?: RunSheetKitLine[];
 }
@@ -118,6 +136,8 @@ export interface RunSheetDayModel {
 export interface RunSheetModel {
 	/** "Work plan — Entremets" */
 	title: string;
+	/** Where the mise en place goes: the work plan is laid out accordingly. */
+	miseEnPlace: MiseEnPlaceMode;
 	/** "For Saturday, October 17 at 20:00 · 6 servings" */
 	subtitle: string;
 	/** "3 days · 4 visits to the kitchen · 1h 40m of work in all" */
@@ -358,6 +378,8 @@ export function describeRunSheet(
 		}
 	}
 	const claimed = new Set<number>();
+	// The sections already worked in an earlier visit: the next one goes on with them.
+	const worked = new Set<number>();
 	const schedule: RunSheetScheduleRow[] = [];
 	const events: RunSheetEvent[] = [];
 	const dayModels: RunSheetDayModel[] = [];
@@ -459,6 +481,9 @@ export function describeRunSheet(
 				});
 				const prog = sectionProgram(data, s, indexes, { lang });
 				if (!prog) continue;
+				const startAt = p.sectionStarts.find(
+					(x) => x.section === s,
+				)?.startLocal;
 				const range =
 					prog.from === prog.to
 						? fill(t.workPlanStep, { n: String(prog.from) })
@@ -469,10 +494,15 @@ export function describeRunSheet(
 				const entry: RunSheetProgramLine = {
 					section: prog.title,
 					reference: prog.origin ? `${prog.origin}, ${range}` : range,
+					...(prog.origin && { origin: prog.origin }),
+					...(calendar && startAt && { startTime: clock(startAt) }),
+					...(worked.has(s) && { continued: true }),
+					steps: sectionSteps(data, s, indexes, { lang }),
 				};
 				program.push(entry);
 				programOf.set(s, entry);
 			}
+			for (const s of p.worked) worked.add(s);
 
 			// By section, what to take out sits with its section, right before the
 			// steps that need it; the cookware is told once, at the first section that
@@ -697,6 +727,7 @@ export function describeRunSheet(
 		title: recipeTitle
 			? `${t.workPlanTitle} — ${recipeTitle}`
 			: t.workPlanTitle,
+		miseEnPlace: mode,
 		subtitle,
 		summary,
 		problems: describeProblems(
@@ -710,6 +741,11 @@ export function describeRunSheet(
 		events,
 	};
 }
+
+/** "Montage (continued)": the title of a section, told when a visit goes on with it. */
+const sectionHeading =
+	(t: { workPlanContinued: string }) => (l: RunSheetProgramLine) =>
+		l.continued ? `${l.section} (${t.workPlanContinued})` : l.section;
 
 /**
  * The lines of a kit, group by group: a title above the lines of a group that
@@ -737,27 +773,33 @@ function kitLines(
 	return out;
 }
 
-/** The things of a group as a checklist, the cookware set apart in a list of its own. */
+/**
+ * The things of a group as a checklist: the cookware and the other things each
+ * in a group of its own, under its own title.
+ */
 function kitListsHtml(
 	items: RunSheetKitLine[],
 	e: (value: string) => string,
+	titles: { things: string; tools: string },
 ): string {
 	const things = items.filter((l) => l.kind !== "cookware");
 	const tools = items.filter((l) => l.kind === "cookware");
+	const group = (cls: string, title: string, list: string) =>
+		`          <div class="mep-group mep-group-${cls}">\n            <h5 class="mep-sub-title">${e(title)}</h5>\n${list}          </div>\n`;
 	let html = "";
-	if (things.length > 0) {
-		html += `          <ul class="kit-list">\n`;
-		for (const l of things) {
-			html += `            <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
-		}
-		html += `          </ul>\n`;
-	}
 	if (tools.length > 0) {
-		html += `          <ul class="kit-list kit-tools">\n`;
+		let list = `          <ul class="kit-list kit-tools">\n`;
 		for (const l of tools) {
-			html += `            <li class="kit-cookware"><label><input type="checkbox"><span>${e(l.name)}</span></label></li>\n`;
+			list += `            <li class="kit-cookware"><label><input type="checkbox"><span>${e(l.name)}</span></label></li>\n`;
 		}
-		html += `          </ul>\n`;
+		html += group("tools", titles.tools, `${list}          </ul>\n`);
+	}
+	if (things.length > 0) {
+		let list = `          <ul class="kit-list">\n`;
+		for (const l of things) {
+			list += `            <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
+		}
+		html += group("ingredients", titles.things, `${list}          </ul>\n`);
 	}
 	return html;
 }
@@ -770,6 +812,11 @@ export function runSheetToText(
 ): string {
 	const t = getDictionary(options.lang).renderer;
 	const model = describeRunSheet(sheet, data, options);
+	const upper = (value: string) =>
+		value.toLocaleUpperCase(options.lang || "en");
+	const sectionHead = sectionHeading(t);
+	const startOf = (l: RunSheetProgramLine) =>
+		l.startTime ? fill(t.workPlanStart, { time: l.startTime }) : "";
 	const out: string[] = [model.title];
 	if (model.subtitle) out.push(model.subtitle);
 	out.push(model.summary, "");
@@ -798,31 +845,55 @@ export function runSheetToText(
 		for (const p of day.visits) {
 			if (day.visits.length > 1) out.push("", `  ${p.slot}`);
 			if (p.margin) out.push(`  ${p.margin}`);
-			if (p.kit.length > 0) {
-				out.push(`  ${t.workPlanKit}`);
-				out.push(
-					...kitLines(p.kit, {
-						title: (section) => `    ${section} :`,
-						item: (l) => `    [ ] ${l.text}${l.detail ? ` (${l.detail})` : ""}`,
-					}),
+			const item = (indent: string) => (l: RunSheetKitLine) =>
+				`${indent}[ ] ${l.text}${l.detail ? ` (${l.detail})` : ""}`;
+			const stepLines = (steps: RunSheetStepLine[], indent: string) =>
+				steps.map((x) =>
+					x.comment
+						? `${indent}  (${x.text})`
+						: `${indent}${x.number}. ${x.action ? `[${x.action}] ` : ""}${x.text}`,
 				);
-			}
-			if (p.program.length > 0) {
-				out.push(`  ${t.workPlanProgram}`);
+			const headOf = (l: RunSheetProgramLine) =>
+				`${upper(sectionHead(l))}${l.origin ? ` — ${l.origin}` : ""}${startOf(l) ? ` (${startOf(l)})` : ""}`;
+			if (model.miseEnPlace === "perSection") {
+				// Each section is a station: what to take out, then what to do.
+				for (const group of p.kit) {
+					out.push(`  ${upper(group.section ?? "")}`);
+					out.push(`    ${t.miseEnPlace}`);
+					out.push(...group.items.map(item("      ")));
+				}
 				for (const l of p.program) {
-					out.push(`    ${l.section} (${l.reference})`);
-					for (const k of l.kit ?? []) {
-						out.push(`      [ ] ${k.text}${k.detail ? ` (${k.detail})` : ""}`);
+					out.push(`  ${headOf(l)}`);
+					if (l.kit?.length) {
+						out.push(`    ${t.miseEnPlace}`);
+						out.push(...l.kit.map(item("      ")));
+					}
+					out.push(`    ${t.workPlanExecution}`);
+					out.push(...stepLines(l.steps, "      "));
+				}
+			} else {
+				if (p.kit.length > 0) {
+					out.push(`  ${upper(t.miseEnPlace)}`);
+					out.push(
+						...kitLines(p.kit, {
+							title: (section) => `    ${section} :`,
+							item: item("    "),
+						}),
+					);
+				}
+				if (p.program.length > 0) {
+					out.push(`  ${upper(t.workPlanExecution)}`);
+					for (const l of p.program) {
+						out.push(`    ${headOf(l)}`);
+						out.push(...stepLines(l.steps, "      "));
 					}
 				}
 			}
-			// Like the HTML view: the heading only for what goes on without the cook.
-			if (p.waits.length > 0) {
-				out.push(`  ${t.workPlanLeaving}`);
-				for (const l of p.next === undefined
-					? p.leaving
-					: p.leaving.slice(0, -1))
-					out.push(`    ${l}`);
+			out.push(`  ${upper(t.workPlanLeaving)}`);
+			for (const l of p.next === undefined
+				? p.leaving
+				: p.leaving.slice(0, -1)) {
+				out.push(`    ${l}`);
 			}
 			if (p.next !== undefined) out.push(`  ${p.next}`);
 		}
@@ -839,6 +910,9 @@ export function runSheetToMarkdown(
 	const t = getDictionary(options.lang).renderer;
 	const md = escapeMarkdownHtml;
 	const model = describeRunSheet(sheet, data, options);
+	const sectionHead = sectionHeading(t);
+	const startOf = (l: RunSheetProgramLine) =>
+		l.startTime ? fill(t.workPlanStart, { time: l.startTime }) : "";
 	const h1 = "#".repeat(options.headingLevel ?? 1);
 	const h2 = `${h1}#`;
 	const h3 = `${h2}#`;
@@ -865,41 +939,63 @@ export function runSheetToMarkdown(
 		out.push(`${h2} ${md(day.heading)} · ${md(day.slot)}`, "");
 		for (const n of day.notices) out.push(`> ⚠️ ${md(n)}`, "");
 		for (const p of day.visits) {
-			if (day.visits.length > 1) out.push(`${h3} ${md(p.slot)}`, "");
+			const many = day.visits.length > 1;
+			if (many) out.push(`${h3} ${md(p.slot)}`, "");
 			if (p.margin) out.push(md(p.margin), "");
-			if (p.kit.length > 0) {
-				out.push(`**${md(t.workPlanKit)}**`, "");
-				out.push(
-					...kitLines(p.kit, {
-						title: (section) => `*${md(section)}*`,
-						item: (l) =>
-							`- [ ] ${md(l.text)}${l.detail ? ` (${md(l.detail)})` : ""}`,
-						gap: "",
-					}),
+			// The parts sit one level under the slot when there are several visits.
+			const part = many ? `${h3}#` : h3;
+			const item = (l: RunSheetKitLine) =>
+				`- [ ] ${md(l.text)}${l.detail ? ` (${md(l.detail)})` : ""}`;
+			const stepLines = (steps: RunSheetStepLine[]) =>
+				steps.flatMap((x) =>
+					x.comment
+						? [`> *${x.md}*`, ""]
+						: [
+								`${x.number}. ${x.action ? `**[${md(x.action)}]** ` : ""}${x.md}`,
+							],
 				);
-				out.push("");
-			}
-			if (p.program.length > 0) {
-				out.push(`**${md(t.workPlanProgram)}**`, "");
+			const startPart = (l: RunSheetProgramLine) =>
+				`${l.origin ? ` · ${md(l.origin)}` : ""}${startOf(l) ? ` · ${md(startOf(l))}` : ""}`;
+			let n = 0;
+			if (model.miseEnPlace === "perSection") {
+				for (const group of p.kit) {
+					out.push(`${part} ${md(group.section ?? "")}`, "");
+					out.push(`**${md(t.miseEnPlace)}**`, "");
+					out.push(...group.items.map(item), "");
+				}
 				for (const l of p.program) {
-					out.push(`- **${md(l.section)}** (${md(l.reference)})`);
-					for (const k of l.kit ?? []) {
-						out.push(
-							`  - [ ] ${md(k.text)}${k.detail ? ` (${md(k.detail)})` : ""}`,
-						);
+					out.push(`${part} ${md(sectionHead(l))}${startPart(l)}`, "");
+					if (l.kit?.length) {
+						out.push(`**${md(t.miseEnPlace)}**`, "", ...l.kit.map(item), "");
+					}
+					out.push(`**${md(t.workPlanExecution)}**`, "");
+					out.push(...stepLines(l.steps), "");
+				}
+				out.push(`${part} ${md(t.workPlanLeaving)}`, "");
+			} else {
+				if (p.kit.length > 0) {
+					out.push(`${part} ${++n}. ${md(t.miseEnPlace)}`, "");
+					out.push(
+						...kitLines(p.kit, {
+							title: (section) => `*${md(section)}*`,
+							item,
+							gap: "",
+						}),
+						"",
+					);
+				}
+				if (p.program.length > 0) {
+					out.push(`${part} ${++n}. ${md(t.workPlanExecution)}`, "");
+					for (const l of p.program) {
+						out.push(`**${md(sectionHead(l))}**${startPart(l)}`, "");
+						out.push(...stepLines(l.steps), "");
 					}
 				}
-				out.push("");
+				out.push(`${part} ${++n}. ${md(t.workPlanLeaving)}`, "");
 			}
-			// Like the HTML view: the heading only for what goes on without the cook.
-			if (p.waits.length > 0) {
-				out.push(`**${md(t.workPlanLeaving)}**`, "");
-				for (const l of p.next === undefined
-					? p.leaving
-					: p.leaving.slice(0, -1))
-					out.push(`- ${md(l)}`);
-				out.push("");
-			}
+			const waits = p.next === undefined ? p.leaving : p.leaving.slice(0, -1);
+			for (const l of waits) out.push(`- ${md(l)}`);
+			if (waits.length > 0) out.push("");
 			if (p.next !== undefined) out.push(md(p.next), "");
 		}
 	}
@@ -967,39 +1063,103 @@ export function runSheetToHTML(
 		}
 		for (const p of day.visits) {
 			html += `    <div class="work-plan-visit">\n`;
-			const where = day.visits.length > 1 ? ` · ${e(p.slot)}` : "";
+			if (day.visits.length > 1) {
+				html += `      <h4 class="work-plan-visit-slot">${e(p.slot)}</h4>\n`;
+			}
 			if (p.margin) {
 				html += `      <p class="work-plan-margin">${e(p.margin)}</p>\n`;
 			}
-			if (p.kit.length > 0) {
-				html += `      <div class="work-plan-kit">\n        <h4>${e(t.workPlanKit)}${where}</h4>\n`;
+			const titles = { things: t.workPlanIngredients, tools: t.cookware };
+			const pill = (l: RunSheetProgramLine) =>
+				l.startTime
+					? `<span class="sec-time-pill">${e(t.workPlanStart).replace("{time}", `<strong>${e(l.startTime)}</strong>`)}</span>`
+					: "";
+			const title = (l: RunSheetProgramLine) =>
+				`<span class="sec-title">${e(l.section)}${l.continued ? ` <span class="sec-cont">(${e(t.workPlanContinued)})</span>` : ""}</span>${l.origin ? `<span class="sec-origin">${e(l.origin)}</span>` : ""}`;
+			const steps = (l: RunSheetProgramLine) =>
+				`<ol class="exec-steps-list">\n${l.steps
+					.map((x) =>
+						x.comment
+							? `            <li class="step-comment">${x.html}</li>\n`
+							: `            <li value="${x.number}">${x.action ? `<span class="step-action-badge">${e(x.action)}</span> ` : ""}<span class="step-content">${x.html}</span></li>\n`,
+					)
+					.join("")}          </ol>\n`;
+			const sub = (n: number, label: string, body: string, cls: string) =>
+				`        <div class="station-sub-block ${cls}">\n          <h5 class="step-123-sub-title"><span class="badge-num-sm">${n}</span> ${e(label)}</h5>\n${body}        </div>\n`;
+			const box = (n: number, label: string, cls: string, body: string) =>
+				`      <div class="box-123 ${cls}">\n        <h4 class="step-123-title"><span class="badge-num">${n}</span> ${e(label)}</h4>\n${body}      </div>\n`;
+			let leavingNumber = 3;
+			if (model.miseEnPlace === "perSection") {
+				// A station per section: what to take out, then what to do.
 				for (const group of p.kit) {
-					html += `        <div class="kit-group">\n`;
-					if (group.section) {
-						html += `          <h5 class="kit-section-title">${e(group.section)}</h5>\n`;
-					}
-					html += kitListsHtml(group.items, e);
-					html += `        </div>\n`;
+					html += `      <div class="section-station-card station-mep-only">\n        <div class="station-header"><span class="sec-title">${e(group.section ?? "")}</span></div>\n`;
+					html += sub(
+						1,
+						t.miseEnPlace,
+						kitListsHtml(group.items, e, titles),
+						"station-mep",
+					);
+					html += `      </div>\n`;
 				}
-				html += `      </div>\n`;
-			}
-			if (p.program.length > 0) {
-				html += `      <div class="work-plan-program${p.program.some((l) => l.kit?.length) ? " program-by-section" : ""}">\n        <h4>${e(t.workPlanProgram)}${where}</h4>\n        <ul>\n`;
 				for (const l of p.program) {
-					html += `          <li><span class="program-section">${e(l.section)}</span><span class="program-ref">${e(l.reference)}</span>${l.kit?.length ? `\n            <div class="program-kit">\n${kitListsHtml(l.kit, e)}            </div>\n          ` : ""}</li>\n`;
+					let n = 0;
+					html += `      <div class="section-station-card">\n        <div class="station-header">${title(l)}${pill(l)}</div>\n`;
+					if (l.kit?.length) {
+						html += sub(
+							++n,
+							t.miseEnPlace,
+							kitListsHtml(l.kit, e, titles),
+							"station-mep",
+						);
+					}
+					html += sub(
+						++n,
+						t.workPlanExecution,
+						`          ${steps(l)}`,
+						"station-exec",
+					);
+					html += `      </div>\n`;
 				}
-				html += `        </ul>\n      </div>\n`;
+			} else {
+				let n = 0;
+				if (p.kit.length > 0) {
+					let body = "";
+					for (const group of p.kit) {
+						body += `        <div class="kit-group">\n`;
+						if (group.section) {
+							body += `          <h5 class="kit-section-title">${e(group.section)}</h5>\n`;
+						}
+						body += kitListsHtml(group.items, e, titles);
+						body += `        </div>\n`;
+					}
+					html += box(++n, t.miseEnPlace, "box-step-1", body);
+				}
+				if (p.program.length > 0) {
+					let body = "";
+					for (const l of p.program) {
+						body += `        <div class="section-exec-card">\n          <div class="section-exec-header">${title(l)}${pill(l)}</div>\n          ${steps(l)}        </div>\n`;
+					}
+					html += box(++n, t.workPlanExecution, "box-step-2", body);
+				}
+				leavingNumber = ++n;
 			}
+			let leaving = "";
 			if (p.waits.length > 0) {
-				html += `      <div class="work-plan-leaving">\n        <h4>${e(t.workPlanLeaving)}</h4>\n        <ul>\n`;
+				leaving += `        <ul>\n`;
 				for (const w of p.waits) {
-					html += `          <li><span class="wait-name">${e(w.name)}${w.until ? ` <span class="wait-until">${e(w.until)}</span>` : ""}</span><span class="wait-length">${e(w.length)}</span></li>\n`;
+					leaving += `          <li><span class="wait-name">${e(w.name)}${w.until ? ` <span class="wait-until">${e(w.until)}</span>` : ""}</span><span class="wait-length">${e(w.length)}</span></li>\n`;
 				}
-				html += `        </ul>\n      </div>\n`;
+				leaving += `        </ul>\n`;
 			}
 			if (p.next !== undefined) {
-				html += `      <p class="leaving-next">${e(p.next)}</p>\n`;
+				leaving += `        <p class="leaving-next">${e(p.next)}</p>\n`;
 			}
+			html += box(
+				leavingNumber,
+				t.workPlanLeaving,
+				"box-step-3 work-plan-leaving",
+				leaving,
+			);
 			html += `    </div>\n`;
 		}
 		html += `  </section>\n`;

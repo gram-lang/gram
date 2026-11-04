@@ -371,7 +371,7 @@ describe("the work plan in the language server", () => {
 		);
 		expect(html).toContain("work-plan-day");
 		// By section (the default), the things to take out sit with their section.
-		expect(html).toContain("program-kit");
+		expect(html).toContain("section-station-card");
 		// No serving time in the editor: the days are counted back from it.
 		expect(html).toContain("D-2");
 		expect(html).not.toContain("<script");
