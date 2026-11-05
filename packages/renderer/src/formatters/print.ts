@@ -5,7 +5,7 @@ import type {
 	RenderableMetrics,
 } from "../types";
 import type { RenderBackend, RenderSections } from "../traversal";
-import { renderRecipe } from "../traversal";
+import { renderRecipe, timesIn } from "../traversal";
 import {
 	formatDuration as defaultFormatDuration,
 	escapeHtml,
@@ -26,7 +26,6 @@ import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { timesOf } from "../mise-en-place";
 import { runSheetToHTML } from "../run-sheet";
 import { RUN_SHEET_PRINT_CSS } from "../run-sheet-css";
 import css from "./print.css" with { type: "text" };
@@ -58,7 +57,7 @@ const printBackend: RenderBackend = {
 		return data.title ? `<h1>${escapeHtml(data.title)}</h1>\n` : "";
 	},
 
-	renderMeta(data, _context, options) {
+	renderMeta(data, context, options) {
 		const t = getDictionary(options.lang);
 		const formatDuration = options.formatDuration || defaultFormatDuration;
 		// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
@@ -68,7 +67,7 @@ const printBackend: RenderBackend = {
 		let body = `<div class="meta">\n`;
 		if (metrics) {
 			// Total and idle time follow the chosen schedule; the other two do not.
-			const { totalTime, idleTime } = timesOf(data, options);
+			const { totalTime, idleTime } = timesIn(context);
 			if (totalTime) {
 				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(totalTime)}</span>\n`;
 			}
