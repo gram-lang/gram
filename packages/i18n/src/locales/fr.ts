@@ -21,6 +21,12 @@ export const fr: GramLocale = {
 			json: "JSON",
 			"json-tree": "Arbre JSON",
 		},
+		formats: {
+			html: "HTML",
+			markdown: "Markdown",
+			text: "Texte",
+			print: "Impression",
+		},
 		shoppingList: "Liste de courses",
 		cookware: "Matériel",
 		equipment: "Équipement",
@@ -176,7 +182,9 @@ export const fr: GramLocale = {
 		inputTab: "Entrée (.gram)",
 		writePlaceholder: "Écrivez votre recette ici...",
 		outputTab: "Sortie",
+		// @remove-in: 2.0.0 [i18n-playground-view-labels]
 		viewLabel: "Vue :",
+		formatLabel: "Format",
 		loadExample: "Charger un exemple...",
 		recipe: "Recette",
 		studioTitle: "Réglages de la recette",
@@ -212,6 +220,7 @@ export const fr: GramLocale = {
 			empanadas: "Empanadas de Boeuf",
 		},
 		views: {
+			// @remove-in: 2.0.0 [i18n-playground-view-labels]
 			json: "Sortie JSON",
 			ast: "AST (Brut)",
 			jsonTree: "Arbre Interactif",
@@ -324,6 +333,9 @@ export const fr: GramLocale = {
 		},
 		output: {
 			copy: "Copier dans le presse-papier",
+			print: "Imprimer cette vue",
+			views: "Vues",
+			inspect: "Inspecter",
 			loading: "Chargement du lecteur...",
 		},
 		warnings: {

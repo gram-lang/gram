@@ -185,6 +185,20 @@ client.onNotification('gram/viewUpdated', (update) => {
 });
 ```
 
+### Libellés des vues du playground
+
+<Since v="1.4.0" type="deprecated" />
+
+**Déprécié :** les libellés de l'ancien sélecteur de vues du playground dans `@gram-lang/i18n`. **Remplacement conseillé :** les noms des sorties et des formats du moteur de rendu.
+
+Le playground présente désormais les vues du moteur de rendu sous forme d'onglets, chacune dans ses formats, et range ses inspecteurs dans un menu à part, le tout nommé d'après les identifiants. Les anciens libellés gardent leur texte jusqu'à la version 2.0.0.
+
+| Élément déprécié | Remplacement conseillé |
+|---|---|
+| `playground.views.preview`, `runSheet`, `ast`, `json`, `jsonTree` | `renderer.outputs[id]`, avec les identifiants de sortie `recipe`, `workPlan`, `ast`, `json` et `json-tree` |
+| `playground.views.markdown` | `renderer.formats.markdown` (le Markdown est un format de vue, pas une vue) |
+| `playground.viewLabel` | `playground.output.views` (les onglets) et `playground.output.inspect` (le menu des inspecteurs) |
+
 ### Compatibilité avec les versions antérieures
 
 <Since v="1.4.0" type="deprecated" />

@@ -14,6 +14,8 @@ import {
 import { WEEKDAYS, type Weekday } from "@gram-lang/scheduler";
 // biome-ignore lint/correctness/noUnusedImports: PlaygroundTooltip is used in the <template> block below
 import PlaygroundTooltip from "./PlaygroundTooltip.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the template block below
+import GramSelect from "./GramSelect.vue";
 import { useI18n } from "./useI18n";
 import {
 	type OPTION_SETTING_KEYS,
@@ -905,15 +907,13 @@ function resetStockSection() {
             <label class="studio-label">{{ t.renderer.scheduleLabel }}</label>
             <PlaygroundTooltip :text="t.playground.help.schedule" />
           </div>
-          <select
-            class="studio-select"
-            :value="props.schedule || 'perSection'"
-            @change="emit('update:schedule', ($event.target as HTMLSelectElement).value as MiseEnPlaceMode)"
-          >
-            <option v-for="opt in scheduleOptions" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            :model-value="props.schedule || 'perSection'"
+            :options="scheduleOptions"
+            :aria-label="t.renderer.scheduleLabel"
+            @update:model-value="(value: string) => emit('update:schedule', value as MiseEnPlaceMode)"
+          />
         </div>
 
         <div class="studio-field">
@@ -921,15 +921,13 @@ function resetStockSection() {
             <label class="studio-label">{{ t.renderer.restsLabel }}</label>
             <PlaygroundTooltip :text="t.playground.help.rests" />
           </div>
-          <select
-            class="studio-select"
-            :value="props.rests || 'shortest'"
-            @change="emit('update:rests', ($event.target as HTMLSelectElement).value as RestChoice)"
-          >
-            <option v-for="opt in restsOptions" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            :model-value="props.rests || 'shortest'"
+            :options="restsOptions"
+            :aria-label="t.renderer.restsLabel"
+            @update:model-value="(value: string) => emit('update:rests', value as RestChoice)"
+          />
         </div>
 
         <!-- Heure de service -->
@@ -1040,15 +1038,13 @@ function resetStockSection() {
             <label class="studio-label">{{ t.playground.views.planTimeZone }}</label>
             <PlaygroundTooltip :text="t.playground.help.timeZone" />
           </div>
-          <select
-            class="studio-select"
-            :value="props.plan?.timeZone || 'UTC'"
-            @change="updatePlanField('timeZone', ($event.target as HTMLSelectElement).value)"
-          >
-            <option v-for="zone in timeZoneOptions" :key="zone" :value="zone">
-              {{ zone }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            :model-value="props.plan?.timeZone || 'UTC'"
+            :options="timeZoneOptions.map((zone) => ({ value: zone, label: zone }))"
+            :aria-label="t.playground.views.planTimeZone"
+            @update:model-value="(value: string) => updatePlanField('timeZone', value)"
+          />
         </div>
 
         <!-- Disponibilités -->
@@ -1184,12 +1180,11 @@ function resetStockSection() {
             <span class="studio-label">{{ t.playground.options.scaleByIngredient }}</span>
             <PlaygroundTooltip :text="t.playground.help.scaleByIngredient" />
           </div>
-          <select class="studio-select" v-model="targetId">
-            <option value="">{{ t.playground.options.selectIngredient }}</option>
-            <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
-              {{ item.name }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            v-model="targetId"
+            :options="[{ value: '', label: t.playground.options.selectIngredient }, ...props.shoppingList.map((item) => ({ value: item.id, label: item.name }))]"
+          />
           <div class="scale-inputs" v-if="targetId">
             <input
               type="text"
@@ -1303,12 +1298,12 @@ function resetStockSection() {
             <span class="studio-label">{{ t.playground.options.forceReference }}</span>
             <PlaygroundTooltip :text="t.playground.help.bakersReference" />
           </div>
-          <select class="studio-select" v-model="bakersReference" :disabled="!bakersMath">
-            <option value="">{{ t.playground.options.autoDetect }}</option>
-            <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
-              {{ item.name }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            v-model="bakersReference"
+            :disabled="!bakersMath"
+            :options="[{ value: '', label: t.playground.options.autoDetect }, ...props.shoppingList.map((item) => ({ value: item.id, label: item.name }))]"
+          />
         </div>
       </div>
     </div>
@@ -1445,17 +1440,14 @@ function resetStockSection() {
             <label class="studio-label" :for="nutritionBasisId">{{ t.playground.options.nutritionBasis }}</label>
             <PlaygroundTooltip :text="t.playground.help.nutritionBasis" />
           </div>
-          <select
+          <GramSelect
+            block
             :id="nutritionBasisId"
-            class="studio-select"
-            :value="props.options.nutritionBasis"
+            :model-value="props.options.nutritionBasis"
             :disabled="!nutritionEnabled"
-            @change="emit('update:options', { ...props.options, nutritionBasis: ($event.target as HTMLSelectElement).value as NutritionBasis })"
-          >
-            <option v-for="opt in nutritionBasisOptions" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </option>
-          </select>
+            :options="nutritionBasisOptions"
+            @update:model-value="(value: string) => emit('update:options', { ...props.options, nutritionBasis: value as NutritionBasis })"
+          />
         </div>
       </div>
     </div>
@@ -1651,7 +1643,6 @@ function resetStockSection() {
   letter-spacing: 0.02em;
 }
 
-.studio-select,
 .studio-input {
   width: 100%;
   padding: 6px 10px;
@@ -1664,7 +1655,6 @@ function resetStockSection() {
   box-sizing: border-box;
 }
 
-.studio-select:focus,
 .studio-input:focus {
   border-color: var(--sl-color-gray-3);
 }

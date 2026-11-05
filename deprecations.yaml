@@ -128,6 +128,17 @@ deprecations:
       - "packages/i18n/src/locales/en.ts"
       - "packages/i18n/src/locales/fr.ts"
 
+  - id: i18n-playground-view-labels
+    layer: api
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The labels of the playground's old view selector: playground.viewLabel and, in playground.views, json, ast, jsonTree, markdown, preview and runSheet. The playground shows the views of the renderer as tabs and its inspectors in a menu instead"
+    replacement: "renderer.outputs (by output id: recipe, workPlan, ast, json, json-tree), renderer.formats (html, markdown, text, print) and playground.output.views / inspect"
+    files:
+      - "packages/i18n/src/locales/en.ts"
+      - "packages/i18n/src/locales/fr.ts"
+
   - id: lsp-gantt-notification
     layer: api
     deprecatedIn: "1.4.0"

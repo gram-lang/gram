@@ -257,7 +257,7 @@ describe("describeOutputs", () => {
 		const fr = describeOutputs("fr-FR");
 		expect(fr.outputs.map((o) => o.id)).toEqual(outputs.map((o) => o.id));
 		expect(fr.outputs.find((o) => o.id === "workPlan")?.label).toBe(
-			"Plan de travail",
+			"Planning de préparation",
 		);
 		expect(fr.outputs.find((o) => o.id === "json-tree")).toMatchObject({
 			kind: "inspector",
