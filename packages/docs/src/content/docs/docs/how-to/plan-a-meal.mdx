@@ -80,7 +80,7 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    ```
 
    - `--serve`: the target date and time of the meal.
-   - `--available`: when you can cook (repeatable, e.g. `sat=09:00-23:00`, `2026-10-09=none`).
+   - `--available`: when you can cook (repeatable, e.g. `sat=09:00-23:00`, `2026-10-09=none`). Your usual hours can be saved once for the project via `gram config set availability 08:00-22:00`; the flag then only overrides them.
    - `--tz`: your IANA time zone (can be saved permanently via `gram config set timezone Europe/Paris`).
    - `--stock`: indicates that a preparation (here the glaze) is already made in your freezer. Gram does not schedule it and flags it as "in stock".
 

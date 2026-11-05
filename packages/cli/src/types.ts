@@ -298,6 +298,13 @@ export const GramConfigFileSchema = z.object({
 	 * "20:00" by default. Like `timezone`, only checked by the command that uses it.
 	 */
 	mealTimes: z.array(z.string()).optional(),
+	/**
+	 * When the cook is available, the default of `gram plan --available`: one
+	 * entry ("08:00-22:00") or a list of them ("fri=18:00-22:00",
+	 * "2026-10-09=none"), in the syntax of the flag. Like `timezone`, only
+	 * checked by the command that uses it, so a typo never stops the others.
+	 */
+	availability: z.unknown().optional(),
 	/** Set to `false` to disable the passive "update available" notice printed after a command finishes. */
 	updateCheck: z.boolean().optional(),
 	/** Named `@use` specifier aliases (module-imports RFC §B.1/§F.1): `paths: { bases: "./shared/bases" }` lets `@use "@bases/pate.gram"` resolve to `<projectRoot>/shared/bases/pate.gram`. The bare `@/` prefix (project root itself) needs no entry here. */

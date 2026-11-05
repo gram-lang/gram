@@ -33,7 +33,7 @@ export const PLAN_FLAG_ARGS = {
 	available: {
 		type: "string",
 		description:
-			"When you are available, repeatable: 08:00-22:00 (every day), fri=18:00-22:00 (a day of the week), 2026-10-09=none (a date). Several ranges: 08:00-09:00,18:00-22:00. Default: all day",
+			"When you are available, repeatable: 08:00-22:00 (every day), fri=18:00-22:00 (a day of the week), 2026-10-09=none (a date). Several ranges: 08:00-09:00,18:00-22:00. Default: the `availability` setting of the project, else all day",
 	},
 	now: {
 		type: "string",
@@ -57,11 +57,14 @@ export interface KitchenContext {
 export function resolveKitchenContext(
 	args: Record<string, unknown>,
 	rawArgs: string[] | undefined,
-	config: { timezone?: string },
+	config: { timezone?: string; availability?: unknown },
 ): KitchenContext {
 	return {
 		timeZone: parseTimeZone(args.tz, config.timezone),
-		availability: parseAvailability(collectFlag(rawArgs ?? [], "available")),
+		availability: parseAvailability(
+			collectFlag(rawArgs ?? [], "available"),
+			config.availability,
+		),
 		now: (args.now as string | undefined) ?? new Date().toISOString(),
 	};
 }
@@ -90,7 +93,7 @@ export interface ExportView {
 export function resolveExportView(
 	args: Record<string, unknown>,
 	rawArgs: string[] | undefined,
-	config: { timezone?: string },
+	config: { timezone?: string; availability?: unknown },
 ): ExportView {
 	const view = viewByCliName((args.view as string | undefined) ?? "recipe");
 	const hasServe = args.serve !== undefined && args.serve !== "";

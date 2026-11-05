@@ -18,7 +18,7 @@ Une fois ces trois paramètres définis, Gram positionne chaque tâche sur le ca
 |---|---|---|
 | **Heure de service** | `2026-10-11 13:00` | Date et heure locales cibles, exprimées dans le fuseau ci-dessous |
 | **Fuseau horaire** | `Europe/Paris` | Identifiant IANA : détermine l'heure locale et les règles de changement d'heure. Le CLI le résout dans l'ordre suivant : option `--tz`, réglage `timezone` du projet (ou configuration globale), puis fuseau du système hôte |
-| **Disponibilités** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | Vos plages de travail : une plage quotidienne par défaut, complétée d'exceptions par jour de semaine ou par date |
+| **Disponibilités** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | Vos plages de travail : une plage quotidienne par défaut, complétée d'exceptions par jour de semaine ou par date. Le CLI les résout dans l'ordre suivant : option `--available`, réglage `availability` du projet (ou configuration globale), puis toute la journée |
 
 Les disponibilités sont définies sous forme d'objet structuré : une plage par défaut pour chaque jour (`daily`), des exceptions par jour de la semaine (`weekdays`) et des exceptions calendaires (`dates`). Une date l'emporte toujours sur un jour de semaine, qui prime lui-même sur la règle quotidienne par défaut. Une liste vide indique une indisponibilité totale pour la journée concernée. Enfin, une plage dont l'heure de fin précède l'heure de début traverse minuit en continu (ex. `22:00-02:00`).
 
