@@ -8,6 +8,7 @@ import {
 	timesOf,
 	toCommonFraction,
 	type NutritionBasis,
+	type RecipeSettings,
 } from "@gram-lang/renderer";
 import type {
 	CompilationResult,
@@ -154,6 +155,8 @@ export async function buildViewModel(
 		db?: Record<string, IngredientData> | null;
 		scaleFactor?: number;
 		bakersReference?: string;
+		/** What the analyzer computes. Default: everything, as the engine. */
+		recipe?: RecipeSettings;
 		bakersMathOnly?: boolean;
 		nutritionBasis?: NutritionBasis;
 		/** Which timeline the total and rest times follow. Default per section. */
@@ -169,6 +172,7 @@ export async function buildViewModel(
 		db: opts.db,
 		scaleFactor: opts.scaleFactor,
 		bakersReference: opts.bakersReference,
+		recipe: opts.recipe,
 		lang: opts.lang,
 		paths: opts.paths,
 		stock: opts.stock,

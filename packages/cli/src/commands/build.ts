@@ -11,6 +11,10 @@ import { filterModuleRoots } from "../core/module-roots";
 import { resolveStockFromConfig, reportUnusedStock } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { buildFiles } from "../services/builder";
+import {
+	readRecipeSettingArgs,
+	recipeSettingArgs,
+} from "../services/setting-args";
 import { parseScaleArg } from "../services/scaler";
 import { ExitCode, GramCLIError, getErrorMessage } from "../errors";
 
@@ -48,6 +52,7 @@ export default defineCommand({
 			description: "Skip ingredient database enrichment",
 			default: false,
 		},
+		...recipeSettingArgs(),
 		"include-modules": {
 			type: "boolean",
 			description:
@@ -107,6 +112,7 @@ type Args = {
 	"skip-db": boolean;
 	"include-modules": boolean;
 	stock?: string;
+	[flag: string]: unknown;
 };
 
 async function resolveInputs(args: Args) {
@@ -129,6 +135,7 @@ async function resolveInputs(args: Args) {
 	if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 	const stock = resolveStockFromConfig(args.stock, config);
 	return {
+		recipe: readRecipeSettingArgs(args),
 		files,
 		db: dbResult?.data ?? null,
 		lang: config.language,
@@ -138,9 +145,10 @@ async function resolveInputs(args: Args) {
 }
 
 async function runToStdout(args: Args) {
-	const { files, db, lang, paths, stock } = await resolveInputs(args);
+	const { files, db, lang, paths, stock, recipe } = await resolveInputs(args);
 	const results = await buildFiles(files, {
 		db: db ?? undefined,
+		recipe,
 		scaleFactor: args._scaleFactor,
 		lang,
 		paths,
@@ -154,7 +162,7 @@ async function runToStdout(args: Args) {
 }
 
 async function runToFiles(args: Args) {
-	const { files, db, lang, paths, stock } = await resolveInputs(args);
+	const { files, db, lang, paths, stock, recipe } = await resolveInputs(args);
 	const outDir = args.output!;
 	const n = files.length;
 
@@ -163,6 +171,7 @@ async function runToFiles(args: Args) {
 
 	const results = await buildFiles(files, {
 		db: db ?? undefined,
+		recipe,
 		scaleFactor: args._scaleFactor,
 		lang,
 		paths,

@@ -4,6 +4,10 @@ import { getAST } from "@gram-lang/parser";
 import { compile } from "@gram-lang/kitchen";
 import { analyze } from "@gram-lang/analyzer";
 import {
+	DEFAULT_RECIPE_SETTINGS,
+	recipeSettingsToAnalyzerOptions,
+} from "@gram-lang/renderer";
+import {
 	loadModuleGraph,
 	composeRecipe,
 	finalizeComposed,
@@ -84,6 +88,9 @@ export async function runPipeline(
 					// every other reference to it in the document.
 					{ ...composed.syntheticIngredients, ...opts.db },
 					{
+						...recipeSettingsToAnalyzerOptions(
+							opts.recipe ?? DEFAULT_RECIPE_SETTINGS,
+						),
 						bakersReference: opts.bakersReference,
 						lang: opts.lang,
 					},
@@ -120,6 +127,9 @@ export function runPipelineFromSource(
 					// --scale, and divided by the scale factor when it did.
 					// `applyScale` scales meta.portions too, so a scaled recipe
 					// keeps the right divisor on its own.
+					...recipeSettingsToAnalyzerOptions(
+						opts.recipe ?? DEFAULT_RECIPE_SETTINGS,
+					),
 					bakersReference: opts.bakersReference,
 					lang: opts.lang,
 				})

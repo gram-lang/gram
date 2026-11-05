@@ -1,6 +1,7 @@
 import {
 	toMarkdown,
 	toPrintHTML,
+	type RecipeSettings,
 	type RendererOptions,
 } from "@gram-lang/renderer";
 import { runPipeline } from "../core/pipeline";
@@ -26,6 +27,8 @@ export type ExportOptions = Pick<
 	/** With a `plan`: also write the work plan after the recipe. */
 	withSheet?: boolean;
 	bakersReference?: string;
+	/** What the analyzer computes. Default: everything, as the engine. */
+	recipe?: RecipeSettings;
 	lang?: string;
 	paths?: Record<string, string>;
 	stock?: Set<string>;
@@ -44,6 +47,7 @@ export async function exportRecipe(
 		db,
 		scaleFactor,
 		bakersReference: rendererOptions?.bakersReference,
+		recipe: rendererOptions?.recipe,
 		lang: rendererOptions?.lang,
 		paths: rendererOptions?.paths,
 		stock: rendererOptions?.stock,
@@ -52,7 +56,16 @@ export async function exportRecipe(
 
 	const ast = analyzed ? analyzed.result : compiled;
 	const plan = rendererOptions?.plan;
-	const { plan: _plan, withSheet, ...rest } = rendererOptions ?? {};
+	const {
+		plan: _plan,
+		withSheet,
+		recipe: _recipe,
+		bakersReference: _bakersReference,
+		paths: _paths,
+		stock: _stock,
+		onUsedStock: _onUsedStock,
+		...rest
+	} = rendererOptions ?? {};
 	const options: RendererOptions = {
 		...rest,
 		...(plan &&

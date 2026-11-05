@@ -5,7 +5,7 @@ import type {
 	AnalyzedCompilationResult,
 } from "@gram-lang/analyzer";
 import type { CategoryKey } from "@gram-lang/i18n";
-import type { NutritionBasis } from "@gram-lang/renderer";
+import type { NutritionBasis, RecipeSettings } from "@gram-lang/renderer";
 import { z } from "zod";
 
 export type DiagnosticLevel = "error" | "warning" | "info";
@@ -342,6 +342,8 @@ export interface PipelineOptions extends ModuleResolutionOptions {
 	scaleFactor?: number;
 	bakersReference?: string;
 	bakersMathOnly?: boolean;
+	/** What the analyzer computes (baker's percentages, grams, preparation losses, nutrition). Default: everything, as the engine. */
+	recipe?: RecipeSettings;
 	/** Recipe language (from `.gram/config.yaml`'s `language:`), threaded to `analyze()` — see i18n findings F-04/F-07/F-08/F-09. */
 	lang?: string;
 	/**
@@ -361,6 +363,8 @@ export interface CheckOptions extends ModuleResolutionOptions {
 
 export interface BuildOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
+	/** What the analyzer computes. Default: everything, as the engine. */
+	recipe?: RecipeSettings;
 	pretty?: boolean;
 	scaleFactor?: number;
 	lang?: string;

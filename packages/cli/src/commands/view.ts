@@ -11,15 +11,24 @@ import { outputRecipe } from "../ui/viewer";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
 import {
-	MISE_EN_PLACE_FLAG_DESCRIPTION,
-	parseMiseEnPlace,
-} from "../services/mise-en-place-flag";
-import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
-import {
-	NUTRITION_BASIS_FLAG_DESCRIPTION,
-	parseNutritionBasis,
-} from "../services/nutrition-basis";
+	readRecipeSettingArgs,
+	readViewSettingArgs,
+	recipeSettingArgs,
+	viewSettingArgs,
+	type ViewSettingKey,
+} from "../services/setting-args";
 import { ExitCode, GramCLIError } from "../errors";
+
+/**
+ * The view settings `gram view` shows today. Comments and the quantities in
+ * the steps come when it renders through the renderer (views plan, phase 4).
+ */
+const VIEW_COMMAND_SETTINGS: readonly ViewSettingKey[] = [
+	"miseEnPlace",
+	"rests",
+	"nutritionBasis",
+	"bakersMathOnly",
+];
 
 export default defineCommand({
 	meta: {
@@ -51,31 +60,12 @@ export default defineCommand({
 			type: "boolean",
 			description: "Disable automatic pager for long recipes",
 		},
-		"bakers-math": {
-			type: "boolean",
-			description:
-				"Display ingredient quantities as a percentage of a reference ingredient (Baker's Percentage).",
-		},
+		...viewSettingArgs(VIEW_COMMAND_SETTINGS),
+		...recipeSettingArgs(),
 		"bakers-reference": {
 			type: "string",
 			description:
 				"Force a specific ingredient as the baker's math reference (e.g. flour). Implies --bakers-math",
-		},
-		"bakers-math-only": {
-			type: "boolean",
-			description: "Only show the percentages and hide absolute weights.",
-		},
-		nutrition: {
-			type: "string",
-			description: NUTRITION_BASIS_FLAG_DESCRIPTION,
-		},
-		"mise-en-place": {
-			type: "string",
-			description: MISE_EN_PLACE_FLAG_DESCRIPTION,
-		},
-		rests: {
-			type: "string",
-			description: RESTS_FLAG_DESCRIPTION,
 		},
 		stock: {
 			type: "string",
@@ -102,10 +92,8 @@ export default defineCommand({
 		const bakersReference =
 			(args["bakers-reference"] as string) ||
 			(args["bakers-math"] ? "" : undefined);
-		const bakersMathOnly = args["bakers-math-only"] as boolean;
-		const nutritionBasis = parseNutritionBasis(args.nutrition);
-		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
-		const rests = parseRests(args.rests);
+		const settings = readViewSettingArgs(args, VIEW_COMMAND_SETTINGS);
+		const recipe = readRecipeSettingArgs(args);
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		let model;
@@ -114,10 +102,11 @@ export default defineCommand({
 				db,
 				scaleFactor,
 				bakersReference,
-				bakersMathOnly,
-				nutritionBasis,
-				miseEnPlace,
-				rests,
+				recipe,
+				bakersMathOnly: settings.bakersMathOnly,
+				nutritionBasis: settings.nutritionBasis,
+				miseEnPlace: settings.miseEnPlace,
+				rests: settings.rests,
 				lang: config.language,
 				paths: config.paths,
 				stock,
