@@ -12,13 +12,18 @@ The official Gram VS Code extension turns your editor into a dedicated recipe de
 
 ### 1. Dynamic live preview & nutrition
 - **Side-by-side rendering**: As you type, the extension compiles your `.gram` file into HTML within a dedicated WebView panel. It uses the official Playground styles, ensuring a 1:1 match with production output.
-- **Syntax error fallbacks**: If your recipe contains syntax errors that prevent compilation, the preview panel displays the corresponding error message, keeping you informed without interrupting editor operation.
+- **Paused on errors** <Since v="1.4.0" />: When compilation errors prevent view updates, active panels retain their last valid rendered content (dimmed under a subtle banner) rather than being wiped. A **Show the error** action immediately navigates to the error location in the editor, while comprehensive diagnostics appear in the Problems panel. Views automatically resume as soon as errors are resolved, preventing transient typos from blanking panels.
 
 :::note[📊 Nutrition CodeLens]
 A dedicated `CodeLens` button appears above the recipe title. Clicking it reveals a complete nutrition breakdown (calories, protein, carbohydrates, fat) within the live preview. It also flags ingredients missing from your database.
 :::
 
-### 2. Work plan view
+### 2. All views and inspectors <Since v="1.4.0" />
+- **`Gram: Show View...`**: Displays a quick-pick menu of all available outputs provided by the language server and opens the selected view in a dedicated panel: recipe presentation, operational work plan, and developer inspectors (composed AST and compiled JSON, formatted as source text or an interactive collapsible tree). Inspectors update live as you type, offering immediate visibility into how the compiler understands your recipe.
+- **Active editor synchronization**: All open panels automatically track the active `.gram` editor tab. The language server evaluates only views that are currently visible, eliminating background compute overhead.
+- **Direct shortcuts**: Dedicated commands `Gram: Live Preview`, `Gram: Work Plan`, and `Gram: Macros` quickly open the recipe view, the operational work plan, and the recipe anchored directly to its nutrition summary.
+
+### 3. Work plan view
 - **Dedicated work plan panel**: Run `Gram: Work Plan` (or click the checklist icon in the editor toolbar) to display the full schedule in a dedicated WebView independent of the live preview. It details daily kitchen presence, items to take out, tasks to perform, and background passive rests.
 - **Relative countdown (`D-2`, `D-1`, `Day D`)**: Without a serving time configured in the editor, the schedule is presented as a relative countdown with estimated durations per day (e.g. "about 55 min"). For exact dates, clock times, and scheduling margins, run `gram plan --serve` or open the online playground.
 - **Setting synchronization**: The view adapts dynamically to the `gram.miseEnPlace`, `gram.rests` and `gram.comments` configuration settings (detailed below).
@@ -74,7 +79,7 @@ All of these settings are available with identical values in the [CLI](/docs/ref
 
 A working day pushed beyond 24 hours by a prolonged passive phase triggers an explicit warning on its section (`DAY_OVERFLOW`), matching compiler diagnostics.
 
-### 3. Smart ingredient management
+### 4. Smart ingredient management
 - **Silent plural management**: The extension automatically maps common plural nouns in your recipe (e.g. `@carrots`) to singular entries in your YAML database (`carrot`), maintaining natural language without raising false errors.
 - **Fuzzy matching**: If you misspell an ingredient, a Levenshtein distance algorithm suggests the closest known match via Code Actions (Quick Fixes).
 - **Hover insights**: Hover over any ingredient to inspect its full nutritional profile. If the database specifies a density, the hover display instantly converts volume measurements to physical mass (e.g. `1 tbsp → 15g`).
@@ -83,7 +88,7 @@ A working day pushed beyond 24 hours by a prolonged passive phase triggers an ex
 The extension automatically detects the `.gram/ingredients.yaml` file located at the workspace root. For custom folder layouts, specify `gram.ingredientDatabase.path` in your VS Code settings.
 :::
 
-### 4. Editing assistance & navigation
+### 5. Editing assistance & navigation
 - **Semantic tokens**: Highlighting is driven directly by the compiler AST rather than regular expressions. Modifiers, nested units, and composite ingredients (`<@`) are colored accurately according to their syntactic role.
 - **Intelligent autocomplete**:
   - `@` suggests ingredients declared in your database, automatically enclosing multi-word names in `{}` brackets.
@@ -98,7 +103,7 @@ The extension automatically detects the `.gram/ingredients.yaml` file located at
 | `Shift+F12` | Find All References | Locates every usage of a specific intermediate variable across the document. |
 | `F2` | Rename Symbol | Safely and atomically renames an intermediate variable across the entire document. |
 
-### 5. Diagnostics & refactoring
+### 6. Diagnostics & refactoring
 - **Real-time validation**: The language server immediately flags orphaned references, unused declarations, and scheduling conflicts.
 - **Code Actions 💡**:
   - Add missing `title:` frontmatter property.
@@ -106,7 +111,7 @@ The extension automatically detects the `.gram/ingredients.yaml` file located at
   - Declare a missing intermediate for an orphaned reference.
   - Convert volume measurements to mass directly in code (if density is known).
 
-### 6. Auto-formatting
+### 7. Auto-formatting
 Trigger document formatting (`Alt+Shift+F` or `Shift+Option+F` on macOS) to instantly normalize syntax using the 13 canonical rules:
 
 ```diff

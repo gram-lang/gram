@@ -66,6 +66,26 @@ let client: Client | undefined;
 afterEach(() => client?.stop());
 
 describe("the views protocol", () => {
+	it("lists every output in the initialize result, named in the editor's language", async () => {
+		client = new Client();
+		const result = (await client.start({ views: true })) as {
+			capabilities: {
+				experimental?: {
+					gramViews?: { outputs: { id: string; label: string }[] };
+				};
+			};
+		};
+		const listed = result.capabilities.experimental?.gramViews?.outputs ?? [];
+		expect(listed.map((o) => o.id)).toEqual([
+			"recipe",
+			"workPlan",
+			"ast",
+			"json",
+			"json-tree",
+		]);
+		expect(listed[1]?.label).toBe("Work plan");
+	}, 20_000);
+
 	it("sends nothing to a views client until it says what is open", async () => {
 		client = new Client();
 		await client.start({ views: true });

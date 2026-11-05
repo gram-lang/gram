@@ -65,7 +65,7 @@ A client opts into the protocol by providing `initializationOptions: { views: tr
 | `gram/setSession` | Client ➔ Server | `{ uri, serveAt?, scale?, stock?, bakersReference? }`: transient session parameters for the current working session. `serveAt` is an ISO-like local date and time (`"2026-10-11 13:00"`), `scale` is `{ type: "factor", value }` or `{ type: "target", id, qty, unit }`, and `stock` lists URIs of pre-prepared imports. Unrecognized properties are ignored; an empty payload clears the session. |
 | `gram/viewUpdated` | Server ➔ Client | `{ uri, outputId, kind, state, ... }`: emitted for each open output upon initial opening, and refreshed after every edit or configuration change. |
 
-Output IDs match the renderer's exported output list: `recipe` and `workPlan` (`kind: "renderer"`), plus `ast`, `json`, and `json-tree` (`kind: "inspector"`).
+The `initialize` response advertises available views via `capabilities.experimental.gramViews`: `outputs` describes each output's `id`, `kind`, and localized `label` (matching the editor's language), while `strings` provides UI translations for surrounding panel controls. Output IDs align with the renderer's exported list: `recipe` and `workPlan` (`kind: "renderer"`), plus `ast`, `json`, and `json-tree` (`kind: "inspector"`). Client implementations consuming this list dynamically support newly added views without requiring client-side updates.
 
 - With `state: "ok"`, `payload` contains the rendered HTML for a view, or `null` if the recipe has no corresponding content (such as a work plan for a recipe without schedulable steps). For inspectors, `payload` is `{ presentation, language, text }`: formatted source text for a code pane (`presentation: "code"`, highlighted as `json` or `scheme`), or structured HTML for an interactive tree view (`presentation: "tree"`).
 - With `state: "paused"`, compilation errors prevent view updates and `payload` is omitted: editor clients should retain their last valid rendered view and surface the failure via `error` (`title`, `description`, `code`, `message`, and source `range`). The error title is localized using the editor's configured locale (`locale` from `initialize`). Comprehensive error details continue to be reported via standard LSP diagnostics.
@@ -79,7 +79,6 @@ Clients that do not declare the views protocol and never send `gram/setOpenViews
 | Notification | Content |
 |---|---|
 | `gram/previewUpdated` | <Since type="deprecated" v="1.4.0" /> HTML rendering of the live recipe preview, or an error panel when compilation fails. Removed in version 2.0.0: migrate to `gram/viewUpdated` with the `recipe` output. |
-| `gram/runSheetUpdated` | <Since v="1.4.0" /> HTML rendering of the work plan broken down into relative days (`D-2`, `D-1`, `Day D`), consumed by the VS Code `Gram: Work Plan` view. |
 | `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> HTML rendering of the legacy Gantt chart. Emitted until version 2.0.0 for third-party client compatibility (the official VS Code extension no longer listens to it). |
 
 ## Related resources

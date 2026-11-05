@@ -17,7 +17,7 @@ A view never imports another view. What two views share goes in `shared/`. `test
 
 1. Create `src/views/<id>/`. It imports only its own files, `shared/`, the contract, the settings, the types, `prepareViews` and the pipeline packages.
 2. Write its `view.ts`, a `ViewDefinition`: its `formats` (only those it can really express), the settings it `honors`, what it `needs` from the input (`schedule`, `runSheet`, `serveTimes`), and `render()`. Return `null` when the recipe has nothing for it.
-3. Add it to `views` in `src/views/registry.ts`, and to `outputs` in `src/outputs.ts` (written out, not spread, so a bundler can drop the views a page does not use).
+3. Add it to `views` in `src/views/registry.ts`, and to `outputs` in `src/outputs.ts` (written out, not spread, so a bundler can drop the views a page does not use). Give it a name in every language, under `renderer.outputs` of `@gram-lang/i18n`: the surfaces list the outputs by that name.
 4. Run `tests/views-contract.test.ts`. It renders the view in each format for every fixture, checks the escaping, and checks that the view reacts to each setting it honors and to no other. If it honors a setting none of the fixtures shows, extend a fixture.
 5. If the view brings a new setting: add its descriptor to `VIEW_SETTINGS` in `src/settings.ts`, a probe to `PROBES` in the contract test, a `gram.*` key in the VS Code extension's `package.json` (the parity test fails until it exists), and the docs in English and French.
 
