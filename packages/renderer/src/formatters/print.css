@@ -251,6 +251,9 @@ ol.steps li:not(.comment-step)::before {
 .quantity {
 	font-weight: normal;
 }
+.step-quantity {
+	white-space: nowrap;
+}
 .unit {
 	color: var(--dark-grey);
 	font-size: 0.95em;

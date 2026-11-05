@@ -147,6 +147,12 @@ const strategies: Record<
 					html += ` data-tooltip="${escapeHtml(tooltipLines.join("\n"))}"`;
 				}
 				html += `>${escapeHtml(name)}${parentSuffixHtml}`;
+				// Written in the text of the step, as in Markdown, so it is there
+				// on paper too; the tooltip keeps the details (standardized mass).
+				if (!context.hideIngredientQty && plainQty) {
+					const qtyClass = context.classes?.stepQuantity || "step-quantity";
+					html += ` <span class="${qtyClass}">(${escapeHtml(plainQty)})</span>`;
+				}
 				html += `</span>`;
 				return html;
 			} else {

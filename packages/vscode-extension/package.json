@@ -173,6 +173,19 @@
           "default": false,
           "description": "Show only the baker's percentages in the preview, without the weights."
         },
+        "gram.stepQuantities": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "enumDescriptions": [
+            "The quantity of each ingredient is written in the text of the steps, after its name.",
+            "The steps name the ingredients only; their quantities stay in the ingredient lists and in the tooltip."
+          ],
+          "default": "show",
+          "description": "Whether the preview writes the quantities of the ingredients in the text of the steps."
+        },
         "gram.bakersMath": {
           "type": "boolean",
           "default": true,

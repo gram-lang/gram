@@ -89,15 +89,27 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 		expect(hidden).toContain("(200 g)");
 	});
 
-	it("html/print: accept hideStepQty without throwing, quantity stays available via tooltip", () => {
+	it("html/print: write the quantity in the step text, as Markdown does, and keep the tooltip", () => {
 		const c = compile(
 			getAST("## Section\n\nMix @flour{200g} with @water{100ml}.\n"),
 		);
-		const html = toHTML(c, { hideStepQty: true });
-		const print = toPrintHTML(c, { hideStepQty: true });
+		for (const out of [toHTML(c), toPrintHTML(c)]) {
+			expect(out).toContain('<span class="step-quantity">(200 g)</span>');
+			expect(out).toContain('data-tooltip="200 g"');
+		}
+	});
 
-		expect(html).toContain('data-tooltip="200 g"');
-		expect(print).toContain('data-tooltip="200 g"');
+	it("html/print: hideStepQty leaves the quantity out of the step text, in the tooltip only", () => {
+		const c = compile(
+			getAST("## Section\n\nMix @flour{200g} with @water{100ml}.\n"),
+		);
+		for (const out of [
+			toHTML(c, { hideStepQty: true }),
+			toPrintHTML(c, { hideStepQty: true }),
+		]) {
+			expect(out).not.toContain('class="step-quantity"');
+			expect(out).toContain('data-tooltip="200 g"');
+		}
 	});
 
 	// Phase 12: the 4 content-completeness gaps identified in Phase 11 (see

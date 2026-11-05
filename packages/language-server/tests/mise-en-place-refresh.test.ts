@@ -481,6 +481,21 @@ describe("gram.comments in the language server", () => {
 	}, 20_000);
 });
 
+describe("gram.stepQuantities in the language server", () => {
+	it("writes the quantities in the steps, and leaves them out when told", async () => {
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		await client.previewMatching((h) => h.includes('class="step-quantity"'));
+
+		client.extra = { stepQuantities: "hide" };
+		client.settingChanged();
+		await client.previewMatching(
+			(h) => h.includes("Tart") && !h.includes('class="step-quantity"'),
+		);
+	}, 20_000);
+});
+
 describe("the recipe settings in the language server", () => {
 	const dir = mkdtempSync(join(tmpdir(), "gram-recipe-settings-"));
 	const db = join(dir, "ingredients.yaml");
