@@ -1,5 +1,15 @@
+// The views of a recipe that stopped compiling: shared by the renderer's
+// error model (`describeError`) and the playground's error card.
+const VIEWS_PAUSED = {
+	title: "Generation paused",
+	description:
+		"The recipe contains blocking errors preventing preview generation.",
+};
+
 export const en = {
 	renderer: {
+		viewsPaused: VIEWS_PAUSED.title,
+		viewsPausedDescription: VIEWS_PAUSED.description,
 		shoppingList: "Shopping List",
 		cookware: "Cookware",
 		equipment: "Equipment",
@@ -329,9 +339,8 @@ export const en = {
 			collapseConsole: "Collapse console",
 		},
 		errorState: {
-			title: "Generation paused",
-			blockingDescription:
-				"The recipe contains blocking errors preventing preview generation.",
+			title: VIEWS_PAUSED.title,
+			blockingDescription: VIEWS_PAUSED.description,
 			jumpToError: "Jump to error",
 			line: "Line",
 		},

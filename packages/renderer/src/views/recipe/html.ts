@@ -34,7 +34,7 @@ import {
 } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
-const htmlBackend: RenderBackend = {
+export const htmlBackend: RenderBackend = {
 	buildContext(data, options) {
 		const registry = data.registry || { ingredients: {}, cookware: {} };
 		const formatDuration = options.formatDuration || defaultFormatDuration;

@@ -26,14 +26,15 @@ import { formatElement } from "../../shared/element";
 import { moduleLabel } from "./module-label";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
+import { PRINT_BASE_CSS } from "../../shared/print-css";
 import css from "./print.css" with { type: "text" };
 
-/** The print stylesheet (`print.css`), shared by every printed view. */
-export const PRINT_CSS: string = css;
+/** The print stylesheet of the recipe: the base of every printed view, then the recipe's own (`print.css`). */
+export const PRINT_CSS: string = PRINT_BASE_CSS + css;
 
 import { PRINT_ICONS } from "../../shared/icons";
 
-const printBackend: RenderBackend = {
+export const printBackend: RenderBackend = {
 	buildContext(data, options) {
 		const registry = data.registry || { ingredients: {}, cookware: {} };
 		const formatDuration = options.formatDuration || defaultFormatDuration;

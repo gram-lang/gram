@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { describeError } from "@gram-lang/renderer";
 import { useI18n } from "./useI18n";
 import type { PlaygroundDiagnostic } from "./diagnostics";
 
@@ -11,15 +12,10 @@ const emit = defineEmits<{
 	jump: [start: number, end: number, uri?: string];
 }>();
 
-const { t } = useI18n();
+const { t, lang } = useI18n();
 
-const primaryError = computed(() => {
-	return (
-		props.diagnostics.find((d) => d.blocking) ||
-		props.diagnostics.find((d) => d.severity === "error") ||
-		props.diagnostics[0]
-	);
-});
+// biome-ignore lint/correctness/noUnusedVariables: error is used in the <template> block below, which Biome's Vue support doesn't see.
+const error = computed(() => describeError(props.diagnostics, lang.value));
 </script>
 
 <template>
@@ -30,21 +26,21 @@ const primaryError = computed(() => {
           <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-80V80a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,172Z"></path>
         </svg>
       </div>
-      <h3 class="error-state-title">{{ t.playground.errorState?.title || 'Generation paused' }}</h3>
+      <h3 class="error-state-title">{{ error?.title ?? t.renderer.viewsPaused }}</h3>
       <p class="error-state-description">
-        {{ t.playground.errorState?.blockingDescription || 'The recipe contains blocking errors preventing preview generation.' }}
+        {{ error?.description ?? t.renderer.viewsPausedDescription }}
       </p>
 
-      <div v-if="primaryError" class="error-state-detail">
+      <div v-if="error" class="error-state-detail">
         <div class="error-detail-header">
-          <span class="error-code">[{{ primaryError.code }}]</span>
-          <span v-if="primaryError.uri" class="error-uri">{{ primaryError.uri.slice(1) }}</span>
+          <span class="error-code">[{{ error.code }}]</span>
+          <span v-if="error.uri" class="error-uri">{{ error.uri.slice(1) }}</span>
         </div>
-        <div class="error-message-box">{{ primaryError.message }}</div>
+        <div class="error-message-box">{{ error.message }}</div>
         <button
-          v-if="primaryError.loc"
+          v-if="error.range"
           class="jump-button"
-          @click="emit('jump', primaryError.loc.start, primaryError.loc.end, primaryError.uri)"
+          @click="emit('jump', error.range.start, error.range.end, error.uri)"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
             <path d="M240,120H215.63A88.13,88.13,0,0,0,136,40.37V16a8,8,0,0,0-16,0V40.37A88.13,88.13,0,0,0,40.37,120H16a8,8,0,0,0,0,16H40.37A88.13,88.13,0,0,0,120,215.63V240a8,8,0,0,0,16,0V215.63A88.13,88.13,0,0,0,215.63,136H240a8,8,0,0,0,0-16ZM128,200a72,72,0,1,1,72-72A72.08,72.08,0,0,1,128,200Zm0-112a40,40,0,1,0,40,40A40,40,0,0,0,128,88Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,152Z"></path>

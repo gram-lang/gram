@@ -11,6 +11,39 @@ export {
 } from "./shared/nutrition";
 export { timesOf } from "./shared/mise-en-place";
 export { prepareViews } from "./prepare-views";
+export { FORMATS } from "./contract";
+export type {
+	Capability,
+	Format,
+	InspectorDefinition,
+	OutputBase,
+	OutputDefinition,
+	SettingKey,
+	Stage,
+	StageArtifacts,
+	SurfaceOptions,
+	ViewDefinition,
+} from "./contract";
+export { getView, render, views } from "./views/registry";
+export type { ViewId } from "./views/registry";
+export {
+	astInspector,
+	getInspector,
+	inspectors,
+	jsonInspector,
+	jsonTreeInspector,
+} from "./inspectors/registry";
+export type { InspectorId } from "./inspectors/registry";
+export { JSON_TREE_CSS, renderJsonTree } from "./inspectors/json-tree";
+export type { JsonTreeOptions } from "./inspectors/json-tree";
+export { renderSExpr } from "./inspectors/s-expr";
+export { outputs } from "./outputs";
+export { describeError } from "./describe-error";
+export type {
+	DescribableDiagnostic,
+	ErrorDescription,
+} from "./describe-error";
+export type { OutputId } from "./outputs";
 export type {
 	KitchenContext,
 	PrepareViewsOptions,

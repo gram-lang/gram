@@ -1,0 +1,23 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`each inspector, on a fixture writes the AST as it always has 1`] = `
+"(Recipe
+  (Object :title "Pancakes")
+  (Section :title "Batter"
+    (Step :action "Mix"
+      (Text :value "Whisk ")
+      (Ingredient :name "flour"
+        (Quantity :unit "g" :fixed false
+          (single :value 250 :text "250")))
+      (Text :value "with ")
+      (Ingredient :name "milk"
+        (Quantity :unit "ml" :fixed false
+          (single :value 500 :text "500")))
+      (Text :value "and rest ")
+      (Timer :isPassive true
+        (Quantity :unit "h" :fixed false
+          (range :value 1.5 :range 1-2 :text "1-2")))
+      (Text :value "."))))"
+`;
+
+exports[`each inspector, on a fixture writes the tree as it always has 1`] = `"<div class="gram-json-tree"><details class="jt-node" open><summary class="jt-line"><span class="jt-punct">{</span><span class="jt-folded"><span class="jt-count">4 items</span><span class="jt-punct">}</span></span></summary><div class="jt-children"><div class="jt-line"><span class="jt-key">&quot;title&quot;</span><span class="jt-punct">: </span><span class="jt-string">&quot;Pancakes&quot;</span><span class="jt-punct">,</span></div><details class="jt-node"><summary class="jt-line"><span class="jt-key">&quot;tags&quot;</span><span class="jt-punct">: </span><span class="jt-punct">[</span><span class="jt-folded"><span class="jt-count">1 item</span><span class="jt-punct">]</span><span class="jt-punct">,</span></span></summary><div class="jt-children"><div class="jt-line"><span class="jt-string">&quot;sweet&quot;</span></div></div><div class="jt-line"><span class="jt-punct">]</span><span class="jt-punct">,</span></div></details><details class="jt-node"><summary class="jt-line"><span class="jt-key">&quot;meta&quot;</span><span class="jt-punct">: </span><span class="jt-punct">{</span><span class="jt-folded"><span class="jt-count">2 items</span><span class="jt-punct">}</span><span class="jt-punct">,</span></span></summary><div class="jt-children"><div class="jt-line"><span class="jt-key">&quot;portions&quot;</span><span class="jt-punct">: </span><span class="jt-number">4</span><span class="jt-punct">,</span></div><div class="jt-line"><span class="jt-key">&quot;vegan&quot;</span><span class="jt-punct">: </span><span class="jt-boolean">false</span></div></div><div class="jt-line"><span class="jt-punct">}</span><span class="jt-punct">,</span></div></details><div class="jt-line"><span class="jt-key">&quot;empty&quot;</span><span class="jt-punct">: </span><span class="jt-punct">{}</span></div></div><div class="jt-line"><span class="jt-punct">}</span></div></details></div>"`;

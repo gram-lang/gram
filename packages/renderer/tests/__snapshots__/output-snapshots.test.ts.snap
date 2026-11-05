@@ -197,7 +197,13 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crêpes</title>
-  <style>@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap");
+  <style>/*
+ * The base of every printed view: the page, the type, the headings and the
+ * elements of a step (actions, ingredients, timers...), which the recipe and
+ * the work plan both write. Each view adds its own stylesheet after it.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
 	--black: #000000;
@@ -274,6 +280,88 @@ h3 {
 	border-bottom: 1px dashed var(--black);
 }
 
+/* ── Action tag ── */
+.action {
+	display: inline-block;
+	font-family: "Inter", system-ui, sans-serif;
+	font-weight: 700;
+	font-size: 7.5pt;
+	text-transform: uppercase;
+	letter-spacing: 0.15em;
+	border: 1px solid var(--black);
+	border-radius: 2px;
+	padding: 2pt 5pt;
+	margin-right: 8pt;
+	vertical-align: text-bottom;
+	white-space: nowrap;
+}
+
+/* ── Inline semantic tokens ── */
+.ingredient {
+	font-weight: 700;
+}
+.reference {
+	font-weight: 700;
+	text-decoration: underline;
+	text-decoration-style: solid;
+	text-underline-offset: 2.5pt;
+	text-decoration-thickness: 1px;
+}
+.cookware {
+	font-weight: 700;
+}
+.timer {
+	font-weight: 700;
+	border-bottom: 2px solid var(--black);
+	white-space: nowrap;
+	padding-bottom: 1px;
+}
+.timer.passive {
+	border-bottom: 2px dotted var(--black);
+}
+.temp {
+	font-weight: 700;
+	white-space: nowrap;
+	font-family: "Inter", system-ui, sans-serif;
+	font-size: 0.9em;
+	letter-spacing: 0.05em;
+}
+.quantity {
+	font-weight: normal;
+}
+.step-quantity {
+	white-space: nowrap;
+}
+.unit {
+	color: var(--dark-grey);
+	font-size: 0.95em;
+}
+.opt {
+	color: var(--grey);
+	font-style: italic;
+}
+/* strategies.alternative's non-inline "or" separator — used when an
+     alternative group now shows up in a section ingredient list. */
+.keyword {
+	font-style: italic;
+}
+.declaration {
+	font-size: 9pt;
+	font-style: italic;
+	color: var(--black);
+}
+
+/* Screen preview */
+@media screen {
+	body {
+		max-width: 210mm;
+		margin: 40px auto;
+		padding: 25mm 20mm;
+		box-shadow: 0 4px 40px rgba(0, 0, 0, 0.08);
+		border: 1px solid var(--very-light-grey);
+		min-height: 297mm;
+	}
+}
 /* ── Meta bar ── */
 .meta {
 	display: flex;
@@ -401,76 +489,6 @@ ol.steps li:not(.comment-step)::before {
 	color: var(--black);
 }
 
-/* ── Action tag ── */
-.action {
-	display: inline-block;
-	font-family: "Inter", system-ui, sans-serif;
-	font-weight: 700;
-	font-size: 7.5pt;
-	text-transform: uppercase;
-	letter-spacing: 0.15em;
-	border: 1px solid var(--black);
-	border-radius: 2px;
-	padding: 2pt 5pt;
-	margin-right: 8pt;
-	vertical-align: text-bottom;
-	white-space: nowrap;
-}
-
-/* ── Inline semantic tokens ── */
-.ingredient {
-	font-weight: 700;
-}
-.reference {
-	font-weight: 700;
-	text-decoration: underline;
-	text-decoration-style: solid;
-	text-underline-offset: 2.5pt;
-	text-decoration-thickness: 1px;
-}
-.cookware {
-	font-weight: 700;
-}
-.timer {
-	font-weight: 700;
-	border-bottom: 2px solid var(--black);
-	white-space: nowrap;
-	padding-bottom: 1px;
-}
-.timer.passive {
-	border-bottom: 2px dotted var(--black);
-}
-.temp {
-	font-weight: 700;
-	white-space: nowrap;
-	font-family: "Inter", system-ui, sans-serif;
-	font-size: 0.9em;
-	letter-spacing: 0.05em;
-}
-.quantity {
-	font-weight: normal;
-}
-.step-quantity {
-	white-space: nowrap;
-}
-.unit {
-	color: var(--dark-grey);
-	font-size: 0.95em;
-}
-.opt {
-	color: var(--grey);
-	font-style: italic;
-}
-/* strategies.alternative's non-inline "or" separator — used when an
-     alternative group now shows up in a section ingredient list. */
-.keyword {
-	font-style: italic;
-}
-.declaration {
-	font-size: 9pt;
-	font-style: italic;
-	color: var(--black);
-}
 .comment-step {
 	padding-left: 0 !important;
 	font-style: italic;
@@ -592,18 +610,6 @@ ol.steps li:not(.comment-step)::before {
 	color: inherit;
 	text-decoration: none;
 	font-weight: 700;
-}
-
-/* Screen preview */
-@media screen {
-	body {
-		max-width: 210mm;
-		margin: 40px auto;
-		padding: 25mm 20mm;
-		box-shadow: 0 4px 40px rgba(0, 0, 0, 0.08);
-		border: 1px solid var(--very-light-grey);
-		min-height: 297mm;
-	}
 }
 </style>
 </head>
