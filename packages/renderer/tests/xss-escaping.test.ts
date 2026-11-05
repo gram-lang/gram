@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { getAST } from "@gram-lang/parser";
 import { compile } from "@gram-lang/kitchen";
-import { toHTML, toMarkdown, toPrintHTML } from "../src/index";
+import { renderJsonTree, toHTML, toMarkdown, toPrintHTML } from "../src/index";
 
 // Regression tests for the HTML-escaping discipline documented in the security
 // audit (Phase 3): @gram-lang/renderer's HTML output is the only thing standing
@@ -147,5 +147,27 @@ describe("toMarkdown escaping", () => {
 
 		expect(md).not.toContain("<b>now</b>");
 		expect(md).toContain("&lt;b>now&lt;/b>");
+	});
+});
+
+describe("renderJsonTree escaping (the json-tree inspector)", () => {
+	it("escapes an HTML payload in a key and in a string", () => {
+		const html = renderJsonTree({
+			"<img src=x onerror=alert(1)>": "</span><script>alert(2)</script>",
+			list: ["<b>bold</b>"],
+		});
+		expect(html).not.toContain("<img");
+		expect(html).not.toContain("<script>");
+		expect(html).not.toContain("<b>");
+		expect(html).toContain("&lt;script&gt;");
+	});
+
+	it("escapes the compiled recipe it is given", () => {
+		const compiled = compile(
+			getAST("---\ntitle: <script>alert(1)</script>\n---\n"),
+		);
+		const html = renderJsonTree(compiled);
+		expect(html).not.toContain("<script>alert");
+		expect(html).toContain("&lt;script&gt;alert(1)");
 	});
 });

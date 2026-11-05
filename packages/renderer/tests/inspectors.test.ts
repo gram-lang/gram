@@ -65,6 +65,43 @@ describe("the inspectors", () => {
 	});
 });
 
+describe("each inspector, on a fixture", () => {
+	const artifacts = {
+		composedAst: ast,
+		compiled: compile(ast),
+		analyzed,
+	};
+
+	for (const inspector of inspectors) {
+		it(`${inspector.id} serializes it the same way every time`, () => {
+			const serialize = inspector.serialize as (artifact: unknown) => string;
+			const text = serialize(artifacts[inspector.stage]);
+			expect(text.length).toBeGreaterThan(0);
+			expect(serialize(artifacts[inspector.stage])).toBe(text);
+		});
+	}
+
+	// The JSON itself is pinned by the conformance corpus; what is pinned here
+	// is how the inspectors write it.
+	it("writes the AST as it always has", () => {
+		expect(astInspector.serialize(ast)).toMatchSnapshot();
+	});
+
+	it("writes the tree as it always has", () => {
+		expect(
+			renderJsonTree(
+				{
+					title: "Pancakes",
+					tags: ["sweet"],
+					meta: { portions: 4, vegan: false },
+					empty: {},
+				},
+				{ expandDepth: 1 },
+			),
+		).toMatchSnapshot();
+	});
+});
+
 describe("renderJsonTree", () => {
 	it("folds each object and array in a native details, open by default", () => {
 		const html = renderJsonTree({ a: [1, 2], b: { c: true } });
