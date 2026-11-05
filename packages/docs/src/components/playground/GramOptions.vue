@@ -196,7 +196,7 @@ function clearServeAt() {
 
 // biome-ignore lint/correctness/noUnusedVariables: formatEarliestLabel is used in the <template> block below, which Biome's Vue support doesn't see.
 function formatEarliestLabel(label: string): string {
-	return lang.value === "fr" ? `Au plus tôt : ${label}` : `Earliest: ${label}`;
+	return t.value.renderer.serving.earliest.replace("{when}", label);
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: filteredCandidates is used in the <template> block below, which Biome's Vue support doesn't see.

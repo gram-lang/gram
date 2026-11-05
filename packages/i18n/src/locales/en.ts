@@ -14,6 +14,16 @@ export const en = {
 		showError: "Show the error",
 		/** An output the recipe has nothing for (a work plan with nothing to schedule). */
 		outputEmpty: "Nothing to show for this recipe.",
+		/** The serving time controls of a view laid out in time (the editor's panel). */
+		serving: {
+			label: "Served at",
+			clear: "Clear",
+			clearTitle: "Back to the plan in days before the service",
+			suggest: "When to serve?",
+			none: "No serving time works in the next seven days.",
+			whyNot: "Why not the others?",
+			earliest: "Earliest: {when}",
+		},
 		/** The name of each output of the renderer (`outputs`), by its id. */
 		outputs: {
 			recipe: "Recipe",
