@@ -81,6 +81,52 @@ describe("the views protocol", () => {
 		expect(listed.find((o) => o.id === "workPlan")?.label).toBe("Work plan");
 	}, 20_000);
 
+	it("says what each view reads, and the words of the serving time controls", async () => {
+		client = new Client();
+		const result = (await client.start({ views: true })) as {
+			capabilities: {
+				experimental?: {
+					gramViews?: {
+						outputs: { id: string; needs?: string[] }[];
+						strings: { serving?: Record<string, string> };
+					};
+				};
+			};
+		};
+		const views = result.capabilities.experimental?.gramViews;
+		for (const output of outputs) {
+			const listed = views?.outputs.find((o) => o.id === output.id);
+			if (output.kind === "renderer") {
+				expect(listed?.needs).toEqual([...output.needs]);
+			} else {
+				expect(listed?.needs).toBeUndefined();
+			}
+		}
+		expect(views?.strings.serving?.label).toBe("Served at");
+	}, 20_000);
+
+	it("proposes serving times for a document on gram/serveTimes", async () => {
+		client = new Client();
+		await client.start({ views: true });
+		client.open(TART("Tart"));
+		client.notify("gram/setOpenViews", { uri: URI, viewIds: ["workPlan"] });
+		await waitFor(client, (u) => u.outputId === "workPlan");
+		const suggestions = (await client.request("gram/serveTimes", {
+			uri: URI,
+		})) as {
+			candidates: { serveAt: string; label: string; title: string }[];
+			earliest: { serveAt: string; text: string } | null;
+		} | null;
+		expect(suggestions?.candidates.length).toBeGreaterThan(0);
+		expect(suggestions?.candidates[0]?.serveAt).toMatch(
+			/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/,
+		);
+		expect(suggestions?.earliest?.text).toBeString();
+		expect(
+			await client.request("gram/serveTimes", { uri: "file:///nowhere.gram" }),
+		).toBeNull();
+	}, 20_000);
+
 	it("sends nothing to a views client until it says what is open", async () => {
 		client = new Client();
 		await client.start({ views: true });
