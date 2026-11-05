@@ -326,6 +326,9 @@ export const fr: GramLocale = {
 				"Calcule le poids brut à acheter pour obtenir la quantité nette voulue, en tenant compte des pertes à l'épluchage ou au parage renseignées en base.",
 			nutrition:
 				"Estime les calories et les macronutriments (protéines, glucides, lipides, fibres) par portion ou pour 100 g via les tables de composition en base.",
+			scheduleNote:
+				"Ces réglages servent surtout au planning. Dans la recette, seuls le temps total et le temps d'attente changent.",
+			scheduleNoteLink: "Voir le planning de préparation",
 			physicsDisclaimer:
 				"Dans ce playground, les calculs physiques et nutritionnels reposent sur une base restreinte aux recettes d'exemple.",
 			stockItem:

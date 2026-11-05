@@ -325,6 +325,21 @@ function closeStudio() {
 	isDrawerOpen.value = false;
 }
 
+/**
+ * From the note of the "Schedule & Service" settings: the work plan, where
+ * they show. Beside a docked studio it is already in sight; over a narrow
+ * screen, the studio closes so the plan can be seen.
+ */
+// biome-ignore lint/correctness/noUnusedVariables: showWorkPlan is used in the <template> block below, which Biome's Vue support doesn't see.
+function showWorkPlan() {
+	outputId.value = "workPlan";
+	if (!isWideScreen.value) {
+		isDrawerOpen.value = false;
+		mobileTab.value = "preview";
+	}
+	trackEvent("playground-show-work-plan", { from: "schedule-note" });
+}
+
 // biome-ignore lint/correctness/noUnusedVariables: activeModifiersCount is used in the <template> block below, which Biome's Vue support doesn't see.
 const activeModifiersCount = computed(() => {
 	let count = 0;
@@ -1313,6 +1328,7 @@ onUnmounted(() => {
             @update:rests="(val) => (rests = val)"
             @update:plan="(val) => (plan = val)"
             @clear-plan="clearPlan"
+            @show-work-plan="showWorkPlan"
             @clear-target="clearTarget"
             @scale-apply="handleScaleApply"
             @toggle-stock="toggleStock"
