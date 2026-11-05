@@ -65,6 +65,7 @@ import {
 	VIEW_SETTINGS,
 	prepareViews,
 	recipeSettingsToAnalyzerOptions,
+	renderSExpr,
 	viewSettingsToRendererOptions,
 } from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
@@ -495,45 +496,6 @@ async function loadExample(id: string) {
 		files.value = new Map([[singleUri, text]]);
 		trackEvent("playground-load-example", { example: id });
 	}
-}
-
-function renderSExpr(node: any, level = 0): string {
-	if (node === null || node === undefined) return "nil";
-	if (typeof node !== "object") {
-		if (typeof node === "string") return `"${node}"`;
-		return String(node);
-	}
-	if (Array.isArray(node)) {
-		return node.map((n) => renderSExpr(n, level)).join("\n");
-	}
-	const indent = "  ".repeat(level);
-	const type = node.type || "Object";
-	let attrs = "";
-	let children: any[] = [];
-	const ignore = new Set(["type", "loc"]);
-
-	Object.entries(node).forEach(([k, v]) => {
-		if (ignore.has(k)) return;
-		if (v === null) return;
-		if (typeof v !== "object") {
-			attrs += ` :${k} ${typeof v === "string" ? `"${v}"` : v}`;
-		} else if (Array.isArray(v)) {
-			v.forEach((child) => {
-				children.push(child);
-			});
-		} else {
-			if (v && typeof v === "object" && "min" in v && "max" in v) {
-				attrs += ` :${k} ${(v as any).min}-${(v as any).max}`;
-			} else {
-				children.push(v);
-			}
-		}
-	});
-	if (children.length === 0) {
-		return `${indent}(${type}${attrs})`;
-	}
-	const childrenStr = children.map((c) => renderSExpr(c, level + 1)).join("\n");
-	return `${indent}(${type}${attrs}\n${childrenStr})`;
 }
 
 // Incremented on every call, so a run that's still `await`ing when a newer

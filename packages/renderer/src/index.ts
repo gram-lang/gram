@@ -15,13 +15,30 @@ export { FORMATS } from "./contract";
 export type {
 	Capability,
 	Format,
+	InspectorDefinition,
 	OutputBase,
+	OutputDefinition,
 	SettingKey,
+	Stage,
+	StageArtifacts,
 	SurfaceOptions,
 	ViewDefinition,
 } from "./contract";
 export { getView, render, views } from "./views/registry";
 export type { ViewId } from "./views/registry";
+export {
+	astInspector,
+	getInspector,
+	inspectors,
+	jsonInspector,
+	jsonTreeInspector,
+} from "./inspectors/registry";
+export type { InspectorId } from "./inspectors/registry";
+export { JSON_TREE_CSS, renderJsonTree } from "./inspectors/json-tree";
+export type { JsonTreeOptions } from "./inspectors/json-tree";
+export { renderSExpr } from "./inspectors/s-expr";
+export { outputs } from "./outputs";
+export type { OutputId } from "./outputs";
 export type {
 	KitchenContext,
 	PrepareViewsOptions,

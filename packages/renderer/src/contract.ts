@@ -1,3 +1,6 @@
+import type { AnalyzedCompilationResult } from "@gram-lang/analyzer";
+import type { CompilationResult } from "@gram-lang/kitchen";
+import type { RecipeAST } from "@gram-lang/parser";
 import type { ViewInput } from "./prepare-views";
 import type { ViewSettings } from "./settings";
 import type { RendererOptions } from "./types";
@@ -57,3 +60,33 @@ export interface ViewDefinition extends OutputBase {
 		surface?: SurfaceOptions,
 	): string | null;
 }
+
+/** What each stage of the pipeline produces, for the inspectors that read it. */
+export interface StageArtifacts {
+	/** The AST after `@use` resolution (`composeRecipe`). */
+	composedAst: RecipeAST;
+	compiled: CompilationResult;
+	analyzed: AnalyzedCompilationResult;
+}
+
+/** A stage of the pipeline an inspector reads. */
+export type Stage = keyof StageArtifacts;
+
+/**
+ * An inspector: not a view of the recipe but a look at what one stage of the
+ * pipeline produced. It takes no view settings, and its output is for a code
+ * pane or a tree, not a document of its own.
+ */
+export interface InspectorDefinition<S extends Stage = Stage>
+	extends OutputBase {
+	kind: "inspector";
+	stage: S;
+	/** A code pane (highlighted text) or a tree (`renderJsonTree`'s HTML). */
+	presentation: "code" | "tree";
+	/** The highlighting of a code pane. */
+	language?: "json" | "scheme";
+	serialize(artifact: StageArtifacts[S]): string;
+}
+
+/** Every output a surface can show: a view or an inspector. */
+export type OutputDefinition = ViewDefinition | InspectorDefinition;
