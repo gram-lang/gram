@@ -33,7 +33,7 @@ export const PRINT_CSS: string = css;
 
 import { PRINT_ICONS } from "../../shared/icons";
 
-const printBackend: RenderBackend = {
+export const printBackend: RenderBackend = {
 	buildContext(data, options) {
 		const registry = data.registry || { ingredients: {}, cookware: {} };
 		const formatDuration = options.formatDuration || defaultFormatDuration;

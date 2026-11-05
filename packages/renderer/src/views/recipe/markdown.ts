@@ -26,7 +26,7 @@ import { moduleLabel } from "./module-label";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
-const markdownBackend: RenderBackend = {
+export const markdownBackend: RenderBackend = {
 	buildContext(data, options) {
 		const registry = data.registry || { ingredients: {}, cookware: {} };
 		const formatDuration = options.formatDuration || defaultFormatDuration;

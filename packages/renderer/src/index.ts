@@ -11,6 +11,17 @@ export {
 } from "./shared/nutrition";
 export { timesOf } from "./shared/mise-en-place";
 export { prepareViews } from "./prepare-views";
+export { FORMATS } from "./contract";
+export type {
+	Capability,
+	Format,
+	OutputBase,
+	SettingKey,
+	SurfaceOptions,
+	ViewDefinition,
+} from "./contract";
+export { getView, render, views } from "./views/registry";
+export type { ViewId } from "./views/registry";
 export type {
 	KitchenContext,
 	PrepareViewsOptions,
