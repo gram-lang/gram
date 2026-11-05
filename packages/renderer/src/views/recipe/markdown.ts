@@ -25,7 +25,6 @@ import { formatElement } from "../../shared/element";
 import { moduleLabel } from "./module-label";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { runSheetToMarkdown } from "../work-plan/markdown";
 
 const markdownBackend: RenderBackend = {
 	buildContext(data, options) {
@@ -255,18 +254,8 @@ const markdownBackend: RenderBackend = {
 			sections.cookware +
 			sections.instructions +
 			sections.footnotes +
-			sections.nutrition +
-			sections.runSheet
+			sections.nutrition
 		);
-	},
-
-	renderRunSheet(data, options, sheet) {
-		// After a recipe whose title is the `#`: one level down.
-		return `\n${runSheetToMarkdown(sheet, data, {
-			lang: options.lang,
-			headingLevel: 2,
-			comments: options.comments,
-		})}`;
 	},
 };
 

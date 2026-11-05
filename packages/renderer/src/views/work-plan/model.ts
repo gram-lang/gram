@@ -30,11 +30,6 @@ export interface RunSheetRenderOptions {
 	roundTo?: number;
 	formatDuration?: (minutes: number) => string;
 	/**
-	 * Markdown only: the level of the sheet's own heading, 1 for a document of its
-	 * own (the default), 2 when it follows a recipe, whose title is the `#`.
-	 */
-	headingLevel?: 1 | 2;
-	/**
 	 * Show (`"show"`, the default) or hide (`"hide"`) the comments of the
 	 * recipe in the steps: a note alone on a line, and one at the end of a line.
 	 */

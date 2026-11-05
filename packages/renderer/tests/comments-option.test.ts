@@ -59,15 +59,6 @@ describe("the comments option, in the recipe views", () => {
 		toHTML(compiled, { comments: "hide" });
 		expect(JSON.stringify(compiled.sections)).toBe(before);
 	});
-
-	it("hides them in the work plan written after the recipe too", () => {
-		const html = toHTML(compiled, { runSheet: sheet, comments: "hide" });
-		expect(html).not.toContain("Do not overmix.");
-		expect(html).not.toContain("keep it cold");
-		const shown = toHTML(compiled, { runSheet: sheet });
-		expect(shown).toContain("Do not overmix.");
-		expect(shown).toContain("inline-comment");
-	});
 });
 
 describe("the comments option, in the work plan", () => {

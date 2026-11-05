@@ -25,7 +25,6 @@ import {
 } from "../../shared/nutrition";
 import { describeMiseEnPlaceItem } from "../../shared/mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "../../shared/element";
-import { runSheetToHTML } from "../work-plan/html";
 import { moduleLabel } from "./module-label";
 import {
 	aggregateSectionIngredients,
@@ -616,16 +615,8 @@ const htmlBackend: RenderBackend = {
 			sections.cookware +
 			sections.instructions +
 			sections.footnotes +
-			sections.nutrition +
-			sections.runSheet
+			sections.nutrition
 		);
-	},
-
-	renderRunSheet(data, options, sheet) {
-		return runSheetToHTML(sheet, data, {
-			lang: options.lang,
-			comments: options.comments,
-		});
 	},
 };
 
