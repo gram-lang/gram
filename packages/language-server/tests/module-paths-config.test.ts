@@ -2,7 +2,10 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readPathsConfigSync } from "../src/utils/module-paths-config";
+import {
+	readPathsConfigSync,
+	readTimeZoneConfigSync,
+} from "../src/utils/module-paths-config";
 
 describe("readPathsConfigSync", () => {
 	const dirs: string[] = [];
@@ -45,5 +48,42 @@ describe("readPathsConfigSync", () => {
 	it("returns undefined for malformed YAML instead of throwing", async () => {
 		const dir = await project("paths: [this is not a map\n");
 		expect(() => readPathsConfigSync(dir)).not.toThrow();
+	});
+});
+
+describe("readTimeZoneConfigSync", () => {
+	const dirs: string[] = [];
+
+	afterEach(async () => {
+		while (dirs.length > 0)
+			await rm(dirs.pop()!, { recursive: true, force: true });
+	});
+
+	async function project(configYaml?: string): Promise<string> {
+		const dir = await mkdtemp(join(tmpdir(), "gram-tzcfg-"));
+		dirs.push(dir);
+		if (configYaml !== undefined) {
+			await mkdir(join(dir, ".gram"));
+			await writeFile(join(dir, ".gram", "config.yaml"), configYaml, "utf-8");
+		}
+		return dir;
+	}
+
+	it("reads the timezone of the project", async () => {
+		const dir = await project("timezone: Europe/Paris\n");
+		expect(readTimeZoneConfigSync(dir)).toBe("Europe/Paris");
+	});
+
+	it("is undefined without a config, a timezone, or with a zone that does not exist", async () => {
+		expect(readTimeZoneConfigSync(await project())).toBeUndefined();
+		expect(
+			readTimeZoneConfigSync(await project("paths:\n  a: ./a\n")),
+		).toBeUndefined();
+		expect(
+			readTimeZoneConfigSync(await project("timezone: Mars/Olympus\n")),
+		).toBeUndefined();
+		expect(
+			readTimeZoneConfigSync(await project("{{ not yaml")),
+		).toBeUndefined();
 	});
 });

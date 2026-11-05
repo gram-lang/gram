@@ -1,7 +1,15 @@
 import { getAST, GramParseError, type RecipeAST } from "@gram-lang/parser";
-import { compile, type CompilationResult } from "@gram-lang/kitchen";
+import {
+	applyScale,
+	compile,
+	resolveScaleFactor,
+	type CompilationResult,
+} from "@gram-lang/kitchen";
 import {
 	analyze,
+	convertUnit,
+	parseDensityOverrides,
+	resolveIngredientDensity,
 	type AnalyzedCompilationResult,
 	type IngredientData,
 } from "@gram-lang/analyzer";
@@ -15,6 +23,7 @@ import {
 	finalizeComposed,
 	type ModuleGraph,
 } from "@gram-lang/modules";
+import type { CompileSession } from "./session";
 import { buildLineIndex } from "./utils/position";
 
 /**
@@ -48,12 +57,24 @@ export interface DocumentState {
 	version: number | undefined;
 	lineStarts: number[];
 	ast: RecipeAST | null;
+	/**
+	 * The AST `compilation` was compiled from: `ast` with its `@use` imports
+	 * spliced in. What the AST inspector shows; never what document symbols,
+	 * folding or semantic tokens read (they stay on this file's own `ast`).
+	 */
+	composedAst?: RecipeAST | null;
 	parseError: string | null;
 	/** Character offset of `parseError` into `text`, when known. */
 	parseErrorOffset: number | null;
 	/** Error message from compile() or analyze() when AST parsing succeeded but compilation failed. */
 	compileError?: string | null;
 	compilation: AnalyzedCompilationResult | CompilationResult | null;
+	/**
+	 * Why the session's scale could not be applied (an ingredient the recipe
+	 * does not have, a unit that does not convert). Not blocking, as in the
+	 * playground: `compilation` is then the recipe at its written size.
+	 */
+	scaleError?: string | null;
 	/**
 	 * The graph `compilation` was composed against, when this document has
 	 * (or transitively depends on) `@use` imports — carries every dependency's
@@ -64,6 +85,41 @@ export interface DocumentState {
 	moduleGraph?: ModuleGraph;
 }
 
+/**
+ * `compiled` at the session's scale, as the playground scales it: a factor, or
+ * the factor that gives the target quantity of one ingredient (converting
+ * between mass and volume when a density is known). Throws a scale error,
+ * which `parseDocument` keeps as not blocking.
+ */
+function scaleOf(
+	compiled: CompilationResult,
+	session: CompileSession,
+	db: Record<string, IngredientData>,
+): CompilationResult {
+	const request = session.scale;
+	if (!request) return compiled;
+	const density =
+		request.type === "target"
+			? resolveIngredientDensity(
+					request.id,
+					db,
+					parseDensityOverrides(compiled.meta),
+				)?.density
+			: undefined;
+	const resolution = resolveScaleFactor(compiled, request, (value, from, to) =>
+		convertUnit(
+			value,
+			from,
+			to,
+			density,
+			typeof compiled.meta?.language === "string"
+				? compiled.meta.language
+				: undefined,
+		),
+	);
+	return applyScale(compiled, resolution.factor);
+}
+
 export function parseDocument(
 	text: string,
 	db?: Record<string, IngredientData>,
@@ -71,6 +127,12 @@ export function parseDocument(
 	moduleCtx?: ModuleContext,
 	/** What the analyzer computes (`gram.bakersMath`, ...). Default: everything, as the engine. */
 	recipe: RecipeSettings = DEFAULT_RECIPE_SETTINGS,
+	/**
+	 * What the cook chose for this sitting (scale, stock, baker's reference).
+	 * Only the views are compiled with it: diagnostics, hover and inlay hints
+	 * read the source as written, so the server parses without it for them.
+	 */
+	session?: CompileSession,
 ): DocumentState {
 	const lineStarts = buildLineIndex(text);
 	try {
@@ -78,6 +140,21 @@ export function parseDocument(
 		let compilation: AnalyzedCompilationResult | CompilationResult | null =
 			null;
 		let compileError: string | null = null;
+		let composedAst: RecipeAST | null = null;
+		let scaleError: string | null = null;
+		const scaled = (
+			compiled: CompilationResult,
+			sitting: CompileSession | undefined,
+			scaleDb: Record<string, IngredientData>,
+		): CompilationResult => {
+			if (!sitting?.scale) return compiled;
+			try {
+				return scaleOf(compiled, sitting, scaleDb);
+			} catch (e) {
+				scaleError = String(e instanceof Error ? e.message : e);
+				return compiled;
+			}
+		};
 		try {
 			// `state.ast` (above) always stays this document's own single-file
 			// parse — document symbols, folding, semantic tokens, and
@@ -92,11 +169,20 @@ export function parseDocument(
 					db: db ?? {},
 					lang: moduleCtx.lang,
 					cache: moduleCtx.cache,
+					...(session?.stock && { stock: new Set(session.stock) }),
 				});
-				rawCompilation = finalizeComposed(compile(composed.ast), composed);
+				composedAst = composed.ast;
 				syntheticIngredients = composed.syntheticIngredients;
+				rawCompilation = finalizeComposed(
+					scaled(compile(composed.ast), session, {
+						...syntheticIngredients,
+						...db,
+					}),
+					composed,
+				);
 			} else {
-				rawCompilation = compile(ast);
+				composedAst = ast;
+				rawCompilation = scaled(compile(ast), session, db ?? {});
 			}
 			if (db) {
 				// Real DB entries always win on id collision, same as the CLI's
@@ -109,7 +195,12 @@ export function parseDocument(
 						...syntheticIngredients,
 						...db,
 					},
-					recipeSettingsToAnalyzerOptions(recipe),
+					{
+						...recipeSettingsToAnalyzerOptions(recipe),
+						...(session?.bakersReference && {
+							bakersReference: session.bakersReference,
+						}),
+					},
 				);
 				compilation = analyzed.result;
 			} else {
@@ -126,8 +217,10 @@ export function parseDocument(
 			ast,
 			parseError: null,
 			parseErrorOffset: null,
+			composedAst,
 			compileError,
 			compilation,
+			scaleError,
 			moduleGraph: moduleCtx?.graph,
 		};
 	} catch (e) {

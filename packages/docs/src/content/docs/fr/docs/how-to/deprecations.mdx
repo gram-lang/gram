@@ -15,6 +15,7 @@ Cette page répertorie l'ensemble des éléments dépréciés dans Gram, organis
 | Rédaction de recettes `.gram` via le CLI, le moteur de rendu ou le playground | **Aucune**. La syntaxe du langage ne comporte aucune dépréciation. |
 | Consommation du JSON compilé (`gram build`, interface web personnalisée, scripts) | Consultez les sections [Champs du JSON compilé](#champs-du-json-compilé) et [Compatibilité avec les versions antérieures](#compatibilité-avec-les-versions-antérieures). |
 | Rendu d'un diagramme de Gantt, commande VS Code ou notifications du serveur de langage | Voir [Remplacement du diagramme de Gantt et de ses composants](#remplacement-du-diagramme-de-gantt-et-de-ses-composants). |
+| Développement d'un client d'éditeur pour le serveur de langage | Voir [Notification d'aperçu du serveur de langage](#notification-daperçu-du-serveur-de-langage). |
 | Intégration programmatique de `@gram-lang/kitchen` ou `@gram-lang/analyzer` | Consultez [Champs du JSON compilé](#champs-du-json-compilé), [`calculatePreparationTime`](#la-fonction-calculatepreparationtime) et [Compatibilité avec les versions antérieures](#compatibilité-avec-les-versions-antérieures). |
 
 Pour vérifier l'état de votre code applicatif, reportez-vous à la section [Identifier les usages dépréciés dans votre code](#identifier-les-usages-dépréciés-dans-votre-code).
@@ -131,7 +132,7 @@ Le diagramme de Gantt historique est officiellement remplacé par le [planning d
 | `@gram-lang/renderer/gantt.css` | Non requis : les styles du planning de préparation sont désormais intégrés directement dans `gram.css`. |
 | Clés `gantt_*` de `playground.views` (`@gram-lang/i18n`) | Non requis : le planning s'appuie sur les clés `workPlan*` du dictionnaire du renderer. |
 | Commande `gram.showGantt`, `Gram: Gantt Chart` (VS Code) | Commande `gram.showRunSheet` (`Gram: Work Plan`). L'ancienne commande ouvre la nouvelle vue tout en affichant un avertissement explicatif unique. |
-| Notification `gram/ganttUpdated` (serveur de langage) | Écoutez la notification `gram/runSheetUpdated`, ou consommez directement les données de la recette compilée. |
+| Notification `gram/ganttUpdated` (serveur de langage) | Lisez `gram/viewUpdated` pour la sortie `workPlan` (voir [Notification d'aperçu du serveur de langage](#notification-daperçu-du-serveur-de-langage)), ou consommez directement les données de la recette compilée. |
 
 La fonction `toGanttHTML()` émet un avertissement unique dans la console lors de son exécution.
 
@@ -152,6 +153,37 @@ container.innerHTML = runSheetToHTML(sheet, compiled);
 ```
 
 Si vous souhaitez concevoir une chronologie graphique sur mesure, la structure `sheet.recipes[0].days[].entries[]` fournit la liste ordonnée de tous les blocs avec leur minutage relatif : consultez le guide [Créer une interface personnalisée](/fr/docs/how-to/build-custom-ui/#construire-sa-propre-vue-planning).
+
+### Notification d'aperçu du serveur de langage
+
+<Since v="1.4.0" type="deprecated" />
+
+**Déprécié :** la notification `gram/previewUpdated`, transmise aux clients d'éditeurs qui n'activent pas le protocole des vues. **Remplacement conseillé :** adopter le [protocole des vues](/fr/docs/reference/tooling/language-server/#protocole-des-vues) (`gram/setOpenViews` et `gram/viewUpdated`).
+
+Jusqu'à la version 2.0.0, un client qui n'active pas le protocole continue de recevoir l'aperçu HTML de chaque recette ouverte — que le volet soit visible ou masqué —, remplacé par un panneau d'erreur lorsque la compilation échoue. Le serveur consigne un avertissement unique dans son journal d'exécution. Avec le nouveau protocole, le client déclare explicitement quelles sorties sont ouvertes et le serveur ne calcule que ces vues actives. Lorsqu'une recette contient une erreur, le client conserve son dernier état d'affichage valide : le détail de l'erreur est quant à lui consigné dans les diagnostics standard du LSP.
+
+| Élément déprécié | Remplacement conseillé |
+|---|---|
+| Notification `gram/previewUpdated` (`{ uri, html }`) | `gram/viewUpdated` pour la sortie `recipe` : `payload` contient le code HTML du rendu lorsque `state: "ok"`, tandis que `state: "paused"` signale une erreur de compilation. |
+| Panneau d'erreur émis à la place de l'aperçu | Le champ `error` d'une mise à jour `paused` (`title`, `message`, `range`), en complément des diagnostics standard déjà publiés. |
+
+Exemple de migration :
+
+```typescript
+// Avant (déprécié) :
+client.onNotification('gram/previewUpdated', ({ uri, html }) => show(uri, html));
+
+// Après (conseillé) :
+const client = new LanguageClient(id, name, serverOptions, {
+  ...clientOptions,
+  initializationOptions: { views: true },
+});
+client.sendNotification('gram/setOpenViews', { uri, viewIds: ['recipe'] });
+client.onNotification('gram/viewUpdated', (update) => {
+  if (update.state === 'ok') show(update.uri, update.payload);
+  else pause(update.uri, update.error.title);
+});
+```
 
 ### Compatibilité avec les versions antérieures
 
