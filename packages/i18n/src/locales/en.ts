@@ -10,6 +10,25 @@ export const en = {
 	renderer: {
 		viewsPaused: VIEWS_PAUSED.title,
 		viewsPausedDescription: VIEWS_PAUSED.description,
+		/** What a surface offers next to paused views: jump to the error. */
+		showError: "Show the error",
+		/** An output the recipe has nothing for (a work plan with nothing to schedule). */
+		outputEmpty: "Nothing to show for this recipe.",
+		/** The name of each output of the renderer (`outputs`), by its id. */
+		outputs: {
+			recipe: "Recipe",
+			workPlan: "Work plan",
+			ast: "AST",
+			json: "JSON",
+			"json-tree": "JSON tree",
+		} as Record<string, string>,
+		/** The name of each format a view can be written in (`FORMATS`). */
+		formats: {
+			html: "HTML",
+			markdown: "Markdown",
+			text: "Text",
+			print: "Print",
+		} as Record<string, string>,
 		shoppingList: "Shopping List",
 		cookware: "Cookware",
 		equipment: "Equipment",
@@ -176,7 +195,10 @@ export const en = {
 		inputTab: "Input (.gram)",
 		writePlaceholder: "Write your recipe here...",
 		outputTab: "Output",
+		// The label of the old view selector: the views are tabs now.
+		// @remove-in: 2.0.0 [i18n-playground-view-labels]
 		viewLabel: "View:",
+		formatLabel: "Format",
 		loadExample: "Load Example...",
 		recipe: "Recipe",
 		studioTitle: "Recipe settings",
@@ -212,6 +234,9 @@ export const en = {
 			empanadas: "Beef Empanadas",
 		},
 		views: {
+			// The labels of the old view selector: the outputs are now named by
+			// `renderer.outputs`, and the formats by `renderer.formats`.
+			// @remove-in: 2.0.0 [i18n-playground-view-labels]
 			json: "JSON Output",
 			ast: "AST (Raw)",
 			jsonTree: "Interactive Tree",
@@ -323,6 +348,11 @@ export const en = {
 		},
 		output: {
 			copy: "Copy to clipboard",
+			print: "Print this view",
+			/** The tabs of the views of the recipe. */
+			views: "Views",
+			/** The tab of the inspectors (AST, JSON), apart from the views. */
+			inspect: "Inspect",
 			loading: "Loading viewer...",
 		},
 		warnings: {

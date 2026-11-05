@@ -185,6 +185,20 @@ client.onNotification('gram/viewUpdated', (update) => {
 });
 ```
 
+### Playground view labels
+
+<Since v="1.4.0" type="deprecated" />
+
+**Deprecated:** the labels of the playground's old view selector in `@gram-lang/i18n`. **Recommended replacement:** the names of the renderer's outputs and formats.
+
+The playground now shows the views of the renderer as tabs, each in its formats, and its inspectors in a menu of their own, all named by their id. The old labels keep their text until 2.0.0.
+
+| Deprecated item | Recommended replacement |
+|---|---|
+| `playground.views.preview`, `runSheet`, `ast`, `json`, `jsonTree` | `renderer.outputs[id]`, with the output ids `recipe`, `workPlan`, `ast`, `json` and `json-tree` |
+| `playground.views.markdown` | `renderer.formats.markdown` (Markdown is a format of a view, not a view) |
+| `playground.viewLabel` | `playground.output.views` (the tabs) and `playground.output.inspect` (the inspector menu) |
+
 ### Backwards compatibility with older JSON
 
 <Since v="1.4.0" type="deprecated" />

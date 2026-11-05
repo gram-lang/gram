@@ -1,8 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { DEFAULT_VIEW_SETTINGS } from "@gram-lang/renderer";
+import { DEFAULT_VIEW_SETTINGS, outputs } from "@gram-lang/renderer";
 import { parseDocument } from "../src/document-state";
 import {
 	blockingDiagnostics,
+	describeOutputs,
 	renderOutputs,
 	type ViewUpdate,
 } from "../src/views";
@@ -248,5 +249,21 @@ Mix @flour{200g} and @water{140g}.
 
 	it("is the source as written without one", () => {
 		expect(flourOf(parseDocument(BREAD))).toBe(200);
+	});
+});
+
+describe("describeOutputs", () => {
+	it("names every output of the renderer, in the language asked for", () => {
+		const fr = describeOutputs("fr-FR");
+		expect(fr.outputs.map((o) => o.id)).toEqual(outputs.map((o) => o.id));
+		expect(fr.outputs.find((o) => o.id === "workPlan")?.label).toBe(
+			"Planning de préparation",
+		);
+		expect(fr.outputs.find((o) => o.id === "json-tree")).toMatchObject({
+			kind: "inspector",
+			presentation: "tree",
+		});
+		expect(fr.strings.showError).toBe("Voir l'erreur");
+		expect(describeOutputs().strings.showError).toBe("Show the error");
 	});
 });

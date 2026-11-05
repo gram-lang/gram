@@ -61,7 +61,7 @@ The Gram Language Server currently supports:
 *   **Hover:** Nutritional information and scaled quantities on hover.
 *   **Completion:** Suggestions for units, ingredients (based on the user's local ingredient DB), and cookware.
 *   **Document Formatting:** Automatic formatting of `.gram` files to the standard canonical style (powered by [`@gram-lang/format`](../format/README.md)).
-*   **Views protocol:** Renders only the views and inspectors currently open in the client (`gram/setOpenViews`), supporting session overrides for serving time, scaling, and stock (`gram/setSession`). Updates are emitted via `gram/viewUpdated` (paused upon compilation errors). Legacy clients continue receiving `gram/previewUpdated` (deprecated), `gram/runSheetUpdated`, and `gram/ganttUpdated` (deprecated) until 2.0.0.
+*   **Views protocol:** Renders only the views and inspectors currently open in the client (`gram/setOpenViews`), supporting session overrides for serving time, scaling, and stock (`gram/setSession`). Updates are emitted via `gram/viewUpdated` (paused upon compilation errors). The outputs a client can open are listed, with their names, in the `initialize` result (`capabilities.experimental.gramViews`). Legacy clients continue receiving `gram/previewUpdated` and `gram/ganttUpdated` (both deprecated) until 2.0.0.
 
 ---
 

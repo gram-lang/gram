@@ -180,11 +180,12 @@ describe("gram.rests in the language server", () => {
 });
 
 describe("the work plan in the language server", () => {
-	it("sends the work plan next to the preview, in days before the service", async () => {
+	it("renders the work plan in days before the service", async () => {
 		client = new Client();
-		await client.start();
+		await client.start({ views: true });
 		client.open(RECIPE("Tart"));
-		const html = await client.htmlOf("gram/runSheetUpdated", (h) =>
+		client.openViews(["workPlan"]);
+		const html = await client.viewHtml("workPlan", (h) =>
 			h.includes("Work plan — Tart"),
 		);
 		expect(html).toContain("work-plan-day");
@@ -199,22 +200,23 @@ describe("the work plan in the language server", () => {
 		const firstDay = (html: string) =>
 			html.split('class="work-plan-day"')[1] ?? "";
 		client = new Client();
-		await client.start();
+		await client.start({ views: true });
 		client.open(RECIPE("Tart"));
-		const bySection = await client.htmlOf("gram/runSheetUpdated", (h) =>
+		client.openViews(["workPlan"]);
+		const bySection = await client.viewHtml("workPlan", (h) =>
 			h.includes("Work plan — Tart"),
 		);
 		expect(firstDay(bySection)).not.toContain("filling");
 
 		client.setting = "upfront";
 		client.settingChanged();
-		const upfront = await client.htmlOf("gram/runSheetUpdated", (h) =>
+		const upfront = await client.viewHtml("workPlan", (h) =>
 			firstDay(h).includes("filling"),
 		);
 		expect(firstDay(upfront)).toContain("flour");
 	}, 20_000);
 
-	it("keeps sending the Gantt chart notification until 2.0.0", async () => {
+	it("keeps sending the Gantt chart notification to older clients until 2.0.0", async () => {
 		client = new Client();
 		await client.start();
 		client.open(RECIPE("Tart"));
@@ -222,20 +224,11 @@ describe("the work plan in the language server", () => {
 			h.includes("gantt"),
 		);
 		expect(html.length).toBeGreaterThan(0);
-	}, 20_000);
-
-	it("says what is wrong instead of leaving the plan stale", async () => {
-		client = new Client();
-		await client.start();
-		client.open(RECIPE("Tart"));
-		await client.htmlOf("gram/runSheetUpdated", (h) =>
-			h.includes("Work plan — Tart"),
+		// The work plan has its own output now: older clients no longer get it.
+		await client.settle();
+		expect(client.notes.some((n) => n.method === "gram/runSheetUpdated")).toBe(
+			false,
 		);
-		client.change("## Broken\n\n@flour{", 2);
-		const html = await client.htmlOf("gram/runSheetUpdated", (h) =>
-			h.includes("Syntax Error"),
-		);
-		expect(html).toContain("gram-preview-error-state");
 	}, 20_000);
 });
 
@@ -254,15 +247,16 @@ Bake ~{20min}.
 `;
 
 describe("gram.comments in the language server", () => {
-	it("shows the comments in the preview and the work plan until told otherwise", async () => {
+	it("shows the comments in the recipe and the work plan until told otherwise", async () => {
 		client = new Client();
-		await client.start();
+		await client.start({ views: true });
 		client.open(NOTED);
-		const html = await client.previewMatching((h) =>
+		client.openViews(["recipe", "workPlan"]);
+		const html = await client.viewHtml("recipe", (h) =>
 			h.includes("Do not overmix."),
 		);
 		expect(html).toContain("keep it cold");
-		const plan = await client.htmlOf("gram/runSheetUpdated", (h) =>
+		const plan = await client.viewHtml("workPlan", (h) =>
 			h.includes("Do not overmix."),
 		);
 		expect(plan).toContain("inline-comment");
@@ -272,22 +266,24 @@ describe("gram.comments in the language server", () => {
 		client = new Client();
 		client.comments = "hide";
 		client.configDelay = 300;
-		await client.start();
+		await client.start({ views: true });
 		client.open(NOTED);
-		const preview = await client.previewMatching(
+		client.openViews(["recipe", "workPlan"]);
+		// What is sent before the setting was read still has them: wait for the next.
+		const recipe = await client.viewHtml(
+			"recipe",
 			(h) => h.includes("Cake") && !h.includes("Do not overmix."),
 		);
-		expect(preview).not.toContain("keep it cold");
-		// The plan sent before the setting was read still has them: wait for the next.
-		const plan = await client.htmlOf(
-			"gram/runSheetUpdated",
+		expect(recipe).not.toContain("keep it cold");
+		const plan = await client.viewHtml(
+			"workPlan",
 			(h) => h.includes("Work plan") && !h.includes("Do not overmix."),
 		);
 		expect(plan).not.toContain("keep it cold");
 
 		client.comments = "show";
 		client.settingChanged();
-		await client.previewMatching((h) => h.includes("Do not overmix."));
+		await client.viewHtml("recipe", (h) => h.includes("Do not overmix."));
 	}, 20_000);
 });
 
