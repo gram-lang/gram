@@ -13,10 +13,8 @@ import {
 	VIEW_FLAG_ARG,
 	resolveExportView,
 } from "../services/plan-options";
-import {
-	DEFAULT_VIEW_SETTINGS,
-	viewSettingsToRendererOptions,
-} from "@gram-lang/renderer";
+import { DEFAULT_VIEW_SETTINGS } from "@gram-lang/renderer";
+import { cliViewName } from "../core/cli-views";
 import {
 	RECIPE_VIEW_SETTINGS,
 	STEP_QTY_ALIAS_ARG,
@@ -25,7 +23,7 @@ import {
 	recipeSettingArgs,
 	viewSettingArgs,
 } from "../services/setting-args";
-import { GramCLIError } from "../errors";
+import { ExitCode, GramCLIError } from "../errors";
 
 export default defineCommand({
 	meta: {
@@ -98,6 +96,14 @@ export default defineCommand({
 		let view: ReturnType<typeof resolveExportView>;
 		try {
 			view = resolveExportView(args, rawArgs, config);
+			// Every view a command offers has a print layout today; one that
+			// does not is refused here rather than half-printed.
+			if (!view.view.formats.includes("print")) {
+				throw new GramCLIError(
+					`The ${cliViewName(view.view.id)} view has no print layout: use gram export instead.`,
+					ExitCode.Error,
+				);
+			}
 		} catch (err) {
 			if (err instanceof GramCLIError) {
 				log.error(err.message);
@@ -111,10 +117,7 @@ export default defineCommand({
 		let usedStock = new Set<string>();
 		try {
 			htmlPath = await generatePrintHTML(filePath, db, scaleFactor, {
-				...viewSettingsToRendererOptions({
-					...DEFAULT_VIEW_SETTINGS,
-					...settings,
-				}),
+				settings: { ...DEFAULT_VIEW_SETTINGS, ...settings },
 				bakersReference,
 				recipe,
 				view,

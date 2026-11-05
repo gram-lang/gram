@@ -209,22 +209,22 @@ describe("view, export and print follow --mise-en-place", () => {
 
 	it("changes the exported Markdown total with the flag", async () => {
 		const path = await tmp(TART);
-		const per = await exportRecipe(path, "md", null, undefined, {
-			miseEnPlace: "perSection",
+		const per = await exportRecipe(path, "markdown", null, undefined, {
+			settings: { miseEnPlace: "perSection" },
 		});
-		const up = await exportRecipe(path, "md", null, undefined, {
-			miseEnPlace: "upfront",
+		const up = await exportRecipe(path, "markdown", null, undefined, {
+			settings: { miseEnPlace: "upfront" },
 		});
 		expect(per).not.toBe(up);
 	});
 
 	it("changes the exported print total with the flag", async () => {
 		const path = await tmp(TART);
-		const per = await exportRecipe(path, "html", null, undefined, {
-			miseEnPlace: "perSection",
+		const per = await exportRecipe(path, "print", null, undefined, {
+			settings: { miseEnPlace: "perSection" },
 		});
-		const up = await exportRecipe(path, "html", null, undefined, {
-			miseEnPlace: "upfront",
+		const up = await exportRecipe(path, "print", null, undefined, {
+			settings: { miseEnPlace: "upfront" },
 		});
 		expect(per).not.toBe(up);
 	});

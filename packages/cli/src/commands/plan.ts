@@ -127,6 +127,7 @@ export default defineCommand({
 				now,
 				miseEnPlace,
 				rests,
+				comments,
 				scaleFactor,
 				lang: config.language,
 				paths: config.paths,
@@ -144,7 +145,7 @@ export default defineCommand({
 				const range = parseFindRange(args.find);
 				const mealTimes = parseMealTimes(args["meal-times"], config.mealTimes);
 				process.stdout.write(
-					findPlan(result, range, format, {
+					findPlan(result, range, format as "text" | "md" | "json", {
 						mealTimes,
 						lang: config.language,
 					}),
@@ -152,9 +153,7 @@ export default defineCommand({
 				process.exit(ExitCode.Ok);
 			}
 
-			process.stdout.write(
-				formatPlan(result, format, config.language, comments),
-			);
+			process.stdout.write(formatPlan(result, format, config.language));
 
 			if (args.ics) {
 				const path = resolve(args.ics as string);
