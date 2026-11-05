@@ -31,14 +31,26 @@ describe("the view tabs and the inspector menu", () => {
 		const t = getDictionary("en");
 		const tabs = viewTabs(t);
 		const menu = inspectorOptions(t);
-		expect(tabs).toEqual([
-			{ label: "Recipe", value: "recipe" },
-			{ label: "Work plan", value: "workPlan" },
-		]);
-		expect(menu.map((o) => o.value)).toEqual(["ast", "json", "json-tree"]);
+		// Read from the registry, not listed here: a view added there needs no
+		// edit in this test.
+		expect(tabs.map((o) => o.value)).toEqual(
+			outputs.filter((o) => o.kind === "renderer").map((o) => o.id),
+		);
+		expect(menu.map((o) => o.value)).toEqual(
+			outputs.filter((o) => o.kind === "inspector").map((o) => o.id),
+		);
 		expect([...tabs, ...menu].map((o) => o.value)).toEqual(
 			outputs.map((o) => o.id),
 		);
+		expect(tabs).toContainEqual({ label: "Recipe", value: "recipe" });
+		expect(tabs).toContainEqual({ label: "Work plan", value: "workPlan" });
+	});
+
+	it("names every output, in every language", () => {
+		for (const lang of ["en", "fr"] as const) {
+			const names = getDictionary(lang).renderer.outputs;
+			for (const output of outputs) expect(names[output.id]).toBeTruthy();
+		}
 	});
 
 	it("names them in the playground's language", () => {

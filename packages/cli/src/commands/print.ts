@@ -16,7 +16,7 @@ import {
 import { DEFAULT_VIEW_SETTINGS } from "@gram-lang/renderer";
 import { cliViewName } from "../core/cli-views";
 import {
-	RECIPE_VIEW_SETTINGS,
+	EXPORT_VIEW_SETTINGS,
 	STEP_QTY_ALIAS_ARG,
 	readRecipeSettingArgs,
 	readViewSettingArgs,
@@ -29,7 +29,7 @@ export default defineCommand({
 	meta: {
 		name: "print",
 		description:
-			"Generate a print-ready HTML of a view (the recipe or its work plan) and open it in the browser",
+			"Generate a print-ready HTML of a view of a recipe (see --view) and open it in the browser",
 	},
 	args: {
 		file: {
@@ -57,7 +57,7 @@ export default defineCommand({
 			description: "Skip ingredient database",
 			default: false,
 		},
-		...viewSettingArgs(RECIPE_VIEW_SETTINGS),
+		...viewSettingArgs(EXPORT_VIEW_SETTINGS),
 		...STEP_QTY_ALIAS_ARG,
 		...recipeSettingArgs(),
 		"bakers-reference": {
@@ -91,7 +91,7 @@ export default defineCommand({
 		const bakersReference =
 			(args["bakers-reference"] as string) ||
 			(args["bakers-math"] ? "" : undefined);
-		const settings = readViewSettingArgs(args, RECIPE_VIEW_SETTINGS);
+		const settings = readViewSettingArgs(args, EXPORT_VIEW_SETTINGS);
 		const recipe = readRecipeSettingArgs(args);
 		let view: ReturnType<typeof resolveExportView>;
 		try {

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
+import { outputs } from "@gram-lang/renderer";
 import { Client, type Note, URI } from "./helpers/lsp-client";
 
 /*
@@ -76,14 +77,8 @@ describe("the views protocol", () => {
 			};
 		};
 		const listed = result.capabilities.experimental?.gramViews?.outputs ?? [];
-		expect(listed.map((o) => o.id)).toEqual([
-			"recipe",
-			"workPlan",
-			"ast",
-			"json",
-			"json-tree",
-		]);
-		expect(listed[1]?.label).toBe("Work plan");
+		expect(listed.map((o) => o.id)).toEqual(outputs.map((o) => o.id));
+		expect(listed.find((o) => o.id === "workPlan")?.label).toBe("Work plan");
 	}, 20_000);
 
 	it("sends nothing to a views client until it says what is open", async () => {

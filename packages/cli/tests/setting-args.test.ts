@@ -3,7 +3,7 @@ import { runPipeline } from "../src/core/pipeline";
 import { cleanupTmpFile, makeDb, writeTmpFile } from "./helpers";
 import { RECIPE_SETTINGS, VIEW_SETTINGS } from "@gram-lang/renderer";
 import {
-	RECIPE_VIEW_SETTINGS,
+	EXPORT_VIEW_SETTINGS,
 	STEP_QTY_ALIAS_ARG,
 	readRecipeSettingArgs,
 	readViewSettingArgs,
@@ -19,12 +19,12 @@ describe("setting flags", () => {
 		expect(settingFlagName("massStandardization")).toBe("mass-standardization");
 	});
 
-	it("give the recipe view a flag for every view setting", () => {
-		expect([...RECIPE_VIEW_SETTINGS].sort()).toEqual(
+	it("give export and print a flag for every setting a view honors", () => {
+		expect([...EXPORT_VIEW_SETTINGS].sort()).toEqual(
 			Object.keys(VIEW_SETTINGS).sort(),
 		);
-		const args = viewSettingArgs(RECIPE_VIEW_SETTINGS);
-		for (const key of RECIPE_VIEW_SETTINGS) {
+		const args = viewSettingArgs(EXPORT_VIEW_SETTINGS);
+		for (const key of EXPORT_VIEW_SETTINGS) {
 			expect(args[settingFlagName(key)]).toBeDefined();
 		}
 	});
@@ -46,7 +46,7 @@ describe("setting flags", () => {
 
 describe("readViewSettingArgs", () => {
 	it("leaves out a setting whose flag is absent", () => {
-		expect(readViewSettingArgs({}, RECIPE_VIEW_SETTINGS)).toEqual({});
+		expect(readViewSettingArgs({}, EXPORT_VIEW_SETTINGS)).toEqual({});
 	});
 
 	it("reads the CLI spelling back to the setting's value", () => {
@@ -58,7 +58,7 @@ describe("readViewSettingArgs", () => {
 					"bakers-math-only": true,
 					"step-quantities": "hide",
 				},
-				RECIPE_VIEW_SETTINGS,
+				EXPORT_VIEW_SETTINGS,
 			),
 		).toEqual({
 			miseEnPlace: "perDay",
@@ -72,7 +72,7 @@ describe("readViewSettingArgs", () => {
 		expect(
 			readViewSettingArgs(
 				{ nutrition: "per-100g", "step-qty": false },
-				RECIPE_VIEW_SETTINGS,
+				EXPORT_VIEW_SETTINGS,
 			),
 		).toEqual({ nutritionBasis: "per100g", stepQuantities: "hide" });
 	});
@@ -86,7 +86,7 @@ describe("readViewSettingArgs", () => {
 					"step-quantities": "show",
 					"step-qty": false,
 				},
-				RECIPE_VIEW_SETTINGS,
+				EXPORT_VIEW_SETTINGS,
 			),
 		).toEqual({ nutritionBasis: "total", stepQuantities: "show" });
 	});
@@ -107,7 +107,7 @@ describe("readViewSettingArgs", () => {
 		const out = spyOn(process.stdout, "write").mockImplementation(() => true);
 		try {
 			expect(() =>
-				readViewSettingArgs({ nutrition: "bad" }, RECIPE_VIEW_SETTINGS),
+				readViewSettingArgs({ nutrition: "bad" }, EXPORT_VIEW_SETTINGS),
 			).toThrow("exit");
 		} finally {
 			exit.mockRestore();

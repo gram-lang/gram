@@ -66,6 +66,15 @@ describe("formats", () => {
 		);
 	});
 
+	it("says so when a view has none of the formats a command writes", () => {
+		// A view on screen only: gram export's html is the print layout.
+		const screenOnly = { ...recipe, id: "notes", formats: ["html"] } as const;
+		expect(cliFormatsOf(screenOnly, EXPORT_FORMATS)).toEqual([]);
+		expect(() => resolveCliFormat(screenOnly, "html", EXPORT_FORMATS)).toThrow(
+			"The notes view has none of the formats this command writes.",
+		);
+	});
+
 	it("gives every export format a file extension", () => {
 		for (const name of Object.keys(EXPORT_FORMATS)) {
 			expect(EXPORT_EXTENSIONS[name]).toBeString();
