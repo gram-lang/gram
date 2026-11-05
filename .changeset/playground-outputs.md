@@ -12,6 +12,7 @@
 - On a narrow output column, the Inspect tab shrinks to its icon so the tabs keep the room
 - The JSON tree folds with the keyboard too
 - A work plan with nothing to schedule now says so instead of staying blank
+- The "Schedule & Service" settings now say what they change: mostly the work plan, and in the recipe only the total and idle times, with a link that opens the work plan
 
 **Deprecated**
 

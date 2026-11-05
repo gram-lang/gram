@@ -341,6 +341,10 @@ export const en = {
 				"Calculates gross purchasing weight to obtain the desired net quantity, accounting for peeling and trimming waste in the database.",
 			nutrition:
 				"Estimates calories and macronutrients (protein, carbs, fat, fiber) per serving or per 100g via the nutritional tables in the database.",
+			/** The note of the "Schedule & Service" section: what these settings change in each view. */
+			scheduleNote:
+				"These settings mostly shape the work plan. In the recipe, only the total and idle times change.",
+			scheduleNoteLink: "See the work plan",
 			physicsDisclaimer:
 				"In this playground, physical and nutritional calculations rely on an ingredient database limited to example recipes.",
 			stockItem:

@@ -89,6 +89,8 @@ const emit = defineEmits<{
 	"update:rests": [rests: RestChoice];
 	"update:plan": [plan: PlanSettings];
 	"clear-plan": [];
+	/** Show the work plan: where most of the "Schedule & Service" settings show. */
+	"show-work-plan": [];
 }>();
 
 // Accordion open/collapsed state
@@ -902,6 +904,18 @@ function resetStockSection() {
       </div>
 
       <div v-show="openSections.schedule" class="studio-section-body">
+        <p class="studio-section-note">
+          <svg class="note-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span>
+            {{ t.playground.help.scheduleNote }}
+            <button type="button" class="studio-note-link" @click="emit('show-work-plan')">{{ t.playground.help.scheduleNoteLink }}</button>
+          </span>
+        </p>
+
         <div class="studio-field">
           <div class="studio-label-row">
             <label class="studio-label">{{ t.renderer.scheduleLabel }}</label>
@@ -1603,6 +1617,27 @@ function resetStockSection() {
   gap: 14px;
   border-top: 1px solid var(--sl-color-border);
   background-color: var(--sl-color-bg);
+}
+
+.studio-note-link {
+  display: inline;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--sl-color-text-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.studio-note-link:hover {
+  color: var(--sl-color-white);
+}
+
+.studio-note-link:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
 }
 
 .studio-section-note {
