@@ -1,5 +1,5 @@
 import type { Availability, RunSheet } from "@gram-lang/scheduler";
-import { project, runSheet } from "@gram-lang/scheduler";
+import { prepareViews } from "@gram-lang/renderer";
 import type {
 	CompilationResult,
 	MiseEnPlaceMode,
@@ -108,21 +108,16 @@ export function workPlanFor(
 	context: PlanContext,
 	choice: { miseEnPlace?: MiseEnPlaceMode; rests?: RestChoice } = {},
 ): RunSheet {
-	const projection = {
+	const sheet = prepareViews(compiled, choice, {
+		kitchen: {
+			timeZone: context.timeZone,
+			availability: context.availability,
+			now: context.now,
+		},
 		serveAt: context.serveAt,
-		timeZone: context.timeZone,
-		availability: context.availability,
-		now: context.now,
-	};
-	const plan = project(
-		[
-			{
-				graph: compiled.tasks,
-				title: compiled.title ?? undefined,
-				options: choice,
-			},
-		],
-		projection,
-	);
-	return runSheet(plan, { graph: compiled.tasks, context: projection });
+	}).runSheet;
+	if (!sheet) {
+		throw new GramCLIError("This recipe has nothing to plan.", ExitCode.Error);
+	}
+	return sheet;
 }

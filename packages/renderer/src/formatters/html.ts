@@ -5,7 +5,7 @@ import type {
 	RenderableMetrics,
 } from "../types";
 import type { RenderBackend, RenderSections } from "../traversal";
-import { renderRecipe } from "../traversal";
+import { renderRecipe, timesIn } from "../traversal";
 import {
 	formatDuration as defaultFormatDuration,
 	escapeHtml,
@@ -23,7 +23,7 @@ import {
 	nutritionGroups,
 	resolveNutritionBasis,
 } from "../nutrition";
-import { describeMiseEnPlaceItem, timesOf } from "../mise-en-place";
+import { describeMiseEnPlaceItem } from "../mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "./element";
 import { runSheetToHTML } from "../run-sheet";
 import { moduleLabel } from "./shared";
@@ -61,7 +61,7 @@ const htmlBackend: RenderBackend = {
 		return `<h1${titleClass}>${escapeHtml(data.title)}</h1>\n\n`;
 	},
 
-	renderMeta(data, _context, options) {
+	renderMeta(data, context, options) {
 		const t = getDictionary(options.lang);
 		const formatDuration = options.formatDuration || defaultFormatDuration;
 		// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
@@ -176,7 +176,7 @@ const htmlBackend: RenderBackend = {
 
 			// Total and idle time depend on the chosen schedule; preparation and
 			// active time are the same in all of them.
-			const { totalTime, idleTime } = timesOf(data, options);
+			const { totalTime, idleTime } = timesIn(context);
 
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
 			const totalTooltip = renderTooltipHTML(

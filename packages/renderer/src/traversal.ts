@@ -5,6 +5,7 @@ import type {
 	RenderContext,
 	RenderableCompilationResult,
 } from "./types";
+import { type ViewInput, prepareViews } from "./prepare-views";
 
 /**
  * html.ts/markdown.ts/print.ts used to each hand-roll their own top-level
@@ -96,15 +97,40 @@ export interface RenderBackend {
 	): string;
 }
 
+/**
+ * The total and idle time of the schedule the views follow, prepared once by
+ * `renderRecipe` (from `prepareViews`) rather than worked out again by each
+ * view.
+ */
+export function timesIn(context: RenderContext): {
+	totalTime: number;
+	idleTime: number;
+} {
+	if (!context.times) {
+		throw new Error(
+			"The render context has no times: render through renderRecipe.",
+		);
+	}
+	return context.times;
+}
+
 export function renderRecipe(
 	data: RenderableCompilationResult,
 	options: RendererOptions,
 	backend: RenderBackend,
+	// What a surface already prepared for its views; prepared here otherwise.
+	input: ViewInput = prepareViews(data, {
+		miseEnPlace: options.miseEnPlace,
+		rests: options.rests,
+	}),
 ): string {
 	// Hiding comments is one rule for every view, so it is applied here once
 	// rather than in each backend: a comment is never collected as a footnote.
 	if (!showsComments(options.comments)) data = withoutComments(data);
-	const context = backend.buildContext(data, options);
+	const context = {
+		...backend.buildContext(data, options),
+		times: input.times,
+	};
 	const title = backend.renderTitle(data, context, options);
 	const meta = backend.renderMeta(data, context, options);
 	const shoppingList = backend.renderShoppingList(data, context, options);

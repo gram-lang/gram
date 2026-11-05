@@ -5,7 +5,7 @@ import { isCoarseUnit } from "@gram-lang/i18n";
 import type { IngredientData } from "@gram-lang/analyzer";
 import {
 	formatTimer,
-	timesOf,
+	prepareViews,
 	toCommonFraction,
 	type NutritionBasis,
 	type RecipeSettings,
@@ -197,10 +197,10 @@ export async function buildViewModel(
 	// Total and rest time follow the chosen timeline; active and preparation
 	// time are the same in all of them.
 	const m = compiled.metrics;
-	const { totalTime: total, idleTime: rest } = timesOf(compiled, {
+	const { totalTime: total, idleTime: rest } = prepareViews(compiled, {
 		miseEnPlace: opts.miseEnPlace,
 		rests: opts.rests,
-	});
+	}).times;
 	const times =
 		m && (total || rest || m.activeTime || m.preparationTime)
 			? {

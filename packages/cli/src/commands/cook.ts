@@ -4,7 +4,7 @@ import { PassThrough } from "node:stream";
 import { log, spinner } from "@clack/prompts";
 import chalk from "chalk";
 import { render } from "ink";
-import { scheduleTimes } from "@gram-lang/kitchen";
+import { prepareViews } from "@gram-lang/renderer";
 import React from "react";
 import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
@@ -93,7 +93,8 @@ export default defineCommand({
 				stock,
 			});
 			reportUnusedStock("gram cook", "cooked", stock, [{ usedStock }]);
-			totalTime = scheduleTimes(compiled, miseEnPlace, rests).totalTime;
+			totalTime = prepareViews(compiled, { miseEnPlace, rests }).times
+				.totalTime;
 			const massMap: Record<string, number> = {};
 			for (const item of analyzed?.result?.shopping_list ?? []) {
 				if (item.id && typeof item.normalizedMass === "number")

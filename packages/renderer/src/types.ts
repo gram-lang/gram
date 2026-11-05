@@ -196,6 +196,8 @@ export interface RendererOptions {
 }
 
 export interface RenderContext {
+	/** The total and idle time of the chosen schedule, prepared once (`prepareViews`). */
+	times?: { totalTime: number; idleTime: number };
 	registry?: {
 		ingredients?: Record<string, any>;
 		cookware?: Record<string, any>;

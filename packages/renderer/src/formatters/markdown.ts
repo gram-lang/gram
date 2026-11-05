@@ -4,7 +4,7 @@ import type {
 	RenderableCompilationResult,
 } from "../types";
 import type { RenderBackend, RenderSections } from "../traversal";
-import { renderRecipe } from "../traversal";
+import { renderRecipe, timesIn } from "../traversal";
 import {
 	formatDuration as defaultFormatDuration,
 	aggToRendererItem,
@@ -25,7 +25,6 @@ import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { timesOf } from "../mise-en-place";
 import { runSheetToMarkdown } from "../run-sheet";
 
 const markdownBackend: RenderBackend = {
@@ -51,7 +50,7 @@ const markdownBackend: RenderBackend = {
 		return data.title ? `# ${escapeMarkdownHtml(data.title)}\n\n` : "";
 	},
 
-	renderMeta(data, _context, options) {
+	renderMeta(data, context, options) {
 		if (!((data.meta && Object.keys(data.meta).length > 0) || data.metrics)) {
 			return "";
 		}
@@ -61,7 +60,7 @@ const markdownBackend: RenderBackend = {
 		let md = `> **Metadata**\n`;
 		if (data.metrics) {
 			// Total and idle time follow the chosen schedule; the other two do not.
-			const { totalTime, idleTime } = timesOf(data, options);
+			const { totalTime, idleTime } = timesIn(context);
 			if (totalTime) {
 				md += `> - **${t.renderer.totalTime}**: ${formatDuration(totalTime)}\n`;
 			}

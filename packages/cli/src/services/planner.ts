@@ -4,15 +4,15 @@ import {
 	describeRunSheet,
 	describeServeTimes,
 	escapeHtml,
+	prepareViews,
 	runSheetToHTML,
 	runSheetToMarkdown,
 	runSheetToText,
 } from "@gram-lang/renderer";
-import {
-	type CompilationResult,
-	type MiseEnPlaceMode,
-	type RestChoice,
-	scheduleFor,
+import type {
+	CompilationResult,
+	MiseEnPlaceMode,
+	RestChoice,
 } from "@gram-lang/kitchen";
 import {
 	type Availability,
@@ -22,12 +22,10 @@ import {
 	type ProjectionInput,
 	type RunSheet,
 	type ServeCandidate,
-	earliestServe,
 	findServeTimes,
-	project,
-	runSheet,
 } from "@gram-lang/scheduler";
 import { runPipeline } from "../core/pipeline";
+import { ExitCode, GramCLIError } from "../errors";
 import { buildICS } from "./ics";
 
 export type PlanFormat = "text" | "md" | "html" | "json";
@@ -82,32 +80,28 @@ export async function planRecipe(
 		paths: options.paths,
 		stock: options.stock,
 	});
-	const input: ProjectionInput = {
-		graph: compiled.tasks,
-		title: compiled.title ?? undefined,
-		options: { miseEnPlace: options.miseEnPlace, rests: options.rests },
-	};
-	const context: ProjectionContext = {
-		// Replaced by every serving time tried; only a plan with one reads it.
-		serveAt: options.serveAt ?? "1970-01-01T00:00",
-		timeZone: options.timeZone,
-		availability: options.availability,
-		...(options.now !== undefined && { now: options.now }),
-	};
+	const views = prepareViews(
+		compiled,
+		{ miseEnPlace: options.miseEnPlace, rests: options.rests },
+		{
+			kitchen: {
+				timeZone: options.timeZone,
+				availability: options.availability,
+				...(options.now !== undefined && { now: options.now }),
+			},
+			...(options.serveAt !== undefined && { serveAt: options.serveAt }),
+		},
+	);
+	const sheet = views.runSheet;
+	if (!sheet || !views.projection) {
+		throw new GramCLIError("This recipe has nothing to plan.", ExitCode.Error);
+	}
+	const { input, context } = views.projection;
 	if (options.serveAt === undefined) {
-		const schedule = scheduleFor(compiled, options.miseEnPlace, options.rests);
-		const sheet = runSheet(schedule!, {
-			graph: compiled.tasks,
-			...(compiled.title && { title: compiled.title }),
-		});
-		const earliest = earliestServe(input, {
-			...context,
-			now: context.now ?? new Date().toISOString(),
-		});
+		const earliest = views.earliestServe() ?? undefined;
 		return { compiled, sheet, usedStock, input, context, earliest };
 	}
-	const plan = project([input], context);
-	const sheet = runSheet(plan, { graph: compiled.tasks, context });
+	const plan = views.plan ?? undefined;
 	return { compiled, plan, sheet, usedStock, input, context };
 }
 

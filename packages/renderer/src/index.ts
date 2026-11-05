@@ -10,6 +10,13 @@ export {
 	resolveNutritionBasis,
 } from "./nutrition";
 export { timesOf } from "./mise-en-place";
+export { prepareViews } from "./prepare-views";
+export type {
+	KitchenContext,
+	PrepareViewsOptions,
+	ViewInput,
+	ViewSchedule,
+} from "./prepare-views";
 export {
 	COMMENTS_MODES,
 	DEFAULT_RECIPE_SETTINGS,
