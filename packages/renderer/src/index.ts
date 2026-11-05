@@ -38,6 +38,11 @@ export { JSON_TREE_CSS, renderJsonTree } from "./inspectors/json-tree";
 export type { JsonTreeOptions } from "./inspectors/json-tree";
 export { renderSExpr } from "./inspectors/s-expr";
 export { outputs } from "./outputs";
+export { describeError } from "./describe-error";
+export type {
+	DescribableDiagnostic,
+	ErrorDescription,
+} from "./describe-error";
 export type { OutputId } from "./outputs";
 export type {
 	KitchenContext,

@@ -1,7 +1,17 @@
 import type { GramLocale } from "./en";
 
+// The views of a recipe that stopped compiling: shared by the renderer's
+// error model (`describeError`) and the playground's error card.
+const VIEWS_PAUSED = {
+	title: "Génération interrompue",
+	description:
+		"La recette contient des erreurs bloquantes empêchant la génération de l'aperçu.",
+};
+
 export const fr: GramLocale = {
 	renderer: {
+		viewsPaused: VIEWS_PAUSED.title,
+		viewsPausedDescription: VIEWS_PAUSED.description,
 		shoppingList: "Liste de courses",
 		cookware: "Matériel",
 		equipment: "Équipement",
@@ -321,9 +331,8 @@ export const fr: GramLocale = {
 			collapseConsole: "Réduire la console",
 		},
 		errorState: {
-			title: "Génération interrompue",
-			blockingDescription:
-				"La recette contient des erreurs bloquantes empêchant la génération de l'aperçu.",
+			title: VIEWS_PAUSED.title,
+			blockingDescription: VIEWS_PAUSED.description,
 			jumpToError: "Aller à l'erreur",
 			line: "Ligne",
 		},
