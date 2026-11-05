@@ -25,7 +25,8 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 
 ### 3. Work plan view
 - **Dedicated work plan panel**: Run `Gram: Work Plan` (or click the checklist icon in the editor toolbar) to display the full schedule in a dedicated WebView independent of the live preview. It details daily kitchen presence, items to take out, tasks to perform, and background passive rests.
-- **Relative countdown (`D-2`, `D-1`, `Day D`)**: Without a serving time configured in the editor, the schedule is presented as a relative countdown with estimated durations per day (e.g. "about 55 min"). For exact dates, clock times, and scheduling margins, run `gram plan --serve` or open the online playground.
+- **Relative countdown (`D-2`, `D-1`, `Day D`)**: Without a serving time, the schedule is presented as a relative countdown with estimated durations per day (e.g. "about 55 min").
+- **Serving time** <Since v="1.4.0" />: The **Served at** field at the top of the panel puts the plan on the calendar, with dates, clock times and margins, in your project's time zone and within its availability (`timezone` and `availability` in `.gram/config.yaml`). **When to serve?** proposes the times that work over the next seven days at your meal times (`mealTimes`), the earliest one first, and tells why the others do not; click one to use it. **Clear** goes back to the countdown. The serving time is kept per recipe while VS Code is open, and forgotten when you close the file or the window, so a plan is never laid out on a time already past.
 - **Setting synchronization**: The view adapts dynamically to the `gram.miseEnPlace`, `gram.rests` and `gram.comments` configuration settings (detailed below).
 - **Gantt chart replacement**: The legacy `Gram: Gantt Chart` command is deprecated since version 1.4.0 (it redirects to the work plan with a one-time notice) and will be removed in version 2.0.0.
 

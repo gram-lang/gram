@@ -1,5 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { contentOf, readViewsCapability } from "../src/views/protocol";
+import {
+	contentOf,
+	isPlanned,
+	readServeAt,
+	readViewsCapability,
+} from "../src/views/protocol";
 import { ViewsState } from "../src/views/state";
 import { webviewPage } from "../src/views/webview";
 import { createClientOptions } from "../src/client-options";
@@ -179,6 +184,78 @@ describe("the page of a view panel", () => {
 		expect(page).toContain('href="media/preview.css"');
 		expect(page).toContain('href="media/json-tree.css"');
 		expect(page).toContain("postMessage({ type: 'ready' })");
+	});
+});
+
+describe("the serving time of a view laid out in time", () => {
+	const SERVING = {
+		label: "Service le",
+		clear: "Effacer",
+		clearTitle: "Revenir <au> planning",
+		suggest: "Quand servir ?",
+		none: "Rien",
+		whyNot: "Pourquoi pas les autres ?",
+		earliest: "Au plus tôt : {when}",
+	};
+	const base = {
+		nonce: "abc123",
+		cspSource: "vscode-resource:",
+		styles: { preview: "p.css", jsonTree: "j.css" },
+		title: "Plan",
+		showError: "Voir",
+		outputEmpty: "Rien",
+	};
+	const scriptOf = (html: string) =>
+		/<script nonce="abc123">([\s\S]*)<\/script>/.exec(html)?.[1] ?? "";
+
+	it("is offered by the views that read the run sheet, whatever their id", () => {
+		expect(
+			isPlanned({ id: "x", kind: "renderer", label: "X", needs: ["runSheet"] }),
+		).toBe(true);
+		expect(
+			isPlanned({ id: "workPlan", kind: "renderer", label: "W", needs: [] }),
+		).toBe(false);
+		expect(isPlanned({ id: "json", kind: "inspector", label: "J" })).toBe(
+			false,
+		);
+	});
+
+	it("puts the field and the suggestions on the page only when asked", () => {
+		const page = webviewPage({ ...base, serving: SERVING });
+		expect(page).toContain('type="datetime-local"');
+		expect(page).toContain("Quand servir ?");
+		expect(page).toContain('title="Revenir &lt;au&gt; planning"');
+		expect(webviewPage(base)).not.toContain('id="serving"');
+	});
+
+	it("writes a script that runs, with or without the field", () => {
+		for (const page of [
+			webviewPage(base),
+			webviewPage({ ...base, serving: SERVING }),
+		]) {
+			// biome-ignore lint/security/noGlobalEval: compiles the page's own script, never runs it.
+			expect(() => new Function(scriptOf(page))).not.toThrow();
+		}
+	});
+
+	it("reads only a serving time the server can read", () => {
+		expect(readServeAt("2026-10-11T13:00")).toBe("2026-10-11T13:00");
+		expect(readServeAt("")).toBeUndefined();
+		expect(readServeAt(null)).toBeUndefined();
+		expect(readServeAt("2026-10-11 13:00<x>")).toBeUndefined();
+	});
+
+	it("keeps it per recipe for the sitting, sends the whole session, and forgets it on close", () => {
+		const { state } = recorder();
+		expect(state.setServeAt(A, "2026-10-11T13:00")).toEqual({
+			serveAt: "2026-10-11T13:00",
+		});
+		expect(state.setServeAt(A, "2026-10-11T13:00")).toBeUndefined();
+		expect(state.sessionOf(B)).toEqual({});
+		expect(state.setServeAt(A, undefined)).toEqual({});
+		state.setServeAt(A, "2026-10-12T20:00");
+		state.forget(A);
+		expect(state.sessionOf(A)).toEqual({});
 	});
 });
 

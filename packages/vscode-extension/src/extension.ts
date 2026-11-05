@@ -8,7 +8,11 @@ import {
 	TransportKind,
 } from "vscode-languageclient/node";
 import { ViewsController } from "./views/controller";
-import { readViewsCapability, type ViewUpdate } from "./views/protocol";
+import {
+	readViewsCapability,
+	type ServeSuggestions,
+	type ViewUpdate,
+} from "./views/protocol";
 
 let client: LanguageClient | undefined;
 
@@ -45,6 +49,19 @@ export async function activate(context: ExtensionContext): Promise<void> {
 						uri,
 						viewIds,
 					});
+				},
+				{
+					sendSession: (uri, session) => {
+						void languageClient.sendNotification("gram/setSession", {
+							uri,
+							...session,
+						});
+					},
+					serveTimes: (uri) =>
+						languageClient.sendRequest<ServeSuggestions | null>(
+							"gram/serveTimes",
+							{ uri },
+						),
 				},
 			);
 			context.subscriptions.push(views);

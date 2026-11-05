@@ -11,12 +11,57 @@ export interface OutputInfo {
 	/** Its name, in the editor's language. */
 	label: string;
 	presentation?: "code" | "tree";
+	/** What a view reads from the plan; `runSheet` means it is laid out in time. */
+	needs?: string[];
+}
+
+/** The words of the serving time controls, in the editor's language. */
+export interface ServingStrings {
+	label: string;
+	clear: string;
+	clearTitle: string;
+	suggest: string;
+	none: string;
+	whyNot: string;
+	/** "Earliest: {when}". */
+	earliest: string;
 }
 
 /** What the server says the extension can show, and the words it writes around it. */
 export interface ViewsCapability {
 	outputs: OutputInfo[];
-	strings: { showError: string; outputEmpty: string };
+	strings: { showError: string; outputEmpty: string; serving?: ServingStrings };
+}
+
+/**
+ * Whether an output is laid out in time, and so shows the serving time
+ * controls: read from what it needs, never from its id, so a new view laid
+ * out in time gets them too.
+ */
+export const isPlanned = (output: OutputInfo): boolean =>
+	output.kind === "renderer" && (output.needs ?? []).includes("runSheet");
+
+/** The answer of `gram/serveTimes`: the serving times to propose, in words. */
+export interface ServeSuggestions {
+	candidates: { serveAt: string; label: string; title: string }[];
+	rejected: string[];
+	earliest: { serveAt: string; label: string; text: string } | null;
+}
+
+/**
+ * What the cook chose for one recipe this sitting, sent in `gram/setSession`.
+ * Kept per document while VS Code is open, never written to the settings.
+ */
+export interface Session {
+	/** A local date-time, "2026-10-11T13:00", in the project's time zone. */
+	serveAt?: string;
+}
+
+const SERVE_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+
+/** A serving time from the page ("2026-10-11T13:00"), or `undefined` for anything else. */
+export function readServeAt(value: unknown): string | undefined {
+	return typeof value === "string" && SERVE_AT.test(value) ? value : undefined;
 }
 
 /** Why an output is paused: the recipe has an error that stops the views. */
