@@ -7,7 +7,7 @@ import {
 	formatDecimalToFraction,
 	round1,
 } from "../utils";
-import { getDictionary } from "@gram-lang/i18n";
+import { getDictionary, normalizeUnit } from "@gram-lang/i18n";
 
 import { DEFAULT_ICONS } from "../icons";
 
@@ -100,6 +100,22 @@ const strategies: Record<
 			else originalQtyStr = item.variable_entries.join(" + ");
 		}
 
+		// The standardized mass, next to the quantity as written, wherever it
+		// tells something the written quantity doesn't: not for a quantity
+		// already in grams, nor for a relative one (its mass is derived), nor
+		// with baker's percentages (`plainQty` already carries the mass).
+		const massAddsInfo =
+			normalizedMass !== null &&
+			conversionMethod !== "relative" &&
+			normalizeUnit(item.unit, context.lang) !== "g";
+		const massText =
+			massAddsInfo && item.bakersPercentage === undefined
+				? `${isEstimate ? "~" : ""}${normalizedMass} g`
+				: "";
+		// The quantity written in a sentence or a Markdown list: as written,
+		// then the mass when it adds something (`250 ml, ~147.5 g`).
+		const textQty = [plainQty, massText].filter(Boolean).join(", ");
+
 		let htmlQty = plainQty;
 		let htmlBakersBadge = "";
 
@@ -149,9 +165,9 @@ const strategies: Record<
 				html += `>${escapeHtml(name)}${parentSuffixHtml}`;
 				// Written in the text of the step, as in Markdown, so it is there
 				// on paper too; the tooltip keeps the details (standardized mass).
-				if (!context.hideIngredientQty && plainQty) {
+				if (!context.hideIngredientQty && textQty) {
 					const qtyClass = context.classes?.stepQuantity || "step-quantity";
-					html += ` <span class="${qtyClass}">(${escapeHtml(plainQty)})</span>`;
+					html += ` <span class="${qtyClass}">(${escapeHtml(textQty)})</span>`;
 				}
 				html += `</span>`;
 				return html;
@@ -166,7 +182,7 @@ const strategies: Record<
 					html += htmlBakersBadge;
 				}
 
-				if (normalizedMass !== null && conversionMethod !== "relative") {
+				if (massAddsInfo) {
 					let display = `${normalizedMass}g`;
 					if (isEstimate) display = `~${display}`;
 					const badgeClass = context.classes?.massBadge || "mass-badge";
@@ -194,8 +210,8 @@ const strategies: Record<
 			md += escapeMarkdownHtml(parentSuffixMd);
 			// plainQty already folds in bakersPercentage/bakersMathOnly and variable_entries,
 			// same as the HTML branch above.
-			if (!context.hideIngredientQty && plainQty) {
-				md += ` (${escapeMarkdownHtml(plainQty)})`;
+			if (!context.hideIngredientQty && textQty) {
+				md += ` (${escapeMarkdownHtml(textQty)})`;
 			}
 			const mode = context.formatMode || "inline";
 			if (prep && mode !== "shopping-list") {
