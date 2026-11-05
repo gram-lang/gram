@@ -5,9 +5,9 @@ import {
 	type ServeCandidate,
 	type ServeSearch,
 } from "@gram-lang/scheduler";
-import { describeProblems } from "./run-sheet";
-import type { RunSheetRenderOptions } from "./run-sheet";
-import type { RenderableCompilationResult } from "./types";
+import { describeProblems } from "./model";
+import type { RunSheetRenderOptions } from "./model";
+import type { RenderableCompilationResult } from "../../types";
 
 const fill = (template: string, values: Record<string, string>) =>
 	template.replace(/\{(\w+)\}/g, (_, k: string) => values[k] ?? `{${k}}`);

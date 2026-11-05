@@ -92,7 +92,7 @@ deprecations:
     description: "HTML renderer active time tooltip reads metrics.activeBreakdown instead of schedule blocks"
     replacement: "Derive active duration tooltip directly from the schedule's blocks"
     files:
-      - "packages/renderer/src/formatters/html.ts"
+      - "packages/renderer/src/views/recipe/html.ts"
 
   - id: kitchen-prep-time-breakdown-signature
     layer: api

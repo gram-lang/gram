@@ -8,7 +8,7 @@ import type {
 	NutritionBasis,
 	RenderableCompilationResult,
 	RenderableMetrics,
-} from "./types";
+} from "../types";
 
 /**
  * The one narrowing point for `data.metrics`, previously repeated verbatim in

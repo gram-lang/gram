@@ -15,7 +15,7 @@ import type {
 // analyze() themselves. Kept as a small structural shape here rather than
 // importing `@gram-lang/modules`' own `ModuleInfo` type: the renderer
 // depends on neither that package nor its types, and this is all three
-// formatters' `moduleLabel()` (formatters/shared.ts) actually needs.
+// recipe views' `moduleLabel()` (views/recipe/module-label.ts) actually needs.
 export interface SectionModuleBadge {
 	binding: string;
 	uri: string;

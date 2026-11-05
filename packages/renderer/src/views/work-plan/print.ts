@@ -1,12 +1,9 @@
-import { PRINT_CSS } from "./formatters/print";
-import {
-	type RunSheetRenderOptions,
-	describeRunSheet,
-	runSheetToHTML,
-} from "./run-sheet";
-import { RUN_SHEET_PRINT_CSS } from "./run-sheet-css";
-import type { RenderableCompilationResult } from "./types";
-import { escapeHtml } from "./utils";
+import { PRINT_CSS } from "../recipe/print";
+import { type RunSheetRenderOptions, describeRunSheet } from "./model";
+import { runSheetToHTML } from "./html";
+import { RUN_SHEET_PRINT_CSS } from "./print-css";
+import type { RenderableCompilationResult } from "../../types";
+import { escapeHtml } from "../../shared/utils";
 import type { RunSheet } from "@gram-lang/scheduler";
 
 /** The production sheet as a complete, print-ready HTML document. */

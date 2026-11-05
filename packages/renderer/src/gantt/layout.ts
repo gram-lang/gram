@@ -11,9 +11,9 @@ import {
 	prepItems,
 	workingDayLabel,
 	timelineOf,
-} from "../mise-en-place";
-import { formatDuration, joinStepTokens } from "../utils";
-import { formatElement } from "../formatters/element";
+} from "../shared/mise-en-place";
+import { formatDuration, joinStepTokens } from "../shared/utils";
+import { formatElement } from "../shared/element";
 import type {
 	GanttGap,
 	GanttLegendItem,

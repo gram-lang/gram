@@ -7,7 +7,7 @@ import {
 	scheduleFor,
 	scheduleTimes,
 } from "@gram-lang/kitchen";
-import type { RenderableCompilationResult } from "./types";
+import type { RenderableCompilationResult } from "../types";
 
 /** Which timeline a view follows: where the mise en place goes, and how long the rests written as a range last. */
 export interface TimelineChoice {

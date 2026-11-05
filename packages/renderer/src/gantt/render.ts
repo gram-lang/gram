@@ -1,6 +1,6 @@
 import { getDictionary } from "@gram-lang/i18n";
 import type { RenderableCompilationResult } from "../types";
-import { escapeHtml } from "../utils";
+import { escapeHtml } from "../shared/utils";
 import {
 	buildTracks,
 	computeDayMarkers,
