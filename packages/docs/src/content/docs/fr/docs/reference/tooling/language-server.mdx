@@ -43,6 +43,16 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 | **Document Symbol** | Alimente la vue Plan (*Outline*) de l'éditeur pour une navigation fluide au sein des sections de la recette. |
 | **Folding Range** | Permet de replier proprement le frontmatter YAML et les blocs de sections `##`. |
 
+## Réglages
+
+<Since v="1.4.0" /> Le serveur lit la section de configuration `gram` (`workspace/configuration`) au démarrage, puis à chaque notification `workspace/didChangeConfiguration`. Toute valeur absente ou non reconnue bascule automatiquement sur sa valeur par défaut : une erreur de saisie ne rend donc jamais une vue vierge.
+
+- Les réglages de vue (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, `gram.stepQuantities`, `gram.nutritionBasis`, `gram.bakersMathOnly`) actualisent l'affichage des recettes ouvertes directement à partir de leur résultat de compilation.
+- Les réglages de l'analyseur (`gram.bakersMath`, `gram.massStandardization`, `gram.yieldCalculation`, `gram.nutritionEstimation`) déclenchent une nouvelle analyse des recettes ouvertes et mettent à jour les diagnostics associés.
+- `gram.ingredientDatabase.path` recharge la base d'ingrédients depuis le disque.
+
+L'ensemble des options et valeurs par défaut correspond à la configuration de l'[extension VS Code](/fr/docs/reference/tooling/vscode-extension/), définie de façon centralisée dans le moteur de rendu (`VIEW_SETTINGS`, `RECIPE_SETTINGS`).
+
 ## Notifications vers le client
 
 En complément des requêtes standardisées du protocole LSP, le serveur émet des notifications asynchrones contenant les vues pré-rendues d'une recette sous la forme d'un objet `{ uri, html }` :

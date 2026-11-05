@@ -38,7 +38,7 @@ All three formatters use the same underlying traversal (`RenderBackend`). This g
 | `classes` | `RendererClasses` | Overrides CSS class names applied to generated HTML elements (HTML/print only). |
 | `formatFraction` | `(value: number) => string` | Custom decimal-to-fraction formatter (defaults to common kitchen fractions, e.g. `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter (defaults to e.g. `90` → `"1h 30m"`). |
-| `hideStepQty` | `boolean` | Suppresses ingredient quantities within step instruction text (shopping list and section ingredient lists remain unchanged). |
+| `hideStepQty` | `boolean` | Omits ingredient quantities from the step text (shopping and section ingredient lists retain them). By default, <Since v="1.4.0" /> all formats display the quantity immediately after each ingredient, alongside its standardized mass when available: `flour (250 ml, ~148 g)`. In HTML, this is rendered as a `<span class="step-quantity">` (`classes.stepQuantity`), with detailed conversion info in its tooltip. |
 | `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | <Since v="1.4.0" /> Scheduling strategy followed by the document: preparation immediately before each section (`'perSection'`, default), grouped upfront at recipe start (`'upfront'`), or at the start of each working day (`'perDay'`). Determines total and idle times displayed in the header. The recipe instructions show no temporal schedule: the detailed timeline and required equipment list reside in the work plan (`runSheet`). The timeline is computed on the fly from the `tasks` graph. |
 | `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Controls resolution for passive timers defined as ranges (`~_{12-24h}`): minimum duration (`'shortest'`, default), midpoint (`'balanced'`), or maximum duration (`'longest'`). Exact passive timers and active timers are unaffected. Governs the same computed times as `miseEnPlace`. |
 | `comments` | `'show' \| 'hide'` | <Since v="1.4.0" /> Shows (`'show'`, default) or leaves out (`'hide'`) the comments of the recipe (`// like this`): both standalone notes on their own line and inline comments at the end of a line (rendered as footnotes in recipe views). Applies uniformly across all views, including the work plan appended after the recipe. |
@@ -49,6 +49,38 @@ All three formatters use the same underlying traversal (`RenderBackend`). This g
 | `interactiveNutrition` | `boolean` | HTML only: emits all available nutrition bases under a pure CSS interactive selector. Requires the renderer stylesheet; ignored if `nutritionBasis` locks a specific basis. |
 | `lang` | `string` | BCP-47 language tag (e.g. `'en'`, `'fr'`) for UI string localization via `@gram-lang/i18n`. |
 | `renderId` | `string` | Prefix for footnote anchor IDs — prevents ID collisions when rendering multiple recipes on one page. |
+
+## Settings <Since v="1.4.0" />
+
+Recipe and view settings are defined once here so that every tool built on Gram provides the same options: CLI flags, editor `gram.*` configuration keys, and playground settings all derive from these descriptors.
+
+```ts
+import {
+  parseRecipeSettings,
+  parseViewSettings,
+  viewSettingsToRendererOptions,
+  recipeSettingsToAnalyzerOptions,
+  toHTML,
+} from "@gram-lang/renderer";
+import { analyze } from "@gram-lang/analyzer";
+
+const view = parseViewSettings(userConfig); // unknown values fall back to defaults
+const recipe = parseRecipeSettings(userConfig);
+const analyzed = analyze(compiled, db, recipeSettingsToAnalyzerOptions(recipe));
+const html = toHTML(analyzed.result, viewSettingsToRendererOptions(view));
+```
+
+| Export | Description |
+|---|---|
+| `VIEW_SETTINGS` | View presentation settings: `miseEnPlace`, `rests`, `comments`, `nutritionBasis`, `bakersMathOnly`, `stepQuantities`. |
+| `RECIPE_SETTINGS` | Analyzer computation settings (all enabled by default): `bakersMath`, `massStandardization`, `yieldCalculation`, `nutritionEstimation`. |
+| `SETTINGS` | Both view and recipe settings combined in a single list. |
+| `parseViewSettings(raw)`, `parseRecipeSettings(raw)` | Parse settings from an arbitrary object, falling back to defaults for any missing or unknown key. |
+| `DEFAULT_VIEW_SETTINGS`, `DEFAULT_RECIPE_SETTINGS` | Default values for all view and recipe settings. |
+| `viewSettingsToRendererOptions(settings)` | Converts view settings into `RendererOptions`. An automatic nutrition basis is omitted so interactive previews retain their toggle. |
+| `recipeSettingsToAnalyzerOptions(settings)` | Converts recipe settings into analyzer options (`enableBakersMath`, ...). |
+
+Each descriptor exposes its `key`, `kind` (`"view"` or `"recipe"`), `type` (`"choice"` with its `values`, or `"flag"`), `default`, `description`, and validation/parsing methods (`accepts(raw)`, `parse(raw)`).
 
 ## Gantt chart (`toGanttHTML` & `attachGanttInteractivity`) <Since type="deprecated" v="1.4.0" />
 

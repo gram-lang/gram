@@ -30,6 +30,34 @@ The CLI runs equally well on Node.js (>=22, automatically loading `.env` files v
 - `--verbose` / `--debug`: usable with any command, prints a full stack trace on error instead of just the terse message.
 - `--stock <specifiers>`: treats specified imported module paths as already on hand (skips their timeline cooking steps and collapses them into a single purchasable product on shopping lists). Accepts comma-separated paths (`@bases/shortcrust.gram,./sauces/bechamel.gram`).
 
+## Settings flags
+
+<Since v="1.4.0" /> Recipe settings are uniform across all interfaces: CLI flags, `gram.*` configuration keys in the [VS Code extension](/docs/reference/tooling/vscode-extension/), and options in the playground all share the same names, values, and defaults. Each CLI flag corresponds to its underlying setting and is accepted by every command affected by it.
+
+View presentation settings:
+
+| Flag | Values | Default | Commands |
+| --- | --- | --- | --- |
+| `--mise-en-place` | `per-section`, `upfront`, `per-day` | `per-section` | `view`, `print`, `export`, `plan`, `cook` |
+| `--rests` | `shortest`, `balanced`, `longest` | `shortest` | `view`, `print`, `export`, `plan`, `cook` |
+| `--comments` | `show`, `hide` | `show` | `print`, `export`, `plan` |
+| `--nutrition-basis` | `auto`, `total`, `per-portion`, `per-100g` | `auto` | `view`, `print`, `export` |
+| `--bakers-math-only` | on or off | off | `view`, `print`, `export` |
+| `--step-quantities` | `show`, `hide` | `show` | `print`, `export` |
+
+Analyzer computation settings (all enabled by default; use `--no-<flag>` to disable):
+
+| Flag | What it does | Commands |
+| --- | --- | --- |
+| `--bakers-math` | Computes baker's percentages from the ingredient marked with `*` or specified via `--bakers-reference`. When provided without an explicit reference, it also warns if the recipe declares none. | `view`, `print`, `export`, `cook`, `build`, `watch`, `shop` |
+| `--mass-standardization` | Standardizes quantities to grams using the ingredient database. | same |
+| `--yield-calculation` | Accounts for preparation waste (peels, pits, trim), adjusting required purchasing quantities relative to net culinary weights. | same |
+| `--nutrition-estimation` | Estimates nutritional values across the recipe. | same |
+
+- Legacy flag names `--nutrition` and `--no-step-qty` remain supported as aliases for backward compatibility.
+- Supplying an unsupported value halts execution with an error listing accepted options.
+- With `--step-quantities show`, ingredient quantities are included directly in step instructions, accompanied by their standardized mass in grams when known: `flour (250 ml, ~148 g)`.
+
 ## Core commands
 
 ### Project management & developer workflow
@@ -72,7 +100,7 @@ gram build brioche.gram --scale 2 --output ./dist-doubled
 - Automatically calculates nutritional data and physical mass standardization via the database.
 - `--scale <factor>` bakes the scaling factor directly into the JSON output. Reference mode (e.g. `flour=300g`) is intentionally unavailable here: because `build` processes files in batches, reproducible output must not depend on reading one specific file's shopping list first. Use `gram view` or `gram scale` to determine your factor, then pass that numeric multiplier to `build`.
 - When a glob or multiple files are supplied, files imported (via `@use`) by other recipes in the same batch are excluded by default, preventing their ingredients from being double-counted (both standalone and composed into the host recipe). Pass `--include-modules` to build them anyway.
-- Options: `--output/-o <dir>`, `--pretty`, `--scale <factor>`, `--db <path>`, `--skip-db`, `--include-modules`.
+- Options: `--output/-o <dir>`, `--pretty`, `--scale <factor>`, `--db <path>`, `--skip-db`, `--include-modules`, and the analyzer's [settings flags](#settings-flags).
 
 #### `gram view <file>`
 Displays a recipe directly in the terminal, neatly formatted in an ASCII box.
@@ -86,8 +114,8 @@ gram view brioche.gram --scale flour=300g   # Scaled to flour = 300g
 - Timers preserve the unit declared in the recipe (`~{1h}` displays as `~1h`, `~{20s}` as `~20s`), and durations are formatted for quick readability (`1h 5m`, `25m 5s`).
 - Passive waiting time appears in the recipe header, and common fractions such as `1/4 tsp` remain fractions in the shopping list.
 - Passing `--scale` adjusts all ingredient quantities (both in the shopping list and in-step references).
-- Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`, `--mise-en-place <mode>`, `--rests <choice>`.
-- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> selects the displayed nutrition basis (default `auto`: per portion when the recipe declares `portions:`, otherwise for the entire recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
+- Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, and the [settings flags](#settings-flags) (`--mise-en-place`, `--rests`, `--nutrition-basis`, `--bakers-math-only`, and analyzer flags).
+- `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (first named `--nutrition`, still accepted) selects the displayed nutrition basis (default `auto`: per portion when the recipe declares `portions:`, otherwise for the entire recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> sets when mise en place is scheduled: immediately before each section (`per-section`, default), upfront at the start of the recipe (`upfront`), or at the start of each working day (`per-day`). The total and idle times in the header adjust accordingly, while active and preparation times remain constant. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> sets the resolution for range-based passive timers (`~_{12-24h}`): shortest duration (`shortest`, default), midpoint (`balanced`), or longest duration (`longest`). Exact durations and active timers are unaffected. Adjusts the same computed times as `--mise-en-place`.
 - The recipe view shows no schedule: it reads the same at any time. For when to come and what to take out, see `gram plan` below.
@@ -143,7 +171,7 @@ gram shop "menus/*.gram" --scale 4    # Batch cooking × 4
 - Full support for small units: `pinch`, `dash`, and `drop` (along with localized variants) aggregate cleanly.
 - `--scale <factor>` applies a uniform numeric multiplier to all recipes (global factor only — reference-based scaling is not supported for multi-file batches).
 - When a glob or multiple files are provided, files imported (via `@use`) by other recipes in the batch are excluded by default to avoid duplicate shopping list entries. Pass `--include-modules` to include them.
-- Options: `--format terminal|md|json`, `--output/-o <file>`, `--scale <factor>`, `--db`, `--skip-db`, `--include-modules`.
+- Options: `--format terminal|md|json`, `--output/-o <file>`, `--scale <factor>`, `--db`, `--skip-db`, `--include-modules`, and the analyzer's [settings flags](#settings-flags).
 
 #### `gram cook <file>`
 Launches an interactive step-by-step cooking guide directly in the terminal.
@@ -151,7 +179,7 @@ Launches an interactive step-by-step cooking guide directly in the terminal.
 gram cook brioche.gram
 gram cook carbonara.gram --skip-db
 ```
-The total time displayed on the summary screen respects `--mise-en-place` and `--rests` settings, matching `gram view` <Since v="1.4.0" />.
+The total time displayed on the summary screen, and the duration of each timer, respect the `--mise-en-place` and `--rests` settings, matching `gram view` <Since v="1.4.0" />. The analyzer's [settings flags](#settings-flags) apply to displayed masses.
 
 **Flow:**
 <Steps>
@@ -230,7 +258,7 @@ gram watch --build --output ./dist      # Also compile changed files to JSON
 - Errors are displayed inline directly below the filename. The watch process never terminates upon a validation error.
 - A 150 ms debounce delay prevents redundant executions when editors save files in multiple chunks.
 - Saving an imported base recipe also re-checks every file under the watched directory that imports it via `@use` (directly or transitively). A `→ rechecking N dependent file(s)` message indicates how many files were affected.
-- Options: `--build`, `--output/-o <dir>`, `--skip-db`, `--db`.
+- Options: `--build`, `--output/-o <dir>`, `--skip-db`, `--db`, and the analyzer's [settings flags](#settings-flags).
 
 #### `gram suggest`
 Finds recipes across your project that can be prepared with a given set of ingredients.
@@ -255,9 +283,9 @@ gram print brioche.gram --no-open         # Generate only, print file path to st
 ```
 - The HTML document is written to a temporary file (`gram_print_<timestamp>.html` in the OS temp directory) and opened via the system default handler (`open` on macOS, `xdg-open` on Linux, `cmd /c start` on Windows).
 - Output is identical to `gram export --format html` — designed for browser print dialogs (`Ctrl+P` / `Cmd+P`) to produce an A4 PDF.
-- `--no-step-qty` — hides ingredient quantities within step instructions (convenient when cooking from the ingredient list in the margin).
-- Options: `--no-open`, `--scale <factor|ref>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`, `--mise-en-place <mode>`, `--rests <choice>`, `--comments <show|hide>`.
-- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> selects the displayed nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe). `per-100g` is calculated per 100 g of raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
+- `--step-quantities hide` <Since v="1.4.0" /> (or `--no-step-qty`) omits ingredient quantities from step instructions, keeping text concise when cooking directly from the ingredient list; quantities are included by default.
+- Options: `--no-open`, `--scale <factor|ref>`, `--skip-db`, `--db`, `--bakers-reference <id>`, and every [settings flag](#settings-flags).
+- `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (first named `--nutrition`, still accepted) selects the displayed nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe). `per-100g` is calculated per 100 g of raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> sets the mise en place schedule (default `per-section`), updating total and idle times printed in the header. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> sets the resolution for range-based passive timers (`~_{12-24h}`): shortest duration (`shortest`, default), midpoint (`balanced`), or longest duration (`longest`). Exact durations and active timers are unaffected.
 - `--comments <show|hide>` <Since v="1.4.0" /> shows (default) or hides recipe comments (`// like this`), both in the recipe instructions and in the appended work plan.
@@ -273,9 +301,9 @@ gram export brioche.gram --format html --scale 2       # Export at double quanti
 - `--format md` — standard Markdown formatted with a shopping list, equipment inventory, and numbered steps.
 - `--format html` — standalone A4-ready HTML document with embedded CSS for printing, featuring inline Lucide SVG icons for timers and temperatures (no external icon dependencies). It imports Courier Prime and Inter from Google Fonts via CSS `@import`, requiring internet connectivity on initial load.
 - Default output path: same directory as the input file, with the `.gram` extension replaced by `.md` or `.html`.
-- `--no-step-qty` — hides ingredient quantities in step instructions. **HTML format only** — has no effect with `--format md`. Section mise en place lists always display full quantities.
-- Options: `--format md|html`, `--output <path>`, `--scale <factor|ref>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`, `--mise-en-place <mode>`, `--rests <choice>`, `--comments <show|hide>`.
-- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> selects the nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe).
+- `--step-quantities hide` <Since v="1.4.0" /> (or `--no-step-qty`) omits ingredient quantities from step instructions across both formats (Markdown and HTML). Section ingredient lists always display them.
+- Options: `--format md|html`, `--output <path>`, `--scale <factor|ref>`, `--skip-db`, `--db`, `--bakers-reference <id>`, and every [settings flag](#settings-flags).
+- `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (first named `--nutrition`, still accepted) selects the nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> selects the mise en place schedule (default `per-section`), updating total and idle times in the exported header. In HTML, `per-section` also places a "Mise en place" heading above each section's ingredient list. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> selects the resolution for range-based passive timers (`~_{12-24h}`).
 - `--comments <show|hide>` <Since v="1.4.0" /> shows (default) or hides recipe comments (`// like this`), both in the recipe instructions and in the appended work plan.

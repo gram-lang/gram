@@ -53,6 +53,25 @@ Fixed passive timers and active timers with ranges (`~{20-25min}`, always planne
 
 This setting applies immediately to all open files (any unrecognized value defaults to `show`). The equivalent option is available in the CLI (`--comments`), the renderer API (`comments`), and the Playground (**Display** section).
 
+#### Additional preview settings <Since v="1.4.0" />
+
+| Setting | Values | Effect |
+|---|---|---|
+| `gram.stepQuantities` | `show` (default), `hide` | Controls whether ingredient quantities appear directly within step instructions, after each ingredient name, alongside standardized mass in grams: `flour (250 ml, ~148 g)`. Section ingredient lists always display them. |
+| `gram.nutritionBasis` | `auto` (default), `total`, `perPortion`, `per100g` | Calculation basis for the nutrition panel. In `auto` mode, the preview includes interactive toggles (starting per portion when declared); any other value locks the panel to that specific basis. |
+| `gram.bakersMathOnly` | `false` (default), `true` | Displays only baker's percentages, omitting absolute weights. |
+
+Analyzer settings control which calculations are derived from the ingredient database. All are enabled by default, matching the core compiler engine. Modifying any of these settings immediately re-analyzes every open recipe and refreshes its diagnostics.
+
+| Setting | Effect when enabled |
+|---|---|
+| `gram.bakersMath` | Computes baker's percentages based on the ingredient marked with `*`. |
+| `gram.massStandardization` | Standardizes ingredient quantities into grams using database densities. |
+| `gram.yieldCalculation` | Accounts for preparation waste (peels, pits, trim), distinguishing gross purchasing weight from net culinary weight. |
+| `gram.nutritionEstimation` | Computes nutritional estimates displayed in the recipe preview. |
+
+All of these settings are available with identical values in the [CLI](/docs/reference/tooling/cli/#settings-flags) and in the Playground. Any unrecognized value falls back to its default.
+
 A working day pushed beyond 24 hours by a prolonged passive phase triggers an explicit warning on its section (`DAY_OVERFLOW`), matching compiler diagnostics.
 
 ### 3. Smart ingredient management
