@@ -53,13 +53,32 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 
 L'ensemble des options et valeurs par défaut correspond à la configuration de l'[extension VS Code](/fr/docs/reference/tooling/vscode-extension/), définie de façon centralisée dans le moteur de rendu (`VIEW_SETTINGS`, `RECIPE_SETTINGS`).
 
-## Notifications vers le client
+## Protocole des vues
 
-En complément des requêtes standardisées du protocole LSP, le serveur émet des notifications asynchrones contenant les vues pré-rendues d'une recette sous la forme d'un objet `{ uri, html }` :
+<Since v="1.4.0" /> En complément des requêtes standardisées du protocole LSP, le serveur génère directement les vues d'une recette (la recette, le planning de préparation) ainsi que ses inspecteurs (l'AST et le JSON compilé) prêts à être affichés par l'éditeur. Le serveur ne calcule que les vues actuellement ouvertes dans le client : un panneau masqué n'induit aucun surcoût de calcul.
+
+Le client active ce protocole en transmettant `initializationOptions: { views: true }` lors de la requête `initialize`, puis dialogue avec le serveur via trois notifications spécifiques :
+
+| Notification | Sens | Contenu |
+|---|---|---|
+| `gram/setOpenViews` | Client ➔ Serveur | `{ uri, viewIds }` : ensemble complet des identifiants de vues ouvertes pour ce document (`[]` si aucun volet n'est ouvert). Le serveur émet immédiatement les contenus correspondants. |
+| `gram/setSession` | Client ➔ Serveur | `{ uri, serveAt?, scale?, stock?, bakersReference? }` : paramètres contextuels de la session de travail. `serveAt` est une date et heure locale (`"2026-10-11 13:00"`), `scale` spécifie un facteur `{ type: "factor", value }` ou une cible `{ type: "target", id, qty, unit }`, et `stock` liste les URI des modules déjà prêts en cuisine. Tout paramètre non reconnu est ignoré ; un objet vide réinitialise la session. |
+| `gram/viewUpdated` | Serveur ➔ Client | `{ uri, outputId, kind, state, ... }` : émis pour chaque sortie ouverte lors de son affichage initial, puis actualisé après chaque modification ou ajustement des réglages. |
+
+Les identifiants correspondent aux sorties déclarées par le moteur de rendu : `recipe` et `workPlan` (`kind: "renderer"`), ainsi que `ast`, `json` et `json-tree` (`kind: "inspector"`).
+
+- Lorsque `state: "ok"`, `payload` contient le code HTML rendu de la vue, ou `null` si la recette ne comporte aucun contenu correspondant (par exemple un planning de préparation pour une recette dépourvue d'étapes minutées). Pour un inspecteur, `payload` contient `{ presentation, language, text }` : du texte formaté pour un volet de code (`presentation: "code"`, coloré en `json` ou en `scheme`), ou une structure HTML pour une arborescence interactive (`presentation: "tree"`).
+- Lorsque `state: "paused"`, les erreurs de compilation empêchent la génération des vues et `payload` est omis : l'éditeur doit conserver le dernier état valide affiché et signaler l'erreur via la propriété `error` (`title`, `description`, `code`, `message` et `range`). Le titre de l'erreur est traduit selon la locale de l'éditeur (`locale` d'`initialize`). Les détails complets de l'erreur demeurent accessibles via les diagnostics LSP habituels.
+
+La session est gérée par document en mémoire vive : elle est réinitialisée à la fermeture du fichier ou au redémarrage du serveur, et n'est jamais enregistrée dans les fichiers de configuration. Lorsqu'une heure de service est indiquée, le planning de préparation est calé sur le calendrier dans le fuseau horaire du projet (`timezone` dans `.gram/config.yaml`, sinon celui du système) ; sans heure de service, il est présenté en jours relatifs avant dégustation. Si des paramètres de session (`scale`, `stock` ou `bakersReference`) sont définis, les vues sont recompilées en intégrant ces options, tandis que les diagnostics, le survol et les annotations en ligne (*inlay hints*) continuent d'évaluer la recette telle qu'elle est rédigée. Si une mise à l'échelle ne peut pas être résolue, les vues conservent leurs proportions d'origine.
+
+### Notifications pour les clients antérieurs
+
+Les clients qui n'activent pas le protocole des vues continuent de recevoir les aperçus de chaque document ouvert via les notifications historiques ci-dessous sous la forme d'un objet `{ uri, html }`, que les volets soient affichés ou non dans l'éditeur.
 
 | Notification | Contenu |
 |---|---|
-| `gram/previewUpdated` | Rendu HTML de l'aperçu en direct, ou panneau d'erreur lorsque la recette ne compile pas. |
+| `gram/previewUpdated` | <Since type="deprecated" v="1.4.0" /> Rendu HTML de l'aperçu en direct, ou panneau d'erreur lorsque la recette ne compile pas. Supprimée en version 2.0.0 : migrez vers `gram/viewUpdated` avec la sortie `recipe`. |
 | `gram/runSheetUpdated` | <Since v="1.4.0" /> Rendu HTML du planning de préparation découpé en jours relatifs (`J-2`, `J-1`, `Jour J`), consommé par la vue `Gram: Work Plan` de VS Code. |
 | `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> Rendu HTML du diagramme de Gantt historique. Émis jusqu'en version 2.0.0 pour préserver la compatibilité avec les clients tiers (l'extension officielle VS Code ne l'écoute plus). |
 

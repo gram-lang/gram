@@ -33,3 +33,27 @@ export function readPathsConfigSync(
 		return undefined;
 	}
 }
+
+/**
+ * Reads the `timezone:` of `<projectRoot>/.gram/config.yaml`, the zone a
+ * serving time is written in (the CLI's `gram config set timezone`). Never
+ * throws, like `readPathsConfigSync`: a missing, unreadable or unknown zone is
+ * `undefined`, and the caller falls back on the machine's.
+ */
+export function readTimeZoneConfigSync(
+	projectRoot: string,
+): string | undefined {
+	const configPath = join(projectRoot, ".gram", "config.yaml");
+	if (!existsSync(configPath)) return undefined;
+	try {
+		const parsed = parse(readFileSync(configPath, "utf-8")) as
+			| { timezone?: unknown }
+			| undefined;
+		const zone = parsed?.timezone;
+		if (typeof zone !== "string" || zone === "") return undefined;
+		new Intl.DateTimeFormat("en", { timeZone: zone });
+		return zone;
+	} catch {
+		return undefined;
+	}
+}

@@ -61,7 +61,7 @@ The Gram Language Server currently supports:
 *   **Hover:** Nutritional information and scaled quantities on hover.
 *   **Completion:** Suggestions for units, ingredients (based on the user's local ingredient DB), and cookware.
 *   **Document Formatting:** Automatic formatting of `.gram` files to the standard canonical style (powered by [`@gram-lang/format`](../format/README.md)).
-*   **Live Preview & Work Plan Streams:** Pushes rendered HTML (`gram/previewUpdated`) and the work plan as HTML (`gram/runSheetUpdated`) to editor client webviews on document edits. `gram/ganttUpdated` is still sent until 2.0.0 for clients that read it.
+*   **Views protocol:** Renders only the views and inspectors currently open in the client (`gram/setOpenViews`), supporting session overrides for serving time, scaling, and stock (`gram/setSession`). Updates are emitted via `gram/viewUpdated` (paused upon compilation errors). Legacy clients continue receiving `gram/previewUpdated` (deprecated), `gram/runSheetUpdated`, and `gram/ganttUpdated` (deprecated) until 2.0.0.
 
 ---
 
