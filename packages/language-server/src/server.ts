@@ -47,13 +47,12 @@ import {
 	escapeHtml,
 	parseRecipeSettings,
 	parseViewSettings,
+	prepareViews,
 	runSheetToHTML,
 	toGanttHTML,
 	toHTML,
 	viewSettingsToRendererOptions,
 } from "@gram-lang/renderer";
-import { runSheet } from "@gram-lang/scheduler";
-import { scheduleFor } from "@gram-lang/kitchen";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -363,20 +362,15 @@ function renderViews(uri: string, state: DocumentState): void {
 		// work plan must not blank the HTML preview, and vice versa. Without a
 		// serving time the plan is in days before the service (J-2, J-1, day D).
 		try {
-			const timeline = scheduleFor(
-				state.compilation,
-				settings.miseEnPlace,
-				settings.rests,
-			);
-			if (timeline) {
-				const sheet = runSheet(timeline, {
-					graph: state.compilation.tasks,
-					...(state.compilation.title && { title: state.compilation.title }),
-				});
-				const lang = state.compilation.meta?.language;
+			const lang = state.compilation.meta?.language;
+			const input = prepareViews(state.compilation, settings, {
+				...(typeof lang === "string" && { lang }),
+			});
+			const sheet = input.runSheet;
+			if (sheet) {
 				const workPlanHtml = runSheetToHTML(sheet, state.compilation, {
 					comments: settings.comments,
-					...(typeof lang === "string" && { lang }),
+					...(input.lang && { lang: input.lang }),
 				});
 				connection.sendNotification("gram/runSheetUpdated", {
 					uri,

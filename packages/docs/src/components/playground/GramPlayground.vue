@@ -27,7 +27,6 @@ import {
 	compile,
 	resolveScaleFactor,
 	applyScale,
-	scheduleFor,
 	REST_CHOICES,
 	type MiseEnPlaceMode,
 	type RestChoice,
@@ -37,10 +36,6 @@ import {
 	type TimeRange,
 	type Weekday,
 	WEEKDAYS,
-	earliestServe,
-	findServeTimes,
-	project,
-	runSheet,
 } from "@gram-lang/scheduler";
 import {
 	analyze,
@@ -68,6 +63,7 @@ import {
 	toHTML,
 	runSheetToHTML,
 	VIEW_SETTINGS,
+	prepareViews,
 	recipeSettingsToAnalyzerOptions,
 	viewSettingsToRendererOptions,
 } from "@gram-lang/renderer";
@@ -797,33 +793,21 @@ function placeOnCalendar(result: any) {
 	if (!result?.tasks) return;
 	const { serveAt, timeZone } = plan.value;
 	try {
-		const title = result.title ?? undefined;
-		let sheet: ReturnType<typeof runSheet>;
-		if (serveAt) {
-			const context = {
-				serveAt,
-				timeZone,
-				availability: buildAvailability(plan.value),
-				// Without the present, a serving time too close for the rests is
-				// drawn as if starting in the past were fine.
-				now: new Date().toISOString(),
-			};
-			const projected = project(
-				[
-					{
-						graph: result.tasks,
-						title,
-						options: { miseEnPlace: schedule.value, rests: rests.value },
-					},
-				],
-				context,
-			);
-			sheet = runSheet(projected, { graph: result.tasks, context });
-		} else {
-			const timeline = scheduleFor(result, schedule.value, rests.value);
-			if (!timeline) return;
-			sheet = runSheet(timeline, { graph: result.tasks, title });
-		}
+		const sheet = prepareViews(
+			result,
+			{ miseEnPlace: schedule.value, rests: rests.value },
+			{
+				kitchen: {
+					timeZone,
+					availability: buildAvailability(plan.value),
+					// Without the present, a serving time too close for the rests is
+					// drawn as if starting in the past were fine.
+					now: new Date().toISOString(),
+				},
+				...(serveAt && { serveAt }),
+			},
+		).runSheet;
+		if (!sheet) return;
 		runSheetHtml.value = runSheetToHTML(sheet, result, {
 			lang: currentLang.value,
 			comments: options.value.comments,
@@ -847,17 +831,17 @@ function computeServeSuggestions() {
 	try {
 		const { timeZone } = plan.value;
 		const now = new Date();
-		const context = {
-			serveAt: "1970-01-01T00:00",
-			timeZone,
-			availability: buildAvailability(plan.value),
-			now: now.toISOString(),
-		};
-		const input = {
-			graph: result.tasks,
-			title: result.title ?? undefined,
-			options: { miseEnPlace: schedule.value, rests: rests.value },
-		};
+		const views = prepareViews(
+			result,
+			{ miseEnPlace: schedule.value, rests: rests.value },
+			{
+				kitchen: {
+					timeZone,
+					availability: buildAvailability(plan.value),
+					now: now.toISOString(),
+				},
+			},
+		);
 		const localDay = (offset: number) =>
 			new Intl.DateTimeFormat("en-CA", {
 				timeZone,
@@ -866,7 +850,12 @@ function computeServeSuggestions() {
 				day: "2-digit",
 			}).format(new Date(now.getTime() + offset * 86_400_000));
 		const range = { from: localDay(0), to: localDay(7) };
-		const search = findServeTimes(input, context, { ...range, limit: 6 });
+		const search = views.findServeTimes({ ...range, limit: 6 });
+		const earliest = views.earliestServe();
+		if (!search || !earliest) {
+			serveSuggestions.value = null;
+			return;
+		}
 		const words = describeServeTimes(search, result, {
 			...range,
 			timeZone,
@@ -882,7 +871,6 @@ function computeServeSuggestions() {
 				minute: "2-digit",
 				hourCycle: "h23",
 			}).format(new Date(`${serveAt}:00Z`));
-		const earliest = earliestServe(input, context);
 		serveSuggestions.value = {
 			candidates: search.candidates.map((c, i) => ({
 				serveAt: c.serveAt,
