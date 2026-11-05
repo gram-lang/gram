@@ -27,12 +27,8 @@ import {
 	compile,
 	resolveScaleFactor,
 	applyScale,
-	DEFAULT_MISE_EN_PLACE_MODE,
-	DEFAULT_REST_CHOICE,
 	scheduleFor,
 	REST_CHOICES,
-	isMiseEnPlaceMode,
-	isRestChoice,
 	type MiseEnPlaceMode,
 	type RestChoice,
 } from "@gram-lang/kitchen";
@@ -71,9 +67,11 @@ import {
 	toMarkdown,
 	toHTML,
 	runSheetToHTML,
+	VIEW_SETTINGS,
 } from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
 import { DEFAULT_SOURCES } from "./db";
+import { loadSetting, saveSetting } from "./settingsStorage";
 import { DEFAULT_ENTRY_URI, createPlaygroundHost } from "./vfsHost";
 import { getDictionary } from "@gram-lang/i18n";
 import { trackEvent, debounce } from "../../lib/umami";
@@ -157,54 +155,21 @@ const errorFiles = computed(() => {
 const viewMode = ref<
 	"preview" | "runsheet" | "json" | "ast" | "markdown" | "json-tree"
 >("preview");
-// Which complete timeline the views follow: mise en place right before each
-// section, or all of it at the start. A reading choice, shared by the preview,
-// the work plan and the Markdown views, and remembered in the browser.
-const SCHEDULE_STORAGE_KEY = "gram-playground-schedule";
-
-function loadSchedule(): MiseEnPlaceMode {
-	try {
-		const saved = localStorage.getItem(SCHEDULE_STORAGE_KEY);
-		if (isMiseEnPlaceMode(saved)) return saved;
-	} catch {
-		// Storage can be blocked or absent (private window, embedded frame).
-	}
-	return DEFAULT_MISE_EN_PLACE_MODE;
-}
-
-const schedule = ref<MiseEnPlaceMode>(loadSchedule());
+// Which complete timeline the views follow: where the mise en place goes, and
+// how long a rest written as a range lasts. Reading choices, shared by the
+// preview, the work plan and the Markdown views, and remembered in the browser
+// (`settingsStorage.ts`, from the renderer's setting descriptors).
+const schedule = ref<MiseEnPlaceMode>(loadSetting("miseEnPlace"));
 
 watch(schedule, (value) => {
-	try {
-		localStorage.setItem(SCHEDULE_STORAGE_KEY, value);
-	} catch {
-		// Nothing to do: the choice just won't survive a reload.
-	}
+	saveSetting("miseEnPlace", value);
 	trackEvent("playground-change-schedule", { schedule: value });
 });
 
-// How long a rest written as a range lasts: the other half of what a view
-// follows, shared and remembered the same way.
-const RESTS_STORAGE_KEY = "gram-playground-rests";
-
-function loadRests(): RestChoice {
-	try {
-		const saved = localStorage.getItem(RESTS_STORAGE_KEY);
-		if (isRestChoice(saved)) return saved;
-	} catch {
-		// Storage can be blocked or absent (private window, embedded frame).
-	}
-	return DEFAULT_REST_CHOICE;
-}
-
-const rests = ref<RestChoice>(loadRests());
+const rests = ref<RestChoice>(loadSetting("rests"));
 
 watch(rests, (value) => {
-	try {
-		localStorage.setItem(RESTS_STORAGE_KEY, value);
-	} catch {
-		// Nothing to do: the choice just won't survive a reload.
-	}
+	saveSetting("rests", value);
 	trackEvent("playground-change-rests", { rests: value });
 });
 
@@ -362,8 +327,8 @@ const activeModifiersCount = computed(() => {
 
 // biome-ignore lint/correctness/noUnusedVariables: resetAllStudioOptions is used in the <template> block below, which Biome's Vue support doesn't see.
 function resetAllStudioOptions() {
-	schedule.value = DEFAULT_MISE_EN_PLACE_MODE;
-	rests.value = DEFAULT_REST_CHOICE;
+	schedule.value = VIEW_SETTINGS.miseEnPlace.default;
+	rests.value = VIEW_SETTINGS.rests.default;
 	clearPlan();
 	scaleFactorString.value = "100";
 	clearTarget();
