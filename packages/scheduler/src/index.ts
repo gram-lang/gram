@@ -79,3 +79,9 @@ export type {
 	ServeCandidate,
 	ServeSearch,
 } from "./serve";
+export {
+	ALL_DAY,
+	type AvailabilityParse,
+	type AvailabilityProblem,
+	parseAvailability,
+} from "./parse-availability";
