@@ -83,6 +83,7 @@ describe("parseViewSettings", () => {
 				rests: "forever",
 				comments: "hide",
 				nutritionBasis: "per-100g",
+				// Values are case-sensitive, as the editor and the CLI write them.
 				bakersMathOnly: "true",
 				stepQuantities: "hide",
 				unrelated: 1,
@@ -95,6 +96,16 @@ describe("parseViewSettings", () => {
 			bakersMathOnly: false,
 			stepQuantities: "hide",
 		});
+	});
+
+	it("matches values exactly: no other case, no empty value", () => {
+		expect(
+			parseViewSettings({
+				miseEnPlace: "UPFRONT",
+				rests: "",
+				comments: "HIDE",
+			}),
+		).toEqual({ ...DEFAULT_VIEW_SETTINGS });
 	});
 
 	it("reads a flag only from a boolean", () => {
@@ -134,6 +145,11 @@ describe("settings to options", () => {
 			bakersMathOnly: false,
 			hideStepQty: true,
 		});
+	});
+
+	it("leaves an automatic nutrition basis to the renderer, so an interactive view keeps its toggle", () => {
+		const options = viewSettingsToRendererOptions(DEFAULT_VIEW_SETTINGS);
+		expect("nutritionBasis" in options).toBe(false);
 	});
 
 	it("maps the recipe settings onto the analyzer options", () => {

@@ -243,7 +243,11 @@ export const DEFAULT_RECIPE_SETTINGS: Readonly<RecipeSettings> = Object.freeze(
 	parseRecipeSettings(undefined),
 );
 
-/** The renderer options that carry `settings`. */
+/**
+ * The renderer options that carry `settings`. `nutritionBasis: "auto"` is left
+ * out: the renderer reads a missing basis as `auto` anyway, and only a basis
+ * actually pinned replaces the reader's toggle of an interactive view.
+ */
 export function viewSettingsToRendererOptions(
 	settings: ViewSettings,
 ): Pick<
@@ -259,7 +263,9 @@ export function viewSettingsToRendererOptions(
 		miseEnPlace: settings.miseEnPlace,
 		rests: settings.rests,
 		comments: settings.comments,
-		nutritionBasis: settings.nutritionBasis,
+		...(settings.nutritionBasis !== "auto" && {
+			nutritionBasis: settings.nutritionBasis,
+		}),
 		bakersMathOnly: settings.bakersMathOnly,
 		hideStepQty: settings.stepQuantities === "hide",
 	};

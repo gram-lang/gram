@@ -34,31 +34,24 @@ import {
 } from "./features/semantic-tokens";
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
-import {
-	parseCommentsSetting,
-	parseMiseEnPlaceSetting,
-	parseRestsSetting,
-} from "./utils/mise-en-place-setting";
 import { provideCodeLenses } from "./features/code-lens";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
 import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
 import {
-	type CommentsMode,
+	DEFAULT_VIEW_SETTINGS,
+	VIEW_SETTINGS,
+	type ViewSettings,
 	escapeHtml,
+	parseViewSettings,
 	runSheetToHTML,
 	toGanttHTML,
 	toHTML,
+	viewSettingsToRendererOptions,
 } from "@gram-lang/renderer";
 import { runSheet } from "@gram-lang/scheduler";
-import {
-	DEFAULT_MISE_EN_PLACE_MODE,
-	type MiseEnPlaceMode,
-	DEFAULT_REST_CHOICE,
-	type RestChoice,
-	scheduleFor,
-} from "@gram-lang/kitchen";
+import { scheduleFor } from "@gram-lang/kitchen";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -167,29 +160,23 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	};
 });
 
-// `gram.miseEnPlace` and `gram.rests`: which timeline the preview, the work plan and
-// the title hint follow. Read once at start and again whenever the settings
-// change.
-let miseEnPlace: MiseEnPlaceMode = DEFAULT_MISE_EN_PLACE_MODE;
-let rests: RestChoice = DEFAULT_REST_CHOICE;
-// `gram.comments`: whether the preview and the work plan show the comments of the recipe.
-let comments: CommentsMode = "show";
+// The view settings (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, ...):
+// what the preview, the work plan and the title hint follow. Read once at start
+// and again whenever the settings change; a missing or unknown one is on its
+// default, so a bad setting never blanks a view.
+let settings: ViewSettings = DEFAULT_VIEW_SETTINGS;
 
 // Never rejects (same rule as reloadDbAndRefreshDiagnostics below): a client
-// without workspace configuration just keeps the default.
-async function loadMiseEnPlace(): Promise<boolean> {
+// without workspace configuration just keeps the defaults.
+async function loadViewSettings(): Promise<boolean> {
 	try {
-		const config = await connection.workspace.getConfiguration("gram");
-		const nextMode = parseMiseEnPlaceSetting(config);
-		const nextRests = parseRestsSetting(config);
-		const nextComments = parseCommentsSetting(config);
-		const changed =
-			nextMode !== miseEnPlace ||
-			nextRests !== rests ||
-			nextComments !== comments;
-		miseEnPlace = nextMode;
-		rests = nextRests;
-		comments = nextComments;
+		const next = parseViewSettings(
+			await connection.workspace.getConfiguration("gram"),
+		);
+		const changed = (Object.keys(VIEW_SETTINGS) as (keyof ViewSettings)[]).some(
+			(key) => next[key] !== settings[key],
+		);
+		settings = next;
 		return changed;
 	} catch {
 		return false;
@@ -222,12 +209,12 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 	}
 }
 
-// A new schedule re-renders every open preview and work plan from the compilation
+// New view settings re-render every open preview and work plan from the compilation
 // already in hand, and refreshes the title hint — nothing else about the
 // documents changed, so nothing is parsed or compiled again (which would also
 // race with an edit still waiting in the debounce).
-async function reloadMiseEnPlaceAndRefresh(): Promise<void> {
-	if (!(await loadMiseEnPlace())) return;
+async function reloadViewSettingsAndRefresh(): Promise<void> {
+	if (!(await loadViewSettings())) return;
 	for (const [uri, state] of states) renderViews(uri, state);
 	await connection.languages.inlayHint.refresh().catch(() => {
 		// Client without inlay hint refresh: the hint updates on next edit.
@@ -243,16 +230,16 @@ connection.onDidChangeConfiguration(() => {
 	reloadDbAndRefreshDiagnostics().catch((e) =>
 		connection.console.error(`DB reload failed: ${e}`),
 	);
-	reloadMiseEnPlaceAndRefresh().catch((e) =>
-		connection.console.error(`Mise en place refresh failed: ${e}`),
+	reloadViewSettingsAndRefresh().catch((e) =>
+		connection.console.error(`View settings refresh failed: ${e}`),
 	);
 });
 
 connection.onInitialized(async () => {
 	// A document may already be open by the time the setting answers: without
-	// the refresh it would keep the default schedule until its next edit.
-	await reloadMiseEnPlaceAndRefresh().catch((e) =>
-		connection.console.error(`Mise en place refresh failed: ${e}`),
+	// the refresh it would keep the default settings until its next edit.
+	await reloadViewSettingsAndRefresh().catch((e) =>
+		connection.console.error(`View settings refresh failed: ${e}`),
 	);
 	await reloadDbAndRefreshDiagnostics();
 
@@ -333,7 +320,7 @@ async function refresh(
 /**
  * Renders the preview and the work plan of an already compiled document and
  * sends them to the client (and the Gantt chart, for clients that still read it). Pure output of `state`: it neither parses nor
- * compiles, so it can run again (a new `gram.miseEnPlace`) without touching the
+ * compiles, so it can run again (a new view setting) without touching the
  * cached state, which a pending edit's refresh is about to replace anyway.
  */
 function renderViews(uri: string, state: DocumentState): void {
@@ -344,9 +331,7 @@ function renderViews(uri: string, state: DocumentState): void {
 			// there — quantities stay read-only.
 			const html = toHTML(state.compilation, {
 				interactiveNutrition: true,
-				miseEnPlace,
-				rests,
-				comments,
+				...viewSettingsToRendererOptions(settings),
 			});
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
@@ -357,7 +342,11 @@ function renderViews(uri: string, state: DocumentState): void {
 		// work plan must not blank the HTML preview, and vice versa. Without a
 		// serving time the plan is in days before the service (J-2, J-1, day D).
 		try {
-			const timeline = scheduleFor(state.compilation, miseEnPlace, rests);
+			const timeline = scheduleFor(
+				state.compilation,
+				settings.miseEnPlace,
+				settings.rests,
+			);
 			if (timeline) {
 				const sheet = runSheet(timeline, {
 					graph: state.compilation.tasks,
@@ -365,7 +354,7 @@ function renderViews(uri: string, state: DocumentState): void {
 				});
 				const lang = state.compilation.meta?.language;
 				const workPlanHtml = runSheetToHTML(sheet, state.compilation, {
-					comments,
+					comments: settings.comments,
 					...(typeof lang === "string" && { lang }),
 				});
 				connection.sendNotification("gram/runSheetUpdated", {
@@ -382,8 +371,8 @@ function renderViews(uri: string, state: DocumentState): void {
 		// @remove-in: 2.0.0 [lsp-gantt-notification]
 		try {
 			const ganttHtml = toGanttHTML(state.compilation, {
-				miseEnPlace,
-				rests,
+				miseEnPlace: settings.miseEnPlace,
+				rests: settings.rests,
 				// Rendered for clients that read it, not by choice of this server.
 				quiet: true,
 			});
@@ -589,7 +578,7 @@ connection.languages.semanticTokens.on(({ textDocument: { uri } }) => {
 
 connection.languages.inlayHint.on(({ textDocument: { uri } }) => {
 	const s = states.get(uri);
-	return s ? provideInlayHints(s, miseEnPlace, rests) : [];
+	return s ? provideInlayHints(s, settings.miseEnPlace, settings.rests) : [];
 });
 
 connection.onCodeLens(({ textDocument: { uri } }) => {
