@@ -1,5 +1,6 @@
 import {
 	type CompilationResult,
+	type RestChoice,
 	quantityToMinutes,
 	scheduleFor,
 } from "@gram-lang/kitchen";
@@ -8,14 +9,16 @@ import {
  * Duration, in minutes, of every background timer (`~_name{}`) that runs
  * during one step, in the order they start. `step` is the step's index in
  * `sections[section].steps`, comments included — the same index the schedule
- * blocks use. A timer's length doesn't depend on the mise en place mode.
+ * blocks use. A timer's length doesn't depend on the mise en place mode, but
+ * a rest written as a range (`~_{12-24h}`) lasts what `rests` says.
  */
 export function passiveTimers(
 	compiled: Pick<CompilationResult, "schedule" | "tasks" | "sections">,
 	section: number,
 	step: number,
+	rests?: RestChoice,
 ): Array<{ name?: string; duration: number }> {
-	const blocks = (scheduleFor(compiled)?.blocks ?? []).filter(
+	const blocks = (scheduleFor(compiled, undefined, rests)?.blocks ?? []).filter(
 		(b) => b.kind === "passive" && b.section === section && b.step === step,
 	);
 	const timers = blocks.map((b) => ({
