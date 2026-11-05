@@ -247,6 +247,11 @@ export const fr: GramLocale = {
 			showComments: "Afficher les commentaires",
 			commentsDesc:
 				"Les notes de la recette (// comme ceci), dans la recette et dans le planning.",
+			showStepQuantities: "Quantités dans les étapes",
+			stepQuantitiesDesc:
+				"Écrit la quantité de chaque ingrédient dans le texte des étapes, juste après son nom.",
+			nutritionBasis: "Base nutritionnelle",
+			nutritionBasisAuto: "Automatique (au choix dans l'aperçu)",
 			forceReference: "Forcer la référence :",
 			autoDetect: "Auto (détecte @*)",
 			physicalAnalysis: "Analyse physique",
@@ -279,6 +284,10 @@ export const fr: GramLocale = {
 				"Exprime chaque ingrédient en pourcentage d'un ingrédient de base fixé à 100 % (par défaut la farine, ou l'ingrédient de votre choix), facilitant l'évaluation des équilibres et des ratios.",
 			comments:
 				"Affiche ou masque les commentaires écrits dans la recette avec // : les notes seules sur une ligne et celles en fin de ligne. Dans le planning, ils sont mis à part, discrètement.",
+			stepQuantities:
+				"Rappelle chaque quantité dans l'étape qui l'utilise, avec son poids en grammes si les masses sont standardisées. Décochez pour des étapes plus courtes : les quantités restent dans les listes d'ingrédients.",
+			nutritionBasis:
+				"La base du panneau nutritionnel, quand la nutrition est estimée. En automatique, vous choisissez dans l'aperçu ; par défaut par portion si la recette en déclare.",
 			bakersMathOnly:
 				"Masque les poids en grammes pour n'afficher que les pourcentages relatifs, transformant la recette en une formule de proportions pure.",
 			bakersReference:

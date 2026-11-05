@@ -68,10 +68,21 @@ import {
 	toHTML,
 	runSheetToHTML,
 	VIEW_SETTINGS,
+	recipeSettingsToAnalyzerOptions,
+	viewSettingsToRendererOptions,
 } from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
 import { DEFAULT_SOURCES } from "./db";
-import { loadSetting, saveSetting } from "./settingsStorage";
+import {
+	type OPTION_SETTING_KEYS,
+	type PlaygroundOptions,
+	defaultOptions,
+	isOptionModified,
+	loadOptions,
+	loadSetting,
+	saveOptions,
+	saveSetting,
+} from "./settingsStorage";
 import { DEFAULT_ENTRY_URI, createPlaygroundHost } from "./vfsHost";
 import { getDictionary } from "@gram-lang/i18n";
 import { trackEvent, debounce } from "../../lib/umami";
@@ -176,7 +187,9 @@ watch(rests, (value) => {
 // The plan: when it is served and when the cook is available. Setting a serving
 // time puts the work plan on the calendar (dates, margins, rests stretched to
 // your availability); clearing it goes back to the days before the service.
-// Remembered in the browser like the other choices.
+// The time zone and the hours are remembered in the browser; the serving time
+// is not: it belongs to this visit, and a plan silently laid out on a serving
+// time already past would mislead.
 const PLAN_STORAGE_KEY = "gram-playground-plan";
 
 function defaultTimeZone(): string {
@@ -202,7 +215,7 @@ function loadPlan(): PlanSettings {
 			const text = (v: unknown, d: string) => (typeof v === "string" ? v : d);
 			const bool = (v: unknown, d: boolean) => (typeof v === "boolean" ? v : d);
 			return {
-				serveAt: text(saved.serveAt, fallback.serveAt),
+				serveAt: fallback.serveAt,
 				timeZone: text(saved.timeZone, fallback.timeZone),
 				from: text(saved.from, fallback.from),
 				to: text(saved.to, fallback.to),
@@ -239,7 +252,8 @@ watch(
 	plan,
 	(value) => {
 		try {
-			localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(value));
+			const { serveAt: _serveAt, ...kept } = value;
+			localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(kept));
 		} catch {
 			// Nothing to do: the plan just won't survive a reload.
 		}
@@ -306,16 +320,24 @@ const activeModifiersCount = computed(() => {
 	if (scaleFactorString.value !== "100" || scaleTargetId.value !== null) {
 		count++;
 	}
-	if (options.value.bakersMath) {
+	const modified = (...keys: (typeof OPTION_SETTING_KEYS)[number][]) =>
+		keys.some((key) => isOptionModified(options.value, key));
+	if (
+		modified("bakersMath", "bakersMathOnly") ||
+		options.value.bakersReference
+	) {
 		count++;
 	}
-	if (options.value.comments === "hide") {
+	if (modified("comments", "stepQuantities")) {
 		count++;
 	}
 	if (
-		!options.value.enableMassStandardization ||
-		options.value.enableYieldCalculation ||
-		!options.value.enableNutritionalEstimation
+		modified(
+			"massStandardization",
+			"yieldCalculation",
+			"nutritionEstimation",
+			"nutritionBasis",
+		)
 	) {
 		count++;
 	}
@@ -332,28 +354,17 @@ function resetAllStudioOptions() {
 	clearPlan();
 	scaleFactorString.value = "100";
 	clearTarget();
-	options.value = {
-		enableMassStandardization: true,
-		enableYieldCalculation: false,
-		enableNutritionalEstimation: true,
-		bakersMath: false,
-		bakersMathOnly: false,
-		bakersReference: undefined,
-		comments: "show",
-	};
+	options.value = defaultOptions();
 	stockedUris.value = new Set();
 	trackEvent("playground-reset-studio-options");
 }
 
-const options = ref({
-	enableMassStandardization: true,
-	enableYieldCalculation: false,
-	enableNutritionalEstimation: true,
-	bakersMath: false,
-	bakersMathOnly: false,
-	bakersReference: undefined as string | undefined,
-	comments: "show" as "show" | "hide",
-});
+// The studio's options: every setting of the renderer's descriptors, on its
+// default the first time and remembered in the browser afterwards (the baker's
+// reference excepted: it belongs to the recipe at hand).
+const options = ref<PlaygroundOptions>(loadOptions());
+
+watch(options, (value) => saveOptions(value), { deep: true });
 
 // URIs (already resolved, matching `ModuleHost.resolve()`'s own output —
 // same shape `composeRecipe`'s `stock` option expects) the user has flagged
@@ -663,8 +674,8 @@ async function updateGram() {
 
 		stage = "analyze";
 		const analysisOptions = {
-			...options.value,
-			enableBakersMath: options.value.bakersMath,
+			...recipeSettingsToAnalyzerOptions(options.value),
+			bakersReference: options.value.bakersReference,
 			lang: currentLang.value,
 		};
 		const analysis = analyze(result, database, analysisOptions);
@@ -708,20 +719,15 @@ async function updateGram() {
 			content.value = renderSExpr(composed.ast);
 		} else if (viewMode.value === "markdown") {
 			content.value = toMarkdown(result, {
-				comments: options.value.comments,
+				...viewRendererOptions(),
 				lang: currentLang.value,
-				miseEnPlace: schedule.value,
-				rests: rests.value,
 			});
 		} else if (viewMode.value === "preview") {
 			htmlPreview.value = toHTML(result, {
 				interactiveScaling: true,
 				interactiveNutrition: true,
-				bakersMathOnly: options.value.bakersMathOnly,
-				comments: options.value.comments,
+				...viewRendererOptions(),
 				lang: currentLang.value,
-				miseEnPlace: schedule.value,
-				rests: rests.value,
 			});
 		}
 		trackPlaygroundRun(true, codeLength);
@@ -735,6 +741,20 @@ async function updateGram() {
 		diagnostics.value = sortDiagnostics([...collectedScaleDiagnostics, diag]);
 		trackPlaygroundRun(false, codeLength, { error_type: stage });
 	}
+}
+
+/** The view settings of the studio, as renderer options: the same for every view. */
+function viewRendererOptions() {
+	const { comments, nutritionBasis, bakersMathOnly, stepQuantities } =
+		options.value;
+	return viewSettingsToRendererOptions({
+		miseEnPlace: schedule.value,
+		rests: rests.value,
+		comments,
+		nutritionBasis,
+		bakersMathOnly,
+		stepQuantities,
+	});
 }
 
 function buildAvailability(planSettings: PlanSettings): Availability {
@@ -959,8 +979,8 @@ watch(
 		if (JSON.stringify(newOptions) !== JSON.stringify(oldOptions)) {
 			trackEvent("playground-toggle-option", {
 				bakersMath: newOptions.bakersMath,
-				nutrition: newOptions.enableNutritionalEstimation,
-				yields: newOptions.enableYieldCalculation,
+				nutrition: newOptions.nutritionEstimation,
+				yields: newOptions.yieldCalculation,
 			});
 		}
 	},
