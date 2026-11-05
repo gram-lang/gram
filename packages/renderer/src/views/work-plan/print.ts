@@ -1,4 +1,4 @@
-import { PRINT_CSS } from "../recipe/print";
+import { PRINT_BASE_CSS } from "../../shared/print-css";
 import { type RunSheetRenderOptions, describeRunSheet } from "./model";
 import { runSheetToHTML } from "./html";
 import { RUN_SHEET_PRINT_CSS } from "./print-css";
@@ -19,7 +19,7 @@ export function runSheetToPrintHTML(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(model.title)}</title>
-  <style>${PRINT_CSS}${RUN_SHEET_PRINT_CSS}</style>
+  <style>${PRINT_BASE_CSS}${RUN_SHEET_PRINT_CSS}</style>
 </head>
 <body>
 ${runSheetToHTML(sheet, data, options)}</body>
