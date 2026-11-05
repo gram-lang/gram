@@ -1,10 +1,4 @@
-import type { Availability, RunSheet } from "@gram-lang/scheduler";
-import { prepareViews } from "@gram-lang/renderer";
-import type {
-	CompilationResult,
-	MiseEnPlaceMode,
-	RestChoice,
-} from "@gram-lang/kitchen";
+import type { Availability } from "@gram-lang/scheduler";
 import { ExitCode, GramCLIError } from "../errors";
 import {
 	collectFlag,
@@ -15,8 +9,8 @@ import {
 
 /**
  * The flags that put a recipe on the calendar, shared by `gram plan` and by the
- * commands that write a recipe (`export`, `print`), where they let `--with-sheet`
- * add the work plan after it. Spread them into a command's `args`.
+ * commands that write a view of a recipe (`export`, `print`), where they go with
+ * `--view work-plan`. Spread them into a command's `args`.
  */
 export const PLAN_FLAG_ARGS = {
 	serve: {
@@ -40,16 +34,6 @@ export const PLAN_FLAG_ARGS = {
 			"The present, to warn when the first task should already have started (default: now). Mostly for tests",
 	},
 } as const;
-
-/** What it takes to put a recipe on the calendar: when, where, and when you can cook. */
-export interface PlanContext {
-	/** A local date and time, "2026-10-11T13:00". */
-	serveAt: string;
-	timeZone: string;
-	availability: Availability;
-	/** The present, as an instant or a local time in `timeZone`. */
-	now: string;
-}
 
 /** What the plan flags say about the cook, without a serving time. */
 export interface KitchenContext {
@@ -75,49 +59,53 @@ export function resolveKitchenContext(
 	};
 }
 
+/** The views `gram print` and `gram export` can write, as `--view` names them. */
+export const EXPORT_VIEWS = ["recipe", "work-plan"] as const;
+
+/** `--view`, for the commands that write one view of a recipe. */
+export const VIEW_FLAG_ARG = {
+	view: {
+		type: "string",
+		description: `Which view to write: ${EXPORT_VIEWS.join(" | ")} (default: recipe). The work plan takes the plan flags; without --serve it is laid out in days before the service`,
+	},
+} as const;
+
+/** What `--view` and the plan flags ask for: the recipe, or the work plan and when it is served. */
+export type ExportView =
+	| { view: "recipe" }
+	| { view: "workPlan"; kitchen: KitchenContext; serveAt?: string };
+
 /**
- * Reads the plan flags. Without `--serve` there is no plan: `undefined`, unless
- * the command needs one (`required`), or another plan flag was given, which would
- * otherwise be silently ignored.
+ * Reads `--view` and the plan flags. The recipe reads the same at any time, so
+ * the plan flags only go with the work plan, which they would otherwise be
+ * silently ignored for.
  */
-export function resolvePlanContext(
+export function resolveExportView(
 	args: Record<string, unknown>,
 	rawArgs: string[] | undefined,
 	config: { timezone?: string },
-	{ required = false }: { required?: boolean } = {},
-): PlanContext | undefined {
-	const available = collectFlag(rawArgs ?? [], "available");
-	if (args.serve === undefined || args.serve === "") {
-		if (!required && (args.tz || available.length > 0 || args.now)) {
+): ExportView {
+	const name = (args.view as string | undefined) ?? "recipe";
+	if (!(EXPORT_VIEWS as readonly string[]).includes(name)) {
+		throw new GramCLIError(
+			`Unknown --view value "${name}". Expected one of: ${EXPORT_VIEWS.join(", ")}.`,
+			ExitCode.Error,
+		);
+	}
+	const hasServe = args.serve !== undefined && args.serve !== "";
+	if (name === "recipe") {
+		const available = collectFlag(rawArgs ?? [], "available");
+		if (hasServe || args.tz || available.length > 0 || args.now) {
 			throw new GramCLIError(
-				"--tz, --available and --now only apply with --serve (when it is served).",
+				"--serve, --tz, --available and --now only apply with --view work-plan: the recipe itself reads the same at any time.",
 				ExitCode.Error,
 			);
 		}
-		if (!required) return undefined;
+		return { view: "recipe" };
 	}
 	return {
-		serveAt: parseServe(args.serve),
-		...resolveKitchenContext(args, rawArgs, config),
+		view: "workPlan",
+		kitchen: resolveKitchenContext(args, rawArgs, config),
+		...(hasServe && { serveAt: parseServe(args.serve) }),
 	};
-}
-
-/** The work plan of a compiled recipe, ending when it is served. */
-export function workPlanFor(
-	compiled: CompilationResult,
-	context: PlanContext,
-	choice: { miseEnPlace?: MiseEnPlaceMode; rests?: RestChoice } = {},
-): RunSheet {
-	const sheet = prepareViews(compiled, choice, {
-		kitchen: {
-			timeZone: context.timeZone,
-			availability: context.availability,
-			now: context.now,
-		},
-		serveAt: context.serveAt,
-	}).runSheet;
-	if (!sheet) {
-		throw new GramCLIError("This recipe has nothing to plan.", ExitCode.Error);
-	}
-	return sheet;
 }

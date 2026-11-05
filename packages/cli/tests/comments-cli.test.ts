@@ -114,14 +114,15 @@ describe("gram export --comments", () => {
 		expect(without).toContain("Bake");
 	});
 
-	it("leaves them out of the work plan written after the recipe too", async () => {
+	it("leaves them out of the work plan too", async () => {
 		const out = join(dir, "sheet.md");
 		const run = gram(
 			"export",
 			"cake.gram",
 			"--format",
 			"md",
-			"--with-sheet",
+			"--view",
+			"work-plan",
 			"--serve",
 			"2026-10-11 13:00",
 			"--tz",
