@@ -431,12 +431,6 @@ describe("runSheetToMarkdown", () => {
 	it("puts the adjustment under its day", () => {
 		expect(md).toContain("> ⚠️ Dough : Rise extended to 14h 30m");
 	});
-
-	it("goes one level down when it follows a recipe", () => {
-		const two = runSheetToMarkdown(sheet, compiled, { headingLevel: 2 });
-		expect(two).toContain("## Work plan — Country bread");
-		expect(two).toContain("### Saturday, October 10");
-	});
 });
 
 describe("runSheetToHTML", () => {

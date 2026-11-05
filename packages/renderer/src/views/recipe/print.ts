@@ -26,8 +26,6 @@ import { formatElement } from "../../shared/element";
 import { moduleLabel } from "./module-label";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { runSheetToHTML } from "../work-plan/html";
-import { RUN_SHEET_PRINT_CSS } from "../work-plan/print-css";
 import css from "./print.css" with { type: "text" };
 
 /** The print stylesheet (`print.css`), shared by every printed view. */
@@ -274,14 +272,7 @@ const printBackend: RenderBackend = {
 		return body;
 	},
 
-	renderRunSheet(data, options, sheet) {
-		return runSheetToHTML(sheet, data, {
-			lang: options.lang,
-			comments: options.comments,
-		});
-	},
-
-	assembleDocument(sections: RenderSections, data, _context, options) {
+	assembleDocument(sections: RenderSections, data) {
 		const body =
 			sections.title +
 			sections.meta +
@@ -289,8 +280,7 @@ const printBackend: RenderBackend = {
 			sections.cookware +
 			sections.instructions +
 			sections.footnotes +
-			sections.nutrition +
-			sections.runSheet;
+			sections.nutrition;
 
 		const titleTag = data.title
 			? `<title>${escapeHtml(data.title)}</title>`
@@ -301,7 +291,7 @@ const printBackend: RenderBackend = {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   ${titleTag}
-  <style>${PRINT_CSS}${options.runSheet ? RUN_SHEET_PRINT_CSS : ""}</style>
+  <style>${PRINT_CSS}</style>
 </head>
 <body>
 ${body}</body>

@@ -24,9 +24,9 @@ export function runSheetToMarkdown(
 	const sectionHead = sectionHeading(t);
 	const startOf = (l: RunSheetProgramLine) =>
 		l.startTime ? fill(t.workPlanStart, { time: l.startTime }) : "";
-	const h1 = "#".repeat(options.headingLevel ?? 1);
-	const h2 = `${h1}#`;
-	const h3 = `${h2}#`;
+	const h1 = "#";
+	const h2 = "##";
+	const h3 = "###";
 	const out: string[] = [`${h1} ${md(model.title)}`, ""];
 	if (model.subtitle) out.push(md(model.subtitle), "");
 	out.push(md(model.summary), "");

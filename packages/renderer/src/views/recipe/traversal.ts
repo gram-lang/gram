@@ -1,4 +1,3 @@
-import type { RunSheet } from "@gram-lang/scheduler";
 import { showsComments, withoutComments } from "../../shared/comments";
 import type {
 	RendererOptions,
@@ -31,8 +30,6 @@ export interface RenderSections {
 	instructions: string;
 	footnotes: string;
 	nutrition: string;
-	/** The work plan after the recipe, when asked for with `runSheet`. */
-	runSheet: string;
 }
 
 export interface RenderBackend {
@@ -80,14 +77,6 @@ export interface RenderBackend {
 		data: RenderableCompilationResult,
 		context: RenderContext,
 		options: RendererOptions,
-	): string;
-	/**
-	 * The work plan written after the recipe (`options.runSheet`).
-	 */
-	renderRunSheet(
-		data: RenderableCompilationResult,
-		options: RendererOptions,
-		sheet: RunSheet,
 	): string;
 	assembleDocument(
 		sections: RenderSections,
@@ -139,9 +128,6 @@ export function renderRecipe(
 	// Must run after instructions — see renderFootnotes's own doc comment.
 	const footnotes = backend.renderFootnotes(data, context, options);
 	const nutrition = backend.renderNutrition(data, context, options);
-	const sheet = options.runSheet
-		? backend.renderRunSheet(data, options, options.runSheet)
-		: "";
 
 	return backend.assembleDocument(
 		{
@@ -152,7 +138,6 @@ export function renderRecipe(
 			instructions,
 			footnotes,
 			nutrition,
-			runSheet: sheet,
 		},
 		data,
 		context,

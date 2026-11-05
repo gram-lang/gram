@@ -9,7 +9,11 @@ import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { resolveScaleArg } from "../services/scaler";
 import { exportRecipe } from "../services/exporter";
 import { reportRejectedIngredients } from "../ui/diagnostics";
-import { PLAN_FLAG_ARGS, resolvePlanContext } from "../services/plan-options";
+import {
+	PLAN_FLAG_ARGS,
+	VIEW_FLAG_ARG,
+	resolveExportView,
+} from "../services/plan-options";
 import {
 	DEFAULT_VIEW_SETTINGS,
 	viewSettingsToRendererOptions,
@@ -27,7 +31,8 @@ import { ExitCode, GramCLIError } from "../errors";
 export default defineCommand({
 	meta: {
 		name: "export",
-		description: "Export a recipe to Markdown or print-ready HTML",
+		description:
+			"Export a view of a recipe (the recipe or its work plan) to Markdown or print-ready HTML",
 	},
 	args: {
 		file: {
@@ -43,7 +48,7 @@ export default defineCommand({
 			type: "string",
 			alias: "o",
 			description:
-				"Output file path (default: same directory as input, with new extension)",
+				"Output file path (default: same directory as input, with new extension; .work-plan before it for the work plan)",
 		},
 		scale: {
 			type: "string",
@@ -67,12 +72,8 @@ export default defineCommand({
 			description:
 				"Force a specific ingredient as the baker's math reference (e.g. flour). Implies --bakers-math",
 		},
+		...VIEW_FLAG_ARG,
 		...PLAN_FLAG_ARGS,
-		"with-sheet": {
-			type: "boolean",
-			description:
-				"With --serve: also write the production sheet after the recipe, in the same document",
-		},
 		stock: {
 			type: "string",
 			description:
@@ -105,16 +106,15 @@ export default defineCommand({
 			(args["bakers-math"] ? "" : undefined);
 		const settings = readViewSettingArgs(args, RECIPE_VIEW_SETTINGS);
 		const recipe = readRecipeSettingArgs(args);
-		const plan = resolvePlanContext(args, rawArgs, config);
-		if (args["with-sheet"] && !plan) {
-			log.error("--with-sheet needs --serve (when it is served).");
-			process.exit(ExitCode.Error);
-		}
-		if (plan && !args["with-sheet"]) {
-			log.error(
-				"--serve only applies with --with-sheet: the recipe itself reads the same at any time.",
-			);
-			process.exit(ExitCode.Error);
+		let view: ReturnType<typeof resolveExportView>;
+		try {
+			view = resolveExportView(args, rawArgs, config);
+		} catch (err) {
+			if (err instanceof GramCLIError) {
+				log.error(err.message);
+				process.exit(err.exitCode);
+			}
+			throw err;
 		}
 		const stock = resolveStockFromConfig(args.stock, config);
 
@@ -122,7 +122,7 @@ export default defineCommand({
 			? resolve(args.output as string)
 			: join(
 					dirname(filePath),
-					`${basename(filePath, extname(filePath))}.${fmt}`,
+					`${basename(filePath, extname(filePath))}${view.view === "workPlan" ? ".work-plan" : ""}.${fmt}`,
 				);
 
 		let content: string;
@@ -136,8 +136,7 @@ export default defineCommand({
 				}),
 				bakersReference,
 				recipe,
-				plan,
-				withSheet: args["with-sheet"] as boolean | undefined,
+				view,
 				lang: config.language,
 				paths: config.paths,
 				stock,

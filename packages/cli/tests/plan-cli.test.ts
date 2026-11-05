@@ -448,13 +448,13 @@ describe("the work plan with the recipe, in export and print", () => {
 		expect(out).not.toContain("Work plan");
 	});
 
-	it("gram export writes the recipe alone, or the work plan after it with --with-sheet", async () => {
+	it("gram export writes the recipe by default, and the work plan alone with --view work-plan", async () => {
 		const path = join(dir, "annotated.md");
 		const a = gram("export", "bread.gram", "--format", "md", "-o", path);
 		expect(a.code).toBe(0);
-		const alone = await readFile(path, "utf-8");
-		expect(alone).not.toContain("Work plan");
-		expect(alone).not.toContain("around");
+		const recipe = await readFile(path, "utf-8");
+		expect(recipe).not.toContain("Work plan");
+		expect(recipe).not.toContain("around");
 
 		const b = gram(
 			"export",
@@ -463,18 +463,34 @@ describe("the work plan with the recipe, in export and print", () => {
 			"md",
 			"-o",
 			path,
-			"--with-sheet",
+			"--view",
+			"work-plan",
 			...SERVE,
 		);
 		expect(b.code).toBe(0);
-		const withSheet = await readFile(path, "utf-8");
-		expect(withSheet).toContain("## Work plan — Country bread");
-		expect(withSheet).toContain("- [ ] flour 500 g");
-		// The recipe part is the same as without the plan.
-		expect(withSheet.startsWith(alone.trimEnd())).toBe(true);
+		const sheet = await readFile(path, "utf-8");
+		expect(sheet.startsWith("# Work plan — Country bread")).toBe(true);
+		expect(sheet).toContain("- [ ] flour 500 g");
+		// The work plan alone: the recipe is not written before it.
+		expect(sheet).not.toContain("Instructions");
 	});
 
-	it("gram export writes the print document with the plan's styles", async () => {
+	it("gram export lays the work plan out in days without --serve, next to the recipe file", async () => {
+		const { code } = gram(
+			"export",
+			"bread.gram",
+			"--format",
+			"md",
+			"--view",
+			"work-plan",
+		);
+		expect(code).toBe(0);
+		const md = await readFile(join(dir, "bread.work-plan.md"), "utf-8");
+		expect(md).toContain("# Work plan — Country bread");
+		expect(md).not.toContain("October");
+	});
+
+	it("gram export writes the work plan as a print document, with its styles", async () => {
 		const path = join(dir, "annotated.html");
 		const { code } = gram(
 			"export",
@@ -483,13 +499,16 @@ describe("the work plan with the recipe, in export and print", () => {
 			"html",
 			"-o",
 			path,
-			"--with-sheet",
+			"--view",
+			"work-plan",
 			...SERVE,
 		);
 		expect(code).toBe(0);
 		const html = await readFile(path, "utf-8");
+		expect(html.startsWith("<!DOCTYPE html>")).toBe(true);
 		expect(html).toContain('<section class="gram-run-sheet">');
 		expect(html).toContain(".work-plan-day");
+		expect(html).not.toContain('class="instructions"');
 	});
 
 	it("gram print writes it too (without opening a browser)", async () => {
@@ -497,7 +516,8 @@ describe("the work plan with the recipe, in export and print", () => {
 			"print",
 			"bread.gram",
 			"--no-open",
-			"--with-sheet",
+			"--view",
+			"work-plan",
 			...SERVE,
 		);
 		expect(code).toBe(0);
@@ -506,13 +526,13 @@ describe("the work plan with the recipe, in export and print", () => {
 		expect(html).toContain("Work plan — Country bread");
 	});
 
-	it("refuses the plan flags without --with-sheet, and --with-sheet without --serve", () => {
+	it("refuses the plan flags with the recipe, and an unknown view", () => {
 		for (const args of [
 			["export", "bread.gram", "--format", "md", "--available", "08:00-22:00"],
 			["export", "bread.gram", "--format", "md", "--serve", "2026-10-11 13:00"],
-			["export", "bread.gram", "--format", "md", "--with-sheet"],
-			["print", "bread.gram", "--no-open", "--with-sheet"],
+			["export", "bread.gram", "--format", "md", "--view", "gantt"],
 			["print", "bread.gram", "--no-open", "--serve", "2026-10-11 13:00"],
+			["print", "bread.gram", "--no-open", "--view", "gantt"],
 		]) {
 			expect(gram(...args).code).toBe(1);
 		}
@@ -537,7 +557,8 @@ describe("the work plan with the recipe, in export and print", () => {
 					"md",
 					"-o",
 					join(project, "out.md"),
-					"--with-sheet",
+					"--view",
+					"work-plan",
 					"--serve",
 					"2026-10-11 13:00",
 				],
