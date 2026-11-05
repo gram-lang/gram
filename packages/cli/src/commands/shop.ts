@@ -7,6 +7,10 @@ import { resolveGlob } from "../core/glob";
 import { filterModuleRoots } from "../core/module-roots";
 import { resolveStockFromConfig, reportUnusedStock } from "../core/stock";
 import { buildShoppingList } from "../services/shopper";
+import {
+	readRecipeSettingArgs,
+	recipeSettingArgs,
+} from "../services/setting-args";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { parseScaleArg } from "../services/scaler";
 import {
@@ -51,6 +55,7 @@ export default defineCommand({
 				"Skip database — no name resolution, aggregation by unit only",
 			default: false,
 		},
+		...recipeSettingArgs(),
 		"include-modules": {
 			type: "boolean",
 			description:
@@ -111,6 +116,7 @@ export default defineCommand({
 		const stock = resolveStockFromConfig(args.stock, config);
 		const result = await buildShoppingList(files, {
 			db,
+			recipe: readRecipeSettingArgs(args),
 			scaleFactor,
 			lang: config.language,
 			paths: config.paths,

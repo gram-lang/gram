@@ -1,3 +1,4 @@
+import type { RecipeSettings } from "@gram-lang/renderer";
 import {
 	parseDocument,
 	type DocumentState,
@@ -33,6 +34,7 @@ export function resolveFreshState(
 	liveVersion: number | undefined,
 	db: Record<string, IngredientData>,
 	moduleCtx?: ModuleContext,
+	recipe?: RecipeSettings,
 ): DocumentState {
 	if (cached) {
 		const isFresh =
@@ -41,5 +43,5 @@ export function resolveFreshState(
 				: cached.text === liveText;
 		if (isFresh) return cached;
 	}
-	return parseDocument(liveText, db, liveVersion, moduleCtx);
+	return parseDocument(liveText, db, liveVersion, moduleCtx, recipe);
 }

@@ -150,6 +150,61 @@
           ],
           "default": "show",
           "description": "Whether the preview and the work plan show the comments of the recipe: the notes alone on a line and the ones at the end of a line."
+        },
+        "gram.nutritionBasis": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "total",
+            "perPortion",
+            "per100g"
+          ],
+          "enumDescriptions": [
+            "The reader picks the basis in the preview, starting per portion when the recipe declares portions, otherwise on the whole recipe.",
+            "Always the whole recipe.",
+            "Always per portion (the whole recipe when the recipe declares no portions).",
+            "Always per 100 g."
+          ],
+          "default": "auto",
+          "description": "Which nutrition basis the preview shows. With auto, the preview lets you switch between them; any other value pins one."
+        },
+        "gram.bakersMathOnly": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show only the baker's percentages in the preview, without the weights."
+        },
+        "gram.stepQuantities": {
+          "type": "string",
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "enumDescriptions": [
+            "The quantity of each ingredient is written in the text of the steps, after its name.",
+            "The steps name the ingredients only; their quantities stay in the ingredient lists and in the tooltip."
+          ],
+          "default": "show",
+          "description": "Whether the preview writes the quantities of the ingredients in the text of the steps."
+        },
+        "gram.bakersMath": {
+          "type": "boolean",
+          "default": true,
+          "description": "Compute the baker's percentages, from the ingredient marked with * in the recipe."
+        },
+        "gram.massStandardization": {
+          "type": "boolean",
+          "default": true,
+          "description": "Convert the quantities to grams with the ingredient database."
+        },
+        "gram.yieldCalculation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Account for the part of an ingredient lost when it is prepared (peel, stones), so the weight to buy differs from the weight used."
+        },
+        "gram.nutritionEstimation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Estimate the nutrition of the recipe from the ingredient database."
         }
       }
     },

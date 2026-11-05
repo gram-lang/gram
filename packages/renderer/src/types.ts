@@ -107,6 +107,8 @@ export interface RendererClasses {
 	temperature?: string;
 	declaration?: string;
 	massBadge?: string;
+	/** A quantity written in the text of a step (default `step-quantity`). */
+	stepQuantity?: string;
 	bakersBadge?: string;
 	prepText?: string;
 	compositeParentText?: string;

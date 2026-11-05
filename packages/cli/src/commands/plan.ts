@@ -8,15 +8,6 @@ import { loadConfig } from "../core/config";
 import { resolveScaleArg } from "../services/scaler";
 import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import {
-	MISE_EN_PLACE_FLAG_DESCRIPTION,
-	parseMiseEnPlace,
-} from "../services/mise-en-place-flag";
-import {
-	COMMENTS_FLAG_DESCRIPTION,
-	parseComments,
-} from "../services/comments-flag";
-import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
-import {
 	PLAN_FORMATS,
 	type PlanFormat,
 	findPlan,
@@ -24,6 +15,11 @@ import {
 	planRecipe,
 	planToICS,
 } from "../services/planner";
+import {
+	WORK_PLAN_SETTINGS,
+	readViewSettingArgs,
+	viewSettingArgs,
+} from "../services/setting-args";
 import { ExitCode, GramCLIError } from "../errors";
 import {
 	PLAN_FLAG_ARGS,
@@ -73,18 +69,7 @@ export default defineCommand({
 			description:
 				"Scale factor (e.g. 1.5) or reference ingredient (e.g. farine=300g)",
 		},
-		"mise-en-place": {
-			type: "string",
-			description: MISE_EN_PLACE_FLAG_DESCRIPTION,
-		},
-		rests: {
-			type: "string",
-			description: RESTS_FLAG_DESCRIPTION,
-		},
-		comments: {
-			type: "string",
-			description: COMMENTS_FLAG_DESCRIPTION,
-		},
+		...viewSettingArgs(WORK_PLAN_SETTINGS),
 		stock: {
 			type: "string",
 			description:
@@ -121,9 +106,10 @@ export default defineCommand({
 					ExitCode.Error,
 				);
 			}
-			const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
-			const rests = parseRests(args.rests);
-			const comments = parseComments(args.comments);
+			const { miseEnPlace, rests, comments } = readViewSettingArgs(
+				args,
+				WORK_PLAN_SETTINGS,
+			);
 			const stock = resolveStockFromConfig(args.stock, config);
 			const scaleFactor =
 				(await resolveScaleArg(

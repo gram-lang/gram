@@ -9,20 +9,19 @@ import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { resolveScaleArg } from "../services/scaler";
 import { exportRecipe } from "../services/exporter";
 import { reportRejectedIngredients } from "../ui/diagnostics";
-import {
-	MISE_EN_PLACE_FLAG_DESCRIPTION,
-	parseMiseEnPlace,
-} from "../services/mise-en-place-flag";
-import {
-	COMMENTS_FLAG_DESCRIPTION,
-	parseComments,
-} from "../services/comments-flag";
-import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
 import { PLAN_FLAG_ARGS, resolvePlanContext } from "../services/plan-options";
 import {
-	NUTRITION_BASIS_FLAG_DESCRIPTION,
-	parseNutritionBasis,
-} from "../services/nutrition-basis";
+	DEFAULT_VIEW_SETTINGS,
+	viewSettingsToRendererOptions,
+} from "@gram-lang/renderer";
+import {
+	RECIPE_VIEW_SETTINGS,
+	STEP_QTY_ALIAS_ARG,
+	readRecipeSettingArgs,
+	readViewSettingArgs,
+	recipeSettingArgs,
+	viewSettingArgs,
+} from "../services/setting-args";
 import { ExitCode, GramCLIError } from "../errors";
 
 export default defineCommand({
@@ -60,41 +59,13 @@ export default defineCommand({
 			description: "Skip ingredient database",
 			default: false,
 		},
-		"step-qty": {
-			type: "boolean",
-			description:
-				"HTML only: show ingredient quantities in step text (pass --no-step-qty to hide; quantities in section mise en place are always shown)",
-			default: true,
-		},
-		"bakers-math": {
-			type: "boolean",
-			description:
-				"Display ingredient quantities as a percentage of a reference ingredient (Baker's Percentage).",
-		},
+		...viewSettingArgs(RECIPE_VIEW_SETTINGS),
+		...STEP_QTY_ALIAS_ARG,
+		...recipeSettingArgs(),
 		"bakers-reference": {
 			type: "string",
 			description:
 				"Force a specific ingredient as the baker's math reference (e.g. flour). Implies --bakers-math",
-		},
-		"bakers-math-only": {
-			type: "boolean",
-			description: "Only show the percentages and hide absolute weights.",
-		},
-		nutrition: {
-			type: "string",
-			description: NUTRITION_BASIS_FLAG_DESCRIPTION,
-		},
-		"mise-en-place": {
-			type: "string",
-			description: MISE_EN_PLACE_FLAG_DESCRIPTION,
-		},
-		rests: {
-			type: "string",
-			description: RESTS_FLAG_DESCRIPTION,
-		},
-		comments: {
-			type: "string",
-			description: COMMENTS_FLAG_DESCRIPTION,
 		},
 		...PLAN_FLAG_ARGS,
 		"with-sheet": {
@@ -132,11 +103,8 @@ export default defineCommand({
 		const bakersReference =
 			(args["bakers-reference"] as string) ||
 			(args["bakers-math"] ? "" : undefined);
-		const bakersMathOnly = args["bakers-math-only"] as boolean;
-		const nutritionBasis = parseNutritionBasis(args.nutrition);
-		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
-		const rests = parseRests(args.rests);
-		const comments = parseComments(args.comments);
+		const settings = readViewSettingArgs(args, RECIPE_VIEW_SETTINGS);
+		const recipe = readRecipeSettingArgs(args);
 		const plan = resolvePlanContext(args, rawArgs, config);
 		if (args["with-sheet"] && !plan) {
 			log.error("--with-sheet needs --serve (when it is served).");
@@ -162,13 +130,12 @@ export default defineCommand({
 
 		try {
 			content = await exportRecipe(filePath, fmt, db, scaleFactor, {
-				hideStepQty: !args["step-qty"],
+				...viewSettingsToRendererOptions({
+					...DEFAULT_VIEW_SETTINGS,
+					...settings,
+				}),
 				bakersReference,
-				bakersMathOnly,
-				nutritionBasis,
-				miseEnPlace,
-				rests,
-				comments,
+				recipe,
 				plan,
 				withSheet: args["with-sheet"] as boolean | undefined,
 				lang: config.language,

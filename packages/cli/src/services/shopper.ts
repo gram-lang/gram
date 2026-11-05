@@ -8,6 +8,7 @@ import {
 	isCategoryKey,
 } from "@gram-lang/i18n";
 import { runPipeline } from "../core/pipeline";
+import type { RecipeSettings } from "@gram-lang/renderer";
 import { fmtNumber } from "../core/format";
 import type {
 	IngredientData,
@@ -22,6 +23,8 @@ import type {
 
 export interface ShopOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
+	/** What the analyzer computes. Default: everything, as the engine. */
+	recipe?: RecipeSettings;
 	scaleFactor?: number;
 	lang?: string;
 }
@@ -112,6 +115,7 @@ export async function buildShoppingList(
 					usedStock: fileUsedStock,
 				} = await runPipeline(file, {
 					db: opts.db,
+					recipe: opts.recipe,
 					scaleFactor: opts.scaleFactor,
 					lang: opts.lang,
 					paths: opts.paths,

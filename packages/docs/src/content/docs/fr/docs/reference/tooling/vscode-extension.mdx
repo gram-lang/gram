@@ -53,6 +53,25 @@ Les durées passives fixes et les minuteurs actifs définis par une plage (`~{20
 
 Ce paramètre s'applique instantanément à tous les fichiers ouverts (toute valeur non reconnue équivaut à `show`). Ce réglage est également disponible dans la CLI (`--comments`), dans le moteur de rendu (`comments`) ainsi que dans le Playground (section **Affichage**).
 
+#### Autres réglages de l'aperçu <Since v="1.4.0" />
+
+| Réglage | Valeurs | Effet |
+|---|---|---|
+| `gram.stepQuantities` | `show` (par défaut), `hide` | Détermine si la quantité de chaque ingrédient est rappelée dans le texte des étapes, immédiatement après son nom, avec sa masse en grammes lorsque celle-ci est standardisée : `farine (250 ml, ~148 g)`. Les listes d'ingrédients de chaque section l'affichent systématiquement. |
+| `gram.nutritionBasis` | `auto` (par défaut), `total`, `perPortion`, `per100g` | Référentiel de calcul du panneau nutritionnel. En mode `auto`, l'aperçu permet d'alterner entre les bases (en privilégiant l'affichage par portion si déclaré) ; toute autre valeur verrouille le panneau sur la base choisie. |
+| `gram.bakersMathOnly` | `false` (par défaut), `true` | Affiche uniquement les pourcentages du boulanger, en masquant les masses absolues. |
+
+Les réglages de l'analyseur déterminent les calculs effectués à partir de la base d'ingrédients. Tous sont activés par défaut, conformément au comportement du moteur. Modifier l'un d'eux relance immédiatement l'analyse de chaque recette ouverte et actualise ses diagnostics.
+
+| Réglage | Effet quand il est activé |
+|---|---|
+| `gram.bakersMath` | Calcule les pourcentages du boulanger à partir de l'ingrédient marqué d'une astérisque `*`. |
+| `gram.massStandardization` | Standardise les quantités en grammes à partir des masses volumiques de la base d'ingrédients. |
+| `gram.yieldCalculation` | Prend en compte les pertes à la préparation (épluchures, noyaux), distinguant la masse brute à acheter de la masse nette mise en œuvre. |
+| `gram.nutritionEstimation` | Estime les valeurs nutritionnelles affichées dans l'aperçu. |
+
+Chacun de ces réglages est disponible avec les mêmes valeurs dans la [CLI](/fr/docs/reference/tooling/cli/#les-réglages-en-ligne-de-commande) et dans le Playground. Toute valeur non reconnue bascule automatiquement sur sa valeur par défaut.
+
 Une journée de travail qu'une phase passive prolongée repousse au-delà du cycle normal de 24 heures déclenche un avertissement explicite sur la section concernée (`DAY_OVERFLOW`), affiché au même titre que les diagnostics du compilateur.
 
 ### 3. Gestion intelligente des ingrédients

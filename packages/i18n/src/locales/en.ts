@@ -255,6 +255,11 @@ export const en = {
 			showComments: "Show comments",
 			commentsDesc:
 				"The notes of the recipe (// like this), in the recipe and in the work plan.",
+			showStepQuantities: "Quantities in the steps",
+			stepQuantitiesDesc:
+				"Writes the quantity of each ingredient in the text of the steps, after its name.",
+			nutritionBasis: "Nutrition basis",
+			nutritionBasisAuto: "Automatic (choose in the preview)",
 			forceReference: "Force Reference:",
 			autoDetect: "Auto (detect @*)",
 			physicalAnalysis: "Physical Analysis",
@@ -287,6 +292,10 @@ export const en = {
 				"Expresses each ingredient as a percentage of a base ingredient set at 100% (typically flour, or any chosen ingredient), making ratios and formulation easy to evaluate.",
 			comments:
 				"Shows or leaves out the comments written in the recipe with //: the notes alone on a line and the ones at the end of a line. They are set apart discreetly in the work plan.",
+			stepQuantities:
+				"Writes each quantity in the step that uses it, with its weight in grams when the masses are standardized. Leave it off for shorter steps: the quantities stay in the ingredient lists.",
+			nutritionBasis:
+				"Which basis the nutrition panel shows, when the nutrition is estimated. Automatic lets you switch in the preview, starting per portion when the recipe declares portions.",
 			bakersMathOnly:
 				"Hides gram weights to display only relative percentages, turning the recipe into a pure ratio formula.",
 			bakersReference:

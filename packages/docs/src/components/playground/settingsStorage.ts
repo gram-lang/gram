@@ -13,9 +13,17 @@ export type StoredSettingKey = keyof Settings;
  * existing keys are kept as they are, so a choice saved before this module
  * still applies.
  */
-export const SETTING_STORAGE_KEYS: Partial<Record<StoredSettingKey, string>> = {
+export const SETTING_STORAGE_KEYS: Record<StoredSettingKey, string> = {
 	miseEnPlace: "gram-playground-schedule",
 	rests: "gram-playground-rests",
+	comments: "gram-playground-comments",
+	nutritionBasis: "gram-playground-nutrition-basis",
+	bakersMathOnly: "gram-playground-bakers-math-only",
+	stepQuantities: "gram-playground-step-quantities",
+	bakersMath: "gram-playground-bakers-math",
+	massStandardization: "gram-playground-mass-standardization",
+	yieldCalculation: "gram-playground-yield-calculation",
+	nutritionEstimation: "gram-playground-nutrition-estimation",
 };
 
 /** The part of `Storage` this module uses, so a test can hand it a plain object. */
@@ -76,4 +84,64 @@ export function saveSetting<K extends StoredSettingKey>(
 	} catch {
 		// Nothing to do.
 	}
+}
+
+/**
+ * The options of the studio: every setting but the two of the timeline
+ * (`miseEnPlace`, `rests`, kept on their own), and the baker's reference, an
+ * input of the session that is not remembered.
+ */
+export type PlaygroundOptions = RecipeSettings &
+	Omit<ViewSettings, "miseEnPlace" | "rests"> & {
+		bakersReference: string | undefined;
+	};
+
+/** The settings `PlaygroundOptions` carries, in the order of the descriptors. */
+export const OPTION_SETTING_KEYS = SETTINGS.map(
+	(d) => d.key as StoredSettingKey,
+).filter(
+	(key): key is Exclude<StoredSettingKey, "miseEnPlace" | "rests"> =>
+		key !== "miseEnPlace" && key !== "rests",
+);
+
+/** Every option on its default: the defaults of the setting descriptors. */
+export function defaultOptions(): PlaygroundOptions {
+	const out = { bakersReference: undefined } as PlaygroundOptions;
+	for (const key of OPTION_SETTING_KEYS) {
+		(out as unknown as Record<string, unknown>)[key] =
+			descriptorOf(key).default;
+	}
+	return out;
+}
+
+/** The options as saved, each one missing or unusable on its default. */
+export function loadOptions(
+	storage: SettingStorage | undefined = browserStorage(),
+): PlaygroundOptions {
+	const out = defaultOptions();
+	for (const key of OPTION_SETTING_KEYS) {
+		(out as unknown as Record<string, unknown>)[key] = loadSetting(
+			key,
+			storage,
+		);
+	}
+	return out;
+}
+
+/** Remembers every option but the baker's reference. */
+export function saveOptions(
+	options: PlaygroundOptions,
+	storage: SettingStorage | undefined = browserStorage(),
+): void {
+	for (const key of OPTION_SETTING_KEYS) {
+		saveSetting(key, options[key] as Settings[typeof key], storage);
+	}
+}
+
+/** Whether `key` differs from its default in `options`. */
+export function isOptionModified(
+	options: PlaygroundOptions,
+	key: (typeof OPTION_SETTING_KEYS)[number],
+): boolean {
+	return options[key] !== descriptorOf(key).default;
 }

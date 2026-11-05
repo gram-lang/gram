@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, useId } from "vue";
-import { formatDecimalToFraction } from "@gram-lang/renderer";
+import {
+	NUTRITION_BASES,
+	type NutritionBasis,
+	formatDecimalToFraction,
+} from "@gram-lang/renderer";
 import { UNIT_CONVERSIONS } from "@gram-lang/i18n";
 import {
 	REST_CHOICES,
@@ -11,6 +15,12 @@ import { WEEKDAYS, type Weekday } from "@gram-lang/scheduler";
 // biome-ignore lint/correctness/noUnusedImports: PlaygroundTooltip is used in the <template> block below
 import PlaygroundTooltip from "./PlaygroundTooltip.vue";
 import { useI18n } from "./useI18n";
+import {
+	type OPTION_SETTING_KEYS,
+	type PlaygroundOptions,
+	defaultOptions,
+	isOptionModified,
+} from "./settingsStorage";
 
 export interface DayAvailability {
 	enabled: boolean;
@@ -38,15 +48,7 @@ const knownUnits = Array.from(
 );
 
 const props = defineProps<{
-	options: {
-		enableMassStandardization: boolean;
-		enableYieldCalculation: boolean;
-		enableNutritionalEstimation: boolean;
-		bakersMath: boolean;
-		bakersMathOnly: boolean;
-		bakersReference: string | undefined;
-		comments?: "show" | "hide";
-	};
+	options: PlaygroundOptions;
 	shoppingList?: Array<{
 		id: string;
 		name: string;
@@ -689,12 +691,53 @@ const showComments = computed({
 		}),
 });
 
+// The quantities written in the text of the steps: shown unless switched off.
+// biome-ignore lint/correctness/noUnusedVariables: showStepQuantities is used in the <template> block below, which Biome's Vue support doesn't see.
+const showStepQuantities = computed({
+	get: () => props.options.stepQuantities !== "hide",
+	set: (val) =>
+		emit("update:options", {
+			...props.options,
+			stepQuantities: val ? "show" : "hide",
+		}),
+});
+
+// biome-ignore lint/correctness/noUnusedVariables: nutritionBasisId is used in the <template> block below, which Biome's Vue support doesn't see.
+const nutritionBasisId = useId();
+
+// biome-ignore lint/correctness/noUnusedVariables: nutritionBasisOptions is used in the <template> block below, which Biome's Vue support doesn't see.
+const nutritionBasisOptions = computed(() =>
+	NUTRITION_BASES.map((value) => ({
+		value,
+		label:
+			value === "auto"
+				? t.value.playground.options.nutritionBasisAuto
+				: value === "total"
+					? t.value.renderer.nutritionWholeRecipe
+					: value === "perPortion"
+						? t.value.renderer.nutritionPerPortion
+						: t.value.renderer.nutritionPer100g,
+	})),
+);
+
+const DISPLAY_KEYS = [
+	"comments",
+	"stepQuantities",
+] as const satisfies readonly (typeof OPTION_SETTING_KEYS)[number][];
+
 // biome-ignore lint/correctness/noUnusedVariables: isDisplayModified is used in the <template> block below, which Biome's Vue support doesn't see.
-const isDisplayModified = computed(() => props.options.comments === "hide");
+const isDisplayModified = computed(() =>
+	DISPLAY_KEYS.some((key) => isOptionModified(props.options, key)),
+);
 
 // biome-ignore lint/correctness/noUnusedVariables: resetDisplaySection is used in the <template> block below, which Biome's Vue support doesn't see.
 function resetDisplaySection() {
-	emit("update:options", { ...props.options, comments: "show" });
+	const defaults = defaultOptions();
+	emit("update:options", {
+		...props.options,
+		comments: defaults.comments,
+		stepQuantities: defaults.stepQuantities,
+	});
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: bakersBadgeTitle is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -707,16 +750,20 @@ const bakersBadgeTitle = computed(() => {
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: isBakersModified is used in the <template> block below, which Biome's Vue support doesn't see.
-const isBakersModified = computed(() => {
-	return Boolean(props.options.bakersMath);
-});
+const isBakersModified = computed(
+	() =>
+		isOptionModified(props.options, "bakersMath") ||
+		isOptionModified(props.options, "bakersMathOnly") ||
+		Boolean(props.options.bakersReference),
+);
 
 // biome-ignore lint/correctness/noUnusedVariables: resetBakersSection is used in the <template> block below, which Biome's Vue support doesn't see.
 function resetBakersSection() {
+	const defaults = defaultOptions();
 	emit("update:options", {
 		...props.options,
-		bakersMath: false,
-		bakersMathOnly: false,
+		bakersMath: defaults.bakersMath,
+		bakersMathOnly: defaults.bakersMathOnly,
 		bakersReference: undefined,
 	});
 }
@@ -726,43 +773,43 @@ function resetBakersSection() {
 // --------------------------------------------------------------------------
 // biome-ignore lint/correctness/noUnusedVariables: massEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
 const massEnabled = computed({
-	get: () => props.options.enableMassStandardization,
+	get: () => props.options.massStandardization,
 	set: (val) =>
 		emit("update:options", {
 			...props.options,
-			enableMassStandardization: val,
+			massStandardization: val,
 		}),
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: yieldEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
 const yieldEnabled = computed({
-	get: () => props.options.enableYieldCalculation,
+	get: () => props.options.yieldCalculation,
 	set: (val) =>
-		emit("update:options", { ...props.options, enableYieldCalculation: val }),
+		emit("update:options", { ...props.options, yieldCalculation: val }),
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: nutritionEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
 const nutritionEnabled = computed({
-	get: () => props.options.enableNutritionalEstimation,
+	get: () => props.options.nutritionEstimation,
 	set: (val) =>
 		emit("update:options", {
 			...props.options,
-			enableNutritionalEstimation: val,
+			nutritionEstimation: val,
 		}),
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: physicsBadgeTitle is used in the <template> block below, which Biome's Vue support doesn't see.
 const physicsBadgeTitle = computed(() => {
 	const parts: string[] = [];
-	if (props.options.enableMassStandardization) {
+	if (props.options.massStandardization) {
 		parts.push(
 			t.value.playground.options?.standardizeMass || "Standardize mass",
 		);
 	}
-	if (props.options.enableYieldCalculation) {
+	if (props.options.yieldCalculation) {
 		parts.push(t.value.playground.options?.yieldCalc || "Yield");
 	}
-	if (props.options.enableNutritionalEstimation) {
+	if (props.options.nutritionEstimation) {
 		parts.push(t.value.playground.options?.nutritionCalc || "Nutrition");
 	}
 	return parts.length > 0
@@ -771,21 +818,23 @@ const physicsBadgeTitle = computed(() => {
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: isPhysicsModified is used in the <template> block below, which Biome's Vue support doesn't see.
-const isPhysicsModified = computed(() => {
-	return (
-		!props.options.enableMassStandardization ||
-		props.options.enableYieldCalculation ||
-		!props.options.enableNutritionalEstimation
-	);
-});
+const isPhysicsModified = computed(
+	() =>
+		isOptionModified(props.options, "massStandardization") ||
+		isOptionModified(props.options, "yieldCalculation") ||
+		isOptionModified(props.options, "nutritionEstimation") ||
+		isOptionModified(props.options, "nutritionBasis"),
+);
 
 // biome-ignore lint/correctness/noUnusedVariables: resetPhysicsSection is used in the <template> block below, which Biome's Vue support doesn't see.
 function resetPhysicsSection() {
+	const defaults = defaultOptions();
 	emit("update:options", {
 		...props.options,
-		enableMassStandardization: true,
-		enableYieldCalculation: false,
-		enableNutritionalEstimation: true,
+		massStandardization: defaults.massStandardization,
+		yieldCalculation: defaults.yieldCalculation,
+		nutritionEstimation: defaults.nutritionEstimation,
+		nutritionBasis: defaults.nutritionBasis,
 	});
 }
 
@@ -1305,6 +1354,17 @@ function resetStockSection() {
             <span class="option-desc">{{ t.playground.options.commentsDesc }}</span>
           </div>
         </label>
+
+        <label class="option-item">
+          <input type="checkbox" v-model="showStepQuantities" />
+          <div class="option-text">
+            <div class="studio-label-row">
+              <span class="option-name">{{ t.playground.options.showStepQuantities }}</span>
+              <PlaygroundTooltip :text="t.playground.help.stepQuantities" />
+            </div>
+            <span class="option-desc">{{ t.playground.options.stepQuantitiesDesc }}</span>
+          </div>
+        </label>
       </div>
     </div>
 
@@ -1379,6 +1439,24 @@ function resetStockSection() {
             </div>
           </div>
         </label>
+
+        <div class="studio-field child-option" :class="{ disabled: !nutritionEnabled }">
+          <div class="studio-label-row">
+            <label class="studio-label" :for="nutritionBasisId">{{ t.playground.options.nutritionBasis }}</label>
+            <PlaygroundTooltip :text="t.playground.help.nutritionBasis" />
+          </div>
+          <select
+            :id="nutritionBasisId"
+            class="studio-select"
+            :value="props.options.nutritionBasis"
+            :disabled="!nutritionEnabled"
+            @change="emit('update:options', { ...props.options, nutritionBasis: ($event.target as HTMLSelectElement).value as NutritionBasis })"
+          >
+            <option v-for="opt in nutritionBasisOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 

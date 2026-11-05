@@ -6,6 +6,11 @@ import {
 	type IngredientData,
 } from "@gram-lang/analyzer";
 import {
+	DEFAULT_RECIPE_SETTINGS,
+	type RecipeSettings,
+	recipeSettingsToAnalyzerOptions,
+} from "@gram-lang/renderer";
+import {
 	composeRecipe,
 	finalizeComposed,
 	type ModuleGraph,
@@ -64,6 +69,8 @@ export function parseDocument(
 	db?: Record<string, IngredientData>,
 	version?: number,
 	moduleCtx?: ModuleContext,
+	/** What the analyzer computes (`gram.bakersMath`, ...). Default: everything, as the engine. */
+	recipe: RecipeSettings = DEFAULT_RECIPE_SETTINGS,
 ): DocumentState {
 	const lineStarts = buildLineIndex(text);
 	try {
@@ -96,10 +103,14 @@ export function parseDocument(
 				// `pipeline.ts` and the playground — a stocked import's binding
 				// must not shadow an existing ingredient's real nutrition/mass
 				// data (MODULE_BINDING_SHADOWS_INGREDIENT).
-				const analyzed = analyze(rawCompilation, {
-					...syntheticIngredients,
-					...db,
-				});
+				const analyzed = analyze(
+					rawCompilation,
+					{
+						...syntheticIngredients,
+						...db,
+					},
+					recipeSettingsToAnalyzerOptions(recipe),
+				);
 				compilation = analyzed.result;
 			} else {
 				compilation = rawCompilation;

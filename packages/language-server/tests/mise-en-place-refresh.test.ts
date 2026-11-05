@@ -1,4 +1,6 @@
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterAll, afterEach, describe, expect, it } from "bun:test";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { type ChildProcess, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -57,6 +59,8 @@ class Client {
 	rests: unknown = "shortest";
 	/** And to `gram.comments`. */
 	comments: unknown = "show";
+	/** Any other `gram.*` setting. */
+	extra: Record<string, unknown> = {};
 	/** How long the client takes to answer it (ms). */
 	configDelay = 0;
 
@@ -108,6 +112,7 @@ class Client {
 							miseEnPlace: this.setting,
 							rests: this.rests,
 							comments: this.comments,
+							...this.extra,
 						})),
 					}),
 				this.configDelay,
@@ -473,5 +478,47 @@ describe("gram.comments in the language server", () => {
 		client.comments = "show";
 		client.settingChanged();
 		await client.previewMatching((h) => h.includes("Do not overmix."));
+	}, 20_000);
+});
+
+describe("gram.stepQuantities in the language server", () => {
+	it("writes the quantities in the steps, and leaves them out when told", async () => {
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		await client.previewMatching((h) => h.includes('class="step-quantity"'));
+
+		client.extra = { stepQuantities: "hide" };
+		client.settingChanged();
+		await client.previewMatching(
+			(h) => h.includes("Tart") && !h.includes('class="step-quantity"'),
+		);
+	}, 20_000);
+});
+
+describe("the recipe settings in the language server", () => {
+	const dir = mkdtempSync(join(tmpdir(), "gram-recipe-settings-"));
+	const db = join(dir, "ingredients.yaml");
+	writeFileSync(
+		db,
+		"ingredients:\n  flour:\n    name: flour\n    physical:\n      density: 0.59\n    nutrition:\n      calories: 364\n      protein: 10\n      carbs: 76\n      fat: 1\n",
+	);
+	afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+	it("analyzes the open recipe again when gram.nutritionEstimation changes", async () => {
+		client = new Client();
+		client.extra = { ingredientDatabase: { path: db } };
+		await client.start();
+		client.open(RECIPE("Tart"));
+		await client.previewMatching((h) => h.includes("nutrition-panel"));
+
+		client.extra = {
+			ingredientDatabase: { path: db },
+			nutritionEstimation: false,
+		};
+		client.settingChanged();
+		await client.previewMatching(
+			(h) => h.includes("Tart") && !h.includes("nutrition-panel"),
+		);
 	}, 20_000);
 });

@@ -40,10 +40,12 @@ import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
 import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
 import {
+	DEFAULT_RECIPE_SETTINGS,
 	DEFAULT_VIEW_SETTINGS,
-	VIEW_SETTINGS,
+	type RecipeSettings,
 	type ViewSettings,
 	escapeHtml,
+	parseRecipeSettings,
 	parseViewSettings,
 	runSheetToHTML,
 	toGanttHTML,
@@ -161,25 +163,34 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 });
 
 // The view settings (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, ...):
-// what the preview, the work plan and the title hint follow. Read once at start
-// and again whenever the settings change; a missing or unknown one is on its
-// default, so a bad setting never blanks a view.
+// what the preview, the work plan and the title hint follow. The recipe
+// settings (`gram.bakersMath`, `gram.massStandardization`, ...): what the
+// analyzer computes. Read once at start and again whenever the settings
+// change; a missing or unknown one is on its default, so a bad setting never
+// blanks a view.
 let settings: ViewSettings = DEFAULT_VIEW_SETTINGS;
+let recipeSettings: RecipeSettings = DEFAULT_RECIPE_SETTINGS;
+
+function differs<T extends object>(a: T, b: T): boolean {
+	return (Object.keys(a) as (keyof T)[]).some((key) => a[key] !== b[key]);
+}
 
 // Never rejects (same rule as reloadDbAndRefreshDiagnostics below): a client
 // without workspace configuration just keeps the defaults.
-async function loadViewSettings(): Promise<boolean> {
+async function loadSettings(): Promise<{ view: boolean; recipe: boolean }> {
 	try {
-		const next = parseViewSettings(
-			await connection.workspace.getConfiguration("gram"),
-		);
-		const changed = (Object.keys(VIEW_SETTINGS) as (keyof ViewSettings)[]).some(
-			(key) => next[key] !== settings[key],
-		);
-		settings = next;
+		const config = await connection.workspace.getConfiguration("gram");
+		const nextView = parseViewSettings(config);
+		const nextRecipe = parseRecipeSettings(config);
+		const changed = {
+			view: differs(nextView, settings),
+			recipe: differs(nextRecipe, recipeSettings),
+		};
+		settings = nextView;
+		recipeSettings = nextRecipe;
 		return changed;
 	} catch {
-		return false;
+		return { view: false, recipe: false };
 	}
 }
 
@@ -209,13 +220,22 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 	}
 }
 
-// New view settings re-render every open preview and work plan from the compilation
-// already in hand, and refreshes the title hint — nothing else about the
-// documents changed, so nothing is parsed or compiled again (which would also
-// race with an edit still waiting in the debounce).
-async function reloadViewSettingsAndRefresh(): Promise<void> {
-	if (!(await loadViewSettings())) return;
-	for (const [uri, state] of states) renderViews(uri, state);
+// New view settings re-render every open preview and work plan from the
+// compilation already in hand, and refresh the title hint: nothing is parsed or
+// compiled again. New recipe settings change what the analyzer computed, so
+// every open document is analyzed again, through the same debounced refresh as
+// an edit (which renders its views too), never racing with one.
+async function reloadSettingsAndRefresh(): Promise<void> {
+	const changed = await loadSettings();
+	if (changed.recipe) {
+		for (const doc of documents.all()) {
+			scheduleRefresh(doc.uri, doc.getText(), doc.version);
+		}
+	} else if (changed.view) {
+		for (const [uri, state] of states) renderViews(uri, state);
+	} else {
+		return;
+	}
 	await connection.languages.inlayHint.refresh().catch(() => {
 		// Client without inlay hint refresh: the hint updates on next edit.
 	});
@@ -230,16 +250,16 @@ connection.onDidChangeConfiguration(() => {
 	reloadDbAndRefreshDiagnostics().catch((e) =>
 		connection.console.error(`DB reload failed: ${e}`),
 	);
-	reloadViewSettingsAndRefresh().catch((e) =>
-		connection.console.error(`View settings refresh failed: ${e}`),
+	reloadSettingsAndRefresh().catch((e) =>
+		connection.console.error(`Settings refresh failed: ${e}`),
 	);
 });
 
 connection.onInitialized(async () => {
 	// A document may already be open by the time the setting answers: without
 	// the refresh it would keep the default settings until its next edit.
-	await reloadViewSettingsAndRefresh().catch((e) =>
-		connection.console.error(`View settings refresh failed: ${e}`),
+	await reloadSettingsAndRefresh().catch((e) =>
+		connection.console.error(`Settings refresh failed: ${e}`),
 	);
 	await reloadDbAndRefreshDiagnostics();
 
@@ -302,6 +322,7 @@ async function refresh(
 		ingredientDB,
 		version,
 		graph ? { graph, cache: moduleMeasureCache } : undefined,
+		recipeSettings,
 	);
 	states.set(uri, state);
 	connection.sendDiagnostics({
@@ -471,6 +492,7 @@ function getFreshState(uri: string): DocumentState | undefined {
 		doc.version,
 		ingredientDB,
 		graph ? { graph, cache: moduleMeasureCache } : undefined,
+		recipeSettings,
 	);
 	states.set(uri, fresh);
 	return fresh;

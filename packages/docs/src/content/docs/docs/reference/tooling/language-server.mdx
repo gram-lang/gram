@@ -43,6 +43,16 @@ The Gram Language Server implements the following standard capabilities:
 | **Document Symbol** | Populates the editor's Outline view for clean structural navigation across recipe sections. |
 | **Folding Range** | Enables folding of YAML frontmatter blocks and `##` section headings. |
 
+## Settings
+
+<Since v="1.4.0" /> The server reads the `gram` configuration section (`workspace/configuration`) at startup and reloads it upon every `workspace/didChangeConfiguration` notification. Missing or unrecognized values fall back gracefully to defaults, ensuring an invalid configuration never blanks a view.
+
+- View settings (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, `gram.stepQuantities`, `gram.nutritionBasis`, `gram.bakersMathOnly`) re-render open recipes directly from their existing compiled state.
+- Analyzer settings (`gram.bakersMath`, `gram.massStandardization`, `gram.yieldCalculation`, `gram.nutritionEstimation`) re-analyze open recipes from scratch, refreshing compiler diagnostics and derived data.
+- `gram.ingredientDatabase.path` reloads the ingredient database from disk.
+
+Available values and defaults match those of the [VS Code extension](/docs/reference/tooling/vscode-extension/), defined centrally in the renderer package (`VIEW_SETTINGS`, `RECIPE_SETTINGS`).
+
 ## Notifications to the client
 
 In addition to standardized LSP requests, the server sends asynchronous notifications carrying pre-rendered recipe views as a `{ uri, html }` object:

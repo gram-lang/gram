@@ -1,8 +1,13 @@
 import { describe, expect, it } from "bun:test";
+import { SETTINGS } from "@gram-lang/renderer";
 import {
 	SETTING_STORAGE_KEYS,
 	type SettingStorage,
+	defaultOptions,
+	isOptionModified,
+	loadOptions,
 	loadSetting,
+	saveOptions,
 	saveSetting,
 } from "./settingsStorage";
 
@@ -62,10 +67,66 @@ describe("playground setting storage", () => {
 		expect(loadSetting("rests", storage)).toBe("balanced");
 	});
 
-	it("leaves a setting without a storage key on its default, unsaved", () => {
+	it("gives every setting its own storage key", () => {
+		const keys = Object.values(SETTING_STORAGE_KEYS);
+		expect(new Set(keys).size).toBe(keys.length);
+		expect(Object.keys(SETTING_STORAGE_KEYS).sort()).toEqual(
+			SETTINGS.map((d) => d.key).sort(),
+		);
+	});
+
+	it("stores a flag as true or false and reads it back", () => {
 		const storage = memory();
-		saveSetting("comments", "hide", storage);
-		expect(storage.data).toEqual({});
-		expect(loadSetting("comments", storage)).toBe("show");
+		saveSetting("massStandardization", false, storage);
+		expect(storage.data["gram-playground-mass-standardization"]).toBe("false");
+		expect(loadSetting("massStandardization", storage)).toBe(false);
+		expect(
+			loadSetting(
+				"massStandardization",
+				memory({ "gram-playground-mass-standardization": "maybe" }),
+			),
+		).toBe(true);
+	});
+});
+
+describe("studio options", () => {
+	it("start on the defaults of the descriptors: the analyzer all on", () => {
+		expect(defaultOptions()).toEqual({
+			bakersMath: true,
+			massStandardization: true,
+			yieldCalculation: true,
+			nutritionEstimation: true,
+			comments: "show",
+			nutritionBasis: "auto",
+			bakersMathOnly: false,
+			stepQuantities: "show",
+			bakersReference: undefined,
+		});
+	});
+
+	it("are saved and read back, all but the baker's reference", () => {
+		const storage = memory();
+		saveOptions(
+			{
+				...defaultOptions(),
+				yieldCalculation: false,
+				stepQuantities: "hide",
+				nutritionBasis: "per100g",
+				bakersReference: "flour",
+			},
+			storage,
+		);
+		expect(loadOptions(storage)).toEqual({
+			...defaultOptions(),
+			yieldCalculation: false,
+			stepQuantities: "hide",
+			nutritionBasis: "per100g",
+		});
+	});
+
+	it("tell which option differs from its default", () => {
+		const options = { ...defaultOptions(), comments: "hide" as const };
+		expect(isOptionModified(options, "comments")).toBe(true);
+		expect(isOptionModified(options, "yieldCalculation")).toBe(false);
 	});
 });
