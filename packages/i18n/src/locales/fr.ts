@@ -12,6 +12,15 @@ export const fr: GramLocale = {
 	renderer: {
 		viewsPaused: VIEWS_PAUSED.title,
 		viewsPausedDescription: VIEWS_PAUSED.description,
+		showError: "Voir l'erreur",
+		outputEmpty: "Rien à afficher pour cette recette.",
+		outputs: {
+			recipe: "Recette",
+			workPlan: "Planning de préparation",
+			ast: "AST",
+			json: "JSON",
+			"json-tree": "Arbre JSON",
+		},
 		shoppingList: "Liste de courses",
 		cookware: "Matériel",
 		equipment: "Équipement",

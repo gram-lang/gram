@@ -14,5 +14,8 @@ export function createClientOptions(): LanguageClientOptions {
 	return {
 		documentSelector: [{ scheme: "file", language: "gram" }],
 		synchronize: { configurationSection: CONFIGURATION_SECTION },
+		// The views protocol: the server renders only the outputs a panel
+		// shows (gram/setOpenViews) and sends them in gram/viewUpdated.
+		initializationOptions: { views: true },
 	};
 }

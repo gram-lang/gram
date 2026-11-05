@@ -51,8 +51,6 @@ import {
 	escapeHtml,
 	parseRecipeSettings,
 	parseViewSettings,
-	prepareViews,
-	runSheetToHTML,
 	toGanttHTML,
 	toHTML,
 	viewSettingsToRendererOptions,
@@ -63,7 +61,7 @@ import {
 	parseSession,
 	type Session,
 } from "./session";
-import { renderOutputs } from "./views";
+import { describeOutputs, renderOutputs } from "./views";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -210,6 +208,10 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			codeActionProvider: true,
 			inlayHintProvider: true,
 			codeLensProvider: { resolveProvider: false },
+			// What a client of the views protocol can open, named in the
+			// editor's language: it builds its choice of views from this, so
+			// a view added to the renderer appears there with no edit.
+			experimental: { gramViews: describeOutputs(locale) },
 		},
 	};
 });
@@ -489,7 +491,7 @@ function renderLegacyViews(uri: string, state: DocumentState): void {
 	if (!warnedLegacyViews) {
 		warnedLegacyViews = true;
 		connection.console.warn(
-			"gram/previewUpdated and gram/runSheetUpdated are deprecated and will be removed in 2.0.0: declare `initializationOptions.views` and read gram/viewUpdated instead.",
+			"gram/previewUpdated is deprecated and will be removed in 2.0.0: declare `initializationOptions.views` and read gram/viewUpdated instead.",
 		);
 	}
 	if (state.compilation) {
@@ -504,29 +506,6 @@ function renderLegacyViews(uri: string, state: DocumentState): void {
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
 			console.error("HTML render error", e);
-		}
-
-		// Rendered and sent independently from the main preview — a bug in the
-		// work plan must not blank the HTML preview, and vice versa. Without a
-		// serving time the plan is in days before the service (J-2, J-1, day D).
-		try {
-			const lang = state.compilation.meta?.language;
-			const input = prepareViews(state.compilation, settings, {
-				...(typeof lang === "string" && { lang }),
-			});
-			const sheet = input.runSheet;
-			if (sheet) {
-				const workPlanHtml = runSheetToHTML(sheet, state.compilation, {
-					comments: settings.comments,
-					...(input.lang && { lang: input.lang }),
-				});
-				connection.sendNotification("gram/runSheetUpdated", {
-					uri,
-					html: workPlanHtml,
-				});
-			}
-		} catch (e) {
-			console.error("Work plan render error", e);
 		}
 
 		// Still sent until 2.0.0 for clients that read it; the VS Code extension
@@ -573,7 +552,6 @@ function renderLegacyViews(uri: string, state: DocumentState): void {
             </div>
         `;
 		connection.sendNotification("gram/previewUpdated", { uri, html });
-		connection.sendNotification("gram/runSheetUpdated", { uri, html });
 		// @remove-in: 2.0.0 [lsp-gantt-notification]
 		connection.sendNotification("gram/ganttUpdated", { uri, html });
 	}

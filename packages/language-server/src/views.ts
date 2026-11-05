@@ -11,7 +11,38 @@ import {
 	outputs,
 	prepareViews,
 } from "@gram-lang/renderer";
+import { getDictionary } from "@gram-lang/i18n";
 import type { DocumentState } from "./document-state";
+
+/**
+ * What a client of the views protocol can show, sent in the `initialize`
+ * result (`capabilities.experimental.gramViews`): every output with its name,
+ * and the few words a client writes around them, in the editor's language.
+ */
+export interface ViewsCapability {
+	outputs: {
+		id: string;
+		kind: OutputDefinition["kind"];
+		label: string;
+		presentation?: InspectorDefinition["presentation"];
+	}[];
+	strings: { showError: string; outputEmpty: string };
+}
+
+export function describeOutputs(locale?: string): ViewsCapability {
+	const t = getDictionary(locale).renderer;
+	return {
+		outputs: outputs.map((output) => ({
+			id: output.id,
+			kind: output.kind,
+			label: t.outputs[output.id] ?? output.id,
+			...(output.kind === "inspector" && {
+				presentation: output.presentation,
+			}),
+		})),
+		strings: { showError: t.showError, outputEmpty: t.outputEmpty },
+	};
+}
 
 /** What an inspector sends: text for a code pane, or the tree's HTML. */
 export interface InspectorPayload {

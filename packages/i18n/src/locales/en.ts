@@ -10,6 +10,18 @@ export const en = {
 	renderer: {
 		viewsPaused: VIEWS_PAUSED.title,
 		viewsPausedDescription: VIEWS_PAUSED.description,
+		/** What a surface offers next to paused views: jump to the error. */
+		showError: "Show the error",
+		/** An output the recipe has nothing for (a work plan with nothing to schedule). */
+		outputEmpty: "Nothing to show for this recipe.",
+		/** The name of each output of the renderer (`outputs`), by its id. */
+		outputs: {
+			recipe: "Recipe",
+			workPlan: "Work plan",
+			ast: "AST",
+			json: "JSON",
+			"json-tree": "JSON tree",
+		} as Record<string, string>,
 		shoppingList: "Shopping List",
 		cookware: "Cookware",
 		equipment: "Equipment",

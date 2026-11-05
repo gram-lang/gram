@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { analyze } from "@gram-lang/analyzer";
 import { compile } from "@gram-lang/kitchen";
+import { getDictionary } from "@gram-lang/i18n";
 import { getAST } from "@gram-lang/parser";
 import {
 	JSON_TREE_CSS,
@@ -158,5 +159,14 @@ describe("outputs", () => {
 		]);
 		const ids = outputs.map((o) => o.id);
 		expect(new Set(ids).size).toBe(ids.length);
+	});
+
+	it("has a name in every language, for the surfaces that list them", () => {
+		for (const lang of ["en", "fr"]) {
+			const names = getDictionary(lang).renderer.outputs;
+			for (const output of outputs) {
+				expect(names[output.id], `${output.id} in ${lang}`).toBeString();
+			}
+		}
 	});
 });

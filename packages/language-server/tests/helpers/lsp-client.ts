@@ -118,8 +118,8 @@ export class Client {
 	}
 
 	/** `initializationOptions`: `{ views: true }` for a client of the views protocol. */
-	async start(initializationOptions?: object) {
-		await this.request("initialize", {
+	async start(initializationOptions?: object): Promise<unknown> {
+		const result = await this.request("initialize", {
 			processId: null,
 			...(initializationOptions && { initializationOptions }),
 			rootUri: ROOT,
@@ -127,6 +127,7 @@ export class Client {
 			workspaceFolders: [{ uri: ROOT, name: "gram" }],
 		});
 		this.notify("initialized", {});
+		return result;
 	}
 
 	open(text: string, uri = URI) {
@@ -164,6 +165,35 @@ export class Client {
 			await new Promise((r) => setTimeout(r, 25));
 		}
 		throw new Error(`no ${method} matching in ${ms}ms`);
+	}
+
+	/** Tells the server which outputs of `uri` are open (views protocol). */
+	openViews(viewIds: string[], uri = URI) {
+		this.notify("gram/setOpenViews", { uri, viewIds });
+	}
+
+	/** The HTML of every `gram/viewUpdated` of `outputId` sent with `state: "ok"`. */
+	views(outputId: string): string[] {
+		return this.notes
+			.filter(
+				(n) =>
+					n.method === "gram/viewUpdated" &&
+					n.params.outputId === outputId &&
+					n.params.state === "ok" &&
+					typeof n.params.payload === "string",
+			)
+			.map((n) => n.params.payload as string);
+	}
+
+	/** Resolves with the first HTML of `outputId` that matches. */
+	async viewHtml(outputId: string, test: (html: string) => boolean, ms = 8000) {
+		const started = Date.now();
+		while (Date.now() - started < ms) {
+			const hit = this.views(outputId).find(test);
+			if (hit) return hit;
+			await new Promise((r) => setTimeout(r, 25));
+		}
+		throw new Error(`no ${outputId} view matching in ${ms}ms`);
 	}
 
 	/** Resolves as soon as a preview matches; fails with what it saw otherwise. */

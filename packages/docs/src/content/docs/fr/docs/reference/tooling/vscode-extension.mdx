@@ -12,13 +12,18 @@ L'extension officielle Gram pour VS Code transforme votre éditeur en un vérita
 
 ### 1. Aperçu en direct dynamique & nutrition
 - **Rendu côte à côte** : Au fil de votre frappe, l'extension compile à la volée votre `.gram` en HTML dans un panneau WebView dédié. Elle embarque les styles officiels du Playground, garantissant un rendu fidèle au pixel près par rapport à la production.
-- **Résilience aux erreurs** : Si votre recette contient des erreurs de syntaxe bloquant la compilation, l'aperçu affiche le message d'erreur correspondant pour vous guider, sans jamais interrompre le fonctionnement de l'extension.
+- **Mise en pause sur erreur** <Since v="1.4.0" /> : Lorsqu'une erreur de syntaxe ou de compilation survient, les panneaux ouverts conservent leur dernier rendu valide (estompé sous un bandeau d'avertissement) au lieu d'être vidés. Un bouton **Voir l'erreur** repositionne directement le curseur sur la ligne fautive dans l'éditeur, tandis que les détails complets restent consultables dans le panneau Problèmes. L'affichage s'actualise automatiquement dès que la recette est corrigée, évitant ainsi toute interruption brutale en cours de frappe.
 
 :::note[📊 CodeLens nutritionnel]
 Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un clic révèle un panneau nutritionnel complet (calories, protéines, glucides, lipides) directement dans l'aperçu. Il met également en surbrillance les ingrédients introuvables dans votre base de données.
 :::
 
-### 2. Vue planning de préparation
+### 2. Toutes les vues et tous les inspecteurs <Since v="1.4.0" />
+- **`Gram: Show View...`** : Affiche la liste des sorties disponibles fournies par le serveur de langage et ouvre la vue sélectionnée dans un panneau dédié : la recette, le planning de préparation ou les inspecteurs techniques (l'AST de la recette avec imports résolus et son JSON compilé, sous forme de texte brut ou d'arborescence interactive repliable). Ces inspecteurs s'actualisent en direct au fil de votre saisie, dévoilant avec précision l'interprétation du compilateur.
+- **Synchronisation avec l'éditeur actif** : Tous les panneaux ouverts s'ajustent automatiquement au fichier `.gram` en cours de modification. Seules les vues actives sont calculées par le serveur, éliminant tout traitement superflu en arrière-plan.
+- **Raccourcis dédiés** : Les commandes `Gram: Live Preview`, `Gram: Work Plan` et `Gram: Macros` permettent d'ouvrir rapidement la vue recette, le planning de préparation ou la recette directement positionnée sur son récapitulatif nutritionnel.
+
+### 3. Vue planning de préparation
 - **Panneau dédié au planning** : Exécutez la commande `Gram: Work Plan` (ou cliquez sur l'icône de liste de tâches dans la barre d'outils de l'éditeur) pour afficher le planning complet dans une WebView dédiée, indépendante de l'aperçu standard. Il détaille pour chaque journée les plages de présence en cuisine, les ingrédients et le matériel à sortir, les tâches à réaliser et les temps de repos passifs.
 - **Décompte relatif (`J-2`, `J-1`, `Jour J`)** : En l'absence d'heure de service configurée dans l'éditeur, le planning est projeté sous forme de compte à rebours relatif et affiche des durées estimées par journée (ex. : « environ 55 min »). Pour obtenir des horodatages précis avec dates et marges réelles, utilisez la commande `gram plan --serve` ou le studio interactif en ligne.
 - **Prise en compte des réglages de projet** : La vue s'adapte instantanément aux paramètres d'ordonnancement `gram.miseEnPlace`, `gram.rests` et `gram.comments` (détaillés ci-dessous).
@@ -74,7 +79,7 @@ Chacun de ces réglages est disponible avec les mêmes valeurs dans la [CLI](/fr
 
 Une journée de travail qu'une phase passive prolongée repousse au-delà du cycle normal de 24 heures déclenche un avertissement explicite sur la section concernée (`DAY_OVERFLOW`), affiché au même titre que les diagnostics du compilateur.
 
-### 3. Gestion intelligente des ingrédients
+### 4. Gestion intelligente des ingrédients
 - **Gestion transparente des pluriels** : L'extension associe automatiquement les formes plurielles courantes de votre recette (ex. `@carottes`) aux entrées singulières correspondantes de votre référentiel YAML (`carotte`). Vous conservez ainsi une rédaction naturelle sans générer de faux avertissements.
 - **Appariement flou (*Fuzzy Matching*)** : En cas de faute de frappe sur un ingrédient, un algorithme basé sur la distance de Levenshtein suggère la correspondance la plus probable via les actions de code (*Quick Fixes*).
 - **Informations au survol** : Survolez n'importe quel ingrédient pour inspecter ses valeurs nutritionnelles. Si la base lui associe une masse volumique, le survol convertit instantanément les volumes en masse physique (ex. `1 c.à.s → 15 g`).
@@ -83,7 +88,7 @@ Une journée de travail qu'une phase passive prolongée repousse au-delà du cyc
 L'extension détecte automatiquement le fichier `.gram/ingredients.yaml` présent à la racine de votre espace de travail. Pour les arborescences spécifiques, personnalisez le chemin via `gram.ingredientDatabase.path` dans vos paramètres VS Code.
 :::
 
-### 4. Assistance à l'édition & navigation
+### 5. Assistance à l'édition & navigation
 - **Jetons sémantiques (*Semantic Tokens*)** : La coloration syntaxique s'appuie directement sur l'AST produit par le compilateur plutôt que sur de simples expressions régulières. Les modificateurs, les unités imbriquées et les ingrédients composites (`<@`) sont colorés avec précision selon leur fonction syntaxique.
 - **Autocomplétion intelligente** :
   - `@` suggère les ingrédients déclarés dans votre base, en encapsulant automatiquement les dénominations composées entre accolades `{}`.
@@ -98,7 +103,7 @@ L'extension détecte automatiquement le fichier `.gram/ingredients.yaml` présen
 | `Maj+F12` | Rechercher toutes les références | Répertorie toutes les occurrences d'une variable intermédiaire. |
 | `F2` | Renommer le symbole | Renomme de manière atomique et sûre une variable sur l'ensemble du document. |
 
-### 5. Diagnostics & refactorisation
+### 6. Diagnostics & refactorisation
 - **Validation en temps réel** : Le serveur de langage signale instantanément les références orphelines, les déclarations inutilisées et les anomalies d'ordonnancement.
 - **Actions de code 💡** :
   - Insérer la propriété `title:` manquante dans le frontmatter.
@@ -106,7 +111,7 @@ L'extension détecte automatiquement le fichier `.gram/ingredients.yaml` présen
   - Déclarer une variable manquante pour une référence orpheline.
   - Convertir une quantité volumique en masse directement dans le code source (si la densité est connue).
 
-### 6. Formatage automatique
+### 7. Formatage automatique
 Déclenchez le formatage du document (`Alt+Maj+F` ou `Maj+Option+F` sous macOS) pour normaliser la syntaxe en appliquant les règles canoniques :
 
 ```diff

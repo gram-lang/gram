@@ -35,6 +35,11 @@
   "contributes": {
     "commands": [
       {
+        "command": "gram.showView",
+        "title": "Gram: Show View...",
+        "icon": "$(layout-panel)"
+      },
+      {
         "command": "gram.showPreview",
         "title": "Gram: Live Preview",
         "icon": "$(open-preview)"

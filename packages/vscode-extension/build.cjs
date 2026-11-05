@@ -39,6 +39,15 @@ async function build() {
         console.warn('  Expected:', cssSrc);
     }
 
+    // Copy the JSON tree stylesheet of the inspectors
+    const treeSrc = path.join(__dirname, '..', 'renderer', 'src', 'inspectors', 'json-tree.css');
+    if (fs.existsSync(treeSrc)) {
+        fs.copyFileSync(treeSrc, path.join(mediaDest, 'json-tree.css'));
+    } else {
+        console.warn('[vscode-extension/build] JSON tree CSS not found, skipping copy.');
+        console.warn('  Expected:', treeSrc);
+    }
+
     // Copy the TextMate grammar from parser
     const syntaxSrc = path.join(__dirname, '..', 'parser', 'syntaxes', 'gram.tmLanguage.json');
     const syntaxDestDir = path.join(__dirname, 'dist', 'syntaxes');
