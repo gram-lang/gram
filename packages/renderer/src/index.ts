@@ -98,6 +98,10 @@ export { runSheetToPrintHTML } from "./views/work-plan/print";
 export {
 	describeEarliestServe,
 	describeServeTimes,
+	type ServeSuggestion,
+	type ServeSuggestions,
+	type SuggestServeOptions,
+	suggestServeTimes,
 } from "./views/work-plan/serve-times";
 export type {
 	RunSheetDayModel,

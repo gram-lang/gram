@@ -2,6 +2,7 @@ import {
 	type Content,
 	contentOf,
 	type PausedError,
+	type Session,
 	type ViewUpdate,
 } from "./protocol";
 
@@ -26,6 +27,8 @@ export class ViewsState {
 	private readonly pauses = new Map<string, PausedError>();
 	/** The open set last sent for each document, as sorted ids. */
 	private readonly sent = new Map<string, string>();
+	/** What the cook chose for each document this sitting. */
+	private readonly sessions = new Map<string, Session>();
 
 	constructor(
 		private readonly sendOpenViews: (uri: string, viewIds: string[]) => void,
@@ -66,12 +69,33 @@ export class ViewsState {
 		this.sendOpenViews(uri, ids);
 	}
 
+	sessionOf(uri: string): Session {
+		return this.sessions.get(uri) ?? {};
+	}
+
 	/**
-	 * Forgets a closed document: the server forgot what was open for it, so
-	 * the open set is sent again if it comes back, and its content is gone.
+	 * Sets or clears (`undefined`) the serving time of `uri`. Returns the whole
+	 * session to send, which the server takes as a replacement, or `undefined`
+	 * when nothing changed.
+	 */
+	setServeAt(uri: string, serveAt: string | undefined): Session | undefined {
+		const previous = this.sessionOf(uri);
+		if (previous.serveAt === serveAt) return undefined;
+		const { serveAt: _, ...rest } = previous;
+		const next: Session = { ...rest, ...(serveAt && { serveAt }) };
+		if (Object.keys(next).length === 0) this.sessions.delete(uri);
+		else this.sessions.set(uri, next);
+		return next;
+	}
+
+	/**
+	 * Forgets a closed document: the server forgot what was open for it and
+	 * its session, so the open set is sent again if it comes back, and its
+	 * content and serving time are gone.
 	 */
 	forget(uri: string): void {
 		this.sent.delete(uri);
+		this.sessions.delete(uri);
 		const prefix = `${uri}\n`;
 		for (const map of [this.contents, this.pauses]) {
 			for (const key of [...map.keys()]) {

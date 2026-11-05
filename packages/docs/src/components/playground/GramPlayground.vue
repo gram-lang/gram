@@ -57,13 +57,13 @@ import {
 	sortDiagnostics,
 } from "./diagnostics";
 import {
-	describeEarliestServe,
-	describeServeTimes,
 	type Format,
+	type ServeSuggestions,
 	type ViewSettings,
 	VIEW_SETTINGS,
 	prepareViews,
 	recipeSettingsToAnalyzerOptions,
+	suggestServeTimes,
 } from "@gram-lang/renderer";
 import {
 	formatFor,
@@ -257,14 +257,6 @@ function loadPlan(): PlanSettings {
 const plan = ref<PlanSettings>(loadPlan());
 const planError = ref("");
 
-interface ServeSuggestions {
-	/** Serving times that work, best first. */
-	candidates: { serveAt: string; label: string; title: string }[];
-	/** Why the others don't, in words. */
-	rejected: string[];
-	/** The first time it can be ready if the cook starts now. */
-	earliest: { serveAt: string; label: string; text: string } | null;
-}
 const serveSuggestions = shallowRef<ServeSuggestions | null>(null);
 
 watch(
@@ -869,7 +861,6 @@ function computeServeSuggestions() {
 	}
 	try {
 		const { timeZone } = plan.value;
-		const now = new Date();
 		const views = prepareViews(
 			result,
 			{ miseEnPlace: schedule.value, rests: rests.value },
@@ -877,56 +868,13 @@ function computeServeSuggestions() {
 				kitchen: {
 					timeZone,
 					availability: buildAvailability(plan.value),
-					now: now.toISOString(),
+					now: new Date().toISOString(),
 				},
 			},
 		);
-		const localDay = (offset: number) =>
-			new Intl.DateTimeFormat("en-CA", {
-				timeZone,
-				year: "numeric",
-				month: "2-digit",
-				day: "2-digit",
-			}).format(new Date(now.getTime() + offset * 86_400_000));
-		const range = { from: localDay(0), to: localDay(7) };
-		const search = views.findServeTimes({ ...range, limit: 6 });
-		const earliest = views.earliestServe();
-		if (!search || !earliest) {
-			serveSuggestions.value = null;
-			return;
-		}
-		const words = describeServeTimes(search, result, {
-			...range,
-			timeZone,
+		serveSuggestions.value = suggestServeTimes(views, {
 			lang: currentLang.value,
 		});
-		const label = (serveAt: string) =>
-			new Intl.DateTimeFormat(currentLang.value || "en", {
-				timeZone: "UTC",
-				weekday: "short",
-				day: "numeric",
-				month: "short",
-				hour: "2-digit",
-				minute: "2-digit",
-				hourCycle: "h23",
-			}).format(new Date(`${serveAt}:00Z`));
-		serveSuggestions.value = {
-			candidates: search.candidates.map((c, i) => ({
-				serveAt: c.serveAt,
-				label: label(c.serveAt),
-				title: words[i] ?? "",
-			})),
-			rejected: words.slice(search.candidates.length),
-			earliest: earliest.found
-				? {
-						serveAt: earliest.found.serveAt,
-						label: label(earliest.found.serveAt),
-						text: describeEarliestServe(earliest, {
-							lang: currentLang.value,
-						}),
-					}
-				: null,
-		};
 	} catch {
 		serveSuggestions.value = null;
 	}

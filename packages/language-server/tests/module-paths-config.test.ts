@@ -5,6 +5,7 @@ import { join } from "node:path";
 import {
 	readPathsConfigSync,
 	readAvailabilityConfigSync,
+	readMealTimesConfigSync,
 	readTimeZoneConfigSync,
 } from "../src/utils/module-paths-config";
 
@@ -134,6 +135,41 @@ describe("readAvailabilityConfigSync", () => {
 		).toBeUndefined();
 		expect(
 			readAvailabilityConfigSync(await project("{{ not yaml")),
+		).toBeUndefined();
+	});
+});
+
+describe("readMealTimesConfigSync", () => {
+	const dirs: string[] = [];
+
+	afterEach(async () => {
+		while (dirs.length > 0)
+			await rm(dirs.pop()!, { recursive: true, force: true });
+	});
+
+	async function project(configYaml?: string): Promise<string> {
+		const dir = await mkdtemp(join(tmpdir(), "gram-mealcfg-"));
+		dirs.push(dir);
+		if (configYaml !== undefined) {
+			await mkdir(join(dir, ".gram"));
+			await writeFile(join(dir, ".gram", "config.yaml"), configYaml, "utf-8");
+		}
+		return dir;
+	}
+
+	it("reads the meal times of the project", async () => {
+		expect(
+			readMealTimesConfigSync(await project('mealTimes: ["12:00", "19:30"]\n')),
+		).toEqual(["12:00", "19:30"]);
+	});
+
+	it("is undefined without them, or with a time it cannot read", async () => {
+		expect(readMealTimesConfigSync(await project())).toBeUndefined();
+		expect(
+			readMealTimesConfigSync(await project('mealTimes: ["noon"]\n')),
+		).toBeUndefined();
+		expect(
+			readMealTimesConfigSync(await project("mealTimes: 12:00\n")),
 		).toBeUndefined();
 	});
 });

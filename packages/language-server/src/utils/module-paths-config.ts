@@ -89,3 +89,34 @@ export function readAvailabilityConfigSync(
 		return undefined;
 	}
 }
+
+const MEAL_TIME = /^([01]?\d|2[0-3]):[0-5]\d$/;
+
+/**
+ * Reads the `mealTimes:` of `<projectRoot>/.gram/config.yaml`, the times of
+ * day a serving time is looked for at (the CLI's default of `gram plan
+ * --meal-times`). Never throws: a missing setting, or one that is not a list
+ * of "HH:MM", is `undefined`, and the scheduler's own times are used.
+ */
+export function readMealTimesConfigSync(
+	projectRoot: string,
+): string[] | undefined {
+	const configPath = join(projectRoot, ".gram", "config.yaml");
+	if (!existsSync(configPath)) return undefined;
+	try {
+		const parsed = parse(readFileSync(configPath, "utf-8")) as
+			| { mealTimes?: unknown }
+			| undefined;
+		const value = parsed?.mealTimes;
+		if (
+			!Array.isArray(value) ||
+			value.length === 0 ||
+			!value.every((v) => typeof v === "string" && MEAL_TIME.test(v))
+		) {
+			return undefined;
+		}
+		return value as string[];
+	} catch {
+		return undefined;
+	}
+}

@@ -19,6 +19,7 @@ import { findProjectRootSync } from "./utils/project-root";
 import {
 	readPathsConfigSync,
 	readAvailabilityConfigSync,
+	readMealTimesConfigSync,
 	readTimeZoneConfigSync,
 } from "./utils/module-paths-config";
 import { affectedOpenImporters } from "./utils/module-invalidation";
@@ -63,7 +64,7 @@ import {
 	parseSession,
 	type Session,
 } from "./session";
-import { describeOutputs, renderOutputs } from "./views";
+import { describeOutputs, renderOutputs, serveTimesOf } from "./views";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -117,6 +118,7 @@ const projectContextCache = new Map<
 		paths?: Record<string, string>;
 		timeZone?: string;
 		availability?: Availability;
+		mealTimes?: string[];
 	}
 >();
 
@@ -131,6 +133,7 @@ function projectContextOf(uri: string) {
 			paths: readPathsConfigSync(projectRoot),
 			timeZone: readTimeZoneConfigSync(projectRoot),
 			availability: readAvailabilityConfigSync(projectRoot),
+			mealTimes: readMealTimesConfigSync(projectRoot),
 		};
 		projectContextCache.set(dir, ctx);
 	}
@@ -457,6 +460,34 @@ connection.onNotification("gram/setSession", (params: unknown) => {
 		scheduleRefresh(uri, doc.getText(), doc.version);
 	} else if (states.has(uri)) {
 		renderViews(uri);
+	}
+});
+
+/** The `mealTimes` of the project of `uri`, when it sets them. */
+function mealTimesOf(uri: string): string[] | undefined {
+	if (!uri.startsWith("file:")) return undefined;
+	try {
+		return projectContextOf(uri).mealTimes;
+	} catch {
+		return undefined;
+	}
+}
+
+connection.onRequest("gram/serveTimes", (params: unknown) => {
+	const uri = (params as { uri?: unknown } | null)?.uri;
+	if (typeof uri !== "string") return null;
+	const state = viewStates.get(uri) ?? states.get(uri);
+	if (!state) return null;
+	try {
+		return serveTimesOf(state, {
+			settings,
+			kitchen: kitchenOf(uri),
+			locale,
+			mealTimes: mealTimesOf(uri),
+		});
+	} catch (e) {
+		connection.console.error(`serve times error: ${e}`);
+		return null;
 	}
 });
 

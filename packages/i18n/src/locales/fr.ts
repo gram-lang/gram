@@ -14,6 +14,15 @@ export const fr: GramLocale = {
 		viewsPausedDescription: VIEWS_PAUSED.description,
 		showError: "Voir l'erreur",
 		outputEmpty: "Rien à afficher pour cette recette.",
+		serving: {
+			label: "Service le",
+			clear: "Effacer",
+			clearTitle: "Revenir au planning en jours avant le service",
+			suggest: "Quand servir ?",
+			none: "Aucune heure de service ne convient dans les sept prochains jours.",
+			whyNot: "Pourquoi pas les autres ?",
+			earliest: "Au plus tôt : {when}",
+		},
 		outputs: {
 			recipe: "Recette",
 			workPlan: "Planning de préparation",

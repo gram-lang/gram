@@ -1,6 +1,13 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
-import type { OutputInfo, PausedError, ViewsCapability } from "./protocol";
+import {
+	isPlanned,
+	type OutputInfo,
+	type PausedError,
+	readServeAt,
+	type ServeSuggestions,
+	type ViewsCapability,
+} from "./protocol";
 import type { PanelView } from "./state";
 import { webviewPage } from "./webview";
 
@@ -12,6 +19,14 @@ function nonce(): string {
 		text += chars.charAt(Math.floor(Math.random() * chars.length));
 	}
 	return text;
+}
+
+/** What a panel asks of the extension for a view laid out in time. */
+export interface PanelServing {
+	/** The cook picked a serving time for `uri`, or cleared it (`undefined`). */
+	setServeAt(uri: string, serveAt: string | undefined): void;
+	/** The serving times to propose for `uri`. */
+	suggest(uri: string): Promise<ServeSuggestions | null>;
 }
 
 /**
@@ -26,6 +41,12 @@ export class ViewPanel {
 	private ready = false;
 	private macrosPending = false;
 	private disposed = false;
+	/** The serving time of the recipe shown, for a view laid out in time. */
+	private serveAt: string | undefined;
+	/** Whether the page shows the suggestions: only then are they asked for. */
+	private suggestOpen = false;
+	/** Counts the requests, so an answer for an older one is dropped. */
+	private suggestSeq = 0;
 
 	private constructor(
 		private readonly panel: vscode.WebviewPanel,
@@ -33,6 +54,7 @@ export class ViewPanel {
 		capability: ViewsCapability,
 		extensionUri: vscode.Uri,
 		private readonly onDispose: () => void,
+		private readonly serving: PanelServing | undefined,
 	) {
 		const media = (file: string) =>
 			panel.webview
@@ -48,18 +70,30 @@ export class ViewPanel {
 			title: output.label,
 			showError: capability.strings.showError,
 			outputEmpty: capability.strings.outputEmpty,
+			...(serving &&
+				capability.strings.serving && {
+					serving: capability.strings.serving,
+				}),
 		});
 		panel.onDidDispose(() => this.dispose(), null, this.disposables);
 		panel.webview.onDidReceiveMessage(
-			(message: { type?: string }) => {
+			(message: { type?: string; serveAt?: unknown; open?: unknown }) => {
 				if (message.type === "ready") {
 					// The page was (re)built, a hidden panel shown again included:
-					// it starts empty, so it gets everything.
+					// it starts empty, with its suggestions folded, so it gets
+					// everything.
 					this.ready = true;
+					this.suggestOpen = false;
 					this.post(true);
+					this.postServing();
 					if (this.macrosPending) this.showMacros();
 				} else if (message.type === "showError") {
 					void this.showError();
+				} else if (message.type === "setServeAt" && this.uri) {
+					this.serving?.setServeAt(this.uri, readServeAt(message.serveAt));
+				} else if (message.type === "suggest") {
+					this.suggestOpen = message.open === true;
+					if (this.suggestOpen) void this.refreshSuggestions();
 				}
 			},
 			null,
@@ -72,6 +106,7 @@ export class ViewPanel {
 		capability: ViewsCapability,
 		extensionUri: vscode.Uri,
 		onDispose: () => void,
+		serving?: PanelServing,
 	): ViewPanel {
 		const column = vscode.window.activeTextEditor
 			? vscode.ViewColumn.Beside
@@ -85,24 +120,59 @@ export class ViewPanel {
 				localResourceRoots: [vscode.Uri.joinPath(extensionUri, "media")],
 			},
 		);
-		return new ViewPanel(panel, output, capability, extensionUri, onDispose);
+		return new ViewPanel(
+			panel,
+			output,
+			capability,
+			extensionUri,
+			onDispose,
+			isPlanned(output) ? serving : undefined,
+		);
 	}
 
 	reveal(): void {
 		this.panel.reveal(undefined, true);
 	}
 
-	/** Shows `view` of the document `uri`. */
-	show(uri: string, view: PanelView): void {
+	/** Shows `view` of the document `uri`, served at `serveAt` for a view laid out in time. */
+	show(uri: string, view: PanelView, serveAt?: string): void {
 		const contentChanged =
 			uri !== this.uri || view.content !== this.view.content;
 		const pausedChanged = view.paused !== this.view.paused;
+		const servingChanged = uri !== this.uri || serveAt !== this.serveAt;
 		this.uri = uri;
 		this.view = view;
+		this.serveAt = serveAt;
 		const name = path.basename(vscode.Uri.parse(uri).fsPath);
 		this.panel.title = `${this.output.label}: ${name}`;
 		if (!this.ready) return;
 		if (contentChanged || pausedChanged) this.post(contentChanged);
+		if (servingChanged) this.postServing();
+		// A new plan (an edit, another recipe, other settings) may change what
+		// can be served when: ask again while the suggestions are shown.
+		if (contentChanged && this.suggestOpen) void this.refreshSuggestions();
+	}
+
+	private postServing(): void {
+		if (!this.serving) return;
+		void this.panel.webview.postMessage({
+			type: "serving",
+			serveAt: this.serveAt ?? null,
+		});
+	}
+
+	private async refreshSuggestions(): Promise<void> {
+		const uri = this.uri;
+		if (!this.serving || !uri) return;
+		const seq = ++this.suggestSeq;
+		let data: ServeSuggestions | null = null;
+		try {
+			data = await this.serving.suggest(uri);
+		} catch {
+			// The server is gone or failed: no suggestions, the field still works.
+		}
+		if (seq !== this.suggestSeq || this.disposed || uri !== this.uri) return;
+		void this.panel.webview.postMessage({ type: "suggestions", data });
 	}
 
 	/** Scrolls the recipe to its nutrition panel, now or once the page is ready. */

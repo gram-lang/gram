@@ -4,12 +4,14 @@ import {
 	type InspectorDefinition,
 	type KitchenContext,
 	type OutputDefinition,
+	type ServeSuggestions,
 	type StageArtifacts,
 	type ViewInput,
 	type ViewSettings,
 	describeError,
 	outputs,
 	prepareViews,
+	suggestServeTimes,
 } from "@gram-lang/renderer";
 import { getDictionary } from "@gram-lang/i18n";
 import type { DocumentState } from "./document-state";
@@ -25,8 +27,28 @@ export interface ViewsCapability {
 		kind: OutputDefinition["kind"];
 		label: string;
 		presentation?: InspectorDefinition["presentation"];
+		/**
+		 * What a view reads from the plan (`schedule`, `runSheet`, ...): a view
+		 * that reads the run sheet is laid out in time, so a client offers its
+		 * serving time controls.
+		 */
+		needs?: readonly string[];
 	}[];
-	strings: { showError: string; outputEmpty: string };
+	strings: {
+		showError: string;
+		outputEmpty: string;
+		/** The serving time controls of a view laid out in time. */
+		serving: Record<
+			| "label"
+			| "clear"
+			| "clearTitle"
+			| "suggest"
+			| "none"
+			| "whyNot"
+			| "earliest",
+			string
+		>;
+	};
 }
 
 export function describeOutputs(locale?: string): ViewsCapability {
@@ -36,11 +58,15 @@ export function describeOutputs(locale?: string): ViewsCapability {
 			id: output.id,
 			kind: output.kind,
 			label: t.outputs[output.id] ?? output.id,
-			...(output.kind === "inspector" && {
-				presentation: output.presentation,
-			}),
+			...(output.kind === "inspector"
+				? { presentation: output.presentation }
+				: { needs: output.needs }),
 		})),
-		strings: { showError: t.showError, outputEmpty: t.outputEmpty },
+		strings: {
+			showError: t.showError,
+			outputEmpty: t.outputEmpty,
+			serving: { ...t.serving },
+		},
 	};
 }
 
@@ -217,4 +243,37 @@ export function renderOutputs(
 		}
 	}
 	return updates;
+}
+
+export interface ServeTimesOptions {
+	settings: ViewSettings;
+	kitchen: KitchenContext;
+	/** The language of the editor: the suggestions are words of its panel. */
+	locale?: string;
+	/** The times of day to try, from the project's `mealTimes`. */
+	mealTimes?: string[];
+}
+
+/**
+ * `gram/serveTimes`: the serving times to propose next to the serving time
+ * field of a view laid out in time, as the playground proposes them. Asked by
+ * the client only while its suggestions are shown: it plans a few dozen times.
+ * `null` without a compilation or without anything to schedule.
+ */
+export function serveTimesOf(
+	state: DocumentState,
+	options: ServeTimesOptions,
+): ServeSuggestions | null {
+	const compilation = state.compilation;
+	if (!compilation) return null;
+	const lang = compilation.meta?.language;
+	const input = prepareViews(compilation, options.settings, {
+		...(typeof lang === "string" && { lang }),
+		kitchen: options.kitchen,
+	});
+	const words = options.locale ?? (typeof lang === "string" ? lang : undefined);
+	return suggestServeTimes(input, {
+		...(words !== undefined && { lang: words }),
+		...(options.mealTimes && { mealTimes: options.mealTimes }),
+	});
 }
