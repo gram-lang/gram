@@ -46,11 +46,17 @@ const input = prepareViews(compiled, settings, { lang: "fr" });
 
 describe("the views registry", () => {
 	it("lists each view once, with formats and settings that exist", () => {
+		// Read from the registry, not listed here: a view added there needs no
+		// edit in this test.
 		const ids = views.map((view) => view.id);
-		expect(ids).toEqual(["recipe", "workPlan"]);
+		expect(new Set(ids).size).toBe(ids.length);
+		expect(ids).toContain("recipe");
+		expect(ids).toContain("workPlan");
 		for (const view of views) {
 			expect(view.kind).toBe("renderer");
-			expect(view.formats.length).toBeGreaterThan(0);
+			// Every view can be shown on screen: the editor's panel and the
+			// playground's preview render it in html.
+			expect(view.formats).toContain("html");
 			for (const format of view.formats) expect(FORMATS).toContain(format);
 			for (const key of view.honors)
 				expect(Object.keys(VIEW_SETTINGS)).toContain(key);

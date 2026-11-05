@@ -16,12 +16,13 @@ A view never imports another view. What two views share goes in `shared/`. `test
 ## Adding a view
 
 1. Create `src/views/<id>/`. It imports only its own files, `shared/`, the contract, the settings, the types, `prepareViews` and the pipeline packages.
-2. Write its `view.ts`, a `ViewDefinition`: its `formats` (only those it can really express), the settings it `honors`, what it `needs` from the input (`schedule`, `runSheet`, `serveTimes`), and `render()`. Return `null` when the recipe has nothing for it.
+2. Write its `view.ts`, a `ViewDefinition`: its `formats` (only those it can really express, and always `html`: the editor's panel and the playground show a view in html; `gram export` writes `markdown`, `print` and `text`, and `gram print` needs `print`, so a view with `html` alone is on screen only), the settings it `honors`, what it `needs` from the input (`schedule`, `runSheet`, `serveTimes`), and `render()`. Return `null` when the recipe has nothing for it.
 3. Add it to `views` in `src/views/registry.ts`, and to `outputs` in `src/outputs.ts` (written out, not spread, so a bundler can drop the views a page does not use). Give it a name in every language, under `renderer.outputs` of `@gram-lang/i18n`: the surfaces list the outputs by that name.
 4. Run `tests/views-contract.test.ts`. It renders the view in each format for every fixture, checks the escaping, and checks that the view reacts to each setting it honors and to no other. If it honors a setting none of the fixtures shows, extend a fixture.
 5. If the view brings a new setting: add its descriptor to `VIEW_SETTINGS` in `src/settings.ts`, a probe to `PROBES` in the contract test, a `gram.*` key in the VS Code extension's `package.json` (the parity test fails until it exists), and the docs in English and French.
+6. Document the view in English and French (what it shows, its formats, the settings it follows), and add a changeset: a new view is a new feature of every surface.
 
-Nothing else should need an edit: the surfaces list their outputs from the registry, so a new view appears in the CLI, VS Code and the playground. Removing a view is the reverse.
+Nothing else should need an edit, not even a test of a surface: the surfaces list their outputs from the registry, so a new view appears in the CLI, VS Code and the playground. Removing a view is the reverse.
 
 Every surface lists its outputs from the registry: the language server and the VS Code extension, the playground (as tabs, with the formats of each view), and the CLI (`--view` of `gram export` and `gram print`, each `--format` checked against the view's `formats`). The terminal views of `gram view` and `gram cook` are not renderer strings and stay apart.
 
