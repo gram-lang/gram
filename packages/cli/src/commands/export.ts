@@ -14,10 +14,13 @@ import {
 	VIEW_FLAG_ARG,
 	resolveExportView,
 } from "../services/plan-options";
+import { DEFAULT_VIEW_SETTINGS } from "@gram-lang/renderer";
 import {
-	DEFAULT_VIEW_SETTINGS,
-	viewSettingsToRendererOptions,
-} from "@gram-lang/renderer";
+	EXPORT_EXTENSIONS,
+	EXPORT_FORMATS,
+	cliViewName,
+	resolveCliFormat,
+} from "../core/cli-views";
 import {
 	RECIPE_VIEW_SETTINGS,
 	STEP_QTY_ALIAS_ARG,
@@ -42,7 +45,8 @@ export default defineCommand({
 		},
 		format: {
 			type: "string",
-			description: "Output format: md (Markdown) or html (print-ready A4 HTML)",
+			description:
+				"Output format: md (Markdown), html (print-ready A4 HTML) or text (plain text). Each view offers only the formats it has (the work plan all three)",
 		},
 		output: {
 			type: "string",
@@ -82,8 +86,10 @@ export default defineCommand({
 	},
 	async run({ args, rawArgs }) {
 		const fmt = args.format as string | undefined;
-		if (!fmt || (fmt !== "md" && fmt !== "html")) {
-			log.error("--format is required. Use --format md or --format html.");
+		if (!fmt) {
+			log.error(
+				`--format is required. Use --format ${Object.keys(EXPORT_FORMATS).join(", --format ")}.`,
+			);
 			process.exit(ExitCode.Error);
 		}
 
@@ -107,8 +113,10 @@ export default defineCommand({
 		const settings = readViewSettingArgs(args, RECIPE_VIEW_SETTINGS);
 		const recipe = readRecipeSettingArgs(args);
 		let view: ReturnType<typeof resolveExportView>;
+		let format: ReturnType<typeof resolveCliFormat>;
 		try {
 			view = resolveExportView(args, rawArgs, config);
+			format = resolveCliFormat(view.view, fmt, EXPORT_FORMATS);
 		} catch (err) {
 			if (err instanceof GramCLIError) {
 				log.error(err.message);
@@ -122,18 +130,15 @@ export default defineCommand({
 			? resolve(args.output as string)
 			: join(
 					dirname(filePath),
-					`${basename(filePath, extname(filePath))}${view.view === "workPlan" ? ".work-plan" : ""}.${fmt}`,
+					`${basename(filePath, extname(filePath))}${view.view.id === "recipe" ? "" : `.${cliViewName(view.view.id)}`}.${EXPORT_EXTENSIONS[fmt] ?? fmt}`,
 				);
 
 		let content: string;
 		let usedStock = new Set<string>();
 
 		try {
-			content = await exportRecipe(filePath, fmt, db, scaleFactor, {
-				...viewSettingsToRendererOptions({
-					...DEFAULT_VIEW_SETTINGS,
-					...settings,
-				}),
+			content = await exportRecipe(filePath, format, db, scaleFactor, {
+				settings: { ...DEFAULT_VIEW_SETTINGS, ...settings },
 				bakersReference,
 				recipe,
 				view,

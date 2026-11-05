@@ -13,7 +13,7 @@ export async function generatePrintHTML(
 ): Promise<string> {
 	const html = await exportRecipe(
 		filePath,
-		"html",
+		"print",
 		db,
 		scaleFactor,
 		rendererOptions,

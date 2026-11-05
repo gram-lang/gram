@@ -4,10 +4,9 @@ import {
 	describeRunSheet,
 	describeServeTimes,
 	escapeHtml,
+	getView,
 	prepareViews,
-	runSheetToHTML,
-	runSheetToMarkdown,
-	runSheetToText,
+	type ViewInput,
 } from "@gram-lang/renderer";
 import type {
 	CompilationResult,
@@ -27,12 +26,24 @@ import {
 import { runPipeline } from "../core/pipeline";
 import { ExitCode, GramCLIError } from "../errors";
 import { buildICS } from "./ics";
+import {
+	PLAN_SHEET_FORMATS,
+	cliFormatsOf,
+	resolveCliFormat,
+} from "../core/cli-views";
 
-export type PlanFormat = "text" | "md" | "html" | "json";
+// The work plan, as the renderer's registry describes it.
+const workPlanView = getView("workPlan");
+if (!workPlanView) throw new Error("The renderer has no work plan view.");
+const WORK_PLAN = workPlanView;
+
+/**
+ * `--format` of `gram plan`: the work plan's formats the command offers, read
+ * from the registry, then `json`, the data of the plan rather than a view.
+ */
+export type PlanFormat = string;
 export const PLAN_FORMATS: readonly PlanFormat[] = [
-	"text",
-	"md",
-	"html",
+	...cliFormatsOf(WORK_PLAN, PLAN_SHEET_FORMATS),
 	"json",
 ];
 
@@ -45,6 +56,7 @@ export interface PlanOptions {
 	now?: string;
 	miseEnPlace?: MiseEnPlaceMode;
 	rests?: RestChoice;
+	comments?: CommentsMode;
 	scaleFactor?: number;
 	lang?: string;
 	paths?: Record<string, string>;
@@ -53,6 +65,8 @@ export interface PlanOptions {
 
 export interface PlanResult {
 	compiled: CompilationResult;
+	/** What the views are written from: the settings, the kitchen, the plan. */
+	views: ViewInput;
 	/** Present with a serving time. */
 	plan?: ProjectedPlan;
 	sheet: RunSheet;
@@ -82,8 +96,13 @@ export async function planRecipe(
 	});
 	const views = prepareViews(
 		compiled,
-		{ miseEnPlace: options.miseEnPlace, rests: options.rests },
 		{
+			miseEnPlace: options.miseEnPlace,
+			rests: options.rests,
+			comments: options.comments,
+		},
+		{
+			...(options.lang !== undefined && { lang: options.lang }),
 			kitchen: {
 				timeZone: options.timeZone,
 				availability: options.availability,
@@ -99,10 +118,10 @@ export async function planRecipe(
 	const { input, context } = views.projection;
 	if (options.serveAt === undefined) {
 		const earliest = views.earliestServe() ?? undefined;
-		return { compiled, sheet, usedStock, input, context, earliest };
+		return { compiled, views, sheet, usedStock, input, context, earliest };
 	}
 	const plan = views.plan ?? undefined;
-	return { compiled, plan, sheet, usedStock, input, context };
+	return { compiled, views, plan, sheet, usedStock, input, context };
 }
 
 /** The sheet in one of the formats `--format` offers. */
@@ -110,35 +129,37 @@ export function formatPlan(
 	result: PlanResult,
 	format: PlanFormat,
 	lang?: string,
-	comments?: CommentsMode,
 ): string {
-	const { compiled, plan, sheet, earliest } = result;
+	const { plan, sheet, earliest } = result;
 	const sentence = earliest
 		? describeEarliestServe(earliest, { lang })
 		: undefined;
-	switch (format) {
-		case "text":
-			return `${runSheetToText(sheet, compiled, { lang, comments })}${sentence ? `\n${sentence}\n` : ""}`;
-		case "md":
-			return `${runSheetToMarkdown(sheet, compiled, { lang, comments })}${sentence ? `\n${sentence}\n` : ""}`;
-		case "html":
-			return `${runSheetToHTML(sheet, compiled, { lang, comments })}${sentence ? `<p class="work-plan-earliest">${escapeHtml(sentence)}</p>\n` : ""}`;
-		case "json":
-			return `${JSON.stringify(
-				{
-					...(plan && { plan }),
-					runSheet: sheet,
-					...(earliest && {
-						earliest: {
-							...(earliest.found && { serveAt: earliest.found.serveAt }),
-							searchedUntil: earliest.searchedUntil,
-						},
-					}),
-				},
-				null,
-				2,
-			)}\n`;
+	if (format !== "json") {
+		const written =
+			WORK_PLAN.render(
+				result.views,
+				resolveCliFormat(WORK_PLAN, format, PLAN_SHEET_FORMATS),
+				{ ...(lang !== undefined && { lang }) },
+			) ?? "";
+		if (!sentence) return written;
+		return format === "html"
+			? `${written}<p class="work-plan-earliest">${escapeHtml(sentence)}</p>\n`
+			: `${written}\n${sentence}\n`;
 	}
+	return `${JSON.stringify(
+		{
+			...(plan && { plan }),
+			runSheet: sheet,
+			...(earliest && {
+				earliest: {
+					...(earliest.found && { serveAt: earliest.found.serveAt }),
+					searchedUntil: earliest.searchedUntil,
+				},
+			}),
+		},
+		null,
+		2,
+	)}\n`;
 }
 
 /** The serving times worth proposing between two moments, with the reasons of the others. */

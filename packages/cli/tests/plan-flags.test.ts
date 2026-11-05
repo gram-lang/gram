@@ -1,3 +1,4 @@
+import { getView } from "@gram-lang/renderer";
 import { describe, expect, it } from "bun:test";
 import { GramCLIError } from "../src/errors";
 import { resolveExportView } from "../src/services/plan-options";
@@ -149,13 +150,16 @@ describe("parseAvailability", () => {
 	});
 });
 
+const recipeView = getView("recipe");
+const workPlanView = getView("workPlan");
+
 describe("resolveExportView", () => {
 	const view = (args: Record<string, unknown>, raw: string[] = []) =>
 		resolveExportView(args, raw, {});
 
 	it("is the recipe by default", () => {
-		expect(view({})).toEqual({ view: "recipe" });
-		expect(view({ view: "recipe" })).toEqual({ view: "recipe" });
+		expect(view({})).toEqual({ view: recipeView });
+		expect(view({ view: "recipe" })).toEqual({ view: recipeView });
 	});
 
 	it("reads the serving time, the zone, the availability and the present for the work plan", () => {
@@ -170,7 +174,7 @@ describe("resolveExportView", () => {
 				["--available", "08:00-22:00"],
 			),
 		).toEqual({
-			view: "workPlan",
+			view: workPlanView,
 			serveAt: "2026-10-11T13:00",
 			kitchen: {
 				timeZone: "Europe/Paris",
@@ -184,10 +188,10 @@ describe("resolveExportView", () => {
 		const choice = resolveExportView({ view: "work-plan" }, [], {
 			timezone: "Asia/Tokyo",
 		});
-		if (choice.view !== "workPlan") throw new Error("expected the work plan");
+		expect(choice.view).toBe(workPlanView);
 		expect(choice.serveAt).toBeUndefined();
-		expect(choice.kitchen.timeZone).toBe("Asia/Tokyo");
-		expect(Date.parse(choice.kitchen.now ?? "")).toBeGreaterThan(0);
+		expect(choice.kitchen?.timeZone).toBe("Asia/Tokyo");
+		expect(Date.parse(choice.kitchen?.now ?? "")).toBeGreaterThan(0);
 	});
 
 	it("refuses a plan flag with the recipe, which reads the same at any time", () => {

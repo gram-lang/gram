@@ -23,7 +23,7 @@ A view never imports another view. What two views share goes in `shared/`. `test
 
 Nothing else should need an edit: the surfaces list their outputs from the registry, so a new view appears in the CLI, VS Code and the playground. Removing a view is the reverse.
 
-The surfaces are moving onto the registry. The language server, the VS Code extension and the playground already list their outputs from it; until the CLI does too, a new view still has to be added by hand to its commands.
+Every surface lists its outputs from the registry: the language server and the VS Code extension, the playground (as tabs, with the formats of each view), and the CLI (`--view` of `gram export` and `gram print`, each `--format` checked against the view's `formats`). The terminal views of `gram view` and `gram cook` are not renderer strings and stay apart.
 
 ## Checks
 

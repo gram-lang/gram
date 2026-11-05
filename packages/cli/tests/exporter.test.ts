@@ -17,21 +17,21 @@ describe("exportRecipe", () => {
 
 	it("exports to markdown containing the ingredient and quantity", async () => {
 		const path = await tmp("## Prep\n[Mix] Add @flour{200g}.\n");
-		const md = await exportRecipe(path, "md", null);
+		const md = await exportRecipe(path, "markdown", null);
 		expect(md).toContain("flour");
 		expect(md).toContain("200");
 	});
 
 	it("exports to HTML containing the ingredient", async () => {
 		const path = await tmp("## Prep\n[Mix] Add @flour{200g}.\n");
-		const html = await exportRecipe(path, "html", null);
+		const html = await exportRecipe(path, "print", null);
 		expect(html).toContain("flour");
 		expect(html.toLowerCase()).toContain("<html");
 	});
 
 	it("applies a scaleFactor to the exported quantity", async () => {
 		const path = await tmp("## Prep\n[Mix] Add @flour{200g}.\n");
-		const md = await exportRecipe(path, "md", null, 2);
+		const md = await exportRecipe(path, "markdown", null, 2);
 		expect(md).toContain("400");
 		expect(md).not.toContain("800");
 	});
