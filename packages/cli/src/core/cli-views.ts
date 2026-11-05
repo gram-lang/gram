@@ -84,6 +84,13 @@ export function resolveCliFormat(
 	formats: CliFormats,
 ): Format {
 	const offered = cliFormatsOf(view, formats);
+	if (offered.length === 0) {
+		// A view shown on screen only (html alone): nothing to list.
+		throw new GramCLIError(
+			`The ${cliViewName(view.id)} view has none of the formats this command writes.`,
+			ExitCode.Error,
+		);
+	}
 	if (!offered.includes(name)) {
 		const known = name in formats;
 		throw new GramCLIError(

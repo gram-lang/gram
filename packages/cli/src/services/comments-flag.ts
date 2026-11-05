@@ -10,7 +10,7 @@ const SETTING = VIEW_SETTINGS.comments;
 
 export const COMMENTS_FLAG_VALUES: readonly string[] = flagValues(SETTING);
 
-export const COMMENTS_FLAG_DESCRIPTION = `Whether to show the comments of the recipe (// like this): ${flagValueList(SETTING)} (default: ${flagDefault(SETTING)}). Applies to the recipe and to the work plan.`;
+export const COMMENTS_FLAG_DESCRIPTION = `Whether to show the comments of the recipe (// like this): ${flagValueList(SETTING)} (default: ${flagDefault(SETTING)}).`;
 
 /** Reports and exits on an unusable value, like every setting flag. */
 export function parseComments(value: unknown): CommentsMode | undefined {

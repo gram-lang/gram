@@ -22,7 +22,7 @@ import {
 	resolveCliFormat,
 } from "../core/cli-views";
 import {
-	RECIPE_VIEW_SETTINGS,
+	EXPORT_VIEW_SETTINGS,
 	STEP_QTY_ALIAS_ARG,
 	readRecipeSettingArgs,
 	readViewSettingArgs,
@@ -35,7 +35,7 @@ export default defineCommand({
 	meta: {
 		name: "export",
 		description:
-			"Export a view of a recipe (the recipe or its work plan) to Markdown or print-ready HTML",
+			"Export a view of a recipe (see --view) to Markdown, print-ready HTML or plain text",
 	},
 	args: {
 		file: {
@@ -46,13 +46,13 @@ export default defineCommand({
 		format: {
 			type: "string",
 			description:
-				"Output format: md (Markdown), html (print-ready A4 HTML) or text (plain text). Each view offers only the formats it has (the work plan all three)",
+				"Output format: md (Markdown), html (print-ready A4 HTML) or text (plain text), among those the chosen view has",
 		},
 		output: {
 			type: "string",
 			alias: "o",
 			description:
-				"Output file path (default: same directory as input, with new extension; .work-plan before it for the work plan)",
+				"Output file path (default: same directory as input, with new extension; the view's name before it for any view but the recipe, e.g. .work-plan)",
 		},
 		scale: {
 			type: "string",
@@ -68,7 +68,7 @@ export default defineCommand({
 			description: "Skip ingredient database",
 			default: false,
 		},
-		...viewSettingArgs(RECIPE_VIEW_SETTINGS),
+		...viewSettingArgs(EXPORT_VIEW_SETTINGS),
 		...STEP_QTY_ALIAS_ARG,
 		...recipeSettingArgs(),
 		"bakers-reference": {
@@ -110,7 +110,7 @@ export default defineCommand({
 		const bakersReference =
 			(args["bakers-reference"] as string) ||
 			(args["bakers-math"] ? "" : undefined);
-		const settings = readViewSettingArgs(args, RECIPE_VIEW_SETTINGS);
+		const settings = readViewSettingArgs(args, EXPORT_VIEW_SETTINGS);
 		const recipe = readRecipeSettingArgs(args);
 		let view: ReturnType<typeof resolveExportView>;
 		let format: ReturnType<typeof resolveCliFormat>;

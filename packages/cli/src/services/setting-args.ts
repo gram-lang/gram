@@ -5,6 +5,7 @@ import {
 	type ViewSettings,
 	VIEW_SETTINGS,
 	parseRecipeSettings,
+	views,
 } from "@gram-lang/renderer";
 import type { ArgDef } from "citty";
 import { COMMENTS_FLAG_DESCRIPTION } from "./comments-flag";
@@ -183,15 +184,16 @@ export const STEP_QTY_ALIAS_ARG: Record<string, ArgDef> = {
 	},
 };
 
-/** Every view setting the recipe view honors: what `print`, `export` and `view` expose. */
-export const RECIPE_VIEW_SETTINGS: readonly ViewSettingKey[] = [
-	"miseEnPlace",
-	"rests",
-	"comments",
-	"nutritionBasis",
-	"bakersMathOnly",
-	"stepQuantities",
-];
+/**
+ * Every view setting a view of the registry honors: what `print` and `export`
+ * expose, since their `--view` picks any view. Read from the registry, so the
+ * setting a new view brings gets its flag here with no edit.
+ */
+export const EXPORT_VIEW_SETTINGS: readonly ViewSettingKey[] = (
+	Object.keys(VIEW_SETTINGS) as ViewSettingKey[]
+).filter((key) =>
+	views.some((view) => (view.honors as readonly string[]).includes(key)),
+);
 
 /** What the work plan honors: `gram plan`. */
 export const WORK_PLAN_SETTINGS: readonly ViewSettingKey[] = [
