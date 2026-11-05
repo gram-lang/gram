@@ -1,37 +1,15 @@
 import type { MiseEnPlaceMode } from "@gram-lang/kitchen";
-import { ExitCode, reportError, GramCLIError } from "../errors";
+import { VIEW_SETTINGS } from "@gram-lang/renderer";
+import { flagDefault, flagValues, parseChoiceFlag } from "./setting-flags";
 
-/**
- * `--mise-en-place` accepts kebab-case on the command line (`per-section`)
- * but the renderer option is camelCase (`perSection`), so the mapping lives
- * here rather than being spelled out in each of `view`, `export` and `print`.
- */
-const SCHEDULE_BY_FLAG: Record<string, MiseEnPlaceMode> = {
-	"per-section": "perSection",
-	upfront: "upfront",
-	"per-day": "perDay",
-};
+const SETTING = VIEW_SETTINGS.miseEnPlace;
 
-export const MISE_EN_PLACE_FLAG_VALUES = Object.keys(SCHEDULE_BY_FLAG);
+/** `per-section`, `upfront`, `per-day`: kebab-case on the command line, camelCase everywhere else. */
+export const MISE_EN_PLACE_FLAG_VALUES = flagValues(SETTING);
 
-export const MISE_EN_PLACE_FLAG_DESCRIPTION = `When the mise en place is planned: ${MISE_EN_PLACE_FLAG_VALUES.join(" | ")} (default: per-section — right before each section; upfront — all at the start; per-day — at the start of each working day). Changes the total and idle times.`;
+export const MISE_EN_PLACE_FLAG_DESCRIPTION = `When the mise en place is planned: ${MISE_EN_PLACE_FLAG_VALUES.join(" | ")} (default: ${flagDefault(SETTING)} — right before each section; upfront — all at the start; per-day — at the start of each working day). Changes the total and idle times.`;
 
-/**
- * Reports and exits on an unusable value rather than throwing, like
- * `parseNutritionBasis`: an argument-validation failure raised before any
- * work starts, from a command's `run()`.
- */
+/** Reports and exits on an unusable value, like every setting flag. */
 export function parseMiseEnPlace(value: unknown): MiseEnPlaceMode | undefined {
-	if (value === undefined || value === null || value === "") return undefined;
-	const mode = SCHEDULE_BY_FLAG[String(value)];
-	if (!mode) {
-		reportError(
-			new GramCLIError(
-				`Unknown --mise-en-place value "${value}". Expected one of: ${MISE_EN_PLACE_FLAG_VALUES.join(", ")}.`,
-				ExitCode.Error,
-			),
-		);
-		return process.exit(ExitCode.Error);
-	}
-	return mode;
+	return parseChoiceFlag(SETTING, "mise-en-place", value);
 }

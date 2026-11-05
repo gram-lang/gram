@@ -10,6 +10,30 @@ export {
 	resolveNutritionBasis,
 } from "./nutrition";
 export { timesOf } from "./mise-en-place";
+export {
+	COMMENTS_MODES,
+	DEFAULT_RECIPE_SETTINGS,
+	DEFAULT_VIEW_SETTINGS,
+	NUTRITION_BASES,
+	RECIPE_SETTINGS,
+	SETTINGS,
+	STEP_QUANTITIES_MODES,
+	VIEW_SETTINGS,
+	parseRecipeSettings,
+	parseViewSettings,
+	recipeSettingsToAnalyzerOptions,
+	viewSettingsToRendererOptions,
+} from "./settings";
+export type {
+	AnySetting,
+	ChoiceSetting,
+	FlagSetting,
+	RecipeSettings,
+	SettingDescriptor,
+	SettingKind,
+	StepQuantitiesMode,
+	ViewSettings,
+} from "./settings";
 export type { NutrientGroup, NutrientRow, ResolvedBasis } from "./nutrition";
 export { formatElement } from "./formatters/element";
 export { DEFAULT_ICONS, HTML_ICONS, MD_ICONS, PRINT_ICONS } from "./icons";
