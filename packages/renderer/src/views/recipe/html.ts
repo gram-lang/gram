@@ -3,9 +3,9 @@ import type {
 	RenderContext,
 	RenderableCompilationResult,
 	RenderableMetrics,
-} from "../types";
-import type { RenderBackend, RenderSections } from "../traversal";
-import { renderRecipe, timesIn } from "../traversal";
+} from "../../types";
+import type { RenderBackend, RenderSections } from "./traversal";
+import { renderRecipe, timesIn } from "./traversal";
 import {
 	formatDuration as defaultFormatDuration,
 	escapeHtml,
@@ -15,18 +15,18 @@ import {
 	joinStepTokens,
 	groupMultiUnitEntries,
 	round1,
-} from "../utils";
+} from "../../shared/utils";
 import {
 	availableBases,
 	getMetrics,
 	hasNutritionToShow,
 	nutritionGroups,
 	resolveNutritionBasis,
-} from "../nutrition";
-import { describeMiseEnPlaceItem } from "../mise-en-place";
-import { formatElement, DEFAULT_ICONS } from "./element";
-import { runSheetToHTML } from "../run-sheet";
-import { moduleLabel } from "./shared";
+} from "../../shared/nutrition";
+import { describeMiseEnPlaceItem } from "../../shared/mise-en-place";
+import { formatElement, DEFAULT_ICONS } from "../../shared/element";
+import { runSheetToHTML } from "../work-plan/html";
+import { moduleLabel } from "./module-label";
 import {
 	aggregateSectionIngredients,
 	intermediateLabel,

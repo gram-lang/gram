@@ -11,7 +11,7 @@ import {
 	toMarkdown,
 	toPrintHTML,
 } from "../src/index";
-import { withoutComments } from "../src/comments";
+import { withoutComments } from "../src/shared/comments";
 
 const SRC =
 	"## Cake\n\n[Mix] Mix @flour{100g} // keep it cold\nand stir ~{5min}.\n\n// Do not overmix.\n\n[Bake] Bake at ^{200C}.\n";

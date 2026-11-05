@@ -8,8 +8,8 @@ export {
 	nutritionGroups,
 	nutritionRows,
 	resolveNutritionBasis,
-} from "./nutrition";
-export { timesOf } from "./mise-en-place";
+} from "./shared/nutrition";
+export { timesOf } from "./shared/mise-en-place";
 export { prepareViews } from "./prepare-views";
 export type {
 	KitchenContext,
@@ -41,21 +41,31 @@ export type {
 	StepQuantitiesMode,
 	ViewSettings,
 } from "./settings";
-export type { NutrientGroup, NutrientRow, ResolvedBasis } from "./nutrition";
-export { formatElement } from "./formatters/element";
-export { DEFAULT_ICONS, HTML_ICONS, MD_ICONS, PRINT_ICONS } from "./icons";
-export { toMarkdown } from "./formatters/markdown";
-export type { CommentsMode } from "./types";
-export { toHTML } from "./formatters/html";
-export { toPrintHTML } from "./formatters/print";
+export type {
+	NutrientGroup,
+	NutrientRow,
+	ResolvedBasis,
+} from "./shared/nutrition";
+export { formatElement } from "./shared/element";
 export {
-	describeRunSheet,
-	runSheetToHTML,
-	runSheetToMarkdown,
-	runSheetToText,
-} from "./run-sheet";
-export { runSheetToPrintHTML } from "./run-sheet-print";
-export { describeEarliestServe, describeServeTimes } from "./serve-times";
+	DEFAULT_ICONS,
+	HTML_ICONS,
+	MD_ICONS,
+	PRINT_ICONS,
+} from "./shared/icons";
+export { toMarkdown } from "./views/recipe/markdown";
+export type { CommentsMode } from "./types";
+export { toHTML } from "./views/recipe/html";
+export { toPrintHTML } from "./views/recipe/print";
+export { describeRunSheet } from "./views/work-plan/model";
+export { runSheetToHTML } from "./views/work-plan/html";
+export { runSheetToMarkdown } from "./views/work-plan/markdown";
+export { runSheetToText } from "./views/work-plan/text";
+export { runSheetToPrintHTML } from "./views/work-plan/print";
+export {
+	describeEarliestServe,
+	describeServeTimes,
+} from "./views/work-plan/serve-times";
 export type {
 	RunSheetDayModel,
 	RunSheetEvent,
@@ -68,19 +78,19 @@ export type {
 	RunSheetScheduleRow,
 	RunSheetStepLine,
 	RunSheetWaitLine,
-} from "./run-sheet";
+} from "./views/work-plan/model";
 export {
 	intermediateMakers,
 	visitKit,
 	sectionProgram,
 	sectionSteps,
-} from "./work-plan-parts";
+} from "./views/work-plan/parts";
 export type {
 	KitItem,
 	ProgramStep,
 	VisitKitOptions,
 	SectionProgram,
-} from "./work-plan-parts";
+} from "./views/work-plan/parts";
 export {
 	formatDecimalToFraction,
 	getQty,
@@ -91,7 +101,7 @@ export {
 	escapeHtml,
 	escapeMarkdownHtml,
 	joinStepTokens,
-} from "./utils";
+} from "./shared/utils";
 export {
 	toGanttHTML,
 	attachGanttInteractivity,

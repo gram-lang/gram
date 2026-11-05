@@ -1,4 +1,4 @@
-import type { RendererIcons } from "./types";
+import type { RendererIcons } from "../types";
 
 const svgIcon = (iconName: string, path: string) =>
 	`<svg class="gicon gicon-${iconName}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="${path}"/></svg>`;

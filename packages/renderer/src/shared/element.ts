@@ -6,10 +6,10 @@ import {
 	formatQuantityValue,
 	formatDecimalToFraction,
 	round1,
-} from "../utils";
+} from "./utils";
 import { getDictionary, normalizeUnit } from "@gram-lang/i18n";
 
-import { DEFAULT_ICONS } from "../icons";
+import { DEFAULT_ICONS } from "./icons";
 
 export { DEFAULT_ICONS };
 

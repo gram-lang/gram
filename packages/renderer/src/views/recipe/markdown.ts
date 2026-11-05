@@ -2,9 +2,9 @@ import type {
 	RendererOptions,
 	RenderContext,
 	RenderableCompilationResult,
-} from "../types";
-import type { RenderBackend, RenderSections } from "../traversal";
-import { renderRecipe, timesIn } from "../traversal";
+} from "../../types";
+import type { RenderBackend, RenderSections } from "./traversal";
+import { renderRecipe, timesIn } from "./traversal";
 import {
 	formatDuration as defaultFormatDuration,
 	aggToRendererItem,
@@ -14,18 +14,18 @@ import {
 	groupMultiUnitEntries,
 	escapeMarkdownHtml,
 	round1,
-} from "../utils";
+} from "../../shared/utils";
 import {
 	getMetrics,
 	hasNutritionToShow,
 	nutritionRows,
 	resolveNutritionBasis,
-} from "../nutrition";
-import { formatElement } from "./element";
-import { moduleLabel } from "./shared";
+} from "../../shared/nutrition";
+import { formatElement } from "../../shared/element";
+import { moduleLabel } from "./module-label";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { runSheetToMarkdown } from "../run-sheet";
+import { runSheetToMarkdown } from "../work-plan/markdown";
 
 const markdownBackend: RenderBackend = {
 	buildContext(data, options) {

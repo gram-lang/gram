@@ -1,11 +1,11 @@
 import type { RunSheet } from "@gram-lang/scheduler";
-import { showsComments, withoutComments } from "./comments";
+import { showsComments, withoutComments } from "../../shared/comments";
 import type {
 	RendererOptions,
 	RenderContext,
 	RenderableCompilationResult,
-} from "./types";
-import { type ViewInput, prepareViews } from "./prepare-views";
+} from "../../types";
+import { type ViewInput, prepareViews } from "../../prepare-views";
 
 /**
  * html.ts/markdown.ts/print.ts used to each hand-roll their own top-level

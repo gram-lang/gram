@@ -8,7 +8,7 @@ import type { RendererOptions } from "../src/types";
 
 // Phase 11 closure criterion (audit 2026-07-22, renderer I-4/P-1): html.ts,
 // markdown.ts and print.ts now share a single `renderRecipe` traversal
-// (../src/traversal.ts) instead of each hand-rolling document assembly, so a
+// (../src/views/recipe/traversal.ts) instead of each hand-rolling document assembly, so a
 // new section can no longer be silently wired into one backend and forgotten
 // in the others the way Phase 9's `hideStepQty` was. This test replaces
 // hide-step-qty-parity.test.ts with broader structural coverage: it still

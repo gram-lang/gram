@@ -1,4 +1,4 @@
-import type { CommentsMode, RenderableCompilationResult } from "./types";
+import type { CommentsMode, RenderableCompilationResult } from "../types";
 
 /** Whether comments are shown: they are unless a view says `"hide"`. */
 export const showsComments = (mode?: CommentsMode) => mode !== "hide";

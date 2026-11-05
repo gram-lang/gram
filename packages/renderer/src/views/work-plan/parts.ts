@@ -1,12 +1,12 @@
 import { getDictionary } from "@gram-lang/i18n";
 import type { StepToken } from "@gram-lang/kitchen";
-import { formatElement } from "./formatters/element";
-import { showsComments } from "./comments";
+import { formatElement } from "../../shared/element";
+import { showsComments } from "../../shared/comments";
 import type {
 	CommentsMode,
 	RenderableCompilationResult,
 	RenderContext,
-} from "./types";
+} from "../../types";
 import {
 	escapeHtml,
 	escapeMarkdownHtml,
@@ -14,7 +14,7 @@ import {
 	getQty,
 	joinStepTokens,
 	round1,
-} from "./utils";
+} from "../../shared/utils";
 
 /** A reference id and an intermediate's name are the same thing written two ways. */
 const normalize = (value: string) =>

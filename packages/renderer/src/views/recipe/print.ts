@@ -3,9 +3,9 @@ import type {
 	RenderContext,
 	RenderableCompilationResult,
 	RenderableMetrics,
-} from "../types";
-import type { RenderBackend, RenderSections } from "../traversal";
-import { renderRecipe, timesIn } from "../traversal";
+} from "../../types";
+import type { RenderBackend, RenderSections } from "./traversal";
+import { renderRecipe, timesIn } from "./traversal";
 import {
 	formatDuration as defaultFormatDuration,
 	escapeHtml,
@@ -15,25 +15,25 @@ import {
 	joinStepTokens,
 	groupMultiUnitEntries,
 	round1,
-} from "../utils";
+} from "../../shared/utils";
 import {
 	getMetrics,
 	hasNutritionToShow,
 	nutritionRows,
 	resolveNutritionBasis,
-} from "../nutrition";
-import { formatElement } from "./element";
-import { moduleLabel } from "./shared";
+} from "../../shared/nutrition";
+import { formatElement } from "../../shared/element";
+import { moduleLabel } from "./module-label";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { runSheetToHTML } from "../run-sheet";
-import { RUN_SHEET_PRINT_CSS } from "../run-sheet-css";
+import { runSheetToHTML } from "../work-plan/html";
+import { RUN_SHEET_PRINT_CSS } from "../work-plan/print-css";
 import css from "./print.css" with { type: "text" };
 
 /** The print stylesheet (`print.css`), shared by every printed view. */
 export const PRINT_CSS: string = css;
 
-import { PRINT_ICONS } from "../icons";
+import { PRINT_ICONS } from "../../shared/icons";
 
 const printBackend: RenderBackend = {
 	buildContext(data, options) {
