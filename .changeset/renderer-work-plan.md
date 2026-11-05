@@ -10,7 +10,7 @@
 - Each visit says how early it could be done ("Possible from 18:00") or which wait holds it in place ("Can't start earlier: the “Fill” wait can't be longer than 2h and ends when you serve"), and a wait the plan stretched or shortened is reported on its day, with the range you wrote
 - A recipe with no serving time is told in days before the service (D-2, D-1, day D) and in durations; the HTML needs no script and the print document has one day per page (a long day runs over several pages, never cutting a step), with check boxes for the mise en place
 - `describeRunSheet()` gives the same plan in words, and `visitKit()`, `sectionProgram()` and `sectionSteps()` are the three pieces (what to take out, which steps a visit covers, the steps written out) that another interface can reuse; `describeServeTimes()` and `describeEarliestServe()` word the search of serving times
-- The `runSheet` option of `toHTML`, `toMarkdown` and `toPrintHTML` writes the work plan after the recipe, in the same document. The recipe views themselves show no schedule
+- Recipe views focus solely on cooking instructions without schedule details: the work plan is now rendered as its own distinct view
 
 **Deprecated**
 

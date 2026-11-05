@@ -288,8 +288,8 @@ gram print brioche.gram --no-open         # Generate only, print file path to st
 - `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (first named `--nutrition`, still accepted) selects the displayed nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe). `per-100g` is calculated per 100 g of raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> sets the mise en place schedule (default `per-section`), updating total and idle times printed in the header. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> sets the resolution for range-based passive timers (`~_{12-24h}`): shortest duration (`shortest`, default), midpoint (`balanced`), or longest duration (`longest`). Exact durations and active timers are unaffected.
-- `--comments <show|hide>` <Since v="1.4.0" /> shows (default) or hides recipe comments (`// like this`), both in the recipe instructions and in the appended work plan.
-- `--with-sheet` <Since v="1.4.0" /> appends the work plan after the recipe in the printed document (with one day per page and check boxes). This option requires specifying a serving time via `--serve` (alongside context options `--tz` and `--available`).
+- `--comments <show|hide>` <Since v="1.4.0" /> shows (default) or hides recipe comments (`// like this`), in the recipe or in the work plan.
+- `--view <recipe|work-plan>` <Since v="1.4.0" /> selects the view to print: the recipe (default) or its [work plan](/docs/how-to/plan-a-meal/) (formatted with one day per page and checkboxes). In work plan mode, scheduling options (`--serve`, `--tz`, `--available`, `--now`) function identically to `gram plan`; without `--serve`, the plan is laid out in relative countdown days (`D-2`, `D-1`, `Day D`). These scheduling options apply only when `--view work-plan` is specified.
 
 #### `gram export <file>`
 Exports a recipe to Markdown or print-ready HTML.
@@ -306,8 +306,8 @@ gram export brioche.gram --format html --scale 2       # Export at double quanti
 - `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (first named `--nutrition`, still accepted) selects the nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> selects the mise en place schedule (default `per-section`), updating total and idle times in the exported header. In HTML, `per-section` also places a "Mise en place" heading above each section's ingredient list. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> selects the resolution for range-based passive timers (`~_{12-24h}`).
-- `--comments <show|hide>` <Since v="1.4.0" /> shows (default) or hides recipe comments (`// like this`), both in the recipe instructions and in the appended work plan.
-- `--with-sheet` <Since v="1.4.0" /> appends the work plan after the recipe in the exported document. This option requires specifying a serving time via `--serve` (alongside context options `--tz`, `--available`, and `--now`).
+- `--comments <show|hide>` <Since v="1.4.0" /> shows (default) or hides recipe comments (`// like this`), in the recipe or in the work plan.
+- `--view <recipe|work-plan>` <Since v="1.4.0" /> selects the view to export: the recipe (default) or its [work plan](/docs/how-to/plan-a-meal/), in Markdown or HTML. In work plan mode, scheduling options (`--serve`, `--tz`, `--available`, `--now`) function identically to `gram plan`; without `--serve`, the schedule is organized in relative days before serving. By default, the output file is named `<recipe>.work-plan.md` (or `.html`).
 
 #### `gram plan <file>` <Since v="1.4.0" />
 Computes the operational schedule of a recipe: daily breakdown, active kitchen visits, items to take out, and tasks to perform. With `--serve`, the backward schedule is calculated from meal time against your availability. Without a serving time, the schedule is presented in relative days (`D-2`, `D-1`, `Day D`) and indicates the earliest possible serving time starting immediately.
@@ -506,7 +506,7 @@ database: ".gram/ingredients.yaml" # Relative or absolute path to the database f
 language: "en"                 # Target language for all AI-generated content (categories, tags, imported recipes)
                                # Supported: en, fr, de, es, it, pt, nl, ja, zh — default: en
 timezone: "Europe/Paris"       # IANA time zone of your kitchen: default for `gram plan --tz` (default: machine time zone)
-                               # Only read by `gram plan`, `export` and `print` with --with-sheet. Update via: `gram config set timezone <zone>`
+                               # Only read by `gram plan`, and by `export` and `print` with --view work-plan. Update via: `gram config set timezone <zone>`
 mealTimes: ["12:30", "20:00"]  # Candidate meal times evaluated by `gram plan --find` (default: 12:30 and 20:00)
 updateCheck: true             # Set to false to silence the update notice printed after each command
 

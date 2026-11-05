@@ -144,17 +144,17 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    You can easily use this plan in the kitchen or export it to your workflow tools:
 
    ```bash
-   # Print the recipe followed by the full work plan
-   gram print entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --with-sheet
+   # Print the work plan
+   gram print entremets.gram --view work-plan --serve "2026-10-17 20:00" --available 08:00-22:00
 
-   # Export to Markdown with the work plan
-   gram export entremets.gram --format md --serve "2026-10-17 20:00" --with-sheet
+   # Export the work plan to Markdown (entremets.work-plan.md)
+   gram export entremets.gram --view work-plan --format md --serve "2026-10-17 20:00"
 
    # Export visits to an iCalendar file
    gram plan entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --ics entremets.ics
    ```
 
-   - **Print layout (`--with-sheet`)**: writes the work plan right after the recipe in a single document (one day per page when printed, with checkboxes).
+   - **Print layout (`--view work-plan`)**: generates the work plan instead of the recipe with `gram print` or `gram export` (formatted with one day per page and checkboxes). You can still print or export the recipe separately to keep both references handy.
    - **Electronic calendar (`--ics <file>`)**: writes one calendar event per kitchen visit, with a reminder alarm and task/ingredient checklists in the description. Events are in UTC and your calendar displays them in your local time zone.
    - **Data formats (`--format`)**: use `--format md` for Markdown note-taking tools, `--format html` for a standalone web snippet, or `--format json` to inspect the structured data object (`{ plan, runSheet }`, see [Data formats](/docs/reference/api/data-formats/#5-the-run-sheet)). Text strings follow your project's configured `language`.
 
