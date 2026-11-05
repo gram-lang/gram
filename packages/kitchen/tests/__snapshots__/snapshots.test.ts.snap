@@ -156,11 +156,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
         "task": "s1.0",
       },
     ],
-    "idleTime": 0,
-    "miseEnPlace": "perSection",
-    "preparationTime": 5,
-    "rests": "shortest",
-    "sessions": [
+    "days": [
       {
         "day": 0,
         "end": 21,
@@ -171,6 +167,10 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
         "start": 0,
       },
     ],
+    "idleTime": 0,
+    "miseEnPlace": "perSection",
+    "preparationTime": 5,
+    "rests": "shortest",
     "totalTime": 21,
   },
   "sections": [
@@ -1017,11 +1017,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         "task": "s1.0.t0",
       },
     ],
-    "idleTime": 57,
-    "miseEnPlace": "perSection",
-    "preparationTime": 19,
-    "rests": "shortest",
-    "sessions": [
+    "days": [
       {
         "day": 0,
         "end": 142,
@@ -1032,6 +1028,10 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         "start": 0,
       },
     ],
+    "idleTime": 57,
+    "miseEnPlace": "perSection",
+    "preparationTime": 19,
+    "rests": "shortest",
     "totalTime": 144,
   },
   "sections": [

@@ -38,7 +38,7 @@ Gram turns plain-text recipes into structured, queryable data while keeping them
 * **Modular Recipes (`@use`)**: Import and compose external base recipes (`@use "./bases/shortcrust.gram" as &crust`) with automatic yield scaling, timeline interleaving, and unified shopping lists.
 * **Dynamic Calculations**: Declare Baker's percentages, relative quantities (`@water{75% @&flour}`), and automatic unit conversions directly in your recipe.
 * **Step References & Variables**: Reuse intermediate preparations (`->&dough`) and sub-ingredients (`<@lemons{2}`) without messing up shopping list totals.
-* **Timers & Gantt Charts**: Separate active steps (`~{10min}`) from background waiting times (`~_{2h}`) to generate recipe timelines and Gantt charts.
+* **Timers & Work Plan**: Separate active steps (`~{10min}`) from background waiting times (`~_{2h}`): Gram computes your schedule, working backward from the service, and tells you when to be in the kitchen and what to take out.
 * **Developer Tooling**: Includes a Language Server (LSP), a VS Code extension with real-time diagnostics, a CLI tool, and a TypeScript API.
 
 ---
@@ -75,7 +75,7 @@ Gram comes with tools to help write, inspect, and compile recipes.
 
 ### VS Code Extension & Language Server
 [**Available on the VS Code Marketplace**](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)
-- **Live Preview & Gantt View**: Side-by-side recipe rendering and real-time Gantt charts for active steps and background timers.
+- **Live Preview & Work Plan**: Side-by-side recipe rendering and the work plan of the recipe (days, visits to the kitchen, what to take out).
 - **Autocomplete**: Contextual suggestions for ingredients from your database, units, and step references.
 - **Diagnostics**: Real-time error checking for missing ingredients, unused references, or circular dependencies.
 
@@ -118,7 +118,7 @@ This monorepo is divided into specialized packages under `packages/`:
 | [**`@gram-lang/scheduler`**](./packages/scheduler/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/scheduler?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/scheduler) | The scheduling engine: lays a recipe's tasks out on a timeline and places it on the calendar from a serving time and your availability. |
 | [**`@gram-lang/format`**](./packages/format/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/format?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/format) | Canonical `.gram` source code formatter. |
 | [**`@gram-lang/analyzer`**](./packages/analyzer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/analyzer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/analyzer) | The physical resolver for mass normalization, yield, and nutrition. |
-| [**`@gram-lang/renderer`**](./packages/renderer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/renderer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/renderer) | The display layer converting JSON into HTML, Markdown, or Gantt Charts. |
+| [**`@gram-lang/renderer`**](./packages/renderer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/renderer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/renderer) | The display layer converting JSON into HTML, Markdown, or the work plan of a schedule. |
 | [**`@gram-lang/cli`**](./packages/cli/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/cli?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/cli) | The official command-line interface. |
 | [**`@gram-lang/i18n`**](./packages/i18n/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/i18n?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/i18n) | Localization layer for units, categories, and AI prompts. |
 | [**`vscode-extension`**](./packages/vscode-extension/README.md) | [![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/gram-lang.gram-lang.svg?style=flat-square&color=007acc)](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang) | The Visual Studio Code extension. |

@@ -167,6 +167,7 @@
         "@gram-lang/modules": "workspace:*",
         "@gram-lang/parser": "workspace:*",
         "@gram-lang/renderer": "workspace:*",
+        "@gram-lang/scheduler": "workspace:*",
         "@types/node": "^26.1.1",
         "esbuild": "^0.28.1",
         "vscode-languageserver": "^10.1.0",

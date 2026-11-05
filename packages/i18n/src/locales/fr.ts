@@ -17,7 +17,6 @@ export const fr: GramLocale = {
 		prepTimeTooltip:
 			"Préparation = Temps pour rassembler et préparer ingrédients et ustensiles",
 		miseEnPlace: "Mise en place",
-		miseEnPlaceTooltip: "Mise en place de cette section",
 		scheduleLabel: "Mise en place",
 		restsLabel: "Attentes",
 		restsShortest: "Les plus courtes",
@@ -25,20 +24,12 @@ export const fr: GramLocale = {
 		restsLongest: "Les plus longues",
 		schedulePerSection: "Par section",
 		scheduleUpfront: "Tout au début",
-		schedulePerSession: "Par journée de travail",
-		sessionDay: "J-",
-		sessionToday: "Jour J",
-		runSheetTitle: "Fiche de production",
-		runSheetServedAt: "Servi le {date} à {time}",
-		runSheetAround: "vers {time}",
-		runSheetUntil: "jusqu'à vers {time}",
+		schedulePerDay: "Par journée de travail",
+		dayBefore: "J-",
+		dayToday: "Jour J",
 		runSheetStep: "Étape {n}",
 		runSheetRest: "Attente",
 		runSheetUnnamedSection: "Recette",
-		runSheetStretched:
-			"Attente allongée de {from} à {to} pour éviter vos heures d'indisponibilité",
-		runSheetShortened:
-			"Attente raccourcie de {from} à {to} pour éviter vos heures d'indisponibilité",
 		runSheetProblems: "À régler",
 		runSheetOutside:
 			"{task}, vers {time}, tombe quand vous n'êtes pas disponible, et aucune attente ne peut bouger pour arranger ça.",
@@ -49,6 +40,58 @@ export const fr: GramLocale = {
 		runSheetPast:
 			"La première tâche aurait dû commencer {start}, et nous sommes déjà {now}.",
 		runSheetMulti: "Seule la première des {count} recettes est planifiée.",
+		workPlanTitle: "Planning de préparation",
+		workPlanFor: "Pour le {date} à {time}",
+		workPlanServings: "{count} parts",
+		workPlanScaled: "{count} parts (×{factor})",
+		workPlanDays: "{n} jour",
+		workPlanDaysMany: "{n} jours",
+		workPlanVisits: "{n} passage en cuisine",
+		workPlanVisitsMany: "{n} passages en cuisine",
+		workPlanWork: "{duration} de travail en tout",
+		workPlanServe: "Servir",
+		workPlanAbout: "~ {duration}",
+		workPlanKit: "À sortir",
+		workPlanLegendCook: "en cuisine",
+		workPlanLegendThread: "ce qui continue sans vous",
+		workPlanProgram: "Au programme",
+		workPlanExecution: "Exécution",
+		workPlanIngredients: "Ingrédients",
+		workPlanStart: "Début : {time}",
+		workPlanContinued: "suite",
+		workPlanLeaving: "En partant",
+		workPlanMadeOn: "fait {day}",
+		workPlanMadeAt: "fait à {time}",
+		workPlanMadeEarlier: "fait plus tôt",
+		workPlanInStock: "en stock",
+		workPlanStep: "étape {n}",
+		workPlanSteps: "étapes {from} à {to}",
+		workPlanRange: "{min} à {max}",
+		workPlanPossibleFrom: "Possible dès {time}.",
+		workPlanFixedService:
+			"Début non avançable : l'attente « {rest} » ({section}) ne peut pas dépasser {length} et se termine au service.",
+		workPlanFixedVisit:
+			"Début non avançable : l'attente « {rest} » ({section}) ne peut pas dépasser {length} et doit être terminée avant {sections}.",
+		workPlanNextVisit: "Prochain passage : {when}",
+		workPlanNextVisitSameDay: "Prochain passage : plus tard le même jour",
+		workPlanServeAt: "Servir à {time}",
+		workPlanStretchedTo:
+			"{wait} prolongé à {to} (prévu {range}) pour que le travail tombe dans vos disponibilités.",
+		workPlanShortenedTo:
+			"{wait} raccourci à {to} (prévu {range}) pour que le travail tombe dans vos disponibilités.",
+		workPlanUntilClock: "jusqu'à {time}",
+		workPlanNothing: "Rien à planifier.",
+		workPlanFindOk: "{when} — début {start} · {visits} · {adjusted}",
+		workPlanFindRejected: "{when} — impossible. {reason}",
+		workPlanFindStart: "Il faudrait commencer {start}, c'est déjà passé.",
+		workPlanFindNone:
+			"Aucune heure de service ne convient entre {from} et {to}.",
+		workPlanAdjusted: "{n} attente ajustée",
+		workPlanAdjustedMany: "{n} attentes ajustées",
+		workPlanNoAdjustment: "aucune attente ajustée",
+		workPlanEarliest: "Prêt dès {when} si vous commencez maintenant.",
+		workPlanEarliestNone:
+			"Rien ne convient dans les {days} prochains jours (cherché jusqu'au {until}).",
 		est: "(est.)",
 		passiveTimeTooltip: "Temps passif (Repos, attente...)",
 		activeTimeTooltip: "Temps actif",
@@ -117,7 +160,8 @@ export const fr: GramLocale = {
 		viewLabel: "Vue :",
 		loadExample: "Charger un exemple...",
 		recipe: "Recette",
-		studioTitle: "Studio de recette",
+		studioTitle: "Réglages de la recette",
+		settingsButton: "Réglages",
 		activeOptionsBadge: "{count} actifs",
 		resetAll: "Réinitialiser tout",
 		resetSection: "Réinitialiser",
@@ -127,6 +171,7 @@ export const fr: GramLocale = {
 			schedule: "Planification & Service",
 			scale: "Portions & Échelle",
 			bakersMath: "Boulangerie",
+			display: "Affichage",
 			physics: "Physique & Nutrition",
 			stock: "Stock & Modules",
 		},
@@ -153,10 +198,14 @@ export const fr: GramLocale = {
 			jsonTree: "Arbre Interactif",
 			markdown: "Markdown",
 			preview: "Aperçu (HTML)",
-			gantt: "Diagramme de Gantt",
-			runSheet: "Fiche de production",
-			runSheetHint:
-				"Choisissez l'heure du service dans les réglages du plan pour obtenir une fiche de production, avec une heure pour chaque tâche.",
+			runSheet: "Planning",
+			serveWhenTitle: "Quand servir ?",
+			serveWhenNone:
+				"Aucune heure de service ne convient dans les sept prochains jours.",
+			serveWhenWhyNot: "Pourquoi pas les autres ?",
+			earliestTitle: "Prêt dès",
+			earliestNone: "Rien ne convient dans les 14 prochains jours.",
+			earliestUse: "Servir à ce moment",
 			planSummary: "Plan",
 			planServeAt: "Servi le",
 			planTimeZone: "Fuseau horaire",
@@ -164,6 +213,7 @@ export const fr: GramLocale = {
 			planAvailableTo: "à",
 			planClear: "Effacer le plan",
 			planInvalid: "Ce plan est impossible à faire : {message}",
+			// @remove-in: 2.0.0 [i18n-gantt-keys]
 			gantt_active: "Tâche active",
 			gantt_passive: "Tâche de fond",
 			gantt_compact: "Vue compacte",
@@ -181,9 +231,6 @@ export const fr: GramLocale = {
 			gantt_mode_reverse: "Compte à rebours (T-)",
 			gantt_mode_target: "Heure cible",
 			gantt_target_time_label: "Servir à :",
-			gantt_unavailable: "Indisponible",
-			gantt_rest_adjusted:
-				"Attente modifiée de {from} à {to} pour éviter les heures d'indisponibilité",
 		},
 		options: {
 			scaleTitle: "Modifier les quantités",
@@ -197,6 +244,9 @@ export const fr: GramLocale = {
 			enableBakersMath: "Activer le pourcentage du boulanger",
 			bakersMathDesc: "Affiche les ingrédients en % de la référence.",
 			hideAbsolute: "Masquer les poids absolus",
+			showComments: "Afficher les commentaires",
+			commentsDesc:
+				"Les notes de la recette (// comme ceci), dans la recette et dans le planning.",
 			forceReference: "Forcer la référence :",
 			autoDetect: "Auto (détecte @*)",
 			physicalAnalysis: "Analyse physique",
@@ -207,6 +257,42 @@ export const fr: GramLocale = {
 			stockTitle: "En stock (masquer les étapes)",
 			stockDesc:
 				"Considéré comme déjà disponible — se réduit à une ligne d'achat, sans étapes sur la frise.",
+		},
+		help: {
+			schedule:
+				"Détermine à quel moment préparer et peser les ingrédients dans le planning : au fur et à mesure de chaque section, regroupé tout au début de la recette, ou au démarrage de chaque journée de travail.",
+			rests:
+				"Détermine la durée retenue pour les étapes qui acceptent une plage de temps (ex. 2h à 12h) : la durée minimale requise, la durée maximale autorisée, ou une valeur médiane équilibrée.",
+			serveAt:
+				"Date et heure souhaitées du repas. Le planning est calculé à rebours à partir de cette échéance pour vous indiquer quand démarrer et être prêt pile à l'heure.",
+			serveSuggestions:
+				"Horaires recommandés pour passer à table. Gram explore les plages de repos et vos disponibilités pour vous proposer des créneaux réalistes sans action nocturne.",
+			timeZone:
+				"Définit le fuseau horaire utilisé pour afficher les heures exactes sur le planning et gérer correctement les passages de journée.",
+			availability:
+				"Vos horaires de disponibilité en cuisine. Le planning s'organise pour que vous n'ayez rien à faire en dehors de cette plage (la nuit par exemple).",
+			scaleGlobal:
+				"Ajuste les quantités de tous les ingrédients et le nombre de portions selon le pourcentage indiqué (ex. 200 % pour doubler, 50 % pour diviser par deux).",
+			scaleByIngredient:
+				"Recalcule proportionnellement toute la recette pour l'ajuster à la quantité exacte dont vous disposez pour un ingrédient donné (ex. seulement 3 œufs ou 250 g de beurre).",
+			bakersMath:
+				"Exprime chaque ingrédient en pourcentage d'un ingrédient de base fixé à 100 % (par défaut la farine, ou l'ingrédient de votre choix), facilitant l'évaluation des équilibres et des ratios.",
+			comments:
+				"Affiche ou masque les commentaires écrits dans la recette avec // : les notes seules sur une ligne et celles en fin de ligne. Dans le planning, ils sont mis à part, discrètement.",
+			bakersMathOnly:
+				"Masque les poids en grammes pour n'afficher que les pourcentages relatifs, transformant la recette en une formule de proportions pure.",
+			bakersReference:
+				"Choisit manuellement l'ingrédient qui sert de base à 100 %, à la place de la détection automatique de l'ingrédient annoté @* dans la recette.",
+			massStandardization:
+				"Convertit les mesures de volume (cuillères, tasses, ml) en grammes selon les densités renseignées en base.",
+			yieldManagement:
+				"Calcule le poids brut à acheter pour obtenir la quantité nette voulue, en tenant compte des pertes à l'épluchage ou au parage renseignées en base.",
+			nutrition:
+				"Estime les calories et les macronutriments (protéines, glucides, lipides, fibres) par portion ou pour 100 g via les tables de composition en base.",
+			physicsDisclaimer:
+				"Dans ce playground, les calculs physiques et nutritionnels reposent sur une base restreinte aux recettes d'exemple.",
+			stockItem:
+				"Déclare cette préparation importée comme déjà prête dans votre cuisine. Ses étapes de fabrication sont masquées du planning pour ne garder que son utilisation finale.",
 		},
 		output: {
 			copy: "Copier dans le presse-papier",

@@ -1,6 +1,6 @@
 ---
 title: "Planifier un repas"
-description: "De la recette à la fiche de production opérationnelle et à l'agenda : planifier un service le dimanche à 13 h, ordonnancer les tâches et ajuster les durées passives selon vos disponibilités."
+description: "Choisir l'heure du service, obtenir le planning de préparation d'une recette (les jours, les passages en cuisine, ce qu'il faut sortir), l'imprimer avec la recette et l'envoyer dans votre agenda."
 ---
 
 import Since from '../../../../../components/Since.astro';
@@ -8,114 +8,174 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Since v="1.4.0" />
 
-Vous souhaitez servir un pain de campagne le dimanche à 13 h. La pâte nécessite un pointage lent, vous n'êtes disponible que de 8 h à 22 h, et vous souhaitez éviter un pétrissage nocturne à 4 h du matin. Ce guide détaille comment passer d'une recette brute à une fiche de production horodatée, puis exporter votre planning vers votre calendrier.
+Vous souhaitez servir un entremets pistache-framboise samedi à 20 h. Il nécessite trois jours de préparation, un biscuit et un insert confectionnés deux jours à l'avance, un glaçage que vous avez peut-être déjà au congélateur, et vous ne cuisinez qu'entre 8 h et 22 h. Ce guide vous montre comment transformer une recette en un planning concret à suivre en cuisine ou à intégrer dans votre agenda.
+
+La recette décrit **comment** réaliser chaque étape. Le planning de préparation, lui, précise **quand intervenir** et **ce qu'il faut préparer ou sortir**. Gram le déduit directement de votre recette : vous n'avez rien à saisir deux fois.
 
 <Steps>
 
-1. ### Définir une durée passive élastique sous forme de fourchette
+1. ### Renseigner les fourchettes de repos et ancrer les sections
 
-   Un temps passif à durée fixe (`~_{8h}`) reste strictement immuable. En revanche, un minuteur passif exprimé sous forme de fourchette (`~_{8-16h}`) offre une élasticité temporelle : Gram exploite cette marge pour décaler le travail actif en dehors de vos plages d'indisponibilité nocturnes.
+   Une attente définie sous forme de fourchette (`~_{12-72h}`) offre une marge de manœuvre dont Gram tire parti pour s'adapter à vos disponibilités. Une ancre temporelle (`@use "..." as &biscuit ~{-2d}` ou `## Mousse ~{-1d}`) indique quant à elle le jour où cette étape ou sous-recette doit être réalisée.
 
    ```gram
    ---
-   title: Pain de campagne
+   title: Entremets pistache framboise
+   portions: 6
    ---
 
-   ## Pâte ->&pâte
+   @use "./bases/biscuit-pistache.gram" as &biscuit ~{-2d}
+   @use "./bases/insert-framboise.gram" as &insert ~{-2d}
+   @use "./bases/glacage-blanc.gram" as &glaçage
 
-   [Pétrir] La @farine{500g} avec l'@eau{350ml} pendant ~{20min}.
+   ## Mousse ->&mousse ~{-1d}
 
-   [Pointer] Laisser reposer ~_{8-16h}.
+   [Monter] Monter @crème{250g} avec @sucre{30g} et @lait{100g} au #batteur{} ~{10min}.
 
-   ## Cuisson
+   [Monter l'entremets] Superposer &biscuit, &insert et la mousse dans le #cercle de 20 cm{} ~{10min}, puis congeler ~_{12-48h}.
 
-   [Cuire] Façonner la &pâte{850g} et cuire à ^{230C} pendant ~{30min}.
+   ## Finition
+
+   [Démouler] Démouler l'entremets et le napper de &glaçage ~{5min}.
+
+   [Décongeler] Laisser décongeler au réfrigérateur ~_{6h}.
    ```
 
-   `~_{8-16h}` indique que la fermentation est prête dès 8 heures, tout en restant pleinement exploitable jusqu'à 16 heures. Consultez [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
+   Pour approfondir la syntaxe des durées et des ancres, consultez [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes) ainsi que [Jours et heures](/fr/docs/reference/syntax/times/#jours-et-heures).
 
-2. ### Spécifier l'échéance de service et vos plages de disponibilité
+   > [!TIP]
+   > **Nommez vos étapes avec une `[Action]`** : Le planning de préparation nomme les étapes et les fils d'attente d'après leur verbe d'action (ex. : `Mousse : Monter l'entremets 12h à 48h` dans la vue chronologique et pour les temps d'attente qui se poursuivent sans vous). Préfixer chaque étape minutée d'une `[Action]` garantit des intitulés explicites et parlants à ces endroits, plutôt que des durées isolées ou des libellés génériques comme `Repos`.
+
+2. ### Déterminer l'heure du service
+
+   Vous hésitez sur le jour ou le créneau idéal pour votre repas ? Laissez Gram tester automatiquement vos horaires de repas habituels sur une période donnée :
 
    ```bash
-   gram plan pain.gram --serve "2026-10-11 13:00" --tz Europe/Paris --available 08:00-22:00
+   gram plan entremets.gram --find 2026-10-15/2026-10-19 --meal-times 12:30,20:00 \
+     --tz Europe/Paris --available 08:00-22:00
    ```
-
-   `--serve` accepte une date et une heure locales cibles, `--tz` explicite le fuseau IANA de référence, et `--available` spécifie votre créneau d'activité quotidien par défaut. En l'absence de `--available`, Gram considère que le travail actif peut s'effectuer à toute heure.
-
-   Pour éviter de spécifier `--tz` à chaque commande, vous pouvez configurer votre fuseau horaire par défaut : `gram config set timezone Europe/Paris` (enregistré dans `.gram/config.yaml` ou dans votre configuration utilisateur globale). En dernier recours, Gram se rabat sur le fuseau du système hôte, ce qui peut générer des décalages inattendus sur un serveur distant ou lors d'une planification pour une autre zone géographique.
-
-3. ### Analyser la fiche de production
 
    ```text
-   Fiche de production — Pain de campagne
-   Servi le dimanche 11 octobre à 13:00
-
-   samedi 10 octobre · J-1
-     vers 21:35        Mise en place — Pâte (3m)
-                       Ingrédients (base) (3 × 1m)
-     vers 21:40        Pâte — Pétrir (20m)
-                       Mélanger la farine (500 g) avec l'eau (350 ml) et le sel (10 g), puis pétrir ⏲️ 20 min.
-     vers 22:00        Pointer — Pâte (14h 30m, jusqu'à vers dim. 12:30)
-                       Laisser reposer ⏳ 8-16 h (passive).
-                       ! Attente allongée de 8h à 14h 30m pour éviter vos heures d'indisponibilité
-
-   dimanche 11 octobre · Jour J
-     vers 12:30        Mise en place — Cuisson (1m)
-                       Ingrédients (base) (1 × 1m)
-     vers 12:30        Cuisson — Cuire (30m)
-                       Façonner la pâte (850 g) et cuire à 🔥230 °C pendant ⏲️ 30 min.
-
-   À régler
-     - Le travail de Jour J tombe le samedi 10 octobre au lieu du dimanche 11 octobre.
+   jeudi 15 octobre 20:00 — début mar. 13:45 · 3 passages en cuisine · aucune attente ajustée
+   vendredi 16 octobre 20:00 — début mer. 13:45 · 3 passages en cuisine · aucune attente ajustée
+   samedi 17 octobre 20:00 — début jeu. 13:45 · 3 passages en cuisine · aucune attente ajustée
+   ...
+   jeudi 15 octobre 12:30 — impossible. Mise en place — Biscuit, vers mar. 06:15, tombe quand vous n'êtes pas disponible, ... (+2)
    ```
 
-   Sans contrainte de disponibilité, un pointage minimal de 8 heures aurait positionné le pétrissage à 4 h 10 le dimanche matin. L'ordonnanceur a automatiquement étiré le pointage à 14 h 30 : le pétrissage s'achève ainsi à 22 h le samedi soir, juste avant le début de votre indisponibilité. L'ajustement est explicité directement sous la tâche passive concernée. Les horaires opérationnels sont arrondis aux cinq minutes les plus proches (« vers ») pour faciliter l'exécution en cuisine.
+   Les créneaux compatibles sont présentés en priorité (ceux qui demandent le moins d'ajustements de repos, puis le moins de passages en cuisine, puis les plus proches). Pour chaque créneau non retenu, Gram détaille la contrainte bloquante.
 
-   La section « À régler » (`SESSION_DAY_MISMATCH`) constitue un signal d'information plutôt qu'une erreur bloquante : le travail actif de la recette déborde sur le samedi alors que la recette ne déclarait pas explicitement de calendrier multi-jours. Dans le cas d'une fermentation nocturne, ce comportement est attendu. Pour formaliser ce découpage dans la recette, vous pouvez ancrer la section amont (`## Pâte ~{-1d}`) : le samedi devient formellement le jour J-1 et le diagnostic disparaît. Attention toutefois : une ancre fixe une échéance stricte (la pâte devra être prête le samedi à la même heure que le service cible), ce qui neutralise l'allongement élastique de la pointage. Consultez [Jours et heures](/fr/docs/reference/syntax/times/#jours-et-heures).
+   L'option `--meal-times` remplace les horaires par défaut (`12:30,20:00`). Pour enregistrer vos créneaux favoris une fois pour toutes, vous pouvez définir la propriété `mealTimes` dans votre fichier `.gram/config.yaml`.
 
-4. ### Affiner les plages de disponibilité et les exceptions
+   > [!TIP]
+   > Si vous ne fournissez aucune heure de service, `gram plan entremets.gram` calcule simplement l'heure de dégustation la plus précoce possible si vous commencez immédiatement.
 
-   Les disponibilités peuvent varier selon les jours de la semaine ou les dates spécifiques. Vous pouvez répéter l'option `--available` :
+3. ### Générer le planning de préparation
+
+   Une fois votre heure de service choisie, demandez à Gram de calculer le planning complet :
 
    ```bash
-   gram plan pain.gram --serve "2026-10-11 13:00" \
-     --available 08:00-22:00 \
-     --available sat=09:00-23:00 \
-     --available 2026-10-09=none
+   gram plan entremets.gram --serve "2026-10-17 20:00" --tz Europe/Paris --available 08:00-22:00 \
+     --stock ./bases/glacage-blanc.gram
    ```
 
-   `sat=...` cible un jour de la semaine (`mon` … `sun`), tandis que `2026-10-09=none` déclare une date d'indisponibilité totale. Plusieurs créneaux peuvent être combinés sous une même clé, séparés par des virgules (`sat=08:00-09:00,18:00-22:00`). Lorsqu'une contrainte ne peut être résolue (par exemple si une durée passive est fixe ou si la fourchette est trop resserrée), la fiche de production liste les diagnostics sous la section « À régler » en proposant des pistes de remédiation. Consultez [Diagnostics et contraintes non résolues](/fr/docs/explanation/planning-in-real-time/#diagnostics-et-contraintes-non-résolues).
+   - `--serve` : la date et l'heure cibles du repas.
+   - `--available` : vos plages de présence en cuisine (répétable, par exemple `sat=09:00-23:00` ou `2026-10-09=none`).
+   - `--tz` : votre fuseau horaire IANA (définissable de façon permanente via `gram config set timezone Europe/Paris`).
+   - `--stock` : indique qu'une préparation (ici le glaçage) est déjà disponible au congélateur. Gram ne la replanifie pas et l'annote simplement comme étant « en stock ».
 
-5. ### Exporter vers un calendrier (.ics)
+   ```text
+   Planning de préparation — Entremets pistache framboise
+   Pour le samedi 17 octobre à 20:00 · 6 parts
+   3 jours · 3 passages en cuisine · 45m de travail en tout
+
+   JEU. 15  ▮ 13:45 – 14:00 Biscuit, Insert
+            ┆ Biscuit : Cuire 12m
+            ┆ Insert : Congeler 12h à 72h
+   VEN. 16  ▮ 13:35 – 14:00 Mousse
+            ┆ Mousse : Monter l'entremets 12h à 48h
+   SAM. 17  ▮ 13:55 – 14:00 Finition
+            ┆ Finition : Décongeler 6h
+            ★ 20:00         Servir
+   ```
+
+4. ### Décrypter le planning
+
+   La sortie se compose de deux parties complémentaires :
+
+   #### La vue chronologique d'ensemble (en-tête)
+   Elle synthétise l'ensemble du calendrier : chaque passage actif en cuisine (`▮`), les temps d'attente passifs sous-jacents (`┆`), et le moment du service (`★`).
+
+   #### Le détail jour par jour
+   Chaque passage dispose ensuite de sa propre fiche d'action, rangée sous la journée où il a lieu :
+
+   - **Mise en place** : les ingrédients requis, les préparations issues d'un passage précédent (`Biscuit, fait jeudi`), les éléments préexistants (`glaçage, en stock`) et le matériel nécessaire, mentionné une seule fois par passage avec le nombre d'exemplaires et la taille quand la recette les précise (`moule à tarte (24cm)`, `plaque ×2`). Quand la [standardisation des masses](/fr/docs/reference/api/analyzer/) est activée, un ingrédient écrit en tasses, en cuillères ou en millilitres affiche aussi son poids (`farine 2 cup · 260.3 g`), additionné quand plusieurs sections l'utilisent. Cochez-les au fur et à mesure de vos préparatifs. Leur disposition varie selon votre [mode de mise en place](/fr/docs/explanation/mise-en-place-and-planning/) : par section (mode par défaut), chaque section forme un poste avec sa propre mise en place, juste au-dessus de ses étapes, et le matériel n'est mentionné qu'une fois, lors de la première section qui l'utilise ; par journée de travail, un bloc en haut de passage cumule les ingrédients bruts (ex. `sucre 90 g (60 + 30)`) ; en amont (`upfront`), ce bloc rassemble tous les ingrédients bruts dès le premier passage. Une préparation, quant à elle, est toujours listée lors du premier passage où elle est utilisée.
+   - **Exécution** : les étapes de chaque section, détaillées comme dans la recette et numérotées à l'identique, avec leur action, leurs températures et leurs minuteurs, ainsi que l'heure à laquelle la section commence (`Début : 13:40`, uniquement lorsque le planning comporte une heure de service). Une section importée indique son fichier source, une section qui se poursuit depuis un passage précédent porte la mention « suite », et une note isolée reste là où la recette la place. La mise en place comporte des cases à cocher, contrairement aux étapes.
+   - **En partant** : les processus passifs qui continuent sans surveillance et l'horaire précis de votre prochain passage en cuisine.
+   - **Possible dès... / Début non avançable** : indique la marge d'anticipation possible pour ce passage sans perturber le reste de la recette, ou nomme l'attente qui bloque son horaire (par exemple un repos de 2 h qui doit se terminer au service).
+   - **Ajustements de repos** : tout temps d'attente passif que le moteur a dû prolonger ou raccourcir pour respecter vos plages disponibles est signalé en tête de la journée concernée.
+
+   ```text
+   VENDREDI 16 OCTOBRE  13:35 → 14:00
+     Possible dès 08:00.
+     MISE EN PLACE
+       [ ] crème 250 g
+       [ ] sucre 30 g
+       [ ] lait 100 g
+       [ ] Biscuit, fait jeudi
+       [ ] Insert, fait jeudi
+       [ ] batteur
+       [ ] cercle de 20 cm
+     EXÉCUTION
+       MOUSSE (Début : 13:40)
+         1. [Monter] Monter la crème avec le sucre et le lait.
+         2. [Assembler] Incorporer le biscuit et l'insert, dans le cercle de 20 cm.
+     EN PARTANT
+       Mousse : Monter l'entremets 12h à 48h, jusqu'à 02:00
+     Prochain passage : samedi 13:55
+   ```
+
+   Cet exemple illustre le mode par journée de travail ; en mode par section, chaque section forme un bloc distinct avec sa mise en place au-dessus de ses étapes.
+
+   Si certaines contraintes s'avèrent impossibles à résoudre (démarrage dans le passé, travail hors de vos plages autorisées ou repos incompatible), Gram les regroupe dans une section **« À régler »** en en-tête. Pour en savoir plus, consultez [Diagnostics et contraintes non résolues](/fr/docs/explanation/planning-in-real-time/#diagnostics-et-contraintes-non-résolues).
+
+5. ### Exporter, imprimer ou synchroniser le planning
+
+   Vous pouvez facilement exploiter ce planning en cuisine ou dans vos outils habituels :
 
    ```bash
-   gram plan pain.gram --serve "2026-10-11 13:00" --available 08:00-22:00 --ics pain.ics
+   # Imprimer la recette suivie du planning complet
+   gram print entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --with-sheet
+
+   # Exporter au format Markdown avec le planning
+   gram export entremets.gram --format md --serve "2026-10-17 20:00" --with-sheet
+
+   # Synchroniser les passages dans votre agenda électronique
+   gram plan entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --ics entremets.ics
    ```
 
-   Le fichier iCalendar généré comporte un événement pour chaque tâche, assorti d'une alarme 5 minutes avant chaque étape exigeant du travail actif. Les événements sont encodés en UTC (ISO 8601) : votre application de calendrier les restitue automatiquement dans votre fuseau horaire local.
-
-6. ### Annoter la recette avec les horaires réels
-
-   Tandis que la fiche de production privilégie l'ordre chronologique strict, la recette conserve la structure de ses sections. Pour afficher la recette enrichie des horaires calculés étape par étape, transmettez les mêmes options aux commandes de consultation et d'export :
-
-   ```bash
-   gram view pain.gram --serve "2026-10-11 13:00" --available 08:00-22:00
-   gram export pain.gram --format md --serve "2026-10-11 13:00" --available 08:00-22:00
-   ```
-
-   La vue annotée affiche l'heure exacte en regard de chaque étape, le jour de production lors des changements de date, les ajustements de durées passives, ainsi qu'un récapitulatif en en-tête mentionnant l'heure de service et les diagnostics éventuels. Vous pouvez ajouter l'option `--with-sheet` aux commandes `gram export` ou `gram print` pour concaténer la fiche de production à la suite de la recette au sein d'un document unique. Dans le playground interactif, l'aperçu et le rendu Markdown intègrent automatiquement ces annotations dès lors qu'une heure de service est renseignée dans le panneau « Plan ».
-
-7. ### Sélectionner le format d'export
-
-   `--format md` génère un document Markdown prêt à être intégré dans un gestionnaire de notes, `--format html` produit un fragment web autonome, et `--format json` renvoie la structure complète du plan et de la fiche sous forme de données brutes. Les libellés de la fiche de production respectent la langue de votre projet (configurée via la clé `language` de votre fichier `.gram/config.yaml`).
+   - **Impression papier (`--with-sheet`)** : ajoute le planning de préparation à la suite de la recette dans un document unique (avec saut de page par journée et cases à cocher).
+   - **Agenda électronique (`--ics <fichier>`)** : génère un fichier iCalendar avec un événement pour chaque passage en cuisine, une alarme de rappel en amont, et la liste des tâches et ingrédients dans la description. Les horaires sont encodés en UTC et automatiquement ajustés par votre application d'agenda à votre fuseau local.
+   - **Formats de restitution (`--format`)** : utilisez `--format md` pour vos carnets de notes en Markdown, `--format html` pour intégrer un fragment web autonome, ou `--format json` pour récupérer l'objet de données structuré (`{ plan, runSheet }`, voir [Formats de données](/fr/docs/reference/api/data-formats/#5-le-planning-de-préparation)). Les libellés respectent la langue configurée dans votre projet (`language`).
 
 </Steps>
 
-## Dans le playground
+## Adapter le planning en cas de retard ou d'imprévu
 
-Basculez sur le diagramme de Gantt ou l'onglet « Fiche de production », ouvrez le volet « Plan », puis configurez l'heure de service cible, votre fuseau horaire et vos plages de disponibilité. Le diagramme de Gantt s'adapte instantanément sur l'échelle calendaire réelle, grise vos périodes d'indisponibilité et met en évidence les durées passives qui ont fait l'objet d'un ajustement.
+Un planning d'ordonnancement n'est pas un état figé dans le marbre : c'est une projection calculée dynamiquement à partir de vos paramètres. 
 
-## Intégration programmatique
+Si un passage prend du retard ou si votre journée est décalée, relancez simplement la commande `gram plan` avec une heure de service légèrement plus tardive, ou utilisez `--find` pour recalculer les créneaux viables à partir de l'heure actuelle.
+
+## Dans le playground interactif
+
+Dans le studio en ligne, ouvrez le panneau « Plan », puis configurez votre heure de service cible, votre fuseau horaire et vos disponibilités :
+- L'onglet **Planning** affiche instantanément la chronologie calculée avec ses dates et heures réelles.
+- Le bouton **« Quand servir ? »** teste et propose automatiquement les créneaux optimaux.
+- Le bouton **« Prêt dès »** calcule l'heure de dégustation la plus rapide si vous démarrez maintenant.
+
+## Utilisation programmatique
+
+Vous pouvez également intégrer le moteur d'ordonnancement directement dans vos applications TypeScript :
 
 ```typescript
 import { compile } from '@gram-lang/kitchen';
@@ -123,26 +183,36 @@ import { project, runSheet } from '@gram-lang/scheduler';
 import { runSheetToText } from '@gram-lang/renderer';
 
 const compiled = compile(ast);
-const plan = project([{ graph: compiled.tasks, title: compiled.title ?? undefined }], {
-  serveAt: '2026-10-11T13:00',
+const context = {
+  serveAt: '2026-10-17T20:00',
   timeZone: 'Europe/Paris',
   availability: { daily: [{ start: '08:00', end: '22:00' }] },
-});
+};
+const plan = project([{ graph: compiled.tasks, title: compiled.title ?? undefined }], context);
 
-console.log(runSheetToText(runSheet(plan), compiled, { lang: 'fr' }));
+// En associant le graphe de tâches et le contexte d'ordonnancement, chaque passage dispose de sa marge calculée.
+const sheet = runSheet(plan, { graph: compiled.tasks, context });
+console.log(runSheetToText(sheet, compiled));
 ```
+
+Le texte ci-dessus n'est qu'un mode de présentation parmi d'autres : l'ordonnanceur fournit un modèle de données complet. Pour concevoir vos propres composants graphiques, consultez le guide [Construire sa propre interface](/fr/docs/how-to/build-custom-ui/).
 
 ## Ressources associées
 
 <CardGrid>
   <LinkCard
-    title="Planifier en heures réelles"
-    description="Comprenez comment l'algorithme de rétroplanning cale les repos passifs sur le calendrier."
+    title="L'ordonnanceur"
+    description="Journées, passages, fils d'exécution et marges : découvrez comment l'ordonnanceur calcule et structure le planning."
+    href="/fr/docs/explanation/engine/scheduler/"
+  />
+  <LinkCard
+    title="Planifier en temps réel"
+    description="Comment l'heure de service, vos plages de disponibilité et les fourchettes de repos se transforment en un calendrier concret."
     href="/fr/docs/explanation/planning-in-real-time/"
   />
   <LinkCard
-    title="Référence de l'API Scheduler"
-    description="Découvrez layout(), project() et l'ensemble des options du moteur @gram-lang/scheduler."
+    title="Référence de l'API scheduler"
+    description="Documentation des fonctions runSheet(), project(), findServeTimes() et earliestServe()."
     href="/fr/docs/reference/api/scheduler/"
   />
 </CardGrid>

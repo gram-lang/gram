@@ -7,7 +7,7 @@ import { diffRecipes } from "../src/diff";
 const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
 	perSection: scheduleFor(c, "perSection")!,
 	upfront: scheduleFor(c, "upfront")!,
-	perSession: scheduleFor(c, "perSession")!,
+	perDay: scheduleFor(c, "perDay")!,
 });
 
 const compileRecipe = (src: string) => compile(getAST(src));

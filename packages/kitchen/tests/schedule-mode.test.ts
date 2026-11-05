@@ -13,7 +13,7 @@ import {
 const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
 	perSection: scheduleFor(c, "perSection")!,
 	upfront: scheduleFor(c, "upfront")!,
-	perSession: scheduleFor(c, "perSession")!,
+	perDay: scheduleFor(c, "perDay")!,
 });
 
 describe("schedule modes", () => {
@@ -21,7 +21,7 @@ describe("schedule modes", () => {
 		expect([...MISE_EN_PLACE_MODES]).toEqual([
 			"perSection",
 			"upfront",
-			"perSession",
+			"perDay",
 		]);
 		expect(DEFAULT_MISE_EN_PLACE_MODE).toBe("perSection");
 	});

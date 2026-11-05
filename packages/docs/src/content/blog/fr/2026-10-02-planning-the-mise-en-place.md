@@ -26,9 +26,9 @@ Le deuxième point concernait le planning « tout au début ». Il plaçait tout
 
 Désormais, un intermédiaire est toujours sorti juste avant la section qui l'utilise, dans tous les plannings. « Tout au début » devient un vrai mélange : les ingrédients bruts et le matériel d'abord, les intermédiaires au fur et à mesure qu'ils apparaissent. Rien ne change pour une recette sans intermédiaire.
 
-### Travailler par sessions
+### Travailler par journée
 
-Restait le cas que je n'avais pas résolu. Un professionnel ne planifie ni section par section, ni tout d'un coup : il travaille par **sessions**. Sur une recette en trois jours, on prépare chaque jour ce dont ce jour a besoin, pas forcément pour toutes les étapes de tous les jours. Et au cours d'une journée, certains intermédiaires n'existent qu'à ce moment-là.
+Restait le cas que je n'avais pas résolu. Un professionnel ne planifie ni section par section, ni tout d'un coup : il travaille par **journée de travail**. Sur une recette en trois jours, on prépare chaque jour ce dont ce jour a besoin, pas forcément pour toutes les étapes de tous les jours. Et au cours d'une journée, certains intermédiaires n'existent qu'à ce moment-là.
 
 La réponse que j'ai retenue n'ajoute aucune syntaxe : un troisième choix de lecture, **par journée de travail**. Les jours viennent de quelque chose que vous écrivez déjà, les ancres de rétroplanning :
 
@@ -42,6 +42,6 @@ En l'essayant sur une tarte vanille en quatre jours, j'ai aussi appris quelque c
 
 ### Essayez-le sur vos recettes
 
-Si vous avez une recette qui se travaille sur plusieurs jours ou en plusieurs temps, essayez `gram view recette.gram --mise-en-place per-session`, ou le nouveau choix « Par journée de travail » du playground. Si cela ne correspond pas à votre façon d'organiser les jours, envoyez-la-moi : ce sont les vraies recettes qui me diront si les jours devraient venir d'ailleurs que des ancres.
+Si vous avez une recette qui se travaille sur plusieurs jours ou en plusieurs temps, essayez `gram view recette.gram --mise-en-place per-day`, ou le nouveau choix « Par journée de travail » du playground. Si cela ne correspond pas à votre façon d'organiser les jours, envoyez-la-moi : ce sont les vraies recettes qui me diront si les jours devraient venir d'ailleurs que des ancres.
 
 > **Mise à jour avant la sortie de la 1.4.0 :** la règle des journées a changé depuis ce billet. Seule une ancre **en jours** (`~{-1d}`, `~{-2d}`) ouvre une journée de travail ; une ancre en heures (`~{-36h}`, `~{-26h}`) est une échéance à l'intérieur de la journée où tombe la section, jamais une journée à part entière. Une section sans ancre prend le jour de l'ancre en jours la plus lointaine parmi les sections qui la suivent, et pour garder un fond et le sirop qui en est fait sur le même jour, on n'ancre que le dernier. La page [Mise en place et planning](/docs/explanation/mise-en-place-and-planning/) donne les règles actuelles.

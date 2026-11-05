@@ -1,11 +1,15 @@
 import { type Interval, availableIntervals, gapsBetween } from "./availability";
 import type { TimerTask } from "./graph";
 import { type LayoutResult, layout } from "./layout";
-import { DEFAULT_REST_CHOICE, type RestChoice } from "./mode";
+import {
+	DEFAULT_MISE_EN_PLACE_MODE,
+	DEFAULT_REST_CHOICE,
+	type RestChoice,
+} from "./mode";
 import type {
 	ProjectedBlock,
 	ProjectedPlan,
-	ProjectedSession,
+	ProjectedDay,
 	ProjectionContext,
 	ProjectionDiagnostic,
 	ProjectionInput,
@@ -292,7 +296,7 @@ export function project(
 			endLocal: toLocalIso(at(end), timeZone),
 		} as ProjectedBlock;
 	};
-	const sessions: ProjectedSession[] = schedule.sessions.map((s) => ({
+	const workingDays: ProjectedDay[] = schedule.days.map((s) => ({
 		day: s.day,
 		start: toUtcIso(at(s.start)),
 		end: toUtcIso(at(s.end)),
@@ -302,12 +306,21 @@ export function project(
 	}));
 	plan.recipes.push({
 		...(input.title !== undefined && { title: input.title }),
+		miseEnPlace: options.miseEnPlace ?? DEFAULT_MISE_EN_PLACE_MODE,
 		blocks: schedule.blocks.map(dated),
-		sessions,
+		days: workingDays,
 	});
 
 	plan.diagnostics.push(
-		...sessionMismatches(schedule, offset, serve, timeZone),
+		...dayMismatches(
+			schedule,
+			offset,
+			serve,
+			timeZone,
+			// `upfront` is one working day for the whole recipe, rests included: it
+			// starts on its day and is meant to run on, so only its start counts.
+			options.miseEnPlace === "upfront",
+		),
 	);
 
 	if (context.now !== undefined && schedule.blocks.length > 0) {
@@ -334,24 +347,25 @@ export function project(
 
 /**
  * A working day `d` is meant to fall on the calendar day `d` days before the
- * service. A session whose hands-on work starts or ends on another one says so.
+ * service. A working day whose hands-on work starts or ends on another one says so.
  */
-function sessionMismatches(
+function dayMismatches(
 	schedule: Schedule,
 	offset: number,
 	serve: number,
 	timeZone: string,
+	startOnly = false,
 ): ProjectionDiagnostic[] {
 	const serveDate = toLocal(serve, timeZone).date;
 	const out: ProjectionDiagnostic[] = [];
-	for (const s of schedule.sessions) {
+	for (const s of schedule.days) {
 		const expected = addDays(serveDate, -s.day);
-		const dates = [s.start, s.end].map(
+		const dates = (startOnly ? [s.start] : [s.start, s.end]).map(
 			(t) => toLocal(t + offset, timeZone).date,
 		);
 		const actual = dates.find((d) => d !== expected);
 		if (actual !== undefined && daysBetween(expected, actual) !== 0) {
-			out.push({ code: "SESSION_DAY_MISMATCH", day: s.day, expected, actual });
+			out.push({ code: "DAY_MISMATCH", day: s.day, expected, actual });
 		}
 	}
 	return out;

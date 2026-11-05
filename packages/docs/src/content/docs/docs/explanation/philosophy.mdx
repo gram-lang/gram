@@ -15,7 +15,7 @@ Cooking is a bit like an algorithm: you take raw ingredients as input and output
 
 I've always loved the idea of writing recipes in plain text, heavily inspired by pioneering projects like the excellent [Cooklang](https://cooklang.org). Cooklang is fantastic for quick, straightforward home recipes. But when things get a bit more complex—like professional pastry formulas with multiple sub-components, baker's math, or tricky scheduling—relying entirely on natural language can get messy. 
 
-Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced visual presentations: production run sheets, interactive Gantt timelines, tabular flowcharts, and calendar exports.
+Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced presentations: a work plan for the kitchen, tabular flowcharts, and calendar exports. The engine computes; the views, like the work plan, only show what it computed.
 
 I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic**, **physical accuracy**, **modular composition**, and **predictive scheduling** into your recipe writing:
 
@@ -53,7 +53,7 @@ The Gram ecosystem gives you everything you need to treat recipes like software:
     **`@gram-lang/cli`**: Compile, scale, schedule, diff, and manage your ingredient database straight from your terminal.
   </Card>
   <Card title="Renderer" icon="document">
-    **`@gram-lang/renderer`**: Instantly generate Semantic HTML, Gantt charts, production run sheets, and Markdown from your compiled JSON.
+    **`@gram-lang/renderer`**: Instantly generate Semantic HTML, work plans, and Markdown from your compiled JSON: views of data you can also draw yourself.
   </Card>
 </CardGrid>
 

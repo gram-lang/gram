@@ -168,15 +168,15 @@ gantt
 
 L'étape `Préparer le pain` est automatiquement programmée pendant la cuisson de la tarte (entre la 20e et la 25e minute) : le pain est ainsi prêt à enfourner dès que la tarte libère le four à la 25e minute.
 
-## Ancres temporelles, sessions et dépendances
+## Ancres temporelles, journées de travail et dépendances
 
 L'ancre de rétroplanning d'une section (`~{-2d}`) exprime une **échéance impérative** : le travail de cette section doit être achevé à ce moment précis, compté à rebours depuis l'heure de service. Entre deux sections ancrées, les étapes intermédiaires s'alignent automatiquement par rétro-propagation.
 
 Quelques règles essentielles pour modéliser des recettes s'étendant sur plusieurs jours :
 
 - **Ancrez en jours calendaires (`~{-Nd}`)** : le découpage en journées de travail repose exclusivement sur les ancres exprimées en jours (`~{-1d}`, `~{-2d}`). Une section sans ancre est rattachée au jour de l'ancre en jours la plus lointaine parmi les sections avales.
-- **Un temps passif long n'initie pas de nouvelle journée** : une étape comportant `~_{48h}` décale bien l'étape vers l'amont sur le diagramme de Gantt, mais ne crée pas de session J-2 en l'absence d'une ancre de section explicite (`## Crème ~{-2d}`).
-- **Une ancre en heures (`~{-Nh}`) ne découpe pas de session** : une valeur comme `~{-18h}` ou `~{-36h}` fixe une échéance stricte au sein de la journée, mais n'ouvre pas de session autonome. Pour débuter formellement la veille, utilisez l'ancre `~{-1d}`.
+- **Un temps passif long n'initie pas de nouvelle journée** : une étape comportant `~_{48h}` décale bien l'étape vers l'amont sur la chronologie, mais ne crée pas de journée J-2 en l'absence d'une ancre de section explicite (`## Crème ~{-2d}`).
+- **Une ancre en heures (`~{-Nh}`) n'ouvre pas de journée de travail** : une valeur comme `~{-18h}` ou `~{-36h}` fixe une échéance stricte au sein de la journée, mais n'ouvre pas de journée autonome. Pour débuter formellement la veille, utilisez l'ancre `~{-1d}`.
 - **Sections successives au cours du même jour** : ancrez uniquement la dernière section (`## Tarte ~{-1d}`) et laissez les sections amont sans ancre. Assigner la même ancre à deux sections interdépendantes générerait un diagnostic de paradoxe temporel.
 
 ## Ancrage modulaire (`@use ... ~{-1d}`)
@@ -214,7 +214,11 @@ Pour exploiter toute la puissance de l'ordonnancement ALAP de Gram, appliquez ce
 
 Grâce au calcul déterministe des bornes temporelles `start` et `end` par le moteur ALAP, les interfaces utilisateur n'ont aucune logique de calcul de dates à implémenter : elles exploitent directement les données du graphe planifié.
 
-La représentation par diagramme de Gantt met en relief la synchronisation des tâches passives et l'imbrication du travail actif. Vous pouvez explorer cette dynamique en temps réel dans le **[Playground officiel de Gram](/fr/play/)** en activant la vue chronologique.
+Une représentation chronologique (à l'image des diagrammes `gantt` Mermaid ci-dessus) met parfaitement en évidence le chevauchement des temps passifs et l'insertion du travail actif en temps masqué. Ce sont exactement ces mêmes données que met en scène le [planning de préparation](/fr/docs/how-to/plan-a-meal/). Vous pouvez tester et visualiser cet ordonnancement en direct dans le **[Playground de Gram](/fr/play/)**.
+
+### Ce que l'ALAP implique pour la marge
+
+Puisque la planification s'effectue **au plus tard**, un passage en cuisine ne peut qu'être **avancé**, jamais différé sans repousser directement l'heure de service. L'indication de marge du planning de préparation (« Possible dès 18:00 ») quantifie ainsi l'anticipation maximale admissible pour un passage tant que les temps d'attente qui l'encadrent respectent leurs fourchettes de durée. Une recette modélisée avec des durées passives flexibles bénéficie de marges d'anticipation, tandis qu'une recette aux attentes strictement figées n'en dispose d'aucune. Pour approfondir le calcul de ces fenêtres, consultez la section dédiée dans [Le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
 
 ## Ressources associées
 

@@ -138,9 +138,9 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabNutritionDesc:
 			"Standardize measurements and calculate nutrition using a local database generated automatically from your workspace.",
 		tabNutritionLink: "/docs/how-to/manage-database/",
-		tabScheduleTitle: "Smart scheduling (ALAP)",
+		tabScheduleTitle: "Your plan, computed (ALAP)",
 		tabScheduleDesc:
-			"Extracts duration metadata to build an execution timeline, scheduling passive tasks 'As Late As Possible'.",
+			"Gram computes your schedule from the durations you write: working backward from the service, as late as possible, it works out the days, the visits to the kitchen and what to take out.",
 		tabScheduleLink: "/docs/explanation/alap-scheduling",
 		tabScaleTitle: "Baker's Math & Precision",
 		tabScaleDesc:
@@ -461,9 +461,9 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabNutritionDesc:
 			"Standardisez vos mesures et calculez vos macros grâce à une base de données locale auto-générée à partir de vos fichiers.",
 		tabNutritionLink: "/fr/docs/how-to/manage-database/",
-		tabScheduleTitle: "Planification intelligente (ALAP)",
+		tabScheduleTitle: "Votre planning, calculé (ALAP)",
 		tabScheduleDesc:
-			"Visualisez votre rétroplanning. Gram détecte vos minuteries et planifie les tâches passives « As Late As Possible » (aussi tard que possible) pour réduire les temps morts en cuisine.",
+			"Gram calcule votre planning à partir des durées que vous écrivez : à rebours depuis le service, au plus tard, il en déduit les jours, les passages en cuisine et ce qu'il faut sortir.",
 		tabScheduleLink: "/fr/docs/explanation/alap-scheduling",
 		tabScaleTitle: "Le pourcentage du boulanger",
 		tabScaleDesc:

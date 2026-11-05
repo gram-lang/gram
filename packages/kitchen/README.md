@@ -5,7 +5,7 @@
 
 *Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
 
-The compiler for the Gram recipe language. It takes a typed Recipe AST (produced by `@gram-lang/parser`) and compiles it into a structured, minified recipe JSON (aggregating shopping lists, processing sections, and calculating Gantt-like timings).
+The compiler for the Gram recipe language. It takes a typed Recipe AST (produced by `@gram-lang/parser`) and compiles it into a structured, minified recipe JSON (aggregating shopping lists, processing sections, and laying out the task graph and the default schedule).
 
 ---
 

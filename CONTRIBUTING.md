@@ -52,7 +52,7 @@ Gram processes recipes through a five-stage pipeline where each package consumes
 | `packages/kitchen` | Compiler translating the AST into structured JSON, warnings, and schedules |
 | `packages/format` | Canonical source code formatter for `.gram` files |
 | `packages/analyzer` | Physical layer resolving mass normalization, unit conversion, and nutrition |
-| `packages/renderer` | Display engine converting compiled JSON to HTML, Markdown, and Gantt charts |
+| `packages/renderer` | Display engine converting compiled JSON to HTML, Markdown, and the work plan |
 | `packages/cli` | Command-line interface (`gram`) |
 | `packages/i18n` | Localization layer for units, categories, and prompts |
 | `packages/language-server` | LSP implementation for editor diagnostics and completions |

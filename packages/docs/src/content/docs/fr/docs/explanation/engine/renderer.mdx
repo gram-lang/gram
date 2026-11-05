@@ -1,6 +1,6 @@
 ---
 title: "Rendu et formats de sortie (@gram-lang/renderer)"
-description: "Comment @gram-lang/renderer transforme le JSON compilé en Markdown, HTML, document d'impression et diagramme de Gantt."
+description: "Comment @gram-lang/renderer transforme le JSON compilé en Markdown, HTML, document d'impression et planning de préparation : des vues des données du moteur."
 ---
 
 import Since from '../../../../../../components/Since.astro';
@@ -23,19 +23,27 @@ Produit un balisage HTML sémantique et accessible. L'export HTML repose sur un 
 ### 3. HTML pour impression (`toPrintHTML`)
 Génère un document HTML complet (`<!DOCTYPE html>`) autonome, intégrant sa propre feuille de style CSS optimisée pour l'impression (format A4, contrôle des sauts de page) et ses icônes SVG vectorielles. Conçu pour être ouvert dans un navigateur et imprimé directement sans aucune dépendance réseau externe. Contrairement à `toHTML`, les classes CSS et icônes sont verrouillées, mais les filtres de mise en forme (`formatDuration`, `formatFraction`, `hideStepQty`) restent entièrement configurables.
 
-### 4. Diagramme de Gantt (`toGanttHTML` + `attachGanttInteractivity`)
-Génère une chronologie interactive matérialisant les étapes actives, les minuteurs passifs et la compression des temps masqués sous forme de fragment HTML. L'intégration s'effectue en deux temps : `toGanttHTML` produit le balisage statique, tandis que la fonction `attachGanttInteractivity(container, options)` attache les écouteurs d'événements, les infobulles de survol et les bascules de mode côté navigateur via délégation DOM. Consultez la [référence de l'API renderer](/fr/docs/reference/api/renderer) pour le détail de `GanttRenderOptions` et `GanttInteractivityOptions`.
+### 4. Le planning de préparation (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) <Since v="1.4.0" />
+Constitue la **vue de référence de l'ordonnancement**, au même titre que la vue Recette constitue celle des instructions culinaires. Elle restitue fidèlement les structures calculées par le moteur (`runSheet()` de `@gram-lang/scheduler`) : le calendrier des journées, puis, pour chaque passage en cuisine, la mise en place, les étapes de chaque section détaillées avec leurs températures et leurs minuteurs, et les processus passifs en cours, en intégrant la marge d'anticipation et les temps d'attente ajustés. Les intitulés sont traduits selon l'option linguistique `lang`.
 
-L'option `miseEnPlace` (`"perSection"` par défaut, `"upfront"` ou `"perSession"`) détermine le positionnement de la mise en place, et l'option `rests` (`"shortest"` par défaut, `"balanced"` ou `"longest"`) fixe la durée des temps passifs exprimés en fourchette : le graphique trace la chronologie calculée par le graphe de tâches pour cette configuration (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)). La préparation de chaque section est représentée par un bloc en pointillés aux couleurs de la section (J-1, Jour J). Ces options pilotent également les durées totales et passives affichées dans les en-têtes HTML, Markdown et impression.
+Cette restitution sert d'implémentation de référence sans prétendre imposer une interface unique. Certains choix de présentation lui sont propres : un passage s'interrompt lors d'une attente d'au moins une heure (`VISIT_GAP_MINUTES`, défini dans le planificateur car il structure les données), une marge d'anticipation n'apparaît qu'à partir de 15 minutes, et la mise en place ainsi que les étapes sont extraites directement de la recette compilée. Pour permettre à une interface personnalisée de réutiliser cette logique sans la réécrire, trois fonctions utilitaires sont exposées :
 
-Le diagramme de Gantt peut également projeter la recette sur le calendrier réel via l'option `projection` (alimentée par `project()` de `@gram-lang/scheduler`). Le graphique trace alors les blocs réels du plan (les durées passives ajustées apparaissent avec une bordure distinctive et une note explicative), gradue son axe temporel selon l'horloge murale locale et masque les plages d'indisponibilité de l'utilisateur. Consultez [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/).
+- **`visitKit(data, sections, options)`** : extrait et agrège les ingrédients requis par les sections (avec le détail des cumuls), les préparations issues d'un passage antérieur, les bases en stock et les ustensiles nécessaires. Le planning, quant à lui, le décline en trois volets selon le mode de mise en place configuré dans la feuille de déroulement (`RunSheet`).
+- **`sectionProgram(data, section, stepIndexes)`** : indique, pour une section lors d'un passage, son titre ainsi que la première et dernière étape couvertes, avec le fichier source pour les sections importées.
+- **`sectionSteps(data, section, stepIndexes, options)`** : restitue les étapes exécutées par une section lors d'un passage, numérotées à l'identique de la vue Recette, en HTML, en Markdown et en texte brut, sans icônes. Une note isolée est rattachée à l'étape suivante.
+- **`describeRunSheet()`** : convertit l'intégralité du planning en une structure textuelle (`RunSheetModel`), exploitée par les quatre formateurs ainsi que par l'export iCalendar de la CLI.
 
-### 5. Fiche de production (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) <Since v="1.4.0" />
-Formate le plan de production issu de `project()` sous forme de feuille de route opérationnelle : découpage par journées de travail relatives au service (J-1, Jour J), étapes ordonnancées chronologiquement avec horaires arrondis à cinq minutes, annotations sur les durées passives ajustées et récapitulatif des contraintes non résolues. Les libellés respectent l'option linguistique `lang`. La fonction `describeRunSheet()` fournit cette même fiche sous forme d'objets de données structurés, facilitant l'export vers des formats tiers (comme le calendrier iCalendar de la CLI).
+Les vues de recette standard (`toHTML`, `toMarkdown`, `toPrintHTML`) se concentrent sur la réalisation culinaire (le *comment*) sans exposer l'ordonnancement temporel. En activant l'option `runSheet`, elles ajoutent le planning de préparation à la suite de la recette au sein d'un document unique. Consultez le guide [Créer une interface sur mesure](/fr/docs/how-to/build-custom-ui/) pour concevoir une vue planning personnalisée directement à partir des données.
+
+L'option `miseEnPlace` (`"perSection"` par défaut, `"upfront"` ou `"perDay"`) et l'option `rests` (`"shortest"` par défaut, `"balanced"`, `"longest"`) choisissent la chronologie dont les en-têtes des documents montrent les durées totale et passive (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)).
+
+:::note[Remplacement du diagramme de Gantt]
+Les fonctions `toGanttHTML` et `attachGanttInteractivity` sont dépréciées depuis la version 1.4.0 et seront retirées en 2.0.0 : plus aucune surface de Gram n'utilise de diagramme de Gantt. Consultez la page [Dépréciations](/fr/docs/how-to/deprecations/) pour plus de détails.
+:::
 
 ## Traversée unifiée (`RenderBackend`)
 
-En interne, les formateurs Markdown, HTML et Print HTML délèguent le parcours des données à une fonction orchestratrice centrale (`renderRecipe` dans `traversal.ts`), qui interagit avec l'interface `RenderBackend` propre à chaque format. Cette architecture garantit une parité absolue : titre, métadonnées, ingrédients, matériel, étapes d'instructions, notes et informations nutritionnelles sont systématiquement traités dans le même ordre. Le diagramme de Gantt fait exception à cette règle puisqu'il modélise une chronologie graphique plutôt qu'un document textuel séquentiel.
+En interne, les formateurs Markdown, HTML et Print HTML délèguent le parcours des données à une fonction orchestratrice centrale (`renderRecipe` dans `traversal.ts`), qui interagit avec l'interface `RenderBackend` propre à chaque format. Cette architecture garantit une parité absolue : titre, métadonnées, ingrédients, matériel, étapes d'instructions, notes et informations nutritionnelles sont systématiquement traités dans le même ordre. Le planning de préparation dispose de sa propre logique de traversée, puisqu'il s'articule autour de l'axe temporel plutôt que de l'ordre séquentiel des sections.
 
 ## Exemple d'utilisation
 
@@ -53,16 +61,18 @@ const recipe = {
     totalTime: 30,
     idleTime: 15,
     blocks: [],
-    sessions: [],
+    days: [],
   },
   shopping_list: [
-    { id: "farine", qty: 200, unit: "g" }
+    { id: "farine", name: "farine", qty: 200, unit: "g" }
   ],
   sections: [
     {
       title: "Préparation",
+      ingredients: [],
+      cookware: [],
       steps: [
-        { type: "text", value: "Tout mélanger au fouet." }
+        { type: "step", content: ["Tout mélanger au fouet."] }
       ]
     }
   ]
@@ -94,7 +104,7 @@ L'objet `RendererOptions` propose également les options `bakersReference`/`bake
   Bien que cet échappement neutralise les injections HTML brutes, `toMarkdown` n'effectue pas d'assainissement complet sur les schémas d'URL (ex. liens `javascript:`). Si vous affichez des recettes issues de sources non fiables, appliquez un assainisseur dédié (`DOMPurify` ou `rehype-sanitize`) sur le balisage final.
   :::
 - **Formatage des durées** : Convertit les durées brutes exprimées en minutes en libellés temporels fluides (`90` → `1h 30m`).
-- **Styles CSS intégrés** : Le paquet fournit la feuille de style `gram.css` (tokens clair/sombre pour l'ensemble des éléments) ainsi que `gantt.css` pour le diagramme temporel. L'export pour impression intègre directement ses styles dans l'en-tête HTML, sans feuille de style externe requise.
+- **Styles CSS intégrés** : Le paquet fournit la feuille de style `gram.css` (définissant les tokens clairs et sombres pour l'ensemble des composants, y compris le planning de préparation), ainsi que `gantt.css`, maintenue jusqu'à la version 2.0.0 pour le diagramme de Gantt déprécié. L'export pour impression intègre directement ses styles dans l'en-tête HTML, sans feuille de style externe requise.
 
 ## Consommation directe du JSON
 
@@ -107,7 +117,7 @@ Le JSON produit par `@gram-lang/analyzer` est typé et directement itérable : p
 <CardGrid>
   <LinkCard
     title="Référence de l'API Renderer"
-    description="Documentation complète de toMarkdown, toHTML, toPrintHTML et des diagrammes de Gantt."
+    description="Documentation complète de toMarkdown, toHTML, toPrintHTML et du planning de préparation."
     href="/fr/docs/reference/api/renderer/"
   />
   <LinkCard

@@ -6,6 +6,7 @@ description: "Comment le Serveur de Langage Gram implémente le LSP pour les dia
 Le Serveur de Langage Gram (`@gram-lang/language-server`) est le moteur d'analyse sous-jacent de l'intégration de Gram dans vos éditeurs de code. En implémentant le standard **Language Server Protocol (LSP)**, il fournit des fonctionnalités d'IDE avancées pour les fichiers `.gram` sur une multitude d'éditeurs (VS Code, Neovim, Helix, etc.).
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 ## Architecture
 
@@ -28,7 +29,7 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 
 | Capacité LSP | Implémentation Gram |
 |---|---|
-| **Diagnostics** | Remontée en temps réel des erreurs de syntaxe, des incohérences structurelles (dépendances circulaires) et des avertissements d'ordonnancement (`SESSION_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
+| **Diagnostics** | Remontée en temps réel des erreurs de syntaxe, des incohérences structurelles (dépendances circulaires) et des avertissements d'ordonnancement (`DAY_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
 | **Semantic Tokens** | Coloration sémantique pilotée par l'AST, permettant de distinguer avec précision les modificateurs, unités, températures et ingrédients composites. |
 | **Completion** | Autocomplétion contextuelle pour les ingrédients de la base de données, les unités canoniques et les variables intermédiaires. |
 | **Hover** | Affiche la composition nutritionnelle et les conversions automatiques volume-masse au survol des ingrédients. |
@@ -41,6 +42,16 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 | **Code Lens** | Injecte des actions interactives contextuelles au-dessus du document (affichage du panneau nutritionnel). |
 | **Document Symbol** | Alimente la vue Plan (*Outline*) de l'éditeur pour une navigation fluide au sein des sections de la recette. |
 | **Folding Range** | Permet de replier proprement le frontmatter YAML et les blocs de sections `##`. |
+
+## Notifications vers le client
+
+En complément des requêtes standardisées du protocole LSP, le serveur émet des notifications asynchrones contenant les vues pré-rendues d'une recette sous la forme d'un objet `{ uri, html }` :
+
+| Notification | Contenu |
+|---|---|
+| `gram/previewUpdated` | Rendu HTML de l'aperçu en direct, ou panneau d'erreur lorsque la recette ne compile pas. |
+| `gram/runSheetUpdated` | <Since v="1.4.0" /> Rendu HTML du planning de préparation découpé en jours relatifs (`J-2`, `J-1`, `Jour J`), consommé par la vue `Gram: Work Plan` de VS Code. |
+| `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> Rendu HTML du diagramme de Gantt historique. Émis jusqu'en version 2.0.0 pour préserver la compatibilité avec les clients tiers (l'extension officielle VS Code ne l'écoute plus). |
 
 ## Ressources associées
 

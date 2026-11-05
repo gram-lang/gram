@@ -31,7 +31,8 @@ Because this graph does not depend on user options, every combination of mise en
 |---|---|---|---|
 | **1. Relative timeline** | `layout(graph, options)` | The task graph, and optionally `{ miseEnPlace, rests }` | A `Schedule` (ordered blocks, relative working days, time totals) and diagnostics intrinsic to the recipe |
 | **2. Calendar projection** | `project(recipes, context)` | One or more graphs, a serving time, a time zone, and availability | A timestamped plan: each block with its local date and time, adjusted waits, unavailable periods, and unresolved conflicts |
-| | `runSheet(plan)` | The projected plan | The hierarchical structure of a production sheet |
+| | `runSheet(plan \| schedule, options)` | The projected plan, or a bare `Schedule` | The days, visits to the kitchen and threads of a work plan (see below) |
+| | `findServeTimes()`, `earliestServe()` | A graph, a context, a range of dates or "now" | The serving times that work, and the earliest one |
 
 Both functions are **strictly pure**: identical inputs always yield identical outputs, no system clock or implicit time zone is read, and the input graph remains immutable. `project()` accepts a list of recipes by design, but currently plans only the first one while emitting the `MULTI_RECIPE_UNSUPPORTED` diagnostic.
 
@@ -53,7 +54,7 @@ The engine implements the as-late-as-possible algorithm described in [ALAP sched
    Preparation work for each group of sections is inserted as dedicated tasks, and the backward pass runs again so that each preparation finishes precisely when the first step requiring it begins. Depending on the chosen strategy:
    - `"perSection"` places preparation right before each section;
    - `"upfront"` groups all preparations at the very start of the recipe;
-   - `"perSession"` places preparations at the beginning of each working day.
+   - `"perDay"` places preparations at the beginning of each working day.
 </Steps>
 
 Waits written as a range follow the strategy specified via `rests` (`"shortest"`, `"balanced"`, or `"longest"`). Active timers always take their nominal maximum duration, ensuring cooking uncertainties never delay the service.
@@ -68,12 +69,42 @@ Waits written as a range follow the strategy specified via `rests` (`"shortest"`
 
 Internal time is counted in continuous absolute minutes since the POSIX epoch. Local time display relies on `Intl.DateTimeFormat` with an explicit time zone. No third-party date library or implicit system clock is involved: the plan remains byte-for-byte identical regardless of host environment, and a 23-hour or 25-hour daylight saving transition day counts for its actual duration.
 
+## From the schedule to the work plan
+
+The engine produces **pure structural data**; the work plan is one way to display it. The `runSheet()` function turns a relative timeline or a calendar plan into a tree structure ready for rendering by any user interface, built around a standardized vocabulary:
+
+| Term | Definition |
+|---|---|
+| **Working day** | A working day dedicated to the recipe. Only a day anchor (`~{-2d}`, declared on a section or an imported `@use` module) creates a distinct working day. In the absence of day anchors, the recipe fits in a single working day. |
+| **Visit** | An active cooking period: a continuous sequence of manual hands-on steps unbroken by substantial idle periods (any passive rest of 60 minutes or longer, controlled by `VISIT_GAP_MINUTES`, marks the end of a visit). A working day may contain several visits. |
+| **Thread** (*fil*) | A passive process (baking, resting, proofing) initiated during a visit and continuing unattended after you leave the kitchen. |
+| **Adjustment** | A rest period lengthened or shortened during projection, within its declared range, to align active hands-on blocks with your available hours (`avoid-unavailable`). |
+| **Unresolved problem** | A diagnostic emitted during projection when a timing constraint cannot be satisfied. |
+| **Margin** | The window of anticipation by which a visit can be executed early, assuming all other visits are performed at their nominal scheduled times. |
+
+Every metric is calculated by the engine as relative minutes from serving time, whether in an abstract schedule or a concrete timestamped calendar.
+
+A visit's anticipation margin is guaranteed safe by construction:
+- Planning is computed as late as possible (ALAP), meaning a visit can only ever be shifted earlier;
+- Shifting it earlier shortens the preceding passive rest and lengthens the succeeding one;
+- Both bounds are strictly checked against their declared ranges and the nominal scheduled time of neighboring visits.
+
+Advancing one or several visits never invalidates the margin of another visit. The calculated margin is occasionally conservative, but mathematically always safe. Conversely, an actual execution delay (starting a visit after its scheduled time) invalidates the downstream schedule: because the engine does not automatically recalculate schedules in the background, you must run projection again with an updated serving target or starting time.
+
+How these details are presented, and with what editorial tone, is entirely up to the viewing layer. Gram's default [work plan](/docs/how-to/plan-a-meal/) splits a day whenever a passive rest reaches one hour, displays margins starting at 15 minutes (`WINDOW_MIN_MINUTES`), and reads equipment ("To take out") and tasks ("To do") directly from the compiled recipe. Custom applications are free to adopt different visual conventions using the exact same underlying data (see [Build a custom UI](/docs/how-to/build-custom-ui/)).
+
+### What the engine does not support
+
+- **One recipe at a time**: Planning a multi-recipe menu simultaneously with shared physical tracks is not yet supported (`MULTI_RECIPE_UNSUPPORTED`).
+- **No background live replanning**: Because scheduling is a deterministic, pure function of its inputs, an actual delay requires invoking the engine again with updated parameters.
+- **No arbitrary schedule decisions**: The engine evaluates candidate serving times provided by the user (`findServeTimes()` targeting usual meal times, or `earliestServe()` starting right now), reporting which slots succeed and why others fail.
+
 ## Two diagnostic families
 
 The engine strictly separates two categories of issues:
 
-- **Intrinsic recipe diagnostics**: detected during layout by `layout()` (`TIME_PARADOX`, `TRACK_CONTENTION`, `SESSION_OVERFLOW`). Kitchen transforms them into compiler warnings (`WarningCode`), enriched with section titles and source locations for display in editor tooling.
-- **Contextual projection diagnostics**: these only arise once the serving time and user availability are evaluated against the recipe (`ACTIVE_OUTSIDE_AVAILABILITY`, `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY`, `SESSION_DAY_MISMATCH`, `START_IN_PAST`, `MULTI_RECIPE_UNSUPPORTED`). They form part of the result returned by `project()` and are not compilation warnings.
+- **Intrinsic recipe diagnostics**: detected during layout by `layout()` (`TIME_PARADOX`, `TRACK_CONTENTION`, `DAY_OVERFLOW`). Kitchen transforms them into compiler warnings (`WarningCode`), enriched with section titles and source locations for display in editor tooling.
+- **Contextual projection diagnostics**: these only arise once the serving time and user availability are evaluated against the recipe (`ACTIVE_OUTSIDE_AVAILABILITY`, `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY`, `DAY_MISMATCH`, `START_IN_PAST`, `MULTI_RECIPE_UNSUPPORTED`). They form part of the result returned by `project()` and are not compilation warnings.
 
 ## In the pipeline
 
@@ -85,14 +116,14 @@ flowchart LR
     Project --> Sheet["📋 runSheet()<br/><i>production sheet</i>"]
 ```
 
-See the [scheduler API reference](/docs/reference/api/scheduler/) for complete function signatures and TypeScript types.
+Downstream views (the default work plan or custom UI components) sit **after** the engine and consume its data structures directly. See the [scheduler API reference](/docs/reference/api/scheduler/) for complete function signatures and TypeScript types.
 
 ## Related resources
 
 <CardGrid>
   <LinkCard
     title="Scheduler API reference"
-    description="Function signatures, options, and TypeScript types for layout(), project(), and runSheet()."
+    description="Function signatures, options, and TypeScript types for layout(), project(), runSheet() and the serving time search."
     href="/docs/reference/api/scheduler/"
   />
   <LinkCard
@@ -107,7 +138,7 @@ See the [scheduler API reference](/docs/reference/api/scheduler/) for complete f
   />
   <LinkCard
     title="Mise en place and planning"
-    description="How preparation costs and multi-day sessions interact with temporal planning."
+    description="How preparation costs and multi-day recipes interact with temporal planning."
     href="/docs/explanation/mise-en-place-and-planning/"
   />
 </CardGrid>

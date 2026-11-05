@@ -1,16 +1,10 @@
 {
+  "mode": "calendar",
   "serveAt": "2026-03-29T13:00",
   "timeZone": "Europe/Paris",
-  "diagnostics": [
-    {
-      "code": "SESSION_DAY_MISMATCH",
-      "day": 0,
-      "expected": "2026-03-29",
-      "actual": "2026-03-28"
-    }
-  ],
   "recipes": [
     {
+      "miseEnPlace": "perSection",
       "days": [
         {
           "date": "2026-03-28",
@@ -21,11 +15,13 @@
               "kind": "prep",
               "active": true,
               "section": 0,
+              "from": -1474,
+              "to": -1472,
+              "minutes": 2,
               "start": "2026-03-28T10:26:00Z",
               "end": "2026-03-28T10:28:00Z",
               "startLocal": "2026-03-28T11:26",
-              "endLocal": "2026-03-28T11:28",
-              "minutes": 2
+              "endLocal": "2026-03-28T11:28"
             },
             {
               "task": "s0.0",
@@ -33,11 +29,13 @@
               "active": true,
               "section": 0,
               "step": 0,
+              "from": -1472,
+              "to": -1470,
+              "minutes": 2,
               "start": "2026-03-28T10:28:00Z",
               "end": "2026-03-28T10:30:00Z",
               "startLocal": "2026-03-28T11:28",
-              "endLocal": "2026-03-28T11:30",
-              "minutes": 2
+              "endLocal": "2026-03-28T11:30"
             },
             {
               "task": "s0.1",
@@ -45,11 +43,13 @@
               "active": true,
               "section": 0,
               "step": 1,
+              "from": -1470,
+              "to": -1470,
+              "minutes": 0,
               "start": "2026-03-28T10:30:00Z",
               "end": "2026-03-28T10:30:00Z",
               "startLocal": "2026-03-28T11:30",
-              "endLocal": "2026-03-28T11:30",
-              "minutes": 0
+              "endLocal": "2026-03-28T11:30"
             },
             {
               "task": "s0.1.t0",
@@ -57,11 +57,52 @@
               "active": false,
               "section": 0,
               "step": 1,
+              "from": -1470,
+              "to": -30,
+              "minutes": 1440,
               "start": "2026-03-28T10:30:00Z",
               "end": "2026-03-29T10:30:00Z",
               "startLocal": "2026-03-28T11:30",
-              "endLocal": "2026-03-29T12:30",
-              "minutes": 1440
+              "endLocal": "2026-03-29T12:30"
+            }
+          ],
+          "visits": [
+            {
+              "start": -1474,
+              "end": -1470,
+              "sections": [
+                0
+              ],
+              "worked": [
+                0
+              ],
+              "sectionStarts": [
+                {
+                  "section": 0,
+                  "start": -1472,
+                  "startLocal": "2026-03-28T11:28"
+                }
+              ],
+              "tasks": [
+                "s0.prep",
+                "s0.0",
+                "s0.1"
+              ],
+              "startLocal": "2026-03-28T11:26",
+              "endLocal": "2026-03-28T11:30"
+            }
+          ],
+          "threads": [
+            {
+              "visit": 0,
+              "task": "s0.1.t0",
+              "section": 0,
+              "step": 1,
+              "from": -1470,
+              "to": -30,
+              "planned": 1440,
+              "fromLocal": "2026-03-28T11:30",
+              "toLocal": "2026-03-29T12:30"
             }
           ]
         },
@@ -74,11 +115,13 @@
               "kind": "prep",
               "active": true,
               "section": 1,
+              "from": -31,
+              "to": -30,
+              "minutes": 1,
               "start": "2026-03-29T10:29:00Z",
               "end": "2026-03-29T10:30:00Z",
               "startLocal": "2026-03-29T12:29",
-              "endLocal": "2026-03-29T12:30",
-              "minutes": 1
+              "endLocal": "2026-03-29T12:30"
             },
             {
               "task": "s1.0",
@@ -86,15 +129,53 @@
               "active": true,
               "section": 1,
               "step": 0,
+              "from": -30,
+              "to": 0,
+              "minutes": 30,
               "start": "2026-03-29T10:30:00Z",
               "end": "2026-03-29T11:00:00Z",
               "startLocal": "2026-03-29T12:30",
-              "endLocal": "2026-03-29T13:00",
-              "minutes": 30
+              "endLocal": "2026-03-29T13:00"
             }
-          ]
+          ],
+          "visits": [
+            {
+              "start": -31,
+              "end": 0,
+              "sections": [
+                1
+              ],
+              "worked": [
+                1
+              ],
+              "sectionStarts": [
+                {
+                  "section": 1,
+                  "start": -30,
+                  "startLocal": "2026-03-29T12:30"
+                }
+              ],
+              "tasks": [
+                "s1.prep.dough",
+                "s1.0"
+              ],
+              "startLocal": "2026-03-29T12:29",
+              "endLocal": "2026-03-29T13:00"
+            }
+          ],
+          "threads": []
         }
-      ]
+      ],
+      "totalWork": 35
+    }
+  ],
+  "adjustments": [],
+  "diagnostics": [
+    {
+      "code": "DAY_MISMATCH",
+      "day": 0,
+      "expected": "2026-03-29",
+      "actual": "2026-03-28"
     }
   ]
 }

@@ -1,8 +1,8 @@
 {
-  "title": "Anchors in hours stay in one session",
-  "slug": "anchors-in-hours-stay-in-one-session",
+  "title": "Anchors in hours stay in one working day",
+  "slug": "anchors-in-hours-stay-in-one-working-day",
   "meta": {
-    "title": "Anchors in hours stay in one session"
+    "title": "Anchors in hours stay in one working day"
   },
   "registry": {
     "ingredients": {
@@ -305,11 +305,11 @@
   ],
   "warnings": [
     {
-      "code": "SESSION_OVERFLOW",
+      "code": "DAY_OVERFLOW",
       "message": "Working day 0 (from section 'Marinade') starts 12.1 h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-1d}, or shorten the rest.",
       "loc": {
-        "start": 53,
-        "end": 160
+        "start": 57,
+        "end": 164
       },
       "section": "Marinade"
     },
@@ -610,7 +610,7 @@
         "end": 2163
       }
     ],
-    "sessions": [
+    "days": [
       {
         "day": 0,
         "start": 0,

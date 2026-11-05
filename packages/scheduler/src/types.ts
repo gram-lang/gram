@@ -74,7 +74,7 @@ export type ScheduleBlock =
  * before (`~{-1d}`), and so on. `start`/`end` bound its active work (passive
  * waiting is left out) and `sections` lists the sections prepared that day.
  */
-export interface ScheduleSession {
+export interface ScheduleDay {
 	day: number;
 	start: number;
 	end: number;
@@ -94,7 +94,7 @@ export interface Schedule {
 	preparationTime: number; // the mise en place, the sum of the `prep` tasks
 	idleTime: number; // totalTime - activeTime - preparationTime
 	blocks: ScheduleBlock[]; // sorted by start, then end
-	sessions: ScheduleSession[]; // one per working day, furthest day first
+	days: ScheduleDay[]; // one per working day, furthest day first
 }
 
 export interface TimeBreakdownItem {
@@ -200,10 +200,10 @@ export type SchedulingDiagnostic =
 			delay: number;
 	  }
 	| {
-			code: "SESSION_OVERFLOW";
-			/** The section of the session's earliest active work. */
+			code: "DAY_OVERFLOW";
+			/** The section of the working day's earliest active work. */
 			section: number;
 			day: number;
-			/** How far before the session's 24 h window its active work starts. */
+			/** How far before the working day's 24 h window its active work starts. */
 			overflowMinutes: number;
 	  };

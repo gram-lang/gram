@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { DEFAULT_MISE_EN_PLACE_MODE } from "@gram-lang/kitchen";
 import {
 	parseMiseEnPlaceSetting,
+	parseCommentsSetting,
 	parseRestsSetting,
 } from "../src/utils/mise-en-place-setting";
 
@@ -51,6 +52,27 @@ describe("parseRestsSetting", () => {
 			"longest",
 		]) {
 			expect(parseRestsSetting(bad)).toBe("shortest");
+		}
+	});
+});
+
+describe("parseCommentsSetting", () => {
+	it("reads show and hide", () => {
+		expect(parseCommentsSetting({ comments: "show" })).toBe("show");
+		expect(parseCommentsSetting({ comments: "hide" })).toBe("hide");
+	});
+
+	it("shows the comments for anything else, so a typo hides nothing", () => {
+		for (const bad of [
+			undefined,
+			null,
+			{},
+			{ comments: "" },
+			{ comments: "HIDE" },
+			{ comments: false },
+			{ comments: "none" },
+		]) {
+			expect(parseCommentsSetting(bad)).toBe("show");
 		}
 	});
 });

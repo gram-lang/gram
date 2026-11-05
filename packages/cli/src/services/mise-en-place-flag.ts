@@ -9,12 +9,12 @@ import { ExitCode, reportError, GramCLIError } from "../errors";
 const SCHEDULE_BY_FLAG: Record<string, MiseEnPlaceMode> = {
 	"per-section": "perSection",
 	upfront: "upfront",
-	"per-session": "perSession",
+	"per-day": "perDay",
 };
 
 export const MISE_EN_PLACE_FLAG_VALUES = Object.keys(SCHEDULE_BY_FLAG);
 
-export const MISE_EN_PLACE_FLAG_DESCRIPTION = `When the mise en place is planned: ${MISE_EN_PLACE_FLAG_VALUES.join(" | ")} (default: per-section — right before each section; upfront — all at the start; per-session — at the start of each working day). Changes the total and idle times.`;
+export const MISE_EN_PLACE_FLAG_DESCRIPTION = `When the mise en place is planned: ${MISE_EN_PLACE_FLAG_VALUES.join(" | ")} (default: per-section — right before each section; upfront — all at the start; per-day — at the start of each working day). Changes the total and idle times.`;
 
 /**
  * Reports and exits on an unusable value rather than throwing, like

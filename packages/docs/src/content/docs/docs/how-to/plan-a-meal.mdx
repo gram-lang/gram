@@ -1,6 +1,6 @@
 ---
 title: "Plan a meal"
-description: "From raw recipe to an operational run sheet and calendar: schedule Sunday lunch at 1 p.m., lay out tasks chronologically, and adjust passive durations to fit your availability."
+description: "Choose when to serve, get the work plan of a recipe (the days, the visits to the kitchen, what to take out), print it with the recipe and send it to your calendar."
 ---
 
 import Since from '../../../../components/Since.astro';
@@ -8,114 +8,174 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Since v="1.4.0" />
 
-You want to serve a country bread on Sunday at 1 p.m. The dough requires an overnight rise, you are only available to cook between 8 a.m. and 10 p.m., and you would rather avoid kneading at 4 a.m. This guide walks you through turning a recipe into a timestamped production run sheet, and exporting your schedule directly to your calendar.
+You want to serve a pistachio and raspberry entremets on Saturday at 8 p.m. It needs three days of work, a sponge and an insert made two days before, a glaze you may already have in the freezer, and you can cook between 8 a.m. and 10 p.m. This guide shows you how to turn a recipe into an actionable plan to follow in the kitchen or integrate into your calendar.
+
+The recipe says **how** to do things. The work plan says **when to come** and **what to take out**. Gram computes it directly from the recipe, so there is nothing to write twice.
 
 <Steps>
 
-1. ### Define passive durations as ranges
+1. ### Write the waits as ranges and anchor the days
 
-   A fixed passive duration (`~_{8h}`) will never shift. In contrast, a passive timer defined as a range (`~_{8-16h}`) provides temporal slack: Gram leverages this margin to push active work outside your overnight unavailability window.
+   A wait written as a range (`~_{12-72h}`) provides flexibility that Gram uses to adapt to your availability. A day anchor (`@use "..." as &sponge ~{-2d}` or `## Mousse ~{-1d}`) specifies the day on which a section or sub-recipe should be made.
 
    ```gram
    ---
-   title: Country bread
+   title: Pistachio raspberry entremets
+   portions: 6
    ---
 
-   ## Dough ->&dough
+   @use "./bases/pistachio-sponge.gram" as &sponge ~{-2d}
+   @use "./bases/raspberry-insert.gram" as &insert ~{-2d}
+   @use "./bases/white-chocolate-glaze.gram" as &glaze
 
-   [Mix] Mix @flour{500g} with @water{350ml} and @salt{10g}, then knead ~{20min}.
+   ## Mousse ->&mousse ~{-1d}
 
-   [Rise] Let it rise ~_{8-16h}.
+   [Whip] Whip @cream{250g} with @sugar{30g} and @milk{100g} using the #stand mixer{} ~{10min}.
 
-   ## Bake
+   [Assemble] Layer &sponge, &insert and the mousse in the #20 cm ring{} ~{10min}, then freeze ~_{12-48h}.
 
-   [Bake] Shape &dough{850g} and bake at ^{230C} for ~{30min}.
+   ## Finish
+
+   [Unmould] Unmould the entremets and cover it with &glaze ~{5min}.
+
+   [Thaw] Thaw in the fridge for ~_{6h}.
    ```
 
-   `~_{8-16h}` specifies that the fermentation is ready after 8 hours, yet remains viable for up to 16 hours. See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges).
+   See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges) and [Days and hours](/docs/reference/syntax/times/#days-and-hours).
 
-2. ### Specify target serving time and cooking availability
+   > [!TIP]
+   > **Name your steps with `[Action]`**: The work plan names steps and background threads after their actions (e.g. `Mousse : Assemble 12h to 48h` in the timeline and in the waits you leave running). Prefixing each step that carries a timer or wait with an `[Action]` ensures clear, descriptive labels there rather than raw durations or generic fallbacks like `Rest`.
+
+2. ### Choose when to serve
+
+   Not sure which day or time works best? Let Gram test your regular meal times over a target period:
 
    ```bash
-   gram plan bread.gram --serve "2026-10-11 13:00" --tz Europe/Paris --available 08:00-22:00
+   gram plan entremets.gram --find 2026-10-15/2026-10-19 --meal-times 12:30,20:00 \
+     --tz Europe/Paris --available 08:00-22:00
    ```
-
-   `--serve` specifies the target local date and time, `--tz` sets the reference IANA time zone, and `--available` establishes your default daily activity window. Without `--available`, Gram assumes that active cooking tasks can occur at any hour.
-
-   If you routinely cook in the same location, set your default time zone once instead of passing `--tz` every time: `gram config set timezone Europe/Paris` (stored in `.gram/config.yaml` or in your global user configuration). Otherwise, Gram falls back to your host machine's system time zone, which may produce unintended shifts on remote servers or when planning across time zones.
-
-3. ### Analyze the generated run sheet
 
    ```text
-   Production sheet — Country bread
-   Served Sunday, October 11 at 13:00
-
-   Saturday, October 10 · D-1
-     around 21:35      Mise en place — Dough (3m)
-                       Ingredients lookup (base) (3 × 1m)
-     around 21:40      Dough — Mix (20m)
-                       Mix flour (500 g) with water (350 ml) and salt (10 g), then knead ⏲️ 20 min.
-     around 22:00      Rise — Dough (14h 30m, until around Sun 12:30)
-                       Let it rise ⏳ 8-16 h (passive).
-                       ! Wait stretched from 8h to 14h 30m to stay out of your unavailable hours
-
-   Sunday, October 11 · Day D
-     around 12:30      Mise en place — Bake (1m)
-                       Ingredients lookup (base) (1 × 1m)
-     around 12:30      Bake — Bake (30m)
-                       Shape dough (850 g) and bake at 🔥230 °C for ⏲️ 30 min.
-
-   To fix
-     - The work of Day D falls on Saturday, October 10 instead of Sunday, October 11.
+   Thursday, October 15 20:00 — start Tue 13:45 · 3 visits to the kitchen · no wait adjusted
+   Friday, October 16 20:00 — start Wed 13:45 · 3 visits to the kitchen · no wait adjusted
+   Saturday, October 17 20:00 — start Thu 13:45 · 3 visits to the kitchen · no wait adjusted
+   ...
+   Thursday, October 15 12:30 — not possible. Mise en place — Sponge, around Tue 06:15, falls when you are not available, ... (+2)
    ```
 
-   Without availability constraints, an 8-hour rise would have scheduled kneading at 04:10 on Sunday morning. Gram automatically extended the rise to 14 h 30 min so that kneading finishes at 22:00 on Saturday night, right before your unavailable window. The adjustment is explicitly reported directly under the passive task. Timestamps are rounded to the nearest five minutes ("around") to facilitate kitchen execution.
+   Compatible options are listed first (prioritizing fewer adjusted waits, then fewer visits, then the earliest dates). For each incompatible slot, Gram explains the blocking constraint.
 
-   The "To fix" section (`SESSION_DAY_MISMATCH`) serves as an informative notice rather than a blocking error: active work extends to Saturday even though the recipe did not declare a multi-day schedule. For an overnight rise, this behavior is expected and can be safely ignored. If you prefer to formalize this split, anchor the upstream section (`## Dough ~{-1d}`): Saturday becomes day D-1 and the diagnostic disappears. Note that an anchor establishes a strict deadline (the dough must be ready on Saturday at the same time as service), which disables elastic expansion of the rise. See [Days and hours](/docs/reference/syntax/times/#days-and-hours).
+   The `--meal-times` flag replaces the default (`12:30,20:00`). To configure your preferred meal slots permanently, set the `mealTimes` list in `.gram/config.yaml`.
 
-4. ### Customize availability windows and exceptions
+   > [!TIP]
+   > If you do not provide any serving time, `gram plan entremets.gram` simply calculates the earliest possible serving time starting right now.
 
-   Availability can vary across days of the week or specific dates. You can repeat `--available`:
+3. ### Generate the work plan
+
+   Once you have chosen your serving time, ask Gram to compute the full schedule:
 
    ```bash
-   gram plan bread.gram --serve "2026-10-11 13:00" \
-     --available 08:00-22:00 \
-     --available sat=09:00-23:00 \
-     --available 2026-10-09=none
+   gram plan entremets.gram --serve "2026-10-17 20:00" --tz Europe/Paris --available 08:00-22:00 \
+     --stock ./bases/white-chocolate-glaze.gram
    ```
 
-   `sat=...` applies to a weekday (`mon` … `sun`), while `2026-10-09=none` declares complete unavailability on that calendar date. Multiple time slots can be grouped under a single key, separated by commas (`sat=08:00-09:00,18:00-22:00`). If a constraint cannot be met (for instance with a fixed passive timer or an overly narrow range), the run sheet lists the diagnostics under "To fix" along with actionable guidance. See [Diagnostics and unresolved constraints](/docs/explanation/planning-in-real-time/#diagnostics-and-unresolved-constraints).
+   - `--serve`: the target date and time of the meal.
+   - `--available`: when you can cook (repeatable, e.g. `sat=09:00-23:00`, `2026-10-09=none`).
+   - `--tz`: your IANA time zone (can be saved permanently via `gram config set timezone Europe/Paris`).
+   - `--stock`: indicates that a preparation (here the glaze) is already made in your freezer. Gram does not schedule it and flags it as "in stock".
 
-5. ### Export to calendar (.ics)
+   ```text
+   Work plan — Pistachio raspberry entremets
+   For Saturday, October 17 at 20:00 · 6 servings
+   3 days · 3 visits to the kitchen · 45m of work in all
+
+   THU 15   ▮ 13:45 – 14:00 Sponge, Insert
+            ┆ Sponge : Bake 12m
+            ┆ Insert : Freeze 12h to 72h
+   FRI 16   ▮ 13:35 – 14:00 Mousse
+            ┆ Mousse : Assemble 12h to 48h
+   SAT 17   ▮ 13:55 – 14:00 Finish
+            ┆ Finish : Thaw 6h
+            ★ 20:00         Serve
+   ```
+
+4. ### Read the plan
+
+   The output consists of two complementary parts:
+
+   #### The overview timeline (header)
+   Summarizes the entire schedule: each active visit to the kitchen (`▮`), the underlying passive resting times (`┆`), and the service moment (`★`).
+
+   #### Day-by-day detail
+   Each visit has its own actionable checklist, grouped under the day it falls on:
+
+   - **Mise en place**: the required ingredients, preparations made during an earlier visit (`Sponge, made Thursday`), stocked items (`glaze, in stock`), and cookware, which is listed once per visit with how many you need and its size when the recipe says so (`tart tin (24cm)`, `tray ×2`). When the [mass standardization](/docs/reference/api/analyzer/) is on, an ingredient written in cups, spoons or millilitres also shows its weight (`flour 2 cup · 260.3 g`), summed when several sections use it. Check them off while you set up. Where it goes follows your [mise en place mode](/docs/explanation/mise-en-place-and-planning/): by section (the default), each section is a station with its own mise en place, right above its steps, and the cookware is named once, at the first section that uses it; per working day, one block at the top of the visit sums the raw ingredients (e.g. `sugar 90 g (60 + 30)`); upfront, that block holds everything raw at the first visit. A preparation is always listed at the visit of the first step that uses it.
+   - **Execution**: the steps of each section, written out as in the recipe and numbered the same way, with their action, temperatures and timers, and the time the section starts (`Start: 13:40`, only when the plan has a serving time). A section that comes from an import names its source file, a section that goes on from an earlier visit is marked "continued", and a standalone note stays where the recipe puts it. The mise en place has check boxes; the steps do not.
+   - **Before leaving**: passive processes that continue unattended, and the exact time of your next kitchen visit.
+   - **Possible from... / Can't start earlier**: shows how early this visit could start without affecting the rest of the schedule, or names the wait that holds it in place (for example, a 2 h chill that must end when you serve).
+   - **Adjusted waits**: any passive rest that the scheduler shortened or lengthened to fit your available hours is reported at the top of that day.
+
+   ```text
+   FRIDAY, OCTOBER 16  13:35 → 14:00
+     Possible from 08:00.
+     MISE EN PLACE
+       [ ] cream 250 g
+       [ ] sugar 30 g
+       [ ] milk 100 g
+       [ ] Sponge, made Thursday
+       [ ] Insert, made Thursday
+       [ ] stand mixer
+       [ ] 20 cm ring
+     EXECUTION
+       MOUSSE (Start: 13:40)
+         1. [Whip] Whip the cream with the sugar and the milk.
+         2. [Assemble] Fold in the sponge and the insert, in the 20 cm ring.
+     BEFORE LEAVING
+       Mousse : Assemble 12h to 48h, until 02:00
+     Next visit: Saturday 13:55
+   ```
+
+   This example illustrates the per-working-day mode; in per-section mode, each section forms a distinct block with its mise en place above its steps.
+
+   Any constraints the engine could not resolve (a start time already in the past, work outside your available hours, or an incompatible rest) are listed under **"To fix"** at the top. See [Diagnostics and unresolved constraints](/docs/explanation/planning-in-real-time/#diagnostics-and-unresolved-constraints).
+
+5. ### Export, print, or sync your calendar
+
+   You can easily use this plan in the kitchen or export it to your workflow tools:
 
    ```bash
-   gram plan bread.gram --serve "2026-10-11 13:00" --available 08:00-22:00 --ics bread.ics
+   # Print the recipe followed by the full work plan
+   gram print entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --with-sheet
+
+   # Export to Markdown with the work plan
+   gram export entremets.gram --format md --serve "2026-10-17 20:00" --with-sheet
+
+   # Export visits to an iCalendar file
+   gram plan entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --ics entremets.ics
    ```
 
-   The generated iCalendar file creates an event for each task and sets a reminder 5 minutes before every active task. Events are stored in UTC (ISO 8601): your calendar application automatically displays them in your local time zone.
-
-6. ### Annotate the recipe with real-time schedule
-
-   While the production sheet is strictly chronological, the recipe preserves its section-based structure. To view the recipe annotated with step-by-step timestamps, pass the same planning flags to the display and export commands:
-
-   ```bash
-   gram view bread.gram --serve "2026-10-11 13:00" --available 08:00-22:00
-   gram export bread.gram --format md --serve "2026-10-11 13:00" --available 08:00-22:00
-   ```
-
-   The annotated view displays the target time beside each step, working day changes, passive duration adjustments, and a header summary with the target serving time and any diagnostics. You can add `--with-sheet` to `gram export` or `gram print` to append the run sheet to the recipe in a single unified document. In the playground, the preview and Markdown tabs reflect these annotations as soon as a serving time is configured in "Plan".
-
-7. ### Select output formats
-
-   Use `--format md` for Markdown (ready to paste into note-taking apps), `--format html` for a standalone snippet, and `--format json` to inspect the complete plan and run sheet as structured data. Run sheet labels automatically reflect your project's configured language (`language` in `.gram/config.yaml`).
+   - **Print layout (`--with-sheet`)**: writes the work plan right after the recipe in a single document (one day per page when printed, with checkboxes).
+   - **Electronic calendar (`--ics <file>`)**: writes one calendar event per kitchen visit, with a reminder alarm and task/ingredient checklists in the description. Events are in UTC and your calendar displays them in your local time zone.
+   - **Data formats (`--format`)**: use `--format md` for Markdown note-taking tools, `--format html` for a standalone web snippet, or `--format json` to inspect the structured data object (`{ plan, runSheet }`, see [Data formats](/docs/reference/api/data-formats/#5-the-run-sheet)). Text strings follow your project's configured `language`.
 
 </Steps>
 
+## Adjusting the plan if you are late
+
+A schedule is not a frozen state: it is dynamically computed from the constraints you provide.
+
+If a visit takes longer than expected or your day gets shifted, simply run `gram plan` again with a slightly later serving time, or use `--find` to re-evaluate viable slots starting from the current moment.
+
 ## In the playground
 
-Switch to the Gantt chart or the "Production sheet" view, open the "Plan" panel, and enter your target serving time, time zone, and availability windows. The Gantt chart instantly projects onto the real calendar scale, shading unavailable periods and highlighting passive durations that underwent adjustment.
+In the online studio, open the "Plan" panel, then enter a serving time, time zone, and your availability:
+- The **Work plan** view instantly displays the schedule with real dates and times.
+- The **"When to serve?"** buttons test and propose optimal meal slots.
+- The **"Ready as early as"** button calculates the fastest serving time starting right now.
 
-## Programmatic usage
+## From code
+
+You can also integrate the scheduling engine directly into your TypeScript applications:
 
 ```typescript
 import { compile } from '@gram-lang/kitchen';
@@ -123,26 +183,36 @@ import { project, runSheet } from '@gram-lang/scheduler';
 import { runSheetToText } from '@gram-lang/renderer';
 
 const compiled = compile(ast);
-const plan = project([{ graph: compiled.tasks, title: compiled.title ?? undefined }], {
-  serveAt: '2026-10-11T13:00',
+const context = {
+  serveAt: '2026-10-17T20:00',
   timeZone: 'Europe/Paris',
   availability: { daily: [{ start: '08:00', end: '22:00' }] },
-});
+};
+const plan = project([{ graph: compiled.tasks, title: compiled.title ?? undefined }], context);
 
-console.log(runSheetToText(runSheet(plan), compiled));
+// By providing both the task graph and context, each visit gets its computed margin.
+const sheet = runSheet(plan, { graph: compiled.tasks, context });
+console.log(runSheetToText(sheet, compiled));
 ```
+
+The plain text output above is only one presentation layer: the scheduler produces a rich data model. To build custom graphical components, see [Build a custom UI](/docs/how-to/build-custom-ui/).
 
 ## Related resources
 
 <CardGrid>
   <LinkCard
+    title="The scheduler"
+    description="Days, visits, threads, margins: what the engine computes and what the work plan shows."
+    href="/docs/explanation/engine/scheduler/"
+  />
+  <LinkCard
     title="Planning in real time"
-    description="Understand how the retro-planning algorithm shifts passive rests across calendar days."
+    description="How the serving time, your availability and the ranges turn into a calendar."
     href="/docs/explanation/planning-in-real-time/"
   />
   <LinkCard
     title="Scheduler API reference"
-    description="Explore layout(), project(), and the complete configuration interface of @gram-lang/scheduler."
+    description="Documentation for runSheet(), project(), findServeTimes() and earliestServe()."
     href="/docs/reference/api/scheduler/"
   />
 </CardGrid>

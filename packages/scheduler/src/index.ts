@@ -13,7 +13,7 @@ export type {
 	Schedule,
 	ScheduleBlock,
 	ScheduledPassiveTask,
-	ScheduleSession,
+	ScheduleDay,
 	SchedulingDiagnostic,
 	SchedulingSection,
 	SectionMiseEnPlace,
@@ -27,7 +27,7 @@ export { serializeTracks } from "./tracks";
 export { computeTimeline } from "./rebase";
 export { cloneSchedules } from "./build";
 export { addToBreakdown, sumDuration } from "./breakdown";
-export { MINUTES_PER_DAY } from "./sessions";
+export { MINUTES_PER_DAY } from "./days";
 export {
 	DEFAULT_MISE_EN_PLACE_MODE,
 	DEFAULT_REST_CHOICE,
@@ -39,13 +39,25 @@ export {
 	isRestChoice,
 } from "./mode";
 export { project } from "./project";
-export { runSheet } from "./runsheet";
-export type { RunSheet, RunSheetDay, RunSheetEntry } from "./runsheet";
+export { VISIT_GAP_MINUTES, runSheet } from "./runsheet";
+export { visitSections } from "./visit";
+export { WINDOW_MIN_MINUTES, visitWindows } from "./windows";
+export type {
+	RunSheet,
+	RunSheetAdjustment,
+	RunSheetDay,
+	RunSheetEntry,
+	RunSheetFixedBy,
+	RunSheetOptions,
+	RunSheetSectionStart,
+	RunSheetVisit,
+	RunSheetThread,
+} from "./runsheet";
 export type {
 	Availability,
 	ProjectedBlock,
 	ProjectedPlan,
-	ProjectedSession,
+	ProjectedDay,
 	ProjectionContext,
 	ProjectionDiagnostic,
 	ProjectionInput,
@@ -54,3 +66,16 @@ export type {
 } from "./projection";
 export { WEEKDAYS, type Weekday } from "./time";
 export { parseInstant, parseLocalIso, toLocalIso, toUtcIso } from "./time";
+export {
+	DEFAULT_MEAL_TIMES,
+	EARLIEST_SERVE_HORIZON_DAYS,
+	earliestServe,
+	findServeTimes,
+	tryServeAt,
+} from "./serve";
+export type {
+	EarliestServe,
+	FindServeOptions,
+	ServeCandidate,
+	ServeSearch,
+} from "./serve";

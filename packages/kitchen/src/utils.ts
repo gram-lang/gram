@@ -209,7 +209,7 @@ export const cleanObject = (obj: unknown): unknown => {
 						// Always present in the compiled output, even when empty.
 						"miseEnPlace",
 						"blocks",
-						"sessions",
+						"days",
 						// The task graph lists what each task waits for, nothing included.
 						"tasks",
 						"after",

@@ -55,6 +55,8 @@ class Client {
 	setting: unknown = "perSection";
 	/** And to `gram.rests`. */
 	rests: unknown = "shortest";
+	/** And to `gram.comments`. */
+	comments: unknown = "show";
 	/** How long the client takes to answer it (ms). */
 	configDelay = 0;
 
@@ -105,6 +107,7 @@ class Client {
 						result: items.map(() => ({
 							miseEnPlace: this.setting,
 							rests: this.rests,
+							comments: this.comments,
 						})),
 					}),
 				this.configDelay,
@@ -169,6 +172,20 @@ class Client {
 		return this.notes
 			.filter((n) => n.method === "gram/previewUpdated")
 			.map((n) => n.params.html ?? "");
+	}
+
+	/** Resolves with the first notification of `method` whose html matches. */
+	async htmlOf(method: string, test: (html: string) => boolean, ms = 8000) {
+		const started = Date.now();
+		while (Date.now() - started < ms) {
+			const hit = this.notes
+				.filter((n) => n.method === method)
+				.map((n) => n.params.html ?? "")
+				.find(test);
+			if (hit) return hit;
+			await new Promise((r) => setTimeout(r, 25));
+		}
+		throw new Error(`no ${method} matching in ${ms}ms`);
 	}
 
 	/** Resolves as soon as a preview matches; fails with what it saw otherwise. */
@@ -344,5 +361,117 @@ describe("gram.rests in the language server", () => {
 		client.open(RANGED("Bread"));
 		const html = await client.previewMatching((h) => totalOf(h) !== undefined);
 		expect(totalOf(html)).toBe(REST_TOTAL.shortest);
+	}, 20_000);
+});
+
+describe("the work plan in the language server", () => {
+	it("sends the work plan next to the preview, in days before the service", async () => {
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		const html = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Work plan — Tart"),
+		);
+		expect(html).toContain("work-plan-day");
+		// By section (the default), the things to take out sit with their section.
+		expect(html).toContain("section-station-card");
+		// No serving time in the editor: the days are counted back from it.
+		expect(html).toContain("D-2");
+		expect(html).not.toContain("<script");
+	}, 20_000);
+
+	it("takes its kit from gram.miseEnPlace: the filling is taken out at the first visit in upfront only", async () => {
+		const firstDay = (html: string) =>
+			html.split('class="work-plan-day"')[1] ?? "";
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		const bySection = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Work plan — Tart"),
+		);
+		expect(firstDay(bySection)).not.toContain("filling");
+
+		client.setting = "upfront";
+		client.settingChanged();
+		const upfront = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			firstDay(h).includes("filling"),
+		);
+		expect(firstDay(upfront)).toContain("flour");
+	}, 20_000);
+
+	it("keeps sending the Gantt chart notification until 2.0.0", async () => {
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		const html = await client.htmlOf("gram/ganttUpdated", (h) =>
+			h.includes("gantt"),
+		);
+		expect(html.length).toBeGreaterThan(0);
+	}, 20_000);
+
+	it("says what is wrong instead of leaving the plan stale", async () => {
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Work plan — Tart"),
+		);
+		client.change("## Broken\n\n@flour{", 2);
+		const html = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Syntax Error"),
+		);
+		expect(html).toContain("gram-preview-error-state");
+	}, 20_000);
+});
+
+const NOTED = `---
+title: Cake
+---
+
+## Cake
+
+Mix @flour{100g} // keep it cold
+and stir ~{5min}.
+
+// Do not overmix.
+
+Bake ~{20min}.
+`;
+
+describe("gram.comments in the language server", () => {
+	it("shows the comments in the preview and the work plan until told otherwise", async () => {
+		client = new Client();
+		await client.start();
+		client.open(NOTED);
+		const html = await client.previewMatching((h) =>
+			h.includes("Do not overmix."),
+		);
+		expect(html).toContain("keep it cold");
+		const plan = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Do not overmix."),
+		);
+		expect(plan).toContain("inline-comment");
+	}, 20_000);
+
+	it("leaves them out of both when set to hide, and shows them again when it changes", async () => {
+		client = new Client();
+		client.comments = "hide";
+		client.configDelay = 300;
+		await client.start();
+		client.open(NOTED);
+		const preview = await client.previewMatching(
+			(h) => h.includes("Cake") && !h.includes("Do not overmix."),
+		);
+		expect(preview).not.toContain("keep it cold");
+		// The plan sent before the setting was read still has them: wait for the next.
+		const plan = await client.htmlOf(
+			"gram/runSheetUpdated",
+			(h) => h.includes("Work plan") && !h.includes("Do not overmix."),
+		);
+		expect(plan).not.toContain("keep it cold");
+
+		client.comments = "show";
+		client.settingChanged();
+		await client.previewMatching((h) => h.includes("Do not overmix."));
 	}, 20_000);
 });

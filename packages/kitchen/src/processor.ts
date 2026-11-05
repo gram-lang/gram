@@ -55,6 +55,7 @@ import {
 	taskIds,
 } from "./task-graph";
 import { commitTimeline } from "./legacy-timings";
+import { pushPassiveOverlapWarnings } from "./overlap-warnings";
 import {
 	isSameSchedulingProblem,
 	pushSchedulingWarnings,
@@ -1019,6 +1020,13 @@ export function processSections(
 			registry.warnings.push(w);
 		}
 	}
+	pushPassiveOverlapWarnings(
+		registry.warnings,
+		schedule,
+		sections,
+		new Set(registry.cookware.keys()),
+		locationOf,
+	);
 
 	return {
 		sections,

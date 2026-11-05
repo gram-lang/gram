@@ -1,5 +1,5 @@
-import { type RunSheet, runSheet } from "@gram-lang/scheduler";
-import { annotateRecipe } from "./run-sheet";
+import type { RunSheet } from "@gram-lang/scheduler";
+import { showsComments, withoutComments } from "./comments";
 import type {
 	RendererOptions,
 	RenderContext,
@@ -30,7 +30,7 @@ export interface RenderSections {
 	instructions: string;
 	footnotes: string;
 	nutrition: string;
-	/** The production sheet after the recipe, when asked for with a `projection`. */
+	/** The work plan after the recipe, when asked for with `runSheet`. */
 	runSheet: string;
 }
 
@@ -81,8 +81,7 @@ export interface RenderBackend {
 		options: RendererOptions,
 	): string;
 	/**
-	 * The production sheet written after the recipe (`options.runSheet`). Called
-	 * only when there is a `projection` to write it from.
+	 * The work plan written after the recipe (`options.runSheet`).
 	 */
 	renderRunSheet(
 		data: RenderableCompilationResult,
@@ -102,11 +101,10 @@ export function renderRecipe(
 	options: RendererOptions,
 	backend: RenderBackend,
 ): string {
+	// Hiding comments is one rule for every view, so it is applied here once
+	// rather than in each backend: a comment is never collected as a footnote.
+	if (!showsComments(options.comments)) data = withoutComments(data);
 	const context = backend.buildContext(data, options);
-	if (options.projection) {
-		context._annotations = annotateRecipe(options.projection, data, options);
-	}
-
 	const title = backend.renderTitle(data, context, options);
 	const meta = backend.renderMeta(data, context, options);
 	const shoppingList = backend.renderShoppingList(data, context, options);
@@ -115,10 +113,9 @@ export function renderRecipe(
 	// Must run after instructions — see renderFootnotes's own doc comment.
 	const footnotes = backend.renderFootnotes(data, context, options);
 	const nutrition = backend.renderNutrition(data, context, options);
-	const sheet =
-		options.projection && options.runSheet
-			? backend.renderRunSheet(data, options, runSheet(options.projection))
-			: "";
+	const sheet = options.runSheet
+		? backend.renderRunSheet(data, options, options.runSheet)
+		: "";
 
 	return backend.assembleDocument(
 		{

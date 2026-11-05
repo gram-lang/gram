@@ -14,7 +14,6 @@ export const en = {
 		prepTimeTooltip:
 			"Prep Time = Time to gather and prepare ingredients and cookware",
 		miseEnPlace: "Mise en place",
-		miseEnPlaceTooltip: "Mise en place for this section",
 		scheduleLabel: "Mise en place",
 		restsLabel: "Waits",
 		restsShortest: "Shortest",
@@ -22,20 +21,12 @@ export const en = {
 		restsLongest: "Longest",
 		schedulePerSection: "By section",
 		scheduleUpfront: "All at the start",
-		schedulePerSession: "By working day",
-		sessionDay: "D-",
-		sessionToday: "Day D",
-		runSheetTitle: "Production sheet",
-		runSheetServedAt: "Served {date} at {time}",
-		runSheetAround: "around {time}",
-		runSheetUntil: "until around {time}",
+		schedulePerDay: "By working day",
+		dayBefore: "D-",
+		dayToday: "Day D",
 		runSheetStep: "Step {n}",
 		runSheetRest: "Wait",
 		runSheetUnnamedSection: "Recipe",
-		runSheetStretched:
-			"Wait stretched from {from} to {to} to stay out of your unavailable hours",
-		runSheetShortened:
-			"Wait shortened from {from} to {to} to stay out of your unavailable hours",
 		runSheetProblems: "To fix",
 		runSheetOutside:
 			"{task}, around {time}, falls when you are not available, and no wait can be moved to fix it.",
@@ -46,6 +37,57 @@ export const en = {
 		runSheetPast:
 			"The first task should have started {start}, and it is already {now}.",
 		runSheetMulti: "Only the first of {count} recipes is planned.",
+		workPlanTitle: "Work plan",
+		workPlanFor: "For {date} at {time}",
+		workPlanServings: "{count} servings",
+		workPlanScaled: "{count} servings (×{factor})",
+		workPlanDays: "{n} day",
+		workPlanDaysMany: "{n} days",
+		workPlanVisits: "{n} visit to the kitchen",
+		workPlanVisitsMany: "{n} visits to the kitchen",
+		workPlanWork: "{duration} of work in all",
+		workPlanServe: "Serve",
+		workPlanAbout: "~ {duration}",
+		workPlanKit: "To take out",
+		workPlanLegendCook: "in the kitchen",
+		workPlanLegendThread: "what goes on without you",
+		workPlanProgram: "To do",
+		workPlanExecution: "Execution",
+		workPlanIngredients: "Ingredients",
+		workPlanStart: "Start: {time}",
+		workPlanContinued: "continued",
+		workPlanLeaving: "Before leaving",
+		workPlanMadeOn: "made {day}",
+		workPlanMadeAt: "made at {time}",
+		workPlanMadeEarlier: "made earlier",
+		workPlanInStock: "in stock",
+		workPlanStep: "step {n}",
+		workPlanSteps: "steps {from} to {to}",
+		workPlanRange: "{min} to {max}",
+		workPlanPossibleFrom: "Possible from {time}.",
+		workPlanFixedService:
+			"Can't start earlier: the “{rest}” wait ({section}) can't be longer than {length} and ends when you serve.",
+		workPlanFixedVisit:
+			"Can't start earlier: the “{rest}” wait ({section}) can't be longer than {length} and must be over before {sections}.",
+		workPlanNextVisit: "Next visit: {when}",
+		workPlanNextVisitSameDay: "Next visit: later the same day",
+		workPlanServeAt: "Serve at {time}",
+		workPlanStretchedTo:
+			"{wait} extended to {to} (planned {range}) so the work falls within your availability.",
+		workPlanShortenedTo:
+			"{wait} shortened to {to} (planned {range}) so the work falls within your availability.",
+		workPlanUntilClock: "until {time}",
+		workPlanNothing: "Nothing to plan.",
+		workPlanFindOk: "{when} — start {start} · {visits} · {adjusted}",
+		workPlanFindRejected: "{when} — not possible. {reason}",
+		workPlanFindStart: "You would have to start {start}, which has passed.",
+		workPlanFindNone: "No serving time works between {from} and {to}.",
+		workPlanAdjusted: "{n} wait adjusted",
+		workPlanAdjustedMany: "{n} waits adjusted",
+		workPlanNoAdjustment: "no wait adjusted",
+		workPlanEarliest: "Ready as early as {when} if you start now.",
+		workPlanEarliestNone:
+			"Nothing works in the next {days} days (searched until {until}).",
 		est: "(est.)",
 		passiveTimeTooltip: "Passive Time (Waiting, resting...)",
 		activeTimeTooltip: "Active Time",
@@ -127,7 +169,8 @@ export const en = {
 		viewLabel: "View:",
 		loadExample: "Load Example...",
 		recipe: "Recipe",
-		studioTitle: "Recipe studio",
+		studioTitle: "Recipe settings",
+		settingsButton: "Settings",
 		activeOptionsBadge: "{count} active",
 		resetAll: "Reset all",
 		resetSection: "Reset",
@@ -137,6 +180,7 @@ export const en = {
 			schedule: "Schedule & Service",
 			scale: "Scale & Portions",
 			bakersMath: "Baker's math",
+			display: "Display",
 			physics: "Physical analysis & Nutrition",
 			stock: "Stock & Modules",
 		},
@@ -163,10 +207,13 @@ export const en = {
 			jsonTree: "Interactive Tree",
 			markdown: "Markdown",
 			preview: "Preview (HTML)",
-			gantt: "Gantt Chart",
-			runSheet: "Production sheet",
-			runSheetHint:
-				"Choose when it is served in the plan settings to get a production sheet, with a time for every task.",
+			runSheet: "Work plan",
+			serveWhenTitle: "When to serve?",
+			serveWhenNone: "No serving time works in the next seven days.",
+			serveWhenWhyNot: "Why not the others?",
+			earliestTitle: "Ready as early as",
+			earliestNone: "Nothing works in the next 14 days.",
+			earliestUse: "Serve then",
 			planSummary: "Plan",
 			planServeAt: "Served on",
 			planTimeZone: "Time zone",
@@ -174,6 +221,7 @@ export const en = {
 			planAvailableTo: "to",
 			planClear: "Clear the plan",
 			planInvalid: "This plan can't be made: {message}",
+			// @remove-in: 2.0.0 [i18n-gantt-keys]
 			gantt_active: "Active Task",
 			gantt_passive: "Background Task",
 			gantt_compact: "Compact View",
@@ -191,9 +239,6 @@ export const en = {
 			gantt_mode_reverse: "Countdown (T-)",
 			gantt_mode_target: "Target Time",
 			gantt_target_time_label: "Serve at:",
-			gantt_unavailable: "Not available",
-			gantt_rest_adjusted:
-				"Wait changed from {from} to {to} to stay out of unavailable hours",
 		},
 		options: {
 			scaleTitle: "Modify Quantities",
@@ -207,6 +252,9 @@ export const en = {
 			enableBakersMath: "Enable Baker's Math",
 			bakersMathDesc: "Shows ingredients as % of reference.",
 			hideAbsolute: "Hide absolute weights",
+			showComments: "Show comments",
+			commentsDesc:
+				"The notes of the recipe (// like this), in the recipe and in the work plan.",
 			forceReference: "Force Reference:",
 			autoDetect: "Auto (detect @*)",
 			physicalAnalysis: "Physical Analysis",
@@ -217,6 +265,42 @@ export const en = {
 			stockTitle: "Stock (skip steps)",
 			stockDesc:
 				"Treat as already on hand — collapses to one shopping-list line, no timeline steps.",
+		},
+		help: {
+			schedule:
+				"Controls when ingredient prep and weighing take place in the schedule: right before each section, all upfront at the start of the recipe, or at the beginning of each working day.",
+			rests:
+				"Sets the target duration for steps with a flexible time range (e.g. 2h to 12h): the minimum required time, the maximum allowed time, or a balanced midpoint.",
+			serveAt:
+				"Target meal date and time. The schedule is calculated backwards from this deadline to tell you when to start and be ready right on time.",
+			serveSuggestions:
+				"Recommended serving times. Gram evaluates rest ranges and your kitchen hours to suggest feasible meal times that require no overnight work.",
+			timeZone:
+				"Sets the time zone used to display exact clock times on the work plan and accurately handle day transitions.",
+			availability:
+				"Your daily kitchen hours. The schedule organizes tasks so you never have to cook outside this window (such as overnight).",
+			scaleGlobal:
+				"Adjusts all ingredient quantities and servings according to the specified percentage (e.g. 200% to double, 50% to halve).",
+			scaleByIngredient:
+				"Proportionally recalculates the entire recipe to match the exact quantity you have on hand for a specific ingredient (e.g. only 3 eggs or 250g of butter).",
+			bakersMath:
+				"Expresses each ingredient as a percentage of a base ingredient set at 100% (typically flour, or any chosen ingredient), making ratios and formulation easy to evaluate.",
+			comments:
+				"Shows or leaves out the comments written in the recipe with //: the notes alone on a line and the ones at the end of a line. They are set apart discreetly in the work plan.",
+			bakersMathOnly:
+				"Hides gram weights to display only relative percentages, turning the recipe into a pure ratio formula.",
+			bakersReference:
+				"Manually selects which ingredient serves as the 100% baseline, overriding automatic detection of the @* ingredient in the recipe.",
+			massStandardization:
+				"Converts volume measurements (spoons, cups, ml) into grams according to the database densities.",
+			yieldManagement:
+				"Calculates gross purchasing weight to obtain the desired net quantity, accounting for peeling and trimming waste in the database.",
+			nutrition:
+				"Estimates calories and macronutrients (protein, carbs, fat, fiber) per serving or per 100g via the nutritional tables in the database.",
+			physicsDisclaimer:
+				"In this playground, physical and nutritional calculations rely on an ingredient database limited to example recipes.",
+			stockItem:
+				"Marks this imported preparation as already on hand in your kitchen. Its prep steps are removed from the schedule, keeping only its final use.",
 		},
 		output: {
 			copy: "Copy to clipboard",

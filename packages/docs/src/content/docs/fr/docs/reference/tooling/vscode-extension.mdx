@@ -1,6 +1,6 @@
 ---
 title: "Extension VS Code"
-description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau nutritionnel, diagramme de Gantt et correspondance d'ingrédients."
+description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau nutritionnel, planning de préparation et correspondance d'ingrédients."
 ---
 
 import Since from '../../../../../../components/Since.astro';
@@ -18,11 +18,11 @@ L'extension officielle Gram pour VS Code transforme votre éditeur en un vérita
 Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un clic révèle un panneau nutritionnel complet (calories, protéines, glucides, lipides) directement dans l'aperçu. Il met également en surbrillance les ingrédients introuvables dans votre base de données.
 :::
 
-### 2. Vue diagramme de Gantt
-- **Panneau chronologique** : Lancez la commande `Gram: Gantt Chart` (ou cliquez sur l'icône de chronogramme dans la barre d'outils) pour ouvrir une vue chronologique complète — étapes actives, minuteurs passifs et compression visuelle des plages d'attente. Le tout au sein d'une WebView dédiée, indépendante de l'aperçu en direct.
-- **Modes horaires** : Depuis le menu du panneau, basculez selon vos besoins entre le temps écoulé (chronomètre, T+), le compte à rebours (T-) et le rétro-planning calé sur l'heure cible du service.
-- **Vue compacte** : Pour les recettes complexes comportant de nombreuses étapes simultanées, activez la disposition densifiée.
-- **Mise en place** : La préparation de chaque section est représentée sous la forme d'un bloc en pointillés adoptant la teinte de la section, ordonnancé par défaut immédiatement avant celle-ci, au tout début de la recette ou à l'ouverture de chaque session de travail (voir le réglage `gram.miseEnPlace` ci-dessous).
+### 2. Vue planning de préparation
+- **Panneau dédié au planning** : Exécutez la commande `Gram: Work Plan` (ou cliquez sur l'icône de liste de tâches dans la barre d'outils de l'éditeur) pour afficher le planning complet dans une WebView dédiée, indépendante de l'aperçu standard. Il détaille pour chaque journée les plages de présence en cuisine, les ingrédients et le matériel à sortir, les tâches à réaliser et les temps de repos passifs.
+- **Décompte relatif (`J-2`, `J-1`, `Jour J`)** : En l'absence d'heure de service configurée dans l'éditeur, le planning est projeté sous forme de compte à rebours relatif et affiche des durées estimées par journée (ex. : « environ 55 min »). Pour obtenir des horodatages précis avec dates et marges réelles, utilisez la commande `gram plan --serve` ou le studio interactif en ligne.
+- **Prise en compte des réglages de projet** : La vue s'adapte instantanément aux paramètres d'ordonnancement `gram.miseEnPlace`, `gram.rests` et `gram.comments` (détaillés ci-dessous).
+- **Remplacement du diagramme de Gantt** : La commande historique `Gram: Gantt Chart` est dépréciée depuis la version 1.4.0 (elle ouvre désormais le planning de préparation avec un avertissement informatif) et sera définitivement retirée en version 2.0.0.
 
 #### Le réglage `gram.miseEnPlace` <Since v="1.4.0" />
 
@@ -30,9 +30,9 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 |---|---|
 | `perSection` (par défaut) | La mise en place de chaque section est planifiée immédiatement avant cette section. |
 | `upfront` | L'intégralité de la mise en place est ordonnancée au début de la recette. |
-| `perSession` | La mise en place de chaque journée de travail est planifiée au début de cette journée (les journées découlant des ancres temporelles de section, `~{-Nd}`). |
+| `perDay` | La mise en place de chaque journée de travail est planifiée au début de cette journée (les journées découlant des ancres temporelles de section, `~{-Nd}`). |
 
-Ce réglage pilote l'aperçu en direct, le diagramme de Gantt et l'indication du temps total affichée en regard du titre de la recette. Il ajuste la durée totale et le temps d'attente passif sans altérer les listes d'ingrédients, et s'applique instantanément à l'ensemble des documents ouverts sans rechargement de fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+Ce réglage pilote l'aperçu en direct, le planning de préparation et l'indication du temps total affichée en regard du titre de la recette. Il ajuste la durée totale et le temps d'attente passif sans altérer les listes d'ingrédients, et s'applique instantanément à l'ensemble des documents ouverts sans rechargement de fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 
 #### Le réglage `gram.rests` <Since v="1.4.0" />
 
@@ -42,9 +42,18 @@ Ce réglage pilote l'aperçu en direct, le diagramme de Gantt et l'indication du
 | `balanced` | Le minuteur passif est résolu sur la valeur médiane de sa fourchette. |
 | `longest` | Le minuteur passif est résolu sur sa durée maximale. |
 
-Les durées passives fixes et les minuteurs actifs définis par une plage (`~{20-25min}`, systématiquement planifiés sur leur borne supérieure) ne sont pas affectés. À l'instar de `gram.miseEnPlace`, ce paramètre pilote l'aperçu, le diagramme de Gantt et l'indication du temps total, et s'applique immédiatement à l'ensemble des fichiers ouverts. Voir [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
+Les durées passives fixes et les minuteurs actifs définis par une plage (`~{20-25min}`, systématiquement planifiés sur leur borne supérieure) ne sont pas affectés. À l'instar de `gram.miseEnPlace`, ce paramètre pilote l'aperçu, le planning de préparation et l'indication du temps total, et s'applique immédiatement à l'ensemble des fichiers ouverts. Voir [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
 
-Une session de travail qu'une phase passive prolongée repousse au-delà du cycle normal de 24 heures déclenche un avertissement explicite sur la section concernée (`SESSION_OVERFLOW`), affiché au même titre que les diagnostics du compilateur.
+#### Le réglage `gram.comments` <Since v="1.4.0" />
+
+| Valeur | Effet |
+|---|---|
+| `show` (par défaut) | Les commentaires de la recette (`// comme ceci`) apparaissent dans l'aperçu et dans le planning de préparation. Dans le planning, ils s'affichent discrètement en texte réduit et grisé. |
+| `hide` | Les notes isolées comme les commentaires en fin de ligne sont masqués dans les deux vues. |
+
+Ce paramètre s'applique instantanément à tous les fichiers ouverts (toute valeur non reconnue équivaut à `show`). Ce réglage est également disponible dans la CLI (`--comments`), dans le moteur de rendu (`comments`) ainsi que dans le Playground (section **Affichage**).
+
+Une journée de travail qu'une phase passive prolongée repousse au-delà du cycle normal de 24 heures déclenche un avertissement explicite sur la section concernée (`DAY_OVERFLOW`), affiché au même titre que les diagnostics du compilateur.
 
 ### 3. Gestion intelligente des ingrédients
 - **Gestion transparente des pluriels** : L'extension associe automatiquement les formes plurielles courantes de votre recette (ex. `@carottes`) aux entrées singulières correspondantes de votre référentiel YAML (`carotte`). Vous conservez ainsi une rédaction naturelle sans générer de faux avertissements.

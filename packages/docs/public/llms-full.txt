@@ -13,7 +13,7 @@ Cooking is a bit like an algorithm: you take raw ingredients as input and output
 
 I've always loved the idea of writing recipes in plain text, heavily inspired by pioneering projects like the excellent [Cooklang](https://cooklang.org). Cooklang is fantastic for quick, straightforward home recipes. But when things get a bit more complex—like professional pastry formulas with multiple sub-components, baker's math, or tricky scheduling—relying entirely on natural language can get messy. 
 
-Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced visual presentations: production run sheets, interactive Gantt timelines, tabular flowcharts, and calendar exports.
+Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced presentations: a work plan for the kitchen, tabular flowcharts, and calendar exports. The engine computes; the views, like the work plan, only show what it computed.
 
 I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic**, **physical accuracy**, **modular composition**, and **predictive scheduling** into your recipe writing:
 
@@ -56,7 +56,7 @@ The Gram ecosystem gives you everything you need to treat recipes like software:
   
   ### Renderer
 
-    **`@gram-lang/renderer`**: Instantly generate Semantic HTML, Gantt charts, production run sheets, and Markdown from your compiled JSON.
+    **`@gram-lang/renderer`**: Instantly generate Semantic HTML, work plans, and Markdown from your compiled JSON: views of data you can also draw yourself.
   
 
 
@@ -247,6 +247,10 @@ Steps can optionally start with an **Action** enclosed in brackets `[]`. This hi
 
 [Bake] In the #oven for ~{30min}.
 ```
+
+:::tip[Name the action]
+Starting steps with an action verb in brackets is strongly recommended, especially for timed steps: the [work plan](/docs/how-to/plan-a-meal/) and summary views rely on these actions to name each step clearly.
+:::
 
 ## 4. Sections
 
@@ -601,6 +605,10 @@ Unlike an `@ingredient` which scales proportionally by default, `#cookware` scal
 | **With quantity** | `#pan{1}` or `#ramekins{4}` | [Scalable] | Doubling portions asks for 2 pans or 8 ramekins. |
 | **Explicit fixed** | `#=pan{2}` | [Fixed] | Stays fixed at 2 pans even if the recipe is scaled up. |
 
+## Cookware and the work plan
+
+Cookware items required by a section are inventoried in the mise en place of the kitchen visit where that section is executed (once per visit). If two passive timers overlap across steps that cite the same cookware without a shared named track, the compiler reports the [`PASSIVE_OVERLAP_SAME_COOKWARE`](/docs/reference/api/warnings/#passive_overlap_same_cookware) warning and suggests assigning a dedicated track to serialize equipment access.
+
 ## Modifiers and advanced syntax
 
 `#cookware` supports several of the advanced syntax mechanisms available for ingredients:
@@ -702,6 +710,7 @@ Roast the chicken for ~{40-50min}.
 The interpretation of a range differs fundamentally based on timer type:
 
 - **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning in real time](/docs/explanation/planning-in-real-time/)).
+- **How the work plan reflects ranges.** The work plan displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 (12 to 48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Can't start earlier"). See [Plan a meal](/docs/how-to/plan-a-meal/).
 - **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
 
 :::note
@@ -710,7 +719,7 @@ Deprecated fields of the compiled recipe (`steps[].timings`, `steps[].background
 
 ## Active vs passive
 
-The Gram compiler builds a complete execution timeline (similar to a Gantt chart) for each recipe. To achieve realistic scheduling, it distinguishes hands-on kitchen work from autonomous background tasks.
+The Gram compiler builds a complete execution timeline for each recipe. To achieve realistic scheduling, it distinguishes hands-on kitchen work from autonomous background tasks.
 
 :::tip[💡 The Golden Rule: Does this step block YOU from starting the next step?]
 
@@ -752,6 +761,10 @@ Lower the heat to 180°C and bake for ~_baking{30min}.
 
 > ⏱️ **Result:** Because both timers share the track name `baking`, Gram places them on the same background track. The 30-minute timer will only start *after* the 10-minute timer completes. Idle waiting time increases by 40 minutes, while active hands-on time remains zero.
 
+:::tip[Without a track, overlapping waits are flagged]
+Two passive timers that overlap in steps citing the **same cookware** (`#oven` in both) with no track in common are reported by `PASSIVE_OVERLAP_SAME_COOKWARE`: the message suggests a named track. It is only informational, since two trays can share an oven. See [Warnings](/docs/reference/api/warnings/#passive_overlap_same_cookware).
+:::
+
 ## How time is calculated
 
 Behind the scenes, Gram tracks four distinct time metrics to establish realistic schedules:
@@ -784,13 +797,13 @@ Each section has its own mise en place (gathering and preparing ingredients and 
 
 - **By section** (`perSection`, default): mise en place is scheduled immediately prior to that section. An ingredient needed two days later is not fetched prematurely, and preparation can occur during passive waiting times of earlier steps (masked time).
 - **All at the start** (`upfront`): all prep tasks are grouped at the beginning before active cooking starts. Except for intermediate preparations, which cannot be weighed before they are produced.
-- **By working day** (`perSession`): for multi-day recipes, preparation tasks for each day are grouped at the start of that day's session. Days are determined by section anchors **in days** (`~{-1d}`, `~{-2d}`). Recipes without day anchors execute in a single working day session, identical to `upfront`.
+- **By working day** (`perDay`): for multi-day recipes, preparation tasks for each day are grouped at the start of that day, even if you cook in several visits. To take things out right before each visit, use `perSection`. Days are determined by section anchors **in days** (`~{-1d}`, `~{-2d}`). Recipes without day anchors execute as a single working day, identical to `upfront`.
 
 Two considerations for multi-day recipes:
 - **A long passive timer is not an anchor.** A `~_{48h}` passive duration shifts the timeline two days earlier, but only an explicit section anchor formally opens a separate working day (e.g. `## Cream ~{-2d}`).
-- **An anchor in hours never opens a day.** An anchor such as `~{-18h}` or `~{-36h}` represents an explicit deadline within that section's day, not an independent daily session. To schedule a previous working day, use `~{-1d}` (see [Days and hours](#days-and-hours)).
+- **An anchor in hours never opens a day.** An anchor such as `~{-18h}` or `~{-36h}` represents an explicit deadline within that section's day, not an independent working day. To schedule a previous working day, use `~{-1d}` (see [Days and hours](#days-and-hours)).
 
-Strategy selection happens at render time: the Playground features a dropdown selector, VS Code provides the `gram.miseEnPlace` setting, the CLI exposes the `--mise-en-place` flag, and the renderer accepts `miseEnPlace`. This setting influences **total duration** and **idle time**, as well as block positioning on the Gantt chart, while keeping active preparation and hands-on cooking times invariant.
+Strategy selection happens at render time: the Playground features a dropdown selector, VS Code provides the `gram.miseEnPlace` setting, the CLI exposes the `--mise-en-place` flag, and the renderer accepts `miseEnPlace`. This setting influences **total duration** and **idle time**, as well as the placement of the preparation in the schedule, while keeping active preparation and hands-on cooking times invariant.
 
 An intermediate preparation (`&dough`) is weighed in the section that consumes it and never before it is produced: even in `upfront` mode, it is scheduled as a deferred block immediately before the consuming section.
 
@@ -821,7 +834,7 @@ The chosen unit defines the anchor's semantics:
 - **An anchor in days** (`~{-1d}`, `~{-2d}`) opens a distinct working day (day before, two days before), anchoring the "by working day" strategy and day labels (D-1, D-2).
 - **An anchor in hours or minutes** (`~{-18h}`, `~{-90min}`) specifies a precise deadline within that section's scheduled day, without opening a new working day.
 
-Working days are designed to fit within a 24-hour span: if a long passive duration pushes a day's work out of its window (such as a `~{-1d}` dough fermenting for 50 hours), the compiler emits `SESSION_OVERFLOW` and recommends anchoring the section further back.
+Working days are designed to fit within a 24-hour span: if a long passive duration pushes a day's work out of its window (such as a `~{-1d}` dough fermenting for 50 hours), the compiler emits `DAY_OVERFLOW` and recommends anchoring the section further back.
 
 ### Strict syntax
 
@@ -832,8 +845,9 @@ Section header retro-planning annotations require a **strictly negative** signed
 - A canonical unit: `d` (days), `h` (hours), or `min` (minutes), or recognized localized aliases.
 
 ```gram
-## Puff pastry ~{-2d}     <!-- 2 days before -->
-## Ganache ~{-30min}      <!-- 30 minutes before -->
+## Puff pastry ~{-2d}
+
+## Ganache ~{-30min}
 ```
 
 Free prose (`~{the day before}`), positive values (`~{2h}`), and zero values (`~{0h}`) are invalid. Existing recipes using legacy formats still compile for backward compatibility, but produce compiler warnings.
@@ -852,7 +866,7 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (section retro-planning): Unrecognized units trigger `INVALID_UNIT`.
 - **Time Paradox**: Anchors conflicting with dependency order (e.g. an ingredient anchored at `-10 min` needed by a section anchored at `-1 h`) trigger `TIME_PARADOX`.
 - **Track Contention**: Concurrent passive timers delayed on the same named track trigger `TRACK_CONTENTION`.
-- **Session Overflow** *(Since 1.4.0)*: Passive durations pushing working day tasks beyond the 24-hour window trigger `SESSION_OVERFLOW`.
+- **Day overflow** *(Since 1.4.0)*: Passive durations pushing working day tasks beyond the 24-hour window trigger `DAY_OVERFLOW`.
 - **Duration Out Of Range**: Durations exceeding 1,000 years are capped and trigger `DURATION_OUT_OF_RANGE`.
 
 Warnings are non-blocking by default, but can be enforced as errors via `gram check --strict`.
@@ -872,12 +886,12 @@ Warnings are non-blocking by default, but can be enforced as errors via `gram ch
   />
   <LinkCard
     title="Mise en place and planning"
-    description="Explore how preparation costs, section day anchors, and multi-day sessions interact."
+    description="Explore how preparation costs, section day anchors, and multi-day recipes interact."
     href="/docs/explanation/mise-en-place-and-planning/"
   />
   <LinkCard
     title="Compiler warnings reference"
-    description="Details on TIME_PARADOX, TRACK_CONTENTION, and SESSION_OVERFLOW warning codes."
+    description="Details on TIME_PARADOX, TRACK_CONTENTION, and DAY_OVERFLOW warning codes."
     href="/docs/reference/api/warnings/"
   />
 
@@ -1633,6 +1647,7 @@ Mix @flour{200g} and @milk{200ml}.
 {
   "type": "Recipe",
   "meta": { "title": "Crepes" },
+  "imports": [],
   "children": [
     {
       "type": "Section",
@@ -1723,8 +1738,8 @@ Mix @flour{200g} and @milk{200ml}.
       "title": "Batter",
       "retro_planning": null,
       "ingredients": [
-        { "id": "flour", "name": "flour", "qty": 200, "unit": "g", "_usageIds": ["1"] },
-        { "id": "milk", "name": "milk", "qty": 200, "unit": "ml", "_usageIds": ["2"] }
+        { "id": "flour", "_usageId": "1", "qty": 200, "unit": "g" },
+        { "id": "milk", "_usageId": "2", "qty": 200, "unit": "ml" }
       ],
       "cookware": [],
       "steps": [
@@ -1767,7 +1782,7 @@ Mix @flour{200g} and @milk{200ml}.
       { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
       { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
     ],
-    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    "days": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
   }
 }
 ```
@@ -1872,7 +1887,7 @@ Mix @flour{200g} and @milk{200ml}.
       { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
       { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
     ],
-    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    "days": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
   }
 }
 ```
@@ -1964,6 +1979,56 @@ flour:
 
 **Units matter and must be strictly observed**: `calories` is kcal, `sodium` is in **milligrams (mg)**, and every other nutrient is in grams (g) — all evaluated per 100 g of the raw ingredient. The canonical set, units, and ordering are governed by the `NUTRIENTS` table exported by `@gram-lang/analyzer`.
 
+<span id="5-the-run-sheet"></span>
+
+## 5. The work plan
+
+Data structure of the work plan (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
+
+```json
+{
+  "mode": "calendar",
+  "serveAt": "2026-10-17T20:00",
+  "timeZone": "Europe/Paris",
+  "recipes": [
+    {
+      "title": "Pistachio raspberry entremets",
+      "miseEnPlace": "perSection",
+      "totalWork": 45,
+      "days": [
+        {
+          "date": "2026-10-16",
+          "daysBefore": 1,
+          "visits": [
+            {
+              "start": -1585, "end": -1560,
+              "startLocal": "2026-10-16T13:35", "endLocal": "2026-10-16T14:00",
+              "sections": [2],
+              "tasks": ["s2.prep", "s2.0", "s2.1"],
+              "window": { "advance": 335, "earliest": -1920, "earliestLocal": "2026-10-16T08:00" }
+            }
+          ],
+          "threads": [
+            { "visit": 0, "task": "s2.1.t0", "section": 2, "step": 1,
+              "from": -1560, "to": -840, "planned": 720,
+              "range": { "min": 720, "max": 2880 } }
+          ],
+          "entries": ["…every block of the day…"]
+        }
+      ]
+    }
+  ],
+  "adjustments": [],
+  "diagnostics": []
+}
+```
+
+- Times `start`, `end`, `from` and `to` are **minutes from the service** (negative before it), exact, in a plan with a serving time or without. `*Local` fields (minute-exact wall clock) and `date` come with a serving time only.
+- `mode: "relative"` is the same structure for a recipe with no serving time: no `serveAt`, no `date`, no `window`.
+- `totalWork` is the minutes of your own work, mise en place included.
+- `miseEnPlace` is the mode the plan was made in (`perSection`, `perDay` or `upfront`): the work plan reads it to decide what goes in each visit's mise en place.
+- Types and the meaning of each field: [`runSheet` in the scheduler reference](/docs/reference/api/scheduler/#runsheet).
+
 ## Related resources
 
 
@@ -2038,7 +2103,8 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `NO_BAKERS_REFERENCE` | warning | `Baker's percentages (%) are used but no base flour (*) was designated.` |
 | `TIME_PARADOX` | warning | `Timeline conflict: {cause} is pulled earlier than recipe start to satisfy {conflict}.` |
 | `TRACK_CONTENTION` | info | `Resource contention on track '{trackName}': delayed by {delay} min for '{item}'.` |
-| `SESSION_OVERFLOW` | warning | `Working day {day} (from section '{section}') starts NaN h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-{day}1d}, or shorten the rest.` |
+| `DAY_OVERFLOW` | warning | `Working day {day} (from section '{section}') starts NaN h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-{day}1d}, or shorten the rest.` |
+| `PASSIVE_OVERLAP_SAME_COOKWARE` | info | `Two passive timers overlap and both use #{cookware}: {item} and {other}. If one is meant to follow the other, give them the same named track, for example ~_{cookware}{…}, so they take turns.` |
 | `DURATION_OUT_OF_RANGE` | warning | `Timer "{item}" is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.` |
 | `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
 | `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
@@ -2119,7 +2185,7 @@ A short composite child name (e.g. `@juice`) is drawn from two different parent 
 
 An imported module specified in a `@use` directive could not be resolved or found on the filesystem. **Fix**: verify the module path, file extension (`.gram`), or configured path aliases in `config.yaml`.
 
-### `SESSION_OVERFLOW`
+### `DAY_OVERFLOW`
 
 *(since v1.4.0)*
 
@@ -2132,6 +2198,12 @@ During ALAP reverse scheduling, a producing task is pulled earlier than the begi
 ### `TRACK_CONTENTION`
 
 Multiple passive timers share the same equipment track (e.g. `~_oven`) and cannot execute simultaneously. The scheduler serializes them sequentially to prevent equipment collision, delaying the second task. **Fix**: this is an informational notice; if you have access to multiple appliances, assign them distinct track names (e.g. `~_oven1` and `~_oven2`).
+
+### `PASSIVE_OVERLAP_SAME_COOKWARE`
+
+*(since v1.4.0)*
+
+Two passive timers overlap in time, in steps that cite the same cookware (`#oven` in both), with no named track in common. If one is meant to follow the other, they are probably on one oven: the plan shows them side by side. **Fix**: give them the same named track (`~_oven{30min}` then `~_oven{20min}`) so they take turns; if both fit in the oven at once, this is only an informational notice. Only names are compared (`#oven` with `#oven`), so it works whatever the language of the recipe, and the overlap is read on the default timeline.
 
 ## Related resources
 

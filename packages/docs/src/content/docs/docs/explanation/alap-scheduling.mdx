@@ -175,8 +175,8 @@ A section's retro-planning anchor (`~{-2d}`) defines a **strict completion deadl
 Key guidelines for multi-day recipes:
 
 - **Anchor using calendar days (`~{-Nd}`)**: working day segmentation relies exclusively on day anchors (`~{-1d}`, `~{-2d}`). Unanchored sections inherit the day of the furthest downstream day anchor.
-- **Long passive timers do not create working days**: a step with `~_{48h}` shifts steps backwards on the Gantt chart, but does not initiate a D-2 session without an explicit section day anchor (`## Cream ~{-2d}`).
-- **Hour anchors (`~{-Nh}`) do not create working days**: values like `~{-18h}` or `~{-36h}` establish intra-day deadlines without opening a separate daily session. To initiate the previous day's session, use `~{-1d}`.
+- **Long passive timers do not create working days**: a step with `~_{48h}` shifts steps backwards on the timeline, but does not initiate a D-2 working day without an explicit section day anchor (`## Cream ~{-2d}`).
+- **Hour anchors (`~{-Nh}`) do not create working days**: values like `~{-18h}` or `~{-36h}` establish intra-day deadlines without opening a separate working day. To open the previous working day, use `~{-1d}`.
 - **Successive sections on the same day**: anchor only the final section (`## Tart ~{-1d}`) and leave preceding sections unanchored. Assigning the same anchor to interdependent sections triggers a time paradox warning.
 
 ## Modular anchoring (`@use ... ~{-1d}`)
@@ -214,7 +214,11 @@ To maximize the efficiency of Gram's ALAP scheduling engine, follow these practi
 
 Because Gram's ALAP engine deterministically computes minute-accurate `start` and `end` bounds, client applications require zero custom date calculation: they directly consume the planned task graph.
 
-Gantt charts provide an ideal visual representation of passive task overlap and active task interleaving. You can interact with this engine in real time using the **[Official Gram Playground](/play/)** under the timeline view.
+A timeline representation (such as the Mermaid `gantt` charts above) clearly highlights passive task overlap and active task interleaving in masked time. These are the exact same data points that the [work plan](/docs/how-to/plan-a-meal/) visualizes. You can test and inspect this scheduling behavior interactively in the **[Gram Playground](/play/)**.
+
+### What ALAP means for the margin
+
+Because planning operates strictly **as late as possible**, a kitchen visit can only be moved **earlier**, never later: delaying it would inevitably push back serving time. The anticipation margin shown in the work plan ("Possible from 18:00") indicates how far a visit can be shifted forward as long as adjacent passive rests remain within their declared ranges. A recipe with elastic rest ranges yields anticipation margins, whereas one with fixed passive waits offers none. See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan).
 
 ## Related resources
 

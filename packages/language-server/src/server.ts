@@ -35,6 +35,7 @@ import {
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
 import {
+	parseCommentsSetting,
 	parseMiseEnPlaceSetting,
 	parseRestsSetting,
 } from "./utils/mise-en-place-setting";
@@ -43,12 +44,20 @@ import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
 import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
-import { toHTML, toGanttHTML, escapeHtml } from "@gram-lang/renderer";
+import {
+	type CommentsMode,
+	escapeHtml,
+	runSheetToHTML,
+	toGanttHTML,
+	toHTML,
+} from "@gram-lang/renderer";
+import { runSheet } from "@gram-lang/scheduler";
 import {
 	DEFAULT_MISE_EN_PLACE_MODE,
 	type MiseEnPlaceMode,
 	DEFAULT_REST_CHOICE,
 	type RestChoice,
+	scheduleFor,
 } from "@gram-lang/kitchen";
 
 const connection = createConnection(ProposedFeatures.all);
@@ -158,11 +167,13 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	};
 });
 
-// `gram.miseEnPlace` and `gram.rests`: which timeline the preview, the Gantt and
+// `gram.miseEnPlace` and `gram.rests`: which timeline the preview, the work plan and
 // the title hint follow. Read once at start and again whenever the settings
 // change.
 let miseEnPlace: MiseEnPlaceMode = DEFAULT_MISE_EN_PLACE_MODE;
 let rests: RestChoice = DEFAULT_REST_CHOICE;
+// `gram.comments`: whether the preview and the work plan show the comments of the recipe.
+let comments: CommentsMode = "show";
 
 // Never rejects (same rule as reloadDbAndRefreshDiagnostics below): a client
 // without workspace configuration just keeps the default.
@@ -171,9 +182,14 @@ async function loadMiseEnPlace(): Promise<boolean> {
 		const config = await connection.workspace.getConfiguration("gram");
 		const nextMode = parseMiseEnPlaceSetting(config);
 		const nextRests = parseRestsSetting(config);
-		const changed = nextMode !== miseEnPlace || nextRests !== rests;
+		const nextComments = parseCommentsSetting(config);
+		const changed =
+			nextMode !== miseEnPlace ||
+			nextRests !== rests ||
+			nextComments !== comments;
 		miseEnPlace = nextMode;
 		rests = nextRests;
+		comments = nextComments;
 		return changed;
 	} catch {
 		return false;
@@ -206,7 +222,7 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 	}
 }
 
-// A new schedule re-renders every open preview and Gantt from the compilation
+// A new schedule re-renders every open preview and work plan from the compilation
 // already in hand, and refreshes the title hint — nothing else about the
 // documents changed, so nothing is parsed or compiled again (which would also
 // race with an edit still waiting in the debounce).
@@ -315,8 +331,8 @@ async function refresh(
 }
 
 /**
- * Renders the preview and the Gantt chart of an already compiled document and
- * sends them to the client. Pure output of `state`: it neither parses nor
+ * Renders the preview and the work plan of an already compiled document and
+ * sends them to the client (and the Gantt chart, for clients that still read it). Pure output of `state`: it neither parses nor
  * compiles, so it can run again (a new `gram.miseEnPlace`) without touching the
  * cached state, which a pending edit's refresh is about to replace anyway.
  */
@@ -330,6 +346,7 @@ function renderViews(uri: string, state: DocumentState): void {
 				interactiveNutrition: true,
 				miseEnPlace,
 				rests,
+				comments,
 			});
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
@@ -337,11 +354,38 @@ function renderViews(uri: string, state: DocumentState): void {
 		}
 
 		// Rendered and sent independently from the main preview — a bug in the
-		// Gantt renderer must not blank the HTML preview, and vice versa.
+		// work plan must not blank the HTML preview, and vice versa. Without a
+		// serving time the plan is in days before the service (J-2, J-1, day D).
+		try {
+			const timeline = scheduleFor(state.compilation, miseEnPlace, rests);
+			if (timeline) {
+				const sheet = runSheet(timeline, {
+					graph: state.compilation.tasks,
+					...(state.compilation.title && { title: state.compilation.title }),
+				});
+				const lang = state.compilation.meta?.language;
+				const workPlanHtml = runSheetToHTML(sheet, state.compilation, {
+					comments,
+					...(typeof lang === "string" && { lang }),
+				});
+				connection.sendNotification("gram/runSheetUpdated", {
+					uri,
+					html: workPlanHtml,
+				});
+			}
+		} catch (e) {
+			console.error("Work plan render error", e);
+		}
+
+		// Still sent until 2.0.0 for clients that read it; the VS Code extension
+		// no longer does.
+		// @remove-in: 2.0.0 [lsp-gantt-notification]
 		try {
 			const ganttHtml = toGanttHTML(state.compilation, {
 				miseEnPlace,
 				rests,
+				// Rendered for clients that read it, not by choice of this server.
+				quiet: true,
 			});
 			connection.sendNotification("gram/ganttUpdated", {
 				uri,
@@ -377,6 +421,8 @@ function renderViews(uri: string, state: DocumentState): void {
             </div>
         `;
 		connection.sendNotification("gram/previewUpdated", { uri, html });
+		connection.sendNotification("gram/runSheetUpdated", { uri, html });
+		// @remove-in: 2.0.0 [lsp-gantt-notification]
 		connection.sendNotification("gram/ganttUpdated", { uri, html });
 	}
 }

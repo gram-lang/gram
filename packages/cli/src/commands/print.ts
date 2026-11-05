@@ -12,6 +12,10 @@ import {
 	MISE_EN_PLACE_FLAG_DESCRIPTION,
 	parseMiseEnPlace,
 } from "../services/mise-en-place-flag";
+import {
+	COMMENTS_FLAG_DESCRIPTION,
+	parseComments,
+} from "../services/comments-flag";
 import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
 import { PLAN_FLAG_ARGS, resolvePlanContext } from "../services/plan-options";
 import {
@@ -83,6 +87,10 @@ export default defineCommand({
 			type: "string",
 			description: RESTS_FLAG_DESCRIPTION,
 		},
+		comments: {
+			type: "string",
+			description: COMMENTS_FLAG_DESCRIPTION,
+		},
 		...PLAN_FLAG_ARGS,
 		"with-sheet": {
 			type: "boolean",
@@ -117,9 +125,16 @@ export default defineCommand({
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
 		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
 		const rests = parseRests(args.rests);
+		const comments = parseComments(args.comments);
 		const plan = resolvePlanContext(args, rawArgs, config);
 		if (args["with-sheet"] && !plan) {
 			log.error("--with-sheet needs --serve (when it is served).");
+			process.exit(ExitCode.Error);
+		}
+		if (plan && !args["with-sheet"]) {
+			log.error(
+				"--serve only applies with --with-sheet: the recipe itself reads the same at any time.",
+			);
 			process.exit(ExitCode.Error);
 		}
 		const stock = resolveStockFromConfig(args.stock, config);
@@ -134,6 +149,7 @@ export default defineCommand({
 				nutritionBasis,
 				miseEnPlace,
 				rests,
+				comments,
 				plan,
 				withSheet: args["with-sheet"] as boolean | undefined,
 				lang: config.language,

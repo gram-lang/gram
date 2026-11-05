@@ -217,11 +217,11 @@ const overallSeverity = computed<WarningSeverity>(() => {
   display: flex;
   flex-direction: column;
   background-color: var(--sl-color-bg);
-  border: 1px solid var(--sl-color-border);
-  border-top: none;
+  border-top: 1px solid var(--sl-color-border);
   overflow: hidden;
   width: 100%;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .console-header {

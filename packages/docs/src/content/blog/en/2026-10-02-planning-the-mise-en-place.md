@@ -26,9 +26,9 @@ The second thing I noticed was in the "all at the start" planning. It put every 
 
 Now an intermediate is always gathered right before the section that uses it, in all the plannings. "All at the start" has become a real mix: the raw ingredients and the cookware first, the intermediates as they appear. Nothing changes for a recipe without intermediates.
 
-### Working in sessions
+### Working by day
 
-Then there was the case I hadn't solved. A professional doesn't plan section by section, nor everything at once: they plan in **sessions**. On a recipe over three days, you prepare each day what that day needs, not necessarily for all the steps of all the days. And inside a day, some intermediates only exist at that moment.
+Then there was the case I hadn't solved. A professional doesn't plan section by section, nor everything at once: they plan by **working day**. On a recipe over three days, you prepare each day what that day needs, not necessarily for all the steps of all the days. And inside a day, some intermediates only exist at that moment.
 
 The answer I settled on adds no syntax: a third reading choice, **by working day**. The days come from something you already write, the retro-planning anchors:
 
@@ -42,6 +42,6 @@ While trying it on a four-day vanilla tart, I also learned something about ancho
 
 ### Try it on your recipes
 
-If you have a recipe that is worked over several days or in several stages, try `gram view recipe.gram --mise-en-place per-session`, or the new "By working day" choice in the playground. If it doesn't match how you would organize the days, send it my way: real recipes are what will tell me whether the days should come from somewhere else than the anchors.
+If you have a recipe that is worked over several days or in several stages, try `gram view recipe.gram --mise-en-place per-day`, or the new "By working day" choice in the playground. If it doesn't match how you would organize the days, send it my way: real recipes are what will tell me whether the days should come from somewhere else than the anchors.
 
 > **Update before 1.4.0 shipped:** the rule for the days changed after this post. Only an anchor **in days** (`~{-1d}`, `~{-2d}`) opens a working day; an anchor in hours (`~{-36h}`, `~{-26h}`) is a deadline inside the day the section falls on, never a day of its own. A section without an anchor takes the day of the furthest anchor in days among the sections after it, and to keep a crust and the syrup made from it on the same day you anchor only the last one. The [mise en place and planning](/docs/explanation/mise-en-place-and-planning/) page has the current rules.

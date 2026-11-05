@@ -20,7 +20,8 @@ export enum WarningCode {
 	NO_BAKERS_REFERENCE = "NO_BAKERS_REFERENCE",
 	TIME_PARADOX = "TIME_PARADOX",
 	TRACK_CONTENTION = "TRACK_CONTENTION",
-	SESSION_OVERFLOW = "SESSION_OVERFLOW",
+	DAY_OVERFLOW = "DAY_OVERFLOW",
+	PASSIVE_OVERLAP_SAME_COOKWARE = "PASSIVE_OVERLAP_SAME_COOKWARE",
 	DURATION_OUT_OF_RANGE = "DURATION_OUT_OF_RANGE",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
 	// Phase E). The only module-related code kitchen raises itself, in the
@@ -106,10 +107,16 @@ export interface WarningPayloads {
 		item: string;
 		loc?: Location;
 	};
-	[WarningCode.SESSION_OVERFLOW]: {
+	[WarningCode.DAY_OVERFLOW]: {
 		section: string | null;
 		day: number;
 		overflowMinutes: number;
+		loc?: Location;
+	};
+	[WarningCode.PASSIVE_OVERLAP_SAME_COOKWARE]: {
+		cookware: string;
+		item: string;
+		other: string;
 		loc?: Location;
 	};
 	[WarningCode.MODULE_NOT_FOUND]: {
@@ -170,8 +177,10 @@ export const warningTemplates: {
 		`Timeline conflict: ${p.cause} is pulled earlier than recipe start to satisfy ${p.conflict}.`,
 	[WarningCode.TRACK_CONTENTION]: (p) =>
 		`Resource contention on track '${p.trackName}': delayed by ${p.delay} min for '${p.item}'.`,
-	[WarningCode.SESSION_OVERFLOW]: (p) =>
+	[WarningCode.DAY_OVERFLOW]: (p) =>
 		`Working day ${p.day} (from section '${p.section || "unnamed"}') starts ${formatMinutes(p.overflowMinutes)} before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-${p.day + 1}d}, or shorten the rest.`,
+	[WarningCode.PASSIVE_OVERLAP_SAME_COOKWARE]: (p) =>
+		`Two passive timers overlap and both use #${p.cookware}: ${p.item} and ${p.other}. If one is meant to follow the other, give them the same named track, for example ~_${p.cookware}{…}, so they take turns.`,
 	[WarningCode.MODULE_NOT_FOUND]: (p) =>
 		`Module "${p.specifier}" could not be found or resolved.`,
 };
@@ -230,7 +239,8 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.NO_BAKERS_REFERENCE]: "warning",
 	[WarningCode.TIME_PARADOX]: "warning",
 	[WarningCode.TRACK_CONTENTION]: "info",
-	[WarningCode.SESSION_OVERFLOW]: "warning",
+	[WarningCode.DAY_OVERFLOW]: "warning",
+	[WarningCode.PASSIVE_OVERLAP_SAME_COOKWARE]: "info",
 	[WarningCode.MODULE_NOT_FOUND]: "error",
 };
 

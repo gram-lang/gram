@@ -1,6 +1,6 @@
 ---
 title: "@gram-lang/scheduler"
-description: "The scheduling engine: lays out a task graph on a timeline, projects it onto the calendar given a target serving time and availability, and builds an operational run sheet."
+description: "The scheduling engine: lays out a task graph on a timeline, projects it onto the calendar given a target serving time and availability, and groups it into the days, visits to the kitchen and threads of a work plan."
 ---
 
 import Since from '../../../../../components/Since.astro';
@@ -28,7 +28,7 @@ The `@gram-lang/kitchen` compiler already re-exports `layout`, `LayoutOptions`, 
 function layout(graph: TaskGraph, options?: LayoutOptions): LayoutResult
 
 interface LayoutOptions {
-  miseEnPlace?: MiseEnPlaceMode; // "perSection" (default) | "upfront" | "perSession"
+  miseEnPlace?: MiseEnPlaceMode; // "perSection" (default) | "upfront" | "perDay"
   rests?: RestChoice;            // "shortest" (default) | "balanced" | "longest"
   restOverrides?: Record<string, number>; // target passive durations in minutes, by task id (used by project())
 }
@@ -55,7 +55,7 @@ const { schedule, diagnostics } = layout(tasks, {
   miseEnPlace: 'upfront',
   rests: 'longest',
 });
-// schedule.totalTime, schedule.blocks, schedule.sessions...
+// schedule.totalTime, schedule.blocks, schedule.days...
 ```
 
 For default options, `compiled.schedule` matches `layout(compiled.tasks).schedule` exactly.
@@ -71,7 +71,7 @@ interface Schedule {
   preparationTime: number; // mise en place duration (sum of `prep` tasks)
   idleTime: number;        // overall inactive time: totalTime - activeTime - preparationTime
   blocks: ScheduleBlock[]; // sorted by start time, then end time
-  sessions: ScheduleSession[]; // one per working day, ordered from furthest day to serving day
+  days: ScheduleDay[]; // one per working day, ordered from furthest day to serving day
 }
 
 type ScheduleBlock =
@@ -79,9 +79,9 @@ type ScheduleBlock =
   | { kind: "step"; task: string; section: number; step: number; start: number; end: number }
   | { kind: "passive"; task: string; section: number; step: number; track?: string; start: number; end: number };
 
-interface ScheduleSession {
+interface ScheduleDay {
   day: number;      // 0 = serving day (day 0), 1 = day before (day -1, ~{-1d})...
-  start: number;    // start and end bounds of the session's active work
+  start: number;    // start and end bounds of the working day's active work
   end: number;
   sections: number[];
 }
@@ -97,10 +97,10 @@ Structural diagnostics emitted by `layout()` as neutral data (the Kitchen compil
 type SchedulingDiagnostic =
   | { code: "TIME_PARADOX"; section: number; pulledTo: number }
   | { code: "TRACK_CONTENTION"; section: number; trackName: string; delay: number }
-  | { code: "SESSION_OVERFLOW"; section: number; day: number; overflowMinutes: number };
+  | { code: "DAY_OVERFLOW"; section: number; day: number; overflowMinutes: number };
 ```
 
-`SESSION_OVERFLOW` indicates that a session's active work starts before the 24-hour window allocated to that working day (pushed back by upstream task sequences). Only active work is counted against this threshold; passive durations spanning overnight are excluded.
+`DAY_OVERFLOW` indicates that a working day's active work starts before the 24-hour window allocated to that working day (pushed back by upstream task sequences). Only active work is counted against this threshold; passive durations spanning overnight are excluded.
 
 ## The task graph
 
@@ -215,8 +215,9 @@ interface ProjectedPlan {
   timeZone: string;
   recipes: {
     title?: string;
+    miseEnPlace: 'perSection' | 'upfront' | 'perDay'; // the mode this plan was made in
     blocks: ProjectedBlock[];     // scheduled blocks with start/end as ISO 8601 UTC timestamps
-    sessions: ProjectedSession[]; // and startLocal/endLocal: local wall-clock time in the target zone ("2026-10-10T21:40")
+    days: ProjectedDay[]; // and startLocal/endLocal: local wall-clock time in the target zone ("2026-10-10T21:40")
   }[];
   adjustments: RestAdjustment[];  // adjustments applied to elastic passive durations
   unavailable: { start: string; end: string }[]; // unavailable windows overlapping the plan duration
@@ -233,7 +234,7 @@ interface RestAdjustment {
 type ProjectionDiagnostic =
   | { code: "ACTIVE_OUTSIDE_AVAILABILITY"; task: string; local: string; rest?: string }
   | { code: "ACTIVE_BLOCK_EXCEEDS_AVAILABILITY"; tasks: string[]; minutes: number; largest: number }
-  | { code: "SESSION_DAY_MISMATCH"; day: number; expected: string; actual: string }
+  | { code: "DAY_MISMATCH"; day: number; expected: string; actual: string }
   | { code: "START_IN_PAST"; start: string; now: string }
   | { code: "MULTI_RECIPE_UNSUPPORTED"; recipes: number };
 ```
@@ -243,43 +244,142 @@ These diagnostics depend on the user's execution context: they are included dire
 ## `runSheet`
 
 ```typescript
-function runSheet(plan: ProjectedPlan): RunSheet
+function runSheet(
+  source: ProjectedPlan | Schedule,
+  options?: RunSheetOptions,
+): RunSheet
 
+interface RunSheetOptions {
+  graph?: TaskGraph;           // gives each timer its written range
+  title?: string;              // the title of a recipe laid out without a serving time
+  context?: ProjectionContext; // with `graph`, a calendar plan gets the margin of each visit
+}
+```
+
+Generates the data structure powering the work plan: day-by-day breakdowns for each recipe, detailing active **kitchen visits** and passive **threads** that proceed unattended.
+- A `ProjectedPlan` produces a concrete timestamped calendar schedule (`mode: "calendar"`);
+- A bare `Schedule` produces a relative temporal structure measured in days before serving (`mode: "relative"`).
+
+When `graph` and `context` are provided (in calendar plans), each visit receives its calculated anticipation margin. Key terms are defined in [The scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan).
+
+```typescript
 interface RunSheet {
-  serveAt: string;
-  timeZone: string;
-  recipes: { title?: string; days: RunSheetDay[] }[];
+  mode: "calendar" | "relative";
+  serveAt?: string;            // calendar plans only
+  timeZone?: string;
+  recipes: { title?: string; miseEnPlace: MiseEnPlaceMode; days: RunSheetDay[]; totalWork: number }[]; // totalWork: cumulative active hands-on minutes
+  adjustments: RunSheetAdjustment[]; // waits lengthened or shortened, with their section and day
   diagnostics: ProjectionDiagnostic[];
 }
 
 interface RunSheetDay {
-  date: string;             // "2026-10-10"
-  daysBefore: number;       // 0 on serving day, 1 on the day before...
-  entries: RunSheetEntry[]; // in chronological order
+  date?: string;               // "2026-10-10", with a target serving time
+  daysBefore: number;          // 0 on serving day, 1 on the day before...
+  visits: RunSheetVisit[]; // kitchen visits in chronological order
+  threads: RunSheetThread[];   // passive processes continuing after a visit
+  entries: RunSheetEntry[];    // all day blocks in order
 }
 
-interface RunSheetEntry {
+interface RunSheetVisit {
+  start: number;               // exact minutes before serving (<= 0)
+  end: number;
+  startLocal?: string;         // "2026-10-10T21:40", with a target serving time
+  endLocal?: string;
+  sections: number[];          // section indices with work in this visit, in recipe order
+  worked: number[];            // sections with a step in this visit
+  sectionStarts: { section: number; start: number; startLocal?: string }[];  // when each section of `worked` starts its first step in this visit
+  tasks: string[];             // task IDs for prep and step blocks from graph
+  window?: { advance: number; earliest: number; earliestLocal: string }; // anticipation margin (computed when >= 15 min)
+  fixedBy?: RunSheetFixedBy;   // the wait that holds this visit in place
+}
+
+interface RunSheetFixedBy {
   task: string;
-  kind: "prep" | "step" | "passive";
-  active: boolean;
   section: number;
   step?: number;
   track?: string;
-  start: string;            // ISO 8601 UTC timestamps
-  end: string;
-  startLocal: string;       // minute-exact local times
-  endLocal: string;
-  minutes: number;
-  adjustment?: RestAdjustment; // set when this passive duration was adjusted
+  planned: number;             // the planned minutes of the wait
+  before: "service" | "visit"; // what the wait leads to: the service or the next visit of `sections`
+  sections?: number[];
+}
+
+interface RunSheetThread {
+  visit: number;             // index in the day's visits
+  task: string;
+  section: number;
+  step?: number;
+  track?: string;
+  from: number;                // minutes from the service
+  to: number;
+  planned: number;             // minutes, adjustments included
+  fromLocal?: string;
+  toLocal?: string;
+  range?: { min: number; max: number }; // the written range (with `graph`)
 }
 ```
 
-Represents the data structure of an operational production sheet. Textual formatting and visual presentation are handled by `@gram-lang/renderer` (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet`; see the [renderer reference](/docs/reference/api/renderer/)).
+A **day** is a working day of the recipe; with a serving time, a working day that runs over several dates is told one day per date, and a visit that crosses midnight stays whole on the date it starts. `RunSheetEntry` is the block-level record (`kind`, `active`, `from`, `to`, `minutes`, `startLocal`, `adjustment?`…).
+
+What is **not** here are words and layout: `@gram-lang/renderer` writes them (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet`; see the [renderer reference](/docs/reference/api/renderer/)).
+
+## `visitWindows`
+
+```typescript
+function visitWindows(sheet: RunSheet, graph: TaskGraph, context: ProjectionContext): RunSheet
+```
+
+Gives each visit of a calendar work plan its anticipation margin (`window`), or names the wait that holds it in place (`fixedBy`). The margin of a visit assumes every other visit stays at its planned time, so it is always safe to use: moving several visits, or none, never breaks another margin. A margin is sometimes cautious, never wrong, and one shorter than `WINDOW_MIN_MINUTES` is not told.
+
+`runSheet()` already calls it when you pass `graph` and `context`, so you only need it to add margins to a sheet you built without them. A relative sheet, or one with no serving time, is returned as it is.
+
+## `findServeTimes` and `earliestServe` <Since v="1.4.0" />
+
+Both are built on `project()`: they try serving times and keep those that can be followed. A time is rejected when the plan has an unresolved problem, a start already in the past included, and each rejection carries its reasons.
+
+```typescript
+function tryServeAt(input: ProjectionInput, context: ProjectionContext, serveAt: string): ServeCandidate;
+
+function findServeTimes(
+  input: ProjectionInput,
+  context: ProjectionContext,        // needs `now` to reject starts in the past
+  options: FindServeOptions,
+): ServeSearch;
+
+interface FindServeOptions {
+  from: string;                      // "2026-10-12" or "2026-10-12T08:00", local
+  to: string;                        // a bare date means its whole day
+  mealTimes?: string[];              // default DEFAULT_MEAL_TIMES = ["12:30", "20:00"]
+  limit?: number;                    // default 5
+}
+
+interface ServeSearch {
+  candidates: ServeCandidate[];      // feasible times, best first
+  rejected: ServeCandidate[];        // every time tried and failed, with its reasons, in time order
+}
+
+function earliestServe(
+  input: ProjectionInput,
+  context: ProjectionContext,        // `now` required (or `options.from`)
+  options?: { from?: string },
+): { found?: ServeCandidate; searchedUntil: string };
+
+interface ServeCandidate {
+  serveAt: string;                   // local
+  ok: boolean;
+  reasons: ProjectionDiagnostic[];
+  adjustments: number;               // waits made longer or shorter
+  visits: number;                  // visits to the kitchen
+  startsAt?: string;                 // local, first task
+  plan: ProjectedPlan;
+}
+```
+
+`candidates` are ranked: fewer adjustments, then fewer visits, then the earliest. `earliestServe()` starts at the recipe's shortest length after the present and goes by steps of five minutes for up to `EARLIEST_SERVE_HORIZON_DAYS` (14). The words for both are `describeServeTimes()` and `describeEarliestServe()` of the renderer; `gram plan --find` is the same search.
 
 ## Constants and helpers
 
 ```typescript
-type MiseEnPlaceMode = "perSection" | "upfront" | "perSession";
+type MiseEnPlaceMode = "perSection" | "upfront" | "perDay";
 const MISE_EN_PLACE_MODES: readonly MiseEnPlaceMode[];
 const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode; // "perSection"
 function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode;
@@ -290,6 +390,12 @@ const DEFAULT_REST_CHOICE: RestChoice; // "shortest"
 function isRestChoice(value: unknown): value is RestChoice;
 
 const WEEKDAYS: readonly ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+const MINUTES_PER_DAY = 1440;
+const VISIT_GAP_MINUTES = 60;          // a wait this long ends a visit to the kitchen
+const WINDOW_MIN_MINUTES = 15;          // a margin shorter than this is not told
+const DEFAULT_MEAL_TIMES: string[];     // ["12:30", "20:00"]
+const EARLIEST_SERVE_HORIZON_DAYS = 14;
 
 // Date utilities without external dependencies, based on an explicit time zone
 function parseLocalIso(value: string, timeZone: string): number; // "2026-10-11T13:00" → minutes since Unix epoch (UTC)
@@ -315,7 +421,7 @@ During daylight saving time transitions, an invalid local time (e.g. 02:30 when 
   />
   <LinkCard
     title="Renderer API"
-    description="Render run sheets to formatted terminal tables, Markdown, or print HTML."
+    description="Render work plans to text, Markdown, HTML or a print document."
     href="/docs/reference/api/renderer/"
   />
   <LinkCard

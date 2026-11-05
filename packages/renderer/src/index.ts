@@ -14,25 +14,42 @@ export type { NutrientGroup, NutrientRow, ResolvedBasis } from "./nutrition";
 export { formatElement } from "./formatters/element";
 export { DEFAULT_ICONS, HTML_ICONS, MD_ICONS, PRINT_ICONS } from "./icons";
 export { toMarkdown } from "./formatters/markdown";
+export type { CommentsMode } from "./types";
 export { toHTML } from "./formatters/html";
 export { toPrintHTML } from "./formatters/print";
 export {
-	annotateRecipe,
 	describeRunSheet,
-	stepKey,
 	runSheetToHTML,
 	runSheetToMarkdown,
 	runSheetToText,
 } from "./run-sheet";
 export { runSheetToPrintHTML } from "./run-sheet-print";
+export { describeEarliestServe, describeServeTimes } from "./serve-times";
 export type {
 	RunSheetDayModel,
-	RunSheetLine,
-	RecipeAnnotations,
+	RunSheetEvent,
+	RunSheetKitGroup,
+	RunSheetKitLine,
+	RunSheetVisitModel,
+	RunSheetProgramLine,
 	RunSheetModel,
 	RunSheetRenderOptions,
-	StepNote,
+	RunSheetScheduleRow,
+	RunSheetStepLine,
+	RunSheetWaitLine,
 } from "./run-sheet";
+export {
+	intermediateMakers,
+	visitKit,
+	sectionProgram,
+	sectionSteps,
+} from "./work-plan-parts";
+export type {
+	KitItem,
+	ProgramStep,
+	VisitKitOptions,
+	SectionProgram,
+} from "./work-plan-parts";
 export {
 	formatDecimalToFraction,
 	getQty,

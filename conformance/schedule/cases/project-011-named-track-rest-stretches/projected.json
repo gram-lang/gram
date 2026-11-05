@@ -3,6 +3,7 @@
   "timeZone": "Europe/Paris",
   "recipes": [
     {
+      "miseEnPlace": "perSection",
       "blocks": [
         {
           "kind": "prep",
@@ -54,7 +55,7 @@
           "endLocal": "2026-10-11T13:00"
         }
       ],
-      "sessions": [
+      "days": [
         {
           "day": 0,
           "start": "2026-10-10T19:39:00Z",
@@ -85,7 +86,7 @@
   ],
   "diagnostics": [
     {
-      "code": "SESSION_DAY_MISMATCH",
+      "code": "DAY_MISMATCH",
       "day": 0,
       "expected": "2026-10-11",
       "actual": "2026-10-10"

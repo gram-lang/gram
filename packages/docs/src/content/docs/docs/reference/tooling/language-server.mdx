@@ -6,6 +6,7 @@ description: "How the Gram Language Server implements the LSP to power diagnosti
 The Gram Language Server (`@gram-lang/language-server`) is the intelligence engine behind editor integrations. It implements the standard **Language Server Protocol (LSP)**, providing advanced IDE features for Gram files across multiple editors, not just VS Code.
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 ## Architecture
 
@@ -28,7 +29,7 @@ The Gram Language Server implements the following standard capabilities:
 
 | LSP Capability | Gram Implementation |
 |---|---|
-| **Diagnostics** | Real-time reporting of syntax errors, structural defects (circular dependencies), and scheduling warnings (`SESSION_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
+| **Diagnostics** | Real-time reporting of syntax errors, structural defects (circular dependencies), and scheduling warnings (`DAY_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
 | **Semantic Tokens** | AST-driven highlighting for modifiers, units, temperatures, and composite ingredients. |
 | **Completion** | Contextual autocomplete for database ingredients, canonical units, and intermediate variables. |
 | **Hover** | Displays nutritional breakdowns and real-time volume-to-mass conversions on ingredient hover. |
@@ -41,6 +42,16 @@ The Gram Language Server implements the following standard capabilities:
 | **Code Lens** | Injects interactive action buttons above the document (such as nutrition calculation). |
 | **Document Symbol** | Populates the editor's Outline view for clean structural navigation across recipe sections. |
 | **Folding Range** | Enables folding of YAML frontmatter blocks and `##` section headings. |
+
+## Notifications to the client
+
+In addition to standardized LSP requests, the server sends asynchronous notifications carrying pre-rendered recipe views as a `{ uri, html }` object:
+
+| Notification | Content |
+|---|---|
+| `gram/previewUpdated` | HTML rendering of the live preview, or the error panel when the recipe fails to compile. |
+| `gram/runSheetUpdated` | <Since v="1.4.0" /> HTML rendering of the work plan broken down into relative days (`D-2`, `D-1`, `Day D`), consumed by the VS Code `Gram: Work Plan` view. |
+| `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> HTML rendering of the legacy Gantt chart. Emitted until version 2.0.0 for third-party client compatibility (the official VS Code extension no longer listens to it). |
 
 ## Related resources
 

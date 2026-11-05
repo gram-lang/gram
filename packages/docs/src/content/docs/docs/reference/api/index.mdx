@@ -28,9 +28,9 @@ All packages are ESM-only, side-effect free, and run in any JavaScript runtime â
 | [`@gram-lang/parser`](/docs/reference/api/parser) | Turns `.gram` source text into an Abstract Syntax Tree (AST) | `getAST(source)` |
 | [`@gram-lang/modules`](/docs/reference/api/modules) | Resolves `@use` imports, tracks dependencies, scales bases by yield, and composes a unified AST | `loadModuleGraph(entry, host)`, `composeRecipe(graph, opts)` |
 | [`@gram-lang/kitchen`](/docs/reference/api/kitchen) | Compiles the AST into a structured, render-ready payload (shopping list, task graph, default schedule, cookware registry) | `compile(ast, options?)` |
-| [`@gram-lang/scheduler`](/docs/reference/api/scheduler) | Computes theoretical ALAP scheduling and projects recipes onto a real-world calendar based on target serving time and availability | `layout(graph, options?)`, `project(recipes, context)`, `runSheet(plan)` |
+| [`@gram-lang/scheduler`](/docs/reference/api/scheduler) | Computes theoretical ALAP scheduling and projects recipes onto a real-world calendar based on target serving time and availability | `layout(graph, options?)`, `project(recipes, context)`, `runSheet(plan)`, `findServeTimes()`, `earliestServe()` |
 | [`@gram-lang/analyzer`](/docs/reference/api/analyzer) | Enriches a compiled recipe with physical properties (mass, yield, nutrition, baker's percentages) using an ingredient database | `analyze(compiled, database, options?)` |
-| [`@gram-lang/renderer`](/docs/reference/api/renderer) | Renders a (compiled or analyzed) recipe to Markdown, HTML, or production run sheets | `toMarkdown` / `toHTML` / `toPrintHTML` |
+| [`@gram-lang/renderer`](/docs/reference/api/renderer) | Renders a (compiled or analyzed) recipe to Markdown or HTML, and the work plan of a schedule | `toMarkdown` / `toHTML` / `toPrintHTML` |
 | [`@gram-lang/format`](/docs/reference/api/format) | Canonical code formatter for `.gram` files (13 unified formatting rules) | `formatGram(source, options?)` |
 | [`@gram-lang/i18n`](/docs/reference/api/i18n) | Shared unit/time normalization and UI dictionaries used internally by the pipeline packages | `normalizeUnit`, `getDictionary` |
 

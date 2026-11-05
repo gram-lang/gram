@@ -6,7 +6,7 @@ import {
 	type MiseEnPlaceMode,
 	type RestChoice,
 } from "./mode";
-import { sessionOverflows } from "./sessions";
+import { dayOverflows } from "./days";
 import type {
 	PassiveTask,
 	Schedule,
@@ -65,7 +65,7 @@ function overridden(
  * Active work is planned on its `nominal` duration whatever `rests` says, and
  * every passive rest on the figure `rests` picks in its range. The returned
  * diagnostics are the ones that don't depend on any reader's context: a time
- * paradox, a track contention, a session spilling out of its 24 h window.
+ * paradox, a track contention, a working day spilling out of its 24 h window.
  */
 export function layout(
 	graph: TaskGraph,
@@ -148,7 +148,7 @@ export function layout(
 	const totalTime = built.blocks.reduce((max, b) => Math.max(max, b.end), 0);
 	const diagnostics = [
 		...built.diagnostics,
-		...sessionOverflows(built.sessions, built.blocks, totalTime),
+		...dayOverflows(built.days, built.blocks, totalTime),
 	];
 	return {
 		schedule: {
@@ -159,7 +159,7 @@ export function layout(
 			preparationTime,
 			idleTime: totalTime - activeTime - preparationTime,
 			blocks: built.blocks,
-			sessions: built.sessions,
+			days: built.days,
 		},
 		diagnostics,
 	};

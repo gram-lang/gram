@@ -29,6 +29,7 @@ Mélanger @farine{200g} et @lait{200ml}.
 {
   "type": "Recipe",
   "meta": { "title": "Crêpes" },
+  "imports": [],
   "children": [
     {
       "type": "Section",
@@ -121,8 +122,8 @@ Mélanger @farine{200g} et @lait{200ml}.
       "title": "Pâte",
       "retro_planning": null,
       "ingredients": [
-        { "id": "farine", "name": "farine", "qty": 200, "unit": "g", "_usageIds": ["1"] },
-        { "id": "lait", "name": "lait", "qty": 200, "unit": "ml", "_usageIds": ["2"] }
+        { "id": "farine", "_usageId": "1", "qty": 200, "unit": "g" },
+        { "id": "lait", "_usageId": "2", "qty": 200, "unit": "ml" }
       ],
       "cookware": [],
       "steps": [
@@ -165,7 +166,7 @@ Mélanger @farine{200g} et @lait{200ml}.
       { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
       { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
     ],
-    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    "days": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
   }
 }
 ```
@@ -270,7 +271,7 @@ Mélanger @farine{200g} et @lait{200ml}.
       { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
       { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
     ],
-    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    "days": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
   }
 }
 ```
@@ -365,6 +366,56 @@ farine:
 Les blocs `physical` et `nutrition` sont tous deux optionnels. Une entrée dépourvue de ces blocs reste valide (elle ne fournira simplement aucune conversion de masse ou macro nutritionnel, déclenchant un `missingMassIngredients` ou l'avertissement `MISSING_MACROS`). Seul le champ `name` est strictement obligatoire. Les sous-champs `nutrition.calories`, `protein`, `carbs` et `fat` sont obligatoires dès lors que la clé `nutrition` est déclarée. Les autres (`sugar`, `fiber`, `sodium`, `sat_fat`, `mono_fat`, `poly_fat`, `alcohol`) sont optionnels.
 
 **Les unités doivent être scrupuleusement respectées** : `calories` est exprimé en kcal, `sodium` en **milligrammes (mg)**, et tous les autres nutriments en grammes (g) — l'ensemble étant rapporté à 100 g d'ingrédient brut. L'inventaire complet des nutriments gérés, leurs unités et leur ordre d'affichage proviennent de la constante canonique `NUTRIENTS` exportée par `@gram-lang/analyzer`.
+
+<span id="5-le-plan-de-travail"></span>
+
+## 5. Le planning de préparation
+
+Structure de données du planning de préparation (`@gram-lang/scheduler`), telle que produite par la fonction `runSheet()` et émise par la commande `gram plan --format json` sous la propriété `runSheet`. Exemple pour une recette planifiée avec une heure de service cible :
+
+```json
+{
+  "mode": "calendar",
+  "serveAt": "2026-10-17T20:00",
+  "timeZone": "Europe/Paris",
+  "recipes": [
+    {
+      "title": "Entremets pistache framboise",
+      "miseEnPlace": "perSection",
+      "totalWork": 45,
+      "days": [
+        {
+          "date": "2026-10-16",
+          "daysBefore": 1,
+          "visits": [
+            {
+              "start": -1585, "end": -1560,
+              "startLocal": "2026-10-16T13:35", "endLocal": "2026-10-16T14:00",
+              "sections": [2],
+              "tasks": ["s2.prep", "s2.0", "s2.1"],
+              "window": { "advance": 335, "earliest": -1920, "earliestLocal": "2026-10-16T08:00" }
+            }
+          ],
+          "threads": [
+            { "visit": 0, "task": "s2.1.t0", "section": 2, "step": 1,
+              "from": -1560, "to": -840, "planned": 720,
+              "range": { "min": 720, "max": 2880 } }
+          ],
+          "entries": ["…chaque bloc du jour…"]
+        }
+      ]
+    }
+  ],
+  "adjustments": [],
+  "diagnostics": []
+}
+```
+
+- Les temps `start`, `end`, `from` et `to` sont des **minutes avant le service** (négatives avant lui), exactes, dans un plan avec ou sans heure de service. Les champs `*Local` (heure murale à la minute) et `date` n'existent qu'avec une heure de service.
+- `mode: "relative"` est la même structure pour une recette sans heure de service : ni `serveAt`, ni `date`, ni `window`.
+- `totalWork` est le nombre de minutes de votre propre travail, mise en place comprise.
+- `miseEnPlace` est le mode dans lequel le plan a été établi (`perSection`, `perDay` ou `upfront`) : le planning de préparation s'en sert pour décider de ce qui figure dans la mise en place de chaque passage.
+- Les types et le sens de chaque champ : [`runSheet` dans la référence du scheduler](/fr/docs/reference/api/scheduler/#runsheet).
 
 ## Ressources associées
 

@@ -4,11 +4,7 @@
  * lets the reader pick one (renderer, CLI, language server, playground) reads
  * its choices, default and validation from here.
  */
-export const MISE_EN_PLACE_MODES = [
-	"perSection",
-	"upfront",
-	"perSession",
-] as const;
+export const MISE_EN_PLACE_MODES = ["perSection", "upfront", "perDay"] as const;
 
 export type MiseEnPlaceMode = (typeof MISE_EN_PLACE_MODES)[number];
 

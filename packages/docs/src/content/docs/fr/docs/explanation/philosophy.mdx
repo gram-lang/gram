@@ -15,7 +15,7 @@ Cuisiner, c'est un peu comme exécuter un algorithme : on prend des ingrédients
 
 J'ai toujours aimé l'idée d'écrire des recettes en texte brut (*plain text*), en m'inspirant de projets pionniers comme l'excellent [Cooklang](https://cooklang.org) (idéal pour des recettes maison simples et rapides). Mais dès que les choses se compliquent (comme en pâtisserie, avec ses multiples préparations, le « pourcentage du boulanger » ou des plannings complexes) s'appuyer uniquement sur le langage naturel montre vite ses limites.
 
-Structurellement, Gram s'inspire beaucoup du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes présentées sous forme de tableaux. Puisque Gram compile les recettes en un arbre JSON déterministe, il permet de générer automatiquement des rendus visuels avancés : plannings de production, diagrammes de Gantt interactifs, fiches de déroulé opérationnel et exports de calendrier.
+Structurellement, Gram s'inspire beaucoup du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes présentées sous forme de tableaux. Puisque Gram compile les recettes en un arbre JSON déterministe, il permet de générer automatiquement des rendus visuels avancés : plans de travail pour la cuisine, tableaux de flux et exports de calendrier.
 
 J'ai créé Gram comme une alternative pour ces scénarios plus exigeants. Il introduit une **logique relationnelle**, une **précision physique**, une **composition modulaire** et un **ordonnancement prédictif** dans la rédaction de vos recettes :
 
@@ -53,7 +53,7 @@ L'écosystème Gram met à votre disposition tout le nécessaire pour concevoir 
     **`@gram-lang/cli`** : Permet de compiler, d'ajuster les proportions, d'ordonnancer, de comparer les révisions (diff) et de gérer votre base d'ingrédients depuis le terminal.
   </Card>
   <Card title="Moteur de rendu" icon="document">
-    **`@gram-lang/renderer`** : Génère instantanément du HTML sémantique, des diagrammes de Gantt, des fiches de production et du Markdown à partir du JSON compilé.
+    **`@gram-lang/renderer`** : Génère instantanément du HTML sémantique, des plans de travail et du Markdown à partir du JSON compilé : des vues de données que vous pouvez aussi dessiner vous-même.
   </Card>
 </CardGrid>
 

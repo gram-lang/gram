@@ -172,7 +172,7 @@ export type StepToken =
 export interface ProcessedStep {
 	type: "step";
 	action?: string; // The explicit action verb (e.g. "Mix")
-	// Gantt Data
+	// Deprecated timing data (see `schedule`)
 	/** @deprecated Since 1.4.0, will be removed in 2.0.0. Read the `step` blocks of `schedule.blocks` instead. (Ref: kitchen-step-timings) */
 	timings: {
 		start: number; // Global start time (in minutes, relative to T=0)
@@ -204,7 +204,7 @@ import type {
 	MiseEnPlaceItem,
 	Schedule,
 	ScheduleBlock,
-	ScheduleSession,
+	ScheduleDay,
 	SectionMiseEnPlace,
 	TaskGraph,
 	TimeBreakdownItem,
@@ -215,7 +215,7 @@ export type {
 	MiseEnPlaceItem,
 	Schedule,
 	ScheduleBlock,
-	ScheduleSession,
+	ScheduleDay,
 	SectionMiseEnPlace,
 	TimeBreakdownItem,
 };

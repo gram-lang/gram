@@ -11,7 +11,7 @@
     "gantt.css"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
+    "build": "tsup src/index.ts --format esm --dts --loader .css=text --tsconfig ../../tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "bun test --only-failures",
     "prepublishOnly": "npm run build"

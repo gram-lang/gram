@@ -144,7 +144,7 @@ describe("a compiled recipe without work", () => {
 			preparationTime: 0,
 			idleTime: 0,
 			blocks: [],
-			sessions: [],
+			days: [],
 		});
 	});
 });
@@ -216,13 +216,13 @@ describe("the working day of a section", () => {
 	});
 });
 
-describe("SESSION_OVERFLOW", () => {
+describe("DAY_OVERFLOW", () => {
 	const OVERFLOWING =
 		"## Dough ~{-1d} ->&dough\n\nMix @flour{500g}.\n\nFerment ~_{50h}.\n\n## Bake\n\nBake &dough{500g} ~{30min}.\n";
 
 	it("warns when a long rest pushes a day out of its 24 h window", () => {
 		const warning = build(OVERFLOWING).warnings.find(
-			(w) => w.code === WarningCode.SESSION_OVERFLOW,
+			(w) => w.code === WarningCode.DAY_OVERFLOW,
 		);
 		expect(warning).toMatchObject({ section: "Dough" });
 		expect(warning!.message).toContain("Working day 1");
@@ -230,7 +230,7 @@ describe("SESSION_OVERFLOW", () => {
 
 	it("is raised once, with the location of the section", () => {
 		const warnings = build(OVERFLOWING).warnings.filter(
-			(w) => w.code === WarningCode.SESSION_OVERFLOW,
+			(w) => w.code === WarningCode.DAY_OVERFLOW,
 		);
 		expect(warnings).toHaveLength(1);
 		expect(warnings[0]!.loc).toBeDefined();
@@ -240,7 +240,7 @@ describe("SESSION_OVERFLOW", () => {
 		const fits =
 			"## Dough ~{-1d} ->&dough\n\nMix @flour{500g}.\n\nFerment ~_{10h}.\n\n## Bake\n\nBake &dough{500g} ~{30min}.\n";
 		expect(
-			build(fits).warnings.some((w) => w.code === WarningCode.SESSION_OVERFLOW),
+			build(fits).warnings.some((w) => w.code === WarningCode.DAY_OVERFLOW),
 		).toBe(false);
 	});
 
@@ -248,9 +248,9 @@ describe("SESSION_OVERFLOW", () => {
 		const hours =
 			"## Marinade ~{-36h}\n\nMix @chicken{1kg}, rest ~_{36h}.\n\n## Cook\n\nFry ~{20min}.\n";
 		const result = build(hours);
-		expect(result.schedule.sessions).toHaveLength(1);
+		expect(result.schedule.days).toHaveLength(1);
 		expect(
-			result.warnings.some((w) => w.code === WarningCode.SESSION_OVERFLOW),
+			result.warnings.some((w) => w.code === WarningCode.DAY_OVERFLOW),
 		).toBe(true);
 	});
 });

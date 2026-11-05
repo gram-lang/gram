@@ -166,16 +166,8 @@ export interface RecipeViewModel {
 			text: string;
 			timerMinutes?: number;
 			_tokens: any[];
-			/** The recipe on the calendar: "around 21:40". */
-			when?: string;
-			/** The day, set when the step falls on another date than the step shown before it. */
-			day?: string;
-			/** What the step leaves resting, with the note of a stretched or shortened rest. */
-			rests?: Array<{ text: string; note?: string }>;
 		}>;
 	}>;
-	/** Set when the recipe is on the calendar (`--serve`): when it is served, and what could not be fixed. */
-	plan?: { servedAt: string; problems: string[] } | null;
 	nutrition: NutritionMetrics | null;
 	missingIngredients: string[];
 	/** The `--stock` entries a `@use` of the recipe matched. */
@@ -301,6 +293,11 @@ export const GramConfigFileSchema = z.object({
 	 * `gram view` or `gram build`, only the command that needs a zone.
 	 */
 	timezone: z.string().optional(),
+	/**
+	 * The times of day `gram plan --find` tries a serving time at, "12:30" and
+	 * "20:00" by default. Like `timezone`, only checked by the command that uses it.
+	 */
+	mealTimes: z.array(z.string()).optional(),
 	/** Set to `false` to disable the passive "update available" notice printed after a command finishes. */
 	updateCheck: z.boolean().optional(),
 	/** Named `@use` specifier aliases (module-imports RFC §B.1/§F.1): `paths: { bases: "./shared/bases" }` lets `@use "@bases/pate.gram"` resolve to `<projectRoot>/shared/bases/pate.gram`. The bare `@/` prefix (project root itself) needs no entry here. */

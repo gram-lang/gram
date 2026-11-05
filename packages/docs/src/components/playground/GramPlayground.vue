@@ -29,13 +29,23 @@ import {
 	applyScale,
 	DEFAULT_MISE_EN_PLACE_MODE,
 	DEFAULT_REST_CHOICE,
+	scheduleFor,
 	REST_CHOICES,
 	isMiseEnPlaceMode,
 	isRestChoice,
 	type MiseEnPlaceMode,
 	type RestChoice,
 } from "@gram-lang/kitchen";
-import { project, runSheet, type ProjectedPlan } from "@gram-lang/scheduler";
+import {
+	type Availability,
+	type TimeRange,
+	type Weekday,
+	WEEKDAYS,
+	earliestServe,
+	findServeTimes,
+	project,
+	runSheet,
+} from "@gram-lang/scheduler";
 import {
 	analyze,
 	convertUnit,
@@ -55,9 +65,14 @@ import {
 	enrichWarning,
 	sortDiagnostics,
 } from "./diagnostics";
-import { toMarkdown, toHTML, runSheetToHTML } from "@gram-lang/renderer";
+import {
+	describeEarliestServe,
+	describeServeTimes,
+	toMarkdown,
+	toHTML,
+	runSheetToHTML,
+} from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
-import "@gram-lang/renderer/gantt.css";
 import { DEFAULT_SOURCES } from "./db";
 import { DEFAULT_ENTRY_URI, createPlaygroundHost } from "./vfsHost";
 import { getDictionary } from "@gram-lang/i18n";
@@ -140,11 +155,11 @@ const errorFiles = computed(() => {
 });
 
 const viewMode = ref<
-	"preview" | "gantt" | "runsheet" | "json" | "ast" | "markdown" | "json-tree"
+	"preview" | "runsheet" | "json" | "ast" | "markdown" | "json-tree"
 >("preview");
 // Which complete timeline the views follow: mise en place right before each
 // section, or all of it at the start. A reading choice, shared by the preview,
-// the Gantt and the Markdown views, and remembered in the browser.
+// the work plan and the Markdown views, and remembered in the browser.
 const SCHEDULE_STORAGE_KEY = "gram-playground-schedule";
 
 function loadSchedule(): MiseEnPlaceMode {
@@ -194,8 +209,8 @@ watch(rests, (value) => {
 });
 
 // The plan: when it is served and when the cook is available. Setting a serving
-// time puts the recipe on the calendar (the Gantt chart reads in real dates,
-// the production sheet appears); clearing it goes back to a plain timeline.
+// time puts the work plan on the calendar (dates, margins, rests stretched to
+// your availability); clearing it goes back to the days before the service.
 // Remembered in the browser like the other choices.
 const PLAN_STORAGE_KEY = "gram-playground-plan";
 
@@ -208,21 +223,29 @@ function defaultTimeZone(): string {
 }
 
 function loadPlan(): PlanSettings {
-	const fallback = {
+	const fallback: PlanSettings = {
 		serveAt: "",
 		timeZone: defaultTimeZone(),
 		from: "08:00",
 		to: "22:00",
+		customWeekdays: false,
+		weekdays: undefined,
 	};
 	try {
 		const saved = JSON.parse(localStorage.getItem(PLAN_STORAGE_KEY) ?? "null");
 		if (saved && typeof saved === "object") {
 			const text = (v: unknown, d: string) => (typeof v === "string" ? v : d);
+			const bool = (v: unknown, d: boolean) => (typeof v === "boolean" ? v : d);
 			return {
 				serveAt: text(saved.serveAt, fallback.serveAt),
 				timeZone: text(saved.timeZone, fallback.timeZone),
 				from: text(saved.from, fallback.from),
 				to: text(saved.to, fallback.to),
+				customWeekdays: bool(saved.customWeekdays, false),
+				weekdays:
+					saved.weekdays && typeof saved.weekdays === "object"
+						? saved.weekdays
+						: undefined,
 			};
 		}
 	} catch {
@@ -232,10 +255,20 @@ function loadPlan(): PlanSettings {
 }
 
 const plan = ref<PlanSettings>(loadPlan());
-// The plan of the last run, for the Gantt chart; null without a serving time.
-const projection = shallowRef<ProjectedPlan | null>(null);
+// The work plan of the last run, as HTML: with dates when a serving time is
+// set, in days before the service otherwise.
 const runSheetHtml = ref("");
 const planError = ref("");
+
+interface ServeSuggestions {
+	/** Serving times that work, best first. */
+	candidates: { serveAt: string; label: string; title: string }[];
+	/** Why the others don't, in words. */
+	rejected: string[];
+	/** The first time it can be ready if the cook starts now. */
+	earliest: { serveAt: string; label: string; text: string } | null;
+}
+const serveSuggestions = shallowRef<ServeSuggestions | null>(null);
 
 watch(
 	plan,
@@ -252,12 +285,35 @@ watch(
 
 // biome-ignore lint/correctness/noUnusedVariables: clearPlan is used in the <template> block below, which Biome's Vue support doesn't see.
 function clearPlan() {
-	plan.value = { ...plan.value, serveAt: "" };
+	plan.value = {
+		...plan.value,
+		serveAt: "",
+		customWeekdays: false,
+		weekdays: undefined,
+	};
 }
 
 // Studio Drawer state
 const isDrawerOpen = ref(false);
 const drawerInitialSection = ref<string | undefined>(undefined);
+const isWideScreen = ref(false);
+let wideMql: MediaQueryList | undefined;
+
+function handleWideMqlChange(e: MediaQueryListEvent | MediaQueryList) {
+	isWideScreen.value = e.matches;
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: toggleStudio is used in the <template> block below, which Biome's Vue support doesn't see.
+function toggleStudio(section?: string) {
+	if (
+		isDrawerOpen.value &&
+		(!section || drawerInitialSection.value === section)
+	) {
+		closeStudio();
+	} else {
+		openStudio(section);
+	}
+}
 
 // biome-ignore lint/correctness/noUnusedVariables: openStudio is used in the <template> block below, which Biome's Vue support doesn't see.
 function openStudio(section?: string) {
@@ -271,14 +327,12 @@ function closeStudio() {
 	isDrawerOpen.value = false;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: isPlanActive is used in the <template> block below, which Biome's Vue support doesn't see.
-const isPlanActive = computed(() => plan.value.serveAt !== "");
-
 // biome-ignore lint/correctness/noUnusedVariables: activeModifiersCount is used in the <template> block below, which Biome's Vue support doesn't see.
 const activeModifiersCount = computed(() => {
 	let count = 0;
 	if (
 		plan.value.serveAt !== "" ||
+		plan.value.customWeekdays ||
 		schedule.value !== "perSection" ||
 		rests.value !== "shortest"
 	) {
@@ -288,6 +342,9 @@ const activeModifiersCount = computed(() => {
 		count++;
 	}
 	if (options.value.bakersMath) {
+		count++;
+	}
+	if (options.value.comments === "hide") {
 		count++;
 	}
 	if (
@@ -317,6 +374,7 @@ function resetAllStudioOptions() {
 		bakersMath: false,
 		bakersMathOnly: false,
 		bakersReference: undefined,
+		comments: "show",
 	};
 	stockedUris.value = new Set();
 	trackEvent("playground-reset-studio-options");
@@ -329,6 +387,7 @@ const options = ref({
 	bakersMath: false,
 	bakersMathOnly: false,
 	bakersReference: undefined as string | undefined,
+	comments: "show" as "show" | "hide",
 });
 
 // URIs (already resolved, matching `ModuleHost.resolve()`'s own output —
@@ -362,7 +421,6 @@ const scaleTargetUnit = ref("");
 // biome-ignore lint/correctness/noUnusedVariables: viewModeOptions is used in the <template> block below, which Biome's Vue support doesn't see.
 const viewModeOptions = computed(() => [
 	{ label: t.value.playground.views.preview, value: "preview" },
-	{ label: t.value.playground.views.gantt, value: "gantt" },
 	{ label: t.value.playground.views.runSheet, value: "runsheet" },
 	{ label: t.value.playground.views.jsonTree, value: "json-tree" },
 	{ label: t.value.playground.views.json, value: "json" },
@@ -418,6 +476,13 @@ onMounted(() => {
 			}
 		})
 		.catch((err) => console.error("Manifest Error:", err));
+
+	// Track viewport width for docked (>= 1200px) vs overlay drawer (< 1200px)
+	if (typeof window !== "undefined" && window.matchMedia) {
+		wideMql = window.matchMedia("(min-width: 1200px)");
+		isWideScreen.value = wideMql.matches;
+		wideMql.addEventListener("change", handleWideMqlChange);
+	}
 
 	updateGram();
 });
@@ -678,20 +743,20 @@ async function updateGram() {
 			content.value = renderSExpr(composed.ast);
 		} else if (viewMode.value === "markdown") {
 			content.value = toMarkdown(result, {
+				comments: options.value.comments,
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
 				rests: rests.value,
-				projection: projection.value ?? undefined,
 			});
 		} else if (viewMode.value === "preview") {
 			htmlPreview.value = toHTML(result, {
 				interactiveScaling: true,
 				interactiveNutrition: true,
 				bakersMathOnly: options.value.bakersMathOnly,
+				comments: options.value.comments,
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
 				rests: rests.value,
-				projection: projection.value ?? undefined,
 			});
 		}
 		trackPlaygroundRun(true, codeLength);
@@ -707,41 +772,169 @@ async function updateGram() {
 	}
 }
 
+function buildAvailability(planSettings: PlanSettings): Availability {
+	const daily = [
+		{
+			start: planSettings.from || "08:00",
+			end: planSettings.to || "22:00",
+		},
+	];
+	if (!planSettings.customWeekdays || !planSettings.weekdays) {
+		return { daily };
+	}
+	const weekdays: Partial<Record<Weekday, TimeRange[]>> = {};
+	for (const day of WEEKDAYS) {
+		const setting = planSettings.weekdays[day];
+		if (!setting) continue;
+		if (!setting.enabled) {
+			weekdays[day] = [];
+		} else {
+			weekdays[day] = [
+				{
+					start: setting.from || planSettings.from || "08:00",
+					end: setting.to || planSettings.to || "22:00",
+				},
+			];
+		}
+	}
+	return { daily, weekdays };
+}
+
 /**
- * Places the compiled recipe on the calendar when a serving time is set, for
- * the Gantt chart and the production sheet. A plan that can't be made (an
+ * The work plan of the compiled recipe: on the calendar when a serving time is
+ * set, in days before the service otherwise. A plan that can't be made (an
  * unknown time zone, a half-typed time) is reported next to the controls, not
- * as a problem of the recipe.
+ * as a problem of the recipe; what could not be fixed is at the top of the plan.
  */
 function placeOnCalendar(result: any) {
-	projection.value = null;
 	runSheetHtml.value = "";
 	planError.value = "";
-	const { serveAt, timeZone, from, to } = plan.value;
-	if (!serveAt) return;
+	if (!result?.tasks) return;
+	const { serveAt, timeZone } = plan.value;
 	try {
-		const projected = project(
-			[
-				{
-					graph: result.tasks,
-					title: result.title ?? undefined,
-					options: { miseEnPlace: schedule.value, rests: rests.value },
-				},
-			],
-			{
+		const title = result.title ?? undefined;
+		let sheet: ReturnType<typeof runSheet>;
+		if (serveAt) {
+			const context = {
 				serveAt,
 				timeZone,
-				availability: { daily: [{ start: from, end: to }] },
-			},
-		);
-		projection.value = projected;
-		runSheetHtml.value = runSheetToHTML(runSheet(projected), result, {
+				availability: buildAvailability(plan.value),
+				// Without the present, a serving time too close for the rests is
+				// drawn as if starting in the past were fine.
+				now: new Date().toISOString(),
+			};
+			const projected = project(
+				[
+					{
+						graph: result.tasks,
+						title,
+						options: { miseEnPlace: schedule.value, rests: rests.value },
+					},
+				],
+				context,
+			);
+			sheet = runSheet(projected, { graph: result.tasks, context });
+		} else {
+			const timeline = scheduleFor(result, schedule.value, rests.value);
+			if (!timeline) return;
+			sheet = runSheet(timeline, { graph: result.tasks, title });
+		}
+		runSheetHtml.value = runSheetToHTML(sheet, result, {
 			lang: currentLang.value,
+			comments: options.value.comments,
 		});
 	} catch (e: any) {
 		planError.value = e?.message ?? String(e);
 	}
 }
+
+/**
+ * "When to serve?" and "Ready as early as": tried with the same engine as the
+ * plan, over the next week at 12:30 and 20:00, and from now on. Only worked out
+ * while the studio is open: it plans a few dozen times.
+ */
+function computeServeSuggestions() {
+	const result = jsonData.value;
+	if (!isDrawerOpen.value || !result?.tasks) {
+		serveSuggestions.value = null;
+		return;
+	}
+	try {
+		const { timeZone } = plan.value;
+		const now = new Date();
+		const context = {
+			serveAt: "1970-01-01T00:00",
+			timeZone,
+			availability: buildAvailability(plan.value),
+			now: now.toISOString(),
+		};
+		const input = {
+			graph: result.tasks,
+			title: result.title ?? undefined,
+			options: { miseEnPlace: schedule.value, rests: rests.value },
+		};
+		const localDay = (offset: number) =>
+			new Intl.DateTimeFormat("en-CA", {
+				timeZone,
+				year: "numeric",
+				month: "2-digit",
+				day: "2-digit",
+			}).format(new Date(now.getTime() + offset * 86_400_000));
+		const range = { from: localDay(0), to: localDay(7) };
+		const search = findServeTimes(input, context, { ...range, limit: 6 });
+		const words = describeServeTimes(search, result, {
+			...range,
+			timeZone,
+			lang: currentLang.value,
+		});
+		const label = (serveAt: string) =>
+			new Intl.DateTimeFormat(currentLang.value || "en", {
+				timeZone: "UTC",
+				weekday: "short",
+				day: "numeric",
+				month: "short",
+				hour: "2-digit",
+				minute: "2-digit",
+				hourCycle: "h23",
+			}).format(new Date(`${serveAt}:00Z`));
+		const earliest = earliestServe(input, context);
+		serveSuggestions.value = {
+			candidates: search.candidates.map((c, i) => ({
+				serveAt: c.serveAt,
+				label: label(c.serveAt),
+				title: words[i] ?? "",
+			})),
+			rejected: words.slice(search.candidates.length),
+			earliest: earliest.found
+				? {
+						serveAt: earliest.found.serveAt,
+						label: label(earliest.found.serveAt),
+						text: describeEarliestServe(earliest, {
+							lang: currentLang.value,
+						}),
+					}
+				: null,
+		};
+	} catch {
+		serveSuggestions.value = null;
+	}
+}
+
+watch(
+	[
+		isDrawerOpen,
+		jsonData,
+		schedule,
+		rests,
+		() => plan.value.timeZone,
+		() => plan.value.from,
+		() => plan.value.to,
+		() => plan.value.customWeekdays,
+		() => plan.value.weekdays,
+	],
+	computeServeSuggestions,
+	{ deep: true },
+);
 
 // biome-ignore lint/correctness/noUnusedVariables: handleScaleUpdate is used in the <template> block below, which Biome's Vue support doesn't see.
 function handleScaleUpdate(factor: number) {
@@ -884,11 +1077,9 @@ function startDrag(_e: MouseEvent) {
 
 function onDrag(e: MouseEvent) {
 	if (!isDragging.value) return;
-	const workspace = document.querySelector(
-		".playground-workspace",
-	) as HTMLElement;
-	if (!workspace) return;
-	const rect = workspace.getBoundingClientRect();
+	const mainArea = document.querySelector(".workspace-main") as HTMLElement;
+	if (!mainArea) return;
+	const rect = mainArea.getBoundingClientRect();
 	const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
 	leftPanelWidth.value = Math.min(Math.max(newWidth, 20), 80);
 }
@@ -912,6 +1103,7 @@ function toggleFullscreen() {
 }
 
 onUnmounted(() => {
+	wideMql?.removeEventListener("change", handleWideMqlChange);
 	document.removeEventListener("mousemove", onDrag);
 	document.removeEventListener("mouseup", stopDrag);
 	document.body.style.overflow = "";
@@ -954,7 +1146,7 @@ onUnmounted(() => {
           :aria-expanded="isDrawerOpen"
           :aria-label="t.playground.studioTitle"
           :title="t.playground.studioTitle"
-          @click="openStudio()"
+          @click="toggleStudio()"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
             <line x1="4" y1="21" x2="4" y2="14"></line>
@@ -967,7 +1159,7 @@ onUnmounted(() => {
             <line x1="9" y1="8" x2="15" y2="8"></line>
             <line x1="17" y1="16" x2="23" y2="16"></line>
           </svg>
-          <span class="toolbar-studio-label">{{ t.playground.studioTitle }}</span>
+          <span class="toolbar-studio-label">{{ t.playground.settingsButton }}</span>
           <span v-if="activeModifiersCount > 0" class="active-badge">{{ activeModifiersCount }}</span>
         </button>
         
@@ -1009,134 +1201,127 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <div class="playground-workspace" :class="{ 'is-dragging': isDragging }" :style="{ '--left-width': leftPanelWidth + '%' }">
-        <!-- Left Column: Editor & Options -->
-        <div class="playground-col left-col" :class="{ 'is-mobile-active': mobileTab === 'editor' }">
-          <GramFileTabs
-            ref="fileTabsRef"
-            :files="[...files.keys()]"
-            :active-file="activeFile"
-            :entry-file="entryFile"
-            :error-files="errorFiles"
-            :editor-panel-id="EDITOR_PANEL_ID"
-            @select="selectFile"
-            @add="addFile"
-            @rename="renameFile"
-            @remove="removeFile"
-            @done-rename="handleDoneRename"
+      <div
+        class="playground-workspace"
+        :class="{
+          'is-dragging': isDragging,
+        }"
+      >
+        <!-- Main Workspace Area: Editor + Splitter + Output (+ Diagnostics) -->
+        <div class="workspace-main">
+          <div class="workspace-panes" :style="{ '--left-width': leftPanelWidth + '%' }">
+            <!-- Left Column: Editor & Options -->
+            <div class="playground-col left-col" :class="{ 'is-mobile-active': mobileTab === 'editor' }">
+              <GramFileTabs
+                ref="fileTabsRef"
+                :files="[...files.keys()]"
+                :active-file="activeFile"
+                :entry-file="entryFile"
+                :error-files="errorFiles"
+                :editor-panel-id="EDITOR_PANEL_ID"
+                @select="selectFile"
+                @add="addFile"
+                @rename="renameFile"
+                @remove="removeFile"
+                @done-rename="handleDoneRename"
+              />
+              <div
+                class="editor-wrapper"
+                :id="EDITOR_PANEL_ID"
+                role="tabpanel"
+                :aria-labelledby="activeTabId"
+                tabindex="-1"
+              >
+                <GramEditor
+                  ref="editorRef"
+                  :files="files"
+                  :active-file="activeFile"
+                  @update:files="(path, val) => files.set(path, val)"
+                />
+              </div>
+            </div>
+            
+            <!-- Splitter -->
+            <div class="playground-splitter" @mousedown.prevent="startDrag">
+              <div class="splitter-handle"></div>
+            </div>
+
+            <!-- Right Column: Output -->
+            <div class="playground-col right-col" :class="{ 'is-mobile-active': mobileTab === 'preview' }">
+              <div v-if="activeFile !== entryFile" class="preview-scope-banner">
+                {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
+              </div>
+              <div class="output-wrapper">
+                <GramOutput 
+                  :view-mode="viewMode as any" 
+                  :content="content" 
+                  :html-preview="htmlPreview" 
+                  :json-data="jsonData" 
+                  :run-sheet-html="runSheetHtml"
+                  :blocking-diagnostics="blockingDiagnostics"
+                  @scale-update="handleScaleUpdate"
+                  @jump="handleJump"
+                >
+                  <template #view-selector>
+                    <div class="header-view-wrapper">
+                      <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
+                      <PlaygroundDropdown
+                        v-model="viewMode"
+                        :options="viewModeOptions"
+                        :aria-label="t.playground.viewLabel"
+                        class="header-view-selector"
+                      />
+                    </div>
+                  </template>
+                </GramOutput>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Diagnostics Console inside Input/Output Workspace -->
+          <GramWarnings
+            v-if="diagnostics.length > 0"
+            :warnings="diagnostics"
+            v-model:collapsed="isConsoleCollapsed"
+            @jump="handleJump"
           />
-          <div
-            class="editor-wrapper"
-            :id="EDITOR_PANEL_ID"
-            role="tabpanel"
-            :aria-labelledby="activeTabId"
-            tabindex="-1"
-          >
-            <GramEditor
-              ref="editorRef"
-              :files="files"
-              :active-file="activeFile"
-              @update:files="(path, val) => files.set(path, val)"
-            />
-          </div>
-        </div>
-        
-        <!-- Splitter -->
-        <div class="playground-splitter" @mousedown.prevent="startDrag">
-          <div class="splitter-handle"></div>
         </div>
 
-        <!-- Right Column: Output -->
-        <div class="playground-col right-col" :class="{ 'is-mobile-active': mobileTab === 'preview' }">
-          <div v-if="activeFile !== entryFile" class="preview-scope-banner">
-            {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
-          </div>
-          <div class="output-wrapper">
-            <GramOutput 
-              :view-mode="viewMode as any" 
-              :content="content" 
-              :html-preview="htmlPreview" 
-              :json-data="jsonData" 
-              :schedule="schedule"
-              :rests="rests"
-              :projection="projection"
-              :run-sheet-html="runSheetHtml"
-              :blocking-diagnostics="blockingDiagnostics"
-              @scale-update="handleScaleUpdate"
-              @jump="handleJump"
-            >
-              <template #view-selector>
-                <div class="header-view-controls">
-                  <div class="header-view-wrapper">
-                    <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
-                    <PlaygroundDropdown
-                      v-model="viewMode"
-                      :options="viewModeOptions"
-                      :aria-label="t.playground.viewLabel"
-                      class="header-view-selector"
-                    />
-                  </div>
-                  <button
-                    v-if="['gantt', 'runsheet', 'preview'].includes(viewMode)"
-                    type="button"
-                    class="header-quick-action"
-                    :title="t.playground.openScheduleSettings"
-                    @click="openStudio('schedule')"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>{{ t.playground.scheduleButton }}</span>
-                    <span v-if="isPlanActive" class="status-indicator"></span>
-                  </button>
-                </div>
-              </template>
-            </GramOutput>
-          </div>
-        </div>
+        <!-- Recipe settings Docked / Drawer -->
+        <GramDrawer
+          :is-open="isDrawerOpen"
+          :docked="isWideScreen"
+          :title="t.playground.studioTitle"
+          :active-count="activeModifiersCount"
+          @close="closeStudio"
+          @reset="resetAllStudioOptions"
+        >
+          <GramOptions
+            v-model:options="options"
+            :shopping-list="jsonData?.shopping_list || []"
+            :available-imports="availableImports"
+            :stocked-uris="stockedUris"
+            v-model:scale-factor-string="scaleFactorString"
+            v-model:scale-target-id="scaleTargetId"
+            v-model:scale-target-qty="scaleTargetQty"
+            v-model:scale-target-unit="scaleTargetUnit"
+            :schedule="schedule"
+            :rests="rests"
+            :plan="plan"
+            :plan-error="planError"
+            :serve-suggestions="serveSuggestions"
+            :initial-section="drawerInitialSection"
+            @update:schedule="(val) => (schedule = val)"
+            @update:rests="(val) => (rests = val)"
+            @update:plan="(val) => (plan = val)"
+            @clear-plan="clearPlan"
+            @clear-target="clearTarget"
+            @scale-apply="handleScaleApply"
+            @toggle-stock="toggleStock"
+          />
+        </GramDrawer>
       </div>
-
-      <!-- Full-Width Bottom Diagnostics Console -->
-      <GramWarnings
-        v-if="diagnostics.length > 0"
-        :warnings="diagnostics"
-        v-model:collapsed="isConsoleCollapsed"
-        @jump="handleJump"
-      />
     </div>
-
-    <!-- Recipe Studio Drawer -->
-    <GramDrawer
-      :is-open="isDrawerOpen"
-      :title="t.playground.studioTitle"
-      :active-count="activeModifiersCount"
-      @close="closeStudio"
-      @reset="resetAllStudioOptions"
-    >
-      <GramOptions
-        v-model:options="options"
-        :shopping-list="jsonData?.shopping_list || []"
-        :available-imports="availableImports"
-        :stocked-uris="stockedUris"
-        v-model:scale-factor-string="scaleFactorString"
-        v-model:scale-target-id="scaleTargetId"
-        v-model:scale-target-qty="scaleTargetQty"
-        v-model:scale-target-unit="scaleTargetUnit"
-        :schedule="schedule"
-        :rests="rests"
-        :plan="plan"
-        :plan-error="planError"
-        :initial-section="drawerInitialSection"
-        @update:schedule="(val) => (schedule = val)"
-        @update:rests="(val) => (rests = val)"
-        @update:plan="(val) => (plan = val)"
-        @clear-plan="clearPlan"
-        @clear-target="clearTarget"
-        @scale-apply="handleScaleApply"
-        @toggle-stock="toggleStock"
-      />
-    </GramDrawer>
   </div>
 </template>
 
@@ -1197,40 +1382,12 @@ onUnmounted(() => {
   justify-content: center;
   min-width: 15px;
   height: 15px;
-  padding: 0 3px;
+  padding: 2px;
   font-size: 10px;
   font-weight: 700;
-  border-radius: 0;
+  border-radius: 50px;
   background-color: var(--sl-color-accent);
   color: #1a1613;
-  line-height: 1;
-}
-
-.header-quick-action {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 10px;
-  background-color: transparent;
-  border: 1px solid var(--sl-color-border);
-  color: var(--sl-color-text);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.header-quick-action:hover {
-  border-color: var(--sl-color-gray-3);
-  background-color: var(--sl-color-gray-6);
-}
-
-.header-quick-action .status-indicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--sl-color-accent);
 }
 
 .playground-toolbar {
@@ -1342,68 +1499,68 @@ onUnmounted(() => {
   min-height: 0;
 }
 
-/* Mobile Pane Switcher */
+/* Mobile / Medium Pane Switcher */
 .mobile-pane-switcher {
   display: none;
+  background-color: var(--sl-color-bg-sidebar);
+  border: 1px solid var(--sl-color-border);
+  margin-bottom: 8px;
+}
+
+.mobile-pane-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--sl-color-gray-3);
+  background: var(--sl-color-gray-7);
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-pane-btn:first-child {
+  border-right: 1px solid var(--sl-color-border);
+}
+
+.mobile-pane-btn.active {
+  background-color: var(--sl-color-bg);
+  color: var(--sl-color-text);
+  font-weight: 600;
+}
+
+.mobile-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.mobile-tab-dot.dot-error {
+  background-color: var(--sl-color-red);
+}
+
+.mobile-tab-dot.dot-warning {
+  background-color: var(--sl-color-orange);
 }
 
 @media (max-width: 767px) {
   .mobile-pane-switcher {
     display: flex;
-    background-color: var(--sl-color-bg-sidebar);
-    border: 1px solid var(--sl-color-border);
-    margin-bottom: 8px;
-  }
-
-  .mobile-pane-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 8px 12px;
-    font-size: 13px;
-    color: var(--sl-color-gray-3);
-    background: var(--sl-color-gray-7);
-    border: none;
-    cursor: pointer;
-  }
-
-  .mobile-pane-btn:first-child{
-		border-right: 1px solid var(--sl-color-border);
-  }
-
-  .mobile-pane-btn.active {
-    background-color: var(--sl-color-bg);
-    color: var(--sl-color-text);
-	font-weight: 600;
-  }
-
-  .mobile-tab-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-  }
-
-  .mobile-tab-dot.dot-error {
-    background-color: var(--sl-color-red);
-  }
-
-  .mobile-tab-dot.dot-warning {
-    background-color: var(--sl-color-orange);
   }
 }
+
 
 /* Workspace & Split Pane */
 .playground-workspace {
   display: flex;
   height: calc(100vh - 200px);
   min-height: 520px;
-  border: 1px solid var(--sl-color-border);
-  background-color: var(--sl-color-bg);
   position: relative;
   min-width: 0;
   max-width: 100%;
+  gap: 8px;
 }
 
 .gram-playground.is-fullscreen .playground-workspace {
@@ -1415,6 +1572,26 @@ onUnmounted(() => {
 .playground-workspace.is-dragging {
   cursor: col-resize;
   user-select: none;
+}
+
+.workspace-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+  border: 1px solid var(--sl-color-border);
+  background-color: var(--sl-color-bg);
+  overflow: hidden;
+}
+
+.workspace-panes {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  position: relative;
 }
 
 .playground-col {
@@ -1501,19 +1678,6 @@ onUnmounted(() => {
   gap: 8px;
 }
 
-/* The view selector and the schedule selector: at the two ends on a wide
-   header, wrapping onto two lines when the header is too narrow for both. */
-.header-view-controls {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  column-gap: 16px;
-  row-gap: 2px;
-}
-
 .header-view-selector :deep(.dropdown-header) {
   border-color: transparent;
   padding-left: 0;
@@ -1576,6 +1740,21 @@ onUnmounted(() => {
     height: calc(100dvh - 180px);
     min-height: 440px;
     flex-direction: column;
+  }
+
+  .workspace-main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+  }
+
+  .workspace-panes {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
   }
 
   .playground-splitter {

@@ -29,6 +29,7 @@ Mix @flour{200g} and @milk{200ml}.
 {
   "type": "Recipe",
   "meta": { "title": "Crepes" },
+  "imports": [],
   "children": [
     {
       "type": "Section",
@@ -121,8 +122,8 @@ Mix @flour{200g} and @milk{200ml}.
       "title": "Batter",
       "retro_planning": null,
       "ingredients": [
-        { "id": "flour", "name": "flour", "qty": 200, "unit": "g", "_usageIds": ["1"] },
-        { "id": "milk", "name": "milk", "qty": 200, "unit": "ml", "_usageIds": ["2"] }
+        { "id": "flour", "_usageId": "1", "qty": 200, "unit": "g" },
+        { "id": "milk", "_usageId": "2", "qty": 200, "unit": "ml" }
       ],
       "cookware": [],
       "steps": [
@@ -165,7 +166,7 @@ Mix @flour{200g} and @milk{200ml}.
       { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
       { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
     ],
-    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    "days": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
   }
 }
 ```
@@ -270,7 +271,7 @@ Mix @flour{200g} and @milk{200ml}.
       { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
       { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
     ],
-    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    "days": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
   }
 }
 ```
@@ -365,6 +366,56 @@ flour:
 `physical` and `nutrition` blocks are both optional — an entry without either remains valid (it simply contributes no mass or nutritional data, surfacing as `missingMassIngredients` or a `MISSING_MACROS` warning). Only `name` is strictly required. The sub-fields `nutrition.calories`, `protein`, `carbs`, and `fat` are required whenever `nutrition` is declared; `sugar`, `fiber`, `sodium`, `sat_fat`, `mono_fat`, `poly_fat`, and `alcohol` are optional.
 
 **Units matter and must be strictly observed**: `calories` is kcal, `sodium` is in **milligrams (mg)**, and every other nutrient is in grams (g) — all evaluated per 100 g of the raw ingredient. The canonical set, units, and ordering are governed by the `NUTRIENTS` table exported by `@gram-lang/analyzer`.
+
+<span id="5-the-run-sheet"></span>
+
+## 5. The work plan
+
+Data structure of the work plan (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
+
+```json
+{
+  "mode": "calendar",
+  "serveAt": "2026-10-17T20:00",
+  "timeZone": "Europe/Paris",
+  "recipes": [
+    {
+      "title": "Pistachio raspberry entremets",
+      "miseEnPlace": "perSection",
+      "totalWork": 45,
+      "days": [
+        {
+          "date": "2026-10-16",
+          "daysBefore": 1,
+          "visits": [
+            {
+              "start": -1585, "end": -1560,
+              "startLocal": "2026-10-16T13:35", "endLocal": "2026-10-16T14:00",
+              "sections": [2],
+              "tasks": ["s2.prep", "s2.0", "s2.1"],
+              "window": { "advance": 335, "earliest": -1920, "earliestLocal": "2026-10-16T08:00" }
+            }
+          ],
+          "threads": [
+            { "visit": 0, "task": "s2.1.t0", "section": 2, "step": 1,
+              "from": -1560, "to": -840, "planned": 720,
+              "range": { "min": 720, "max": 2880 } }
+          ],
+          "entries": ["…every block of the day…"]
+        }
+      ]
+    }
+  ],
+  "adjustments": [],
+  "diagnostics": []
+}
+```
+
+- Times `start`, `end`, `from` and `to` are **minutes from the service** (negative before it), exact, in a plan with a serving time or without. `*Local` fields (minute-exact wall clock) and `date` come with a serving time only.
+- `mode: "relative"` is the same structure for a recipe with no serving time: no `serveAt`, no `date`, no `window`.
+- `totalWork` is the minutes of your own work, mise en place included.
+- `miseEnPlace` is the mode the plan was made in (`perSection`, `perDay` or `upfront`): the work plan reads it to decide what goes in each visit's mise en place.
+- Types and the meaning of each field: [`runSheet` in the scheduler reference](/docs/reference/api/scheduler/#runsheet).
 
 ## Related resources
 
