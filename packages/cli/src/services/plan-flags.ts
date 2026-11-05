@@ -1,5 +1,8 @@
-import type { Availability, Weekday } from "@gram-lang/scheduler";
-import { WEEKDAYS } from "@gram-lang/scheduler";
+import type { Availability } from "@gram-lang/scheduler";
+import {
+	WEEKDAYS,
+	parseAvailability as parseEntries,
+} from "@gram-lang/scheduler";
 import { ExitCode, GramCLIError } from "../errors";
 
 const fail = (message: string): never => {
@@ -75,73 +78,54 @@ export function parseTimeZone(value: unknown, configured?: string): string {
 	return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
-const CLOCK = /^([01]?\d|2[0-4]):([0-5]\d)$/;
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
-
-function parseRanges(
-	text: string,
-	flag: string,
-): { start: string; end: string }[] {
-	if (text === "none") return [];
-	return text.split(",").map((part) => {
-		const [start, end, ...extra] = part.split("-");
-		if (
-			start === undefined ||
-			end === undefined ||
-			extra.length > 0 ||
-			!CLOCK.test(start) ||
-			!CLOCK.test(end)
-		) {
-			return fail(
-				`Expected --available ${flag} like 08:00-22:00 (several: 08:00-09:00,18:00-22:00, none for no availability), got "${part}".`,
-			);
-		}
-		return { start, end };
-	});
-}
-
 /**
- * `--available` entries, each one of:
+ * When the cook is available, from the first of: the `--available` entries,
+ * the `availability` setting of the project (or global) config (one entry or
+ * a list of them, in the same syntax), all day. Each entry is one of:
  *   08:00-22:00            every day
  *   fri=18:00-22:00        a day of the week (mon … sun)
  *   2026-10-09=none        a date (none: not available at all)
  * Several ranges go after one key, separated by commas, and an entry may be
- * repeated to add to it. Without any entry, the cook is available all day.
+ * repeated to add to it. Like `timezone`, the setting is only checked here.
  */
-export function parseAvailability(entries: string[]): Availability {
-	if (entries.length === 0) {
-		return { daily: [{ start: "00:00", end: "24:00" }] };
+export function parseAvailability(
+	entries: string[],
+	configured?: unknown,
+): Availability {
+	const fromConfig = entries.length === 0 && configured !== undefined;
+	const given = fromConfig ? configEntries(configured) : entries;
+	const parsed = parseEntries(given);
+	if (parsed.ok) return parsed.availability;
+	const name = fromConfig ? "availability" : "--available";
+	const where = fromConfig
+		? " in the `availability` setting of .gram/config.yaml"
+		: "";
+	const fix = fromConfig
+		? ", or fix it with `gram config set availability <ranges>`"
+		: "";
+	if (parsed.reason === "key") {
+		return fail(
+			`Unknown ${name} key "${parsed.part}"${where}: use a day of the week (${WEEKDAYS.join(", ")}) or a date like 2026-10-09${fix}.`,
+		);
 	}
-	const daily: { start: string; end: string }[] = [];
-	const weekdays: Partial<Record<Weekday, { start: string; end: string }[]>> =
-		{};
-	const dates: Record<string, { start: string; end: string }[]> = {};
-	for (const entry of entries) {
-		const eq = entry.indexOf("=");
-		if (eq === -1) {
-			daily.push(...parseRanges(entry, entry));
-			continue;
-		}
-		const key = entry.slice(0, eq).toLowerCase();
-		const ranges = parseRanges(entry.slice(eq + 1), key);
-		if ((WEEKDAYS as readonly string[]).includes(key)) {
-			weekdays[key as Weekday] = [
-				...(weekdays[key as Weekday] ?? []),
-				...ranges,
-			];
-		} else if (DATE.test(key)) {
-			dates[key] = [...(dates[key] ?? []), ...ranges];
-		} else {
-			fail(
-				`Unknown --available key "${key}": use a day of the week (${WEEKDAYS.join(", ")}) or a date like 2026-10-09.`,
-			);
-		}
+	return fail(
+		`Expected ${name} like 08:00-22:00 (several: 08:00-09:00,18:00-22:00, none for no availability)${where}, got "${parsed.part}" in "${parsed.entry}"${fix}.`,
+	);
+}
+
+/** The entries of the `availability` setting: one entry, or a list of them. */
+function configEntries(configured: unknown): string[] {
+	if (typeof configured === "string")
+		return configured === "" ? [] : [configured];
+	if (
+		Array.isArray(configured) &&
+		configured.every((entry) => typeof entry === "string")
+	) {
+		return configured;
 	}
-	return {
-		daily,
-		...(Object.keys(weekdays).length > 0 && { weekdays }),
-		...(Object.keys(dates).length > 0 && { dates }),
-	};
+	return fail(
+		"The `availability` setting of .gram/config.yaml must be an entry like 08:00-22:00, or a list of them.",
+	);
 }
 
 const MEAL = /^([01]?\d|2[0-3]):([0-5]\d)$/;

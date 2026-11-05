@@ -134,6 +134,40 @@ describe("parseAvailability", () => {
 		});
 	});
 
+	it("takes the availability setting of the config without --available", () => {
+		expect(parseAvailability([], "08:00-22:00")).toEqual({
+			daily: [{ start: "08:00", end: "22:00" }],
+		});
+		expect(parseAvailability([], ["09:00-21:00", "sun=none"])).toEqual({
+			daily: [{ start: "09:00", end: "21:00" }],
+			weekdays: { sun: [] },
+		});
+		expect(parseAvailability([], "")).toEqual({
+			daily: [{ start: "00:00", end: "24:00" }],
+		});
+	});
+
+	it("lets --available replace the setting, not add to it", () => {
+		expect(parseAvailability(["18:00-22:00"], ["08:00-09:00"])).toEqual({
+			daily: [{ start: "18:00", end: "22:00" }],
+		});
+	});
+
+	it("names the setting when it is the setting that is wrong", () => {
+		const range = messageOf(() => parseAvailability([], "8-22"));
+		expect(range).toContain("`availability` setting of .gram/config.yaml");
+		expect(range).toContain("gram config set availability");
+		expect(
+			messageOf(() => parseAvailability([], ["someday=08:00-22:00"])),
+		).toContain('Unknown availability key "someday"');
+		expect(messageOf(() => parseAvailability([], 8))).toContain(
+			"must be an entry like 08:00-22:00",
+		);
+		expect(messageOf(() => parseAvailability(["8-22"]))).toContain(
+			"Expected --available like",
+		);
+	});
+
 	it("refuses what it cannot read, saying what it expects", () => {
 		expect(messageOf(() => parseAvailability(["8-22"]))).toContain(
 			"08:00-22:00",
@@ -181,6 +215,16 @@ describe("resolveExportView", () => {
 				availability: { daily: [{ start: "08:00", end: "22:00" }] },
 				now: "2026-10-01T09:00:00Z",
 			},
+		});
+	});
+
+	it("reads the configured availability for the work plan", () => {
+		const choice = resolveExportView({ view: "work-plan" }, [], {
+			availability: "fri=18:00-22:00",
+		});
+		expect(choice.kitchen?.availability).toEqual({
+			daily: [],
+			weekdays: { fri: [{ start: "18:00", end: "22:00" }] },
 		});
 	});
 

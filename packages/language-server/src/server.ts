@@ -12,11 +12,13 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { loadModuleGraph, type ModuleGraph } from "@gram-lang/modules";
 import type { AnalyzedCompilationResult } from "@gram-lang/analyzer";
+import { ALL_DAY, type Availability } from "@gram-lang/scheduler";
 import { parseDocument, type DocumentState } from "./document-state";
 import { createLspModuleHost } from "./module-host";
 import { findProjectRootSync } from "./utils/project-root";
 import {
 	readPathsConfigSync,
+	readAvailabilityConfigSync,
 	readTimeZoneConfigSync,
 } from "./utils/module-paths-config";
 import { affectedOpenImporters } from "./utils/module-invalidation";
@@ -110,7 +112,12 @@ const moduleMeasureCache = new Map<string, AnalyzedCompilationResult>();
 // next refresh, same as before this cache existed.
 const projectContextCache = new Map<
 	string,
-	{ projectRoot: string; paths?: Record<string, string>; timeZone?: string }
+	{
+		projectRoot: string;
+		paths?: Record<string, string>;
+		timeZone?: string;
+		availability?: Availability;
+	}
 >();
 
 /** The project context of the directory of `uri`, read once per directory. */
@@ -123,6 +130,7 @@ function projectContextOf(uri: string) {
 			projectRoot,
 			paths: readPathsConfigSync(projectRoot),
 			timeZone: readTimeZoneConfigSync(projectRoot),
+			availability: readAvailabilityConfigSync(projectRoot),
 		};
 		projectContextCache.set(dir, ctx);
 	}
@@ -131,20 +139,22 @@ function projectContextOf(uri: string) {
 
 /**
  * The kitchen a serving time of `uri` is laid out in: the `timezone` of the
- * project's `.gram/config.yaml`, else this machine's; available all day; now.
+ * project's `.gram/config.yaml`, else this machine's; its `availability`,
+ * else all day; now.
  */
 function kitchenOf(uri: string): KitchenContext {
 	let timeZone: string | undefined;
+	let availability: Availability | undefined;
 	if (uri.startsWith("file:")) {
 		try {
-			timeZone = projectContextOf(uri).timeZone;
+			({ timeZone, availability } = projectContextOf(uri));
 		} catch {
-			// An unreadable project: the machine's zone.
+			// An unreadable project: the machine's zone, all day.
 		}
 	}
 	return {
 		timeZone: timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
-		availability: { daily: [{ start: "00:00", end: "24:00" }] },
+		availability: availability ?? { daily: [...ALL_DAY.daily] },
 		now: new Date().toISOString(),
 	};
 }

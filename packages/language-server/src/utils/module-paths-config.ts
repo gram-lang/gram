@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { type Availability, parseAvailability } from "@gram-lang/scheduler";
 import { parse } from "yaml";
 
 /**
@@ -53,6 +54,37 @@ export function readTimeZoneConfigSync(
 		if (typeof zone !== "string" || zone === "") return undefined;
 		new Intl.DateTimeFormat("en", { timeZone: zone });
 		return zone;
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Reads the `availability:` of `<projectRoot>/.gram/config.yaml`, when the
+ * cook is available (the CLI's default of `--available`): one entry
+ * ("08:00-22:00") or a list of them. Never throws, like
+ * `readTimeZoneConfigSync`: a missing or unreadable setting, or one that does
+ * not parse, is `undefined`, and the caller falls back on all day.
+ */
+export function readAvailabilityConfigSync(
+	projectRoot: string,
+): Availability | undefined {
+	const configPath = join(projectRoot, ".gram", "config.yaml");
+	if (!existsSync(configPath)) return undefined;
+	try {
+		const parsed = parse(readFileSync(configPath, "utf-8")) as
+			| { availability?: unknown }
+			| undefined;
+		const value = parsed?.availability;
+		const entries =
+			typeof value === "string"
+				? [value]
+				: Array.isArray(value) && value.every((v) => typeof v === "string")
+					? (value as string[])
+					: undefined;
+		if (!entries || entries.length === 0 || entries[0] === "") return undefined;
+		const result = parseAvailability(entries);
+		return result.ok ? result.availability : undefined;
 	} catch {
 		return undefined;
 	}

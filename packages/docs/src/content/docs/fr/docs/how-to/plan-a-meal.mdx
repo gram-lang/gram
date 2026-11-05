@@ -80,7 +80,7 @@ La recette décrit **comment** réaliser chaque étape. Le planning de préparat
    ```
 
    - `--serve` : la date et l'heure cibles du repas.
-   - `--available` : vos plages de présence en cuisine (répétable, par exemple `sat=09:00-23:00` ou `2026-10-09=none`).
+   - `--available` : vos plages de présence en cuisine (répétable, par exemple `sat=09:00-23:00` ou `2026-10-09=none`). Vos horaires habituels peuvent être enregistrés une fois pour toutes dans le projet via `gram config set availability 08:00-22:00` : l'option ne sert alors qu'à les remplacer ponctuellement.
    - `--tz` : votre fuseau horaire IANA (définissable de façon permanente via `gram config set timezone Europe/Paris`).
    - `--stock` : indique qu'une préparation (ici le glaçage) est déjà disponible au congélateur. Gram ne la replanifie pas et l'annote simplement comme étant « en stock ».
 

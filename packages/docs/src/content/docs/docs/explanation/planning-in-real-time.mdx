@@ -18,7 +18,7 @@ Provide those three parameters, and Gram positions each task along a backward ca
 |---|---|---|
 | **Serving time** | `2026-10-11 13:00` | Target local date and time, expressed in the time zone below |
 | **Time zone** | `Europe/Paris` | An IANA zone: determines clock readings and daylight saving adjustments. The CLI resolves it in order: `--tz`, the project (or global) `timezone` setting, then the host machine's time zone |
-| **Availability** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | When you can work: a default daily range, plus exceptions by day of the week or by calendar date |
+| **Availability** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | When you can work: a default daily range, plus exceptions by day of the week or by calendar date. The CLI resolves it in order: `--available`, the project (or global) `availability` setting, then all day |
 
 Availability is structured as an object: a default daily range (`daily`), exceptions by day of the week (`weekdays`), and exceptions by calendar date (`dates`). A date exception always overrides a weekday rule, which in turn overrides the default daily range. An empty list indicates complete unavailability on that day. A range that ends before it starts spans across midnight continuously (e.g. `22:00-02:00`).
 
