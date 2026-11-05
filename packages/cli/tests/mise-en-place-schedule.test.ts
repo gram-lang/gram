@@ -38,6 +38,14 @@ Mix @flour{500g}.
 Shape the dough and let it rest ~_{10min}.
 `;
 
+// A rest written as a range: how long it lasts depends on --rests.
+const RANGED_REST = `## Bread
+
+Mix @flour{500g}.
+
+Let it rise ~_{12-24h}.
+`;
+
 describe("parseMiseEnPlace", () => {
 	it("maps the kebab-case flag to the renderer's camelCase value", () => {
 		expect(parseMiseEnPlace("per-section")).toBe("perSection");
@@ -116,6 +124,16 @@ describe("passiveTimers", () => {
 				.sort();
 		expect(total("upfront")).toEqual(total("perSection"));
 	});
+
+	it("lasts as long as the chosen --rests says for a rest written as a range", () => {
+		const ranged = compile(getAST(RANGED_REST));
+		expect(passiveTimers(ranged, 0, 1)).toEqual([
+			{ name: undefined, duration: 12 * 60 },
+		]);
+		expect(passiveTimers(ranged, 0, 1, "longest")).toEqual([
+			{ name: undefined, duration: 24 * 60 },
+		]);
+	});
 });
 
 describe("cook mode timers", () => {
@@ -125,6 +143,12 @@ describe("cook mode timers", () => {
 		expect(rest?.timers.map((t) => [t.name, t.durationMs])).toEqual([
 			["proof", 45 * 60_000],
 		]);
+	});
+
+	it("follows --rests for a rest written as a range", () => {
+		const data = prepareRecipeData(compile(getAST(RANGED_REST)), {}, "longest");
+		const rise = data.steps[1];
+		expect(rise?.timers.map((t) => t.durationMs)).toEqual([24 * 60 * 60_000]);
 	});
 });
 
@@ -173,6 +197,14 @@ describe("view, export and print follow --mise-en-place", () => {
 		const model = await buildViewModel(path, {});
 		const rest = model.sections[0]!.steps.find((s) => s.action === "Rest");
 		expect(rest?.timerMinutes).toBe(45);
+	});
+
+	it("shows a ranged rest as long as --rests says in the view", async () => {
+		const path = await tmp(RANGED_REST);
+		const shortest = await buildViewModel(path, {});
+		const longest = await buildViewModel(path, { rests: "longest" });
+		expect(shortest.sections[0]!.steps[1]?.timerMinutes).toBe(12 * 60);
+		expect(longest.sections[0]!.steps[1]?.timerMinutes).toBe(24 * 60);
 	});
 
 	it("changes the exported Markdown total with the flag", async () => {

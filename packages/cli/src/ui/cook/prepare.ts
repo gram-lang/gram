@@ -1,4 +1,4 @@
-import type { CompilationResult } from "@gram-lang/kitchen";
+import type { CompilationResult, RestChoice } from "@gram-lang/kitchen";
 import {
 	quantityToMinutes,
 	aggregateSectionIngredients,
@@ -53,12 +53,13 @@ function extractTimers(
 	// The step's index in `sections[].steps` (comments included), which is
 	// what the schedule blocks use — `stepIdx` counts only the cook's steps.
 	sourceStepIdx: number,
+	rests?: RestChoice,
 ): CookTimer[] {
 	const timers: CookTimer[] = [];
 	const seen = new Set<string>();
 
 	// 1. background timers (async, ~_name{}) — read from the schedule blocks
-	passiveTimers(compiled, sectionIdx, sourceStepIdx).forEach((t, i) => {
+	passiveTimers(compiled, sectionIdx, sourceStepIdx, rests).forEach((t, i) => {
 		const id = `${sectionIdx}-${stepIdx}-bg-${i}`;
 		const name = t.name ?? `Timer step ${stepIdx + 1}`;
 		if (!seen.has(name)) {
@@ -87,6 +88,8 @@ function extractTimers(
 export function prepareRecipeData(
 	compiled: CompilationResult,
 	massMap: Record<string, number> = {},
+	/** How long a rest written as a range lasts. Default shortest. */
+	rests?: RestChoice,
 ): RecipeData {
 	const steps: FlatStep[] = [];
 	let globalIndex = 0;
@@ -118,6 +121,7 @@ export function prepareRecipeData(
 					sectionIdx,
 					globalIndex,
 					(section.steps ?? []).indexOf(step),
+					rests,
 				),
 			});
 			globalIndex++;

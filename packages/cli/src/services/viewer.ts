@@ -144,8 +144,9 @@ function getTimerMinutes(
 	compiled: CompilationResult,
 	section: number,
 	step: number,
+	rests?: RestChoice,
 ): number | undefined {
-	return passiveTimers(compiled, section, step)[0]?.duration;
+	return passiveTimers(compiled, section, step, rests)[0]?.duration;
 }
 
 export async function buildViewModel(
@@ -344,7 +345,7 @@ export async function buildViewModel(
 				steps.push({
 					action: step.action ?? undefined,
 					text,
-					timerMinutes: getTimerMinutes(compiled, secIdx, stepIdx),
+					timerMinutes: getTimerMinutes(compiled, secIdx, stepIdx, opts.rests),
 					_tokens: step.content ?? [],
 				});
 			}
