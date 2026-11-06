@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -59,6 +59,15 @@ async function waitFor(
 			.map((u) => `${u.outputId}:${u.state}`)
 			.join(" | ")}`,
 	);
+}
+
+/** Waits until no gram/viewUpdated has arrived for `ms`. */
+async function quiet(client: Client, ms = 500): Promise<void> {
+	let count = -1;
+	while (count !== updatesOf(client).length) {
+		count = updatesOf(client).length;
+		await new Promise((r) => setTimeout(r, ms));
+	}
 }
 
 const htmlIs = (id: string, test: (html: string) => boolean) => (u: Update) =>
@@ -218,6 +227,51 @@ describe("the views protocol", () => {
 			client,
 			htmlIs("runSheet", (h) => h.includes("D-2")),
 		);
+	}, 20_000);
+
+	it("lays the open views out again when the project's config changes, with no edit", async () => {
+		const dir = await mkdtemp(join(tmpdir(), "gram-config-change-"));
+		try {
+			await mkdir(join(dir, ".gram"), { recursive: true });
+			const config = join(dir, ".gram", "config.yaml");
+			await writeFile(config, "availability: 00:00-24:00\n");
+			const uri = pathToFileURL(join(dir, "tart.gram")).href;
+			await writeFile(join(dir, "tart.gram"), TART("Tart"));
+			client = new Client();
+			await client.start({ views: true });
+			client.open(TART("Tart"), uri);
+			client.notify("gram/setOpenViews", { uri, viewIds: ["runSheet"] });
+			client.notify("gram/setSession", { uri, serveAt: "2026-10-11 13:00" });
+			await waitFor(
+				client,
+				(u) =>
+					u.uri === uri && htmlIs("runSheet", (h) => !h.includes("D-2"))(u),
+			);
+			// Let the refreshes of the opening finish: one landing after the
+			// config change would read it too, and hide a missing refresh.
+			await quiet(client);
+			const before = updatesOf(client).at(-1)!;
+
+			// Never available: the same plan can no longer be followed. Renders of
+			// the old plan may still arrive; only the config change can bring a
+			// different one.
+			await writeFile(config, "availability: none\n");
+			const seen = new Set(updatesOf(client));
+			client.notify("workspace/didChangeWatchedFiles", {
+				changes: [{ uri: pathToFileURL(config).href, type: 2 }],
+			});
+			await waitFor(
+				client,
+				(u) =>
+					!seen.has(u) &&
+					u.uri === uri &&
+					u.outputId === "runSheet" &&
+					u.state === "ok" &&
+					u.payload !== before.payload,
+			);
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
 	}, 20_000);
 
 	it("lists the session's choices from the source as written: ingredients, imports, baker's math", async () => {
