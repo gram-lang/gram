@@ -27,10 +27,45 @@ export interface ServingStrings {
 	earliest: string;
 }
 
+/** The words of the session controls (scale, baker's reference, stock). */
+export interface SessionStrings {
+	title: string;
+	scale: string;
+	byIngredient: string;
+	ingredient: string;
+	qty: string;
+	unit: string;
+	apply: string;
+	bakersReference: string;
+	auto: string;
+	stock: string;
+	stockHint: string;
+	reset: string;
+	/** "{factor} %". */
+	scaled: string;
+	/** "{n} in stock". */
+	inStock: string;
+	/** "Scale not applied: {reason}". */
+	scaleError: string;
+}
+
 /** What the server says the extension can show, and the words it writes around it. */
 export interface ViewsCapability {
 	outputs: OutputInfo[];
-	strings: { showError: string; outputEmpty: string; serving?: ServingStrings };
+	strings: {
+		showError: string;
+		outputEmpty: string;
+		serving?: ServingStrings;
+		session?: SessionStrings;
+	};
+}
+
+/** The answer of `gram/sessionChoices`: what the session controls offer. */
+export interface SessionChoices {
+	ingredients: { id: string; name: string; qty?: number; unit?: string }[];
+	imports: { uri: string; specifier: string }[];
+	bakersMath: boolean;
+	scaleError?: string;
 }
 
 /**
@@ -55,6 +90,82 @@ export interface ServeSuggestions {
 export interface Session {
 	/** A local date-time, "2026-10-11T13:00", in the project's time zone. */
 	serveAt?: string;
+	/** How much is made: a factor (2 for 200 %), or a target quantity of one ingredient. */
+	scale?:
+		| { type: "factor"; value: number }
+		| { type: "target"; id: string; qty: number; unit: string | null };
+	/** The `@use` imports already made, by the URI they resolve to. */
+	stock?: string[];
+	/** The ingredient the baker's percentages are computed against. */
+	bakersReference?: string;
+}
+
+/**
+ * A change to the session asked by the page: each part given replaces the
+ * last, and `null` clears it. A part the extension cannot read is left out.
+ */
+export type SessionPatch = {
+	[K in keyof Session]?: Session[K] | null;
+};
+
+const isPositive = (value: unknown): value is number =>
+	typeof value === "number" && Number.isFinite(value) && value > 0;
+
+function readScale(raw: unknown): Session["scale"] | null | undefined {
+	if (raw === null) return null;
+	if (!raw || typeof raw !== "object") return undefined;
+	const scale = raw as Record<string, unknown>;
+	if (scale.type === "factor" && isPositive(scale.value)) {
+		// 100 % is no scale at all.
+		return scale.value === 1 ? null : { type: "factor", value: scale.value };
+	}
+	if (
+		scale.type === "target" &&
+		typeof scale.id === "string" &&
+		scale.id !== "" &&
+		isPositive(scale.qty)
+	) {
+		const unit =
+			typeof scale.unit === "string" && scale.unit.trim() !== ""
+				? scale.unit.trim()
+				: null;
+		return { type: "target", id: scale.id, qty: scale.qty, unit };
+	}
+	return undefined;
+}
+
+/** The session change of a page message, keeping only what it can read. */
+export function readSessionPatch(raw: unknown): SessionPatch {
+	if (!raw || typeof raw !== "object") return {};
+	const given = raw as Record<string, unknown>;
+	const patch: SessionPatch = {};
+	if ("serveAt" in given) {
+		patch.serveAt = given.serveAt === null ? null : readServeAt(given.serveAt);
+		if (patch.serveAt === undefined) delete patch.serveAt;
+	}
+	if ("scale" in given) {
+		const scale = readScale(given.scale);
+		if (scale !== undefined) patch.scale = scale;
+	}
+	if ("stock" in given) {
+		if (given.stock === null) patch.stock = null;
+		else if (Array.isArray(given.stock)) {
+			const uris = [
+				...new Set(
+					given.stock.filter(
+						(u): u is string => typeof u === "string" && u !== "",
+					),
+				),
+			].sort();
+			patch.stock = uris.length > 0 ? uris : null;
+		}
+	}
+	if ("bakersReference" in given) {
+		const ref = given.bakersReference;
+		if (ref === null || ref === "") patch.bakersReference = null;
+		else if (typeof ref === "string") patch.bakersReference = ref;
+	}
+	return patch;
 }
 
 const SERVE_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;

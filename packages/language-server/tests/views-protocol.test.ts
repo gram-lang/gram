@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { outputs } from "@gram-lang/renderer";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+import { DEFAULT_RECIPE_SETTINGS, outputs } from "@gram-lang/renderer";
 import { Client, type Note, URI } from "./helpers/lsp-client";
 
 /*
@@ -214,6 +218,63 @@ describe("the views protocol", () => {
 			client,
 			htmlIs("workPlan", (h) => h.includes("D-2")),
 		);
+	}, 20_000);
+
+	it("lists the session's choices from the source as written: ingredients, imports, baker's math", async () => {
+		const dir = await mkdtemp(join(tmpdir(), "gram-session-"));
+		try {
+			await writeFile(
+				join(dir, "pastry.gram"),
+				"---\ntitle: Pastry\n---\n\n## Pastry\n\nMix @butter{100g} with @flour{200g}.\n",
+			);
+			const uri = pathToFileURL(join(dir, "tart.gram")).href;
+			const source = `@use "./pastry.gram" as &pastry\n\n## Assembly\n\nCombine &pastry{} with @flour{200g}(sifted).\n`;
+			await writeFile(join(dir, "tart.gram"), source);
+			client = new Client();
+			await client.start({ views: true });
+			client.open(source, uri);
+			client.notify("gram/setOpenViews", { uri, viewIds: ["recipe"] });
+			await waitFor(client, (u) => u.uri === uri && u.outputId === "recipe");
+			type Choices = {
+				ingredients: { id: string; qty?: number; unit?: string }[];
+				imports: { uri: string; specifier: string }[];
+				bakersMath: boolean;
+				scaleError?: string;
+			};
+			const choices = (await client.request("gram/sessionChoices", {
+				uri,
+			})) as Choices;
+			// The imported pastry's ingredients are there too: one shopping list.
+			expect(choices.ingredients.map((i) => i.id).sort()).toEqual([
+				"butter",
+				"flour",
+			]);
+			expect(choices.ingredients.find((i) => i.id === "butter")).toEqual(
+				expect.objectContaining({ qty: 100, unit: "g" }),
+			);
+			expect(choices.imports).toEqual([
+				{
+					uri: pathToFileURL(join(dir, "pastry.gram")).href,
+					specifier: "./pastry.gram",
+				},
+			]);
+			expect(choices.bakersMath).toBe(DEFAULT_RECIPE_SETTINGS.bakersMath);
+			expect(choices.scaleError).toBeUndefined();
+
+			// A target the recipe does not have: said, and the choices stay as written.
+			client.notify("gram/setSession", {
+				uri,
+				scale: { type: "target", id: "saffron", qty: 1, unit: "g" },
+			});
+			await client.settle();
+			const after = (await client.request("gram/sessionChoices", {
+				uri,
+			})) as Choices;
+			expect(after.scaleError).toBeString();
+			expect(after.ingredients).toEqual(choices.ingredients);
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
 	}, 20_000);
 
 	it("compiles the views at the session's scale, the editor on the source", async () => {

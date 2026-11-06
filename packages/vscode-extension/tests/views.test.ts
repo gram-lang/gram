@@ -3,6 +3,7 @@ import {
 	contentOf,
 	isPlanned,
 	readServeAt,
+	readSessionPatch,
 	readViewsCapability,
 } from "../src/views/protocol";
 import { ViewsState } from "../src/views/state";
@@ -247,15 +248,136 @@ describe("the serving time of a view laid out in time", () => {
 
 	it("keeps it per recipe for the sitting, sends the whole session, and forgets it on close", () => {
 		const { state } = recorder();
-		expect(state.setServeAt(A, "2026-10-11T13:00")).toEqual({
+		expect(state.updateSession(A, { serveAt: "2026-10-11T13:00" })).toEqual({
 			serveAt: "2026-10-11T13:00",
 		});
-		expect(state.setServeAt(A, "2026-10-11T13:00")).toBeUndefined();
+		expect(
+			state.updateSession(A, { serveAt: "2026-10-11T13:00" }),
+		).toBeUndefined();
 		expect(state.sessionOf(B)).toEqual({});
-		expect(state.setServeAt(A, undefined)).toEqual({});
-		state.setServeAt(A, "2026-10-12T20:00");
+		expect(state.updateSession(A, { serveAt: null })).toEqual({});
+		state.updateSession(A, { serveAt: "2026-10-12T20:00" });
 		state.forget(A);
 		expect(state.sessionOf(A)).toEqual({});
+	});
+});
+
+describe("the session of a recipe: scale, stock, baker's reference", () => {
+	const SESSION = {
+		title: "Échelle et stock",
+		scale: "Échelle",
+		byIngredient: "ou par ingrédient",
+		ingredient: "Choisir",
+		qty: "Quantité",
+		unit: "Unité",
+		apply: "Appliquer",
+		bakersReference: "Référence",
+		auto: "Auto <@*>",
+		stock: "En stock",
+		stockHint: "Déjà prêt",
+		reset: "Réinitialiser",
+		scaled: "{factor} %",
+		inStock: "{n} en stock",
+		scaleError: "Échelle non appliquée : {reason}",
+	};
+	const base = {
+		nonce: "abc123",
+		cspSource: "vscode-resource:",
+		styles: { preview: "p.css", jsonTree: "j.css" },
+		title: "Recette",
+		showError: "Voir",
+		outputEmpty: "Rien",
+	};
+
+	it("adds each part to the session, keeps the others, and clears one with null", () => {
+		const { state } = recorder();
+		state.updateSession(A, { serveAt: "2026-10-11T13:00" });
+		expect(
+			state.updateSession(A, { scale: { type: "factor", value: 2 } }),
+		).toEqual({
+			serveAt: "2026-10-11T13:00",
+			scale: { type: "factor", value: 2 },
+		});
+		expect(state.updateSession(A, { stock: ["file:///p.gram"] })).toEqual({
+			serveAt: "2026-10-11T13:00",
+			scale: { type: "factor", value: 2 },
+			stock: ["file:///p.gram"],
+		});
+		expect(
+			state.updateSession(A, {
+				scale: null,
+				stock: null,
+				bakersReference: null,
+			}),
+		).toEqual({ serveAt: "2026-10-11T13:00" });
+		expect(state.updateSession(A, { bakersReference: null })).toBeUndefined();
+	});
+
+	it("reads only the parts of a page message it understands", () => {
+		expect(readSessionPatch({ scale: { type: "factor", value: 1.5 } })).toEqual(
+			{ scale: { type: "factor", value: 1.5 } },
+		);
+		// 100 % is no scale; a factor that is not positive is ignored.
+		expect(readSessionPatch({ scale: { type: "factor", value: 1 } })).toEqual({
+			scale: null,
+		});
+		expect(readSessionPatch({ scale: { type: "factor", value: -2 } })).toEqual(
+			{},
+		);
+		expect(
+			readSessionPatch({
+				scale: { type: "target", id: "flour", qty: 300, unit: " g " },
+			}),
+		).toEqual({ scale: { type: "target", id: "flour", qty: 300, unit: "g" } });
+		expect(
+			readSessionPatch({
+				scale: { type: "target", id: "flour", qty: 300, unit: "" },
+			}),
+		).toEqual({ scale: { type: "target", id: "flour", qty: 300, unit: null } });
+		expect(
+			readSessionPatch({
+				stock: ["file:///b.gram", "file:///a.gram", "file:///a.gram", 3],
+			}),
+		).toEqual({ stock: ["file:///a.gram", "file:///b.gram"] });
+		expect(readSessionPatch({ stock: [] })).toEqual({ stock: null });
+		expect(readSessionPatch({ bakersReference: "" })).toEqual({
+			bakersReference: null,
+		});
+		expect(readSessionPatch({ serveAt: "tomorrow" })).toEqual({});
+		expect(readSessionPatch({ serveAt: null, other: 1 })).toEqual({
+			serveAt: null,
+		});
+		expect(readSessionPatch("nonsense")).toEqual({});
+	});
+
+	it("puts the controls on the page only when asked, escaped", () => {
+		const page = webviewPage({ ...base, session: SESSION });
+		expect(page).toContain('id="session"');
+		expect(page).toContain('id="scale-factor"');
+		expect(page).toContain("Auto &lt;@*&gt;");
+		expect(webviewPage(base)).not.toContain('id="session"');
+	});
+
+	it("writes a script that runs with every set of controls", () => {
+		const SERVING = {
+			label: "Service le",
+			clear: "Effacer",
+			clearTitle: "Effacer",
+			suggest: "Quand ?",
+			none: "Rien",
+			whyNot: "Pourquoi ?",
+			earliest: "Au plus tôt : {when}",
+		};
+		for (const page of [
+			webviewPage({ ...base, session: SESSION }),
+			webviewPage({ ...base, session: SESSION, serving: SERVING }),
+		]) {
+			const script =
+				/<script nonce="abc123">([\s\S]*)<\/script>/.exec(page)?.[1] ?? "";
+			expect(() => new Function(script)).not.toThrow();
+			// The placeholder pattern survives the template literal.
+			expect(script).toContain("/\\{(\\w+)\\}/g");
+		}
 	});
 });
 

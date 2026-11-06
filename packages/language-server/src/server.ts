@@ -64,7 +64,12 @@ import {
 	parseSession,
 	type Session,
 } from "./session";
-import { describeOutputs, renderOutputs, serveTimesOf } from "./views";
+import {
+	describeOutputs,
+	renderOutputs,
+	serveTimesOf,
+	sessionChoicesOf,
+} from "./views";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -489,6 +494,18 @@ connection.onRequest("gram/serveTimes", (params: unknown) => {
 		connection.console.error(`serve times error: ${e}`);
 		return null;
 	}
+});
+
+connection.onRequest("gram/sessionChoices", (params: unknown) => {
+	const uri = (params as { uri?: unknown } | null)?.uri;
+	if (typeof uri !== "string") return null;
+	const state = states.get(uri);
+	if (!state) return null;
+	return sessionChoicesOf(state, {
+		graph: graphs.get(uri),
+		bakersMath: recipeSettings.bakersMath,
+		viewState: viewStates.get(uri),
+	});
 });
 
 /**

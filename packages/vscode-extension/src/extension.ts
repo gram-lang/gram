@@ -11,6 +11,7 @@ import { ViewsController } from "./views/controller";
 import {
 	readViewsCapability,
 	type ServeSuggestions,
+	type SessionChoices,
 	type ViewUpdate,
 } from "./views/protocol";
 
@@ -60,6 +61,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
 					serveTimes: (uri) =>
 						languageClient.sendRequest<ServeSuggestions | null>(
 							"gram/serveTimes",
+							{ uri },
+						),
+					sessionChoices: (uri) =>
+						languageClient.sendRequest<SessionChoices | null>(
+							"gram/sessionChoices",
 							{ uri },
 						),
 				},
