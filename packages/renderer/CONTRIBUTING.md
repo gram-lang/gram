@@ -5,7 +5,7 @@ The renderer turns a compiled recipe into views. The engine computes, the views 
 ## How it is laid out
 
 - `src/prepare-views.ts`: the one entry point. It takes the recipe, the view settings and the serving context, and works out the costly parts once, only when a view reads them.
-- `src/contract.ts`: what a view (`ViewDefinition`) and an inspector (`InspectorDefinition`) are.
+- `src/contract.ts`: what a view (`ViewDefinition`) and an inspector (`InspectorDefinition`) are, and the formats (`FORMATS`, with `FORMAT_DEFINITIONS` saying how a screen shows each one).
 - `src/views/<id>/`: one folder per view, with its formats and its `view.ts`. `src/views/registry.ts` lists them in `views`.
 - `src/inspectors/`: the looks at the pipeline (AST, JSON, JSON tree), listed in `inspectors`.
 - `src/shared/`: what several views use (formatting of a step, nutrition, icons, the base print stylesheet).
@@ -20,7 +20,8 @@ A view never imports another view. What two views share goes in `shared/`. `test
 3. Add it to `views` in `src/views/registry.ts`, and to `outputs` in `src/outputs.ts` (written out, not spread, so a bundler can drop the views a page does not use). Give it a name in every language, under `renderer.outputs` of `@gram-lang/i18n`: the surfaces list the outputs by that name.
 4. Run `tests/views-contract.test.ts`. It renders the view in each format for every fixture, checks the escaping, and checks that the view reacts to each setting it honors and to no other. If it honors a setting none of the fixtures shows, extend a fixture.
 5. If the view brings a new setting: add its descriptor to `VIEW_SETTINGS` in `src/settings.ts`, a probe to `PROBES` in the contract test, a `gram.*` key in the VS Code extension's `package.json` (the parity test fails until it exists), and the docs in English and French.
-6. Document the view in English and French (what it shows, its formats, the settings it follows), and add a changeset: a new view is a new feature of every surface.
+6. If the view brings a new format: add it to `Format` and `FORMATS`, describe it in `FORMAT_DEFINITIONS` (`page`, `code` with its highlighting language, or `none`; the build fails until you do), and name it under `renderer.formats` of `@gram-lang/i18n` in every language. The playground and the editor read how to show it from there.
+7. Document the view in English and French (what it shows, its formats, the settings it follows), and add a changeset: a new view is a new feature of every surface.
 
 Nothing else should need an edit, not even a test of a surface: the surfaces list their outputs from the registry, so a new view appears in the CLI, VS Code and the playground. Removing a view is the reverse.
 

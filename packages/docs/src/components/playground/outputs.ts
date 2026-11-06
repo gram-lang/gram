@@ -1,4 +1,6 @@
 import {
+	FORMAT_DEFINITIONS,
+	FORMATS,
 	type Format,
 	type OutputDefinition,
 	type StageArtifacts,
@@ -9,10 +11,12 @@ import {
 import type { GramLocale } from "@gram-lang/i18n";
 
 /**
- * The formats the playground shows on screen. Print is a document of its own,
- * for a printer, not something to read in a pane.
+ * The formats the playground shows on screen, in the renderer's order: those
+ * whose `display` is not `none` (print is a document for a printer).
  */
-const SCREEN_FORMATS: readonly Format[] = ["html", "markdown", "text"];
+const SCREEN_FORMATS: readonly Format[] = FORMATS.filter(
+	(format) => FORMAT_DEFINITIONS[format].display !== "none",
+);
 
 /** One output, as a tab or a menu item names it. */
 export interface OutputOption {
@@ -71,11 +75,6 @@ export interface Pane {
 	language?: string;
 }
 
-const LANGUAGE_OF_FORMAT: Partial<Record<Format, string>> = {
-	markdown: "markdown",
-	text: "text",
-};
-
 export function paneOf(
 	output: OutputDefinition | undefined,
 	format: Format,
@@ -86,8 +85,9 @@ export function paneOf(
 			? { type: "tree" }
 			: { type: "code", ...(output.language && { language: output.language }) };
 	}
-	if (format === "html") return { type: "html" };
-	return { type: "code", language: LANGUAGE_OF_FORMAT[format] ?? "text" };
+	const { display, language } = FORMAT_DEFINITIONS[format];
+	if (display === "page") return { type: "html" };
+	return { type: "code", language: language ?? "text" };
 }
 
 /**

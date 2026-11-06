@@ -11,6 +11,29 @@ export type Format = "html" | "markdown" | "text" | "print";
 /** Every format, in the order the surfaces offer them. */
 export const FORMATS: readonly Format[] = ["html", "markdown", "text", "print"];
 
+/** What a surface needs to know about a format to show it. */
+export interface FormatDefinition {
+	/**
+	 * How a screen shows the written text: as a page (`page`), as highlighted
+	 * source (`code`), or not at all (`none`), for a document made for a
+	 * printer, not for a pane.
+	 */
+	display: "page" | "code" | "none";
+	/** The highlighting language of a `code` display. */
+	language?: string;
+}
+
+/**
+ * Each format, described once. A `Record` over `Format`: a new format does not
+ * compile until it says how a screen shows it, so no surface keeps its own list.
+ */
+export const FORMAT_DEFINITIONS: Readonly<Record<Format, FormatDefinition>> = {
+	html: { display: "page" },
+	markdown: { display: "code", language: "markdown" },
+	text: { display: "code", language: "text" },
+	print: { display: "none" },
+};
+
 /** A view setting, by its key. */
 export type SettingKey = keyof ViewSettings;
 
