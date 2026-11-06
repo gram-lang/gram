@@ -15,7 +15,7 @@ import { loadDb } from "../core/db";
 import { AI_ARGS } from "../core/ai-args";
 import { canPrompt } from "../core/interactive";
 import { resolveAiForCommand } from "../ui/ai-model";
-import { ExitCode, GramCLIError } from "../errors";
+import { ExitCode, exitOnError } from "../errors";
 
 /**
  * Ask, and exit cleanly on "no" or Ctrl-C. `ui/video-import.ts` has its own
@@ -136,11 +136,7 @@ export default defineCommand({
 			s.stop("Import complete.");
 		} catch (err) {
 			s.stop("Import failed.");
-			if (err instanceof GramCLIError) {
-				log.error(err.message, { output: chrome });
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(err, (message) => log.error(message, { output: chrome }));
 		}
 
 		// Two failures the AI cannot be trusted to have noticed: content that

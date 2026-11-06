@@ -17,7 +17,7 @@ import {
 	viewSettingArgs,
 	type ViewSettingKey,
 } from "../services/setting-args";
-import { ExitCode, GramCLIError } from "../errors";
+import { ExitCode, exitOnError } from "../errors";
 
 /**
  * The view settings `gram view` shows today. Comments and the quantities in
@@ -112,11 +112,7 @@ export default defineCommand({
 				stock,
 			});
 		} catch (err) {
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(err);
 		}
 
 		reportUnusedStock("gram view", "viewed", stock, [model]);

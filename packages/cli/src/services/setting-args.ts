@@ -8,10 +8,6 @@ import {
 	views,
 } from "@gram-lang/renderer";
 import type { ArgDef } from "citty";
-import { COMMENTS_FLAG_DESCRIPTION } from "./comments-flag";
-import { MISE_EN_PLACE_FLAG_DESCRIPTION } from "./mise-en-place-flag";
-import { NUTRITION_BASIS_FLAG_DESCRIPTION } from "./nutrition-basis";
-import { RESTS_FLAG_DESCRIPTION } from "./rests-flag";
 import {
 	flagDefault,
 	flagValueList,
@@ -34,10 +30,10 @@ export function settingFlagName(
 
 /** Help texts the CLI words its own way; the others come from the descriptor. */
 const VIEW_DESCRIPTIONS: Partial<Record<ViewSettingKey, string>> = {
-	miseEnPlace: MISE_EN_PLACE_FLAG_DESCRIPTION,
-	rests: RESTS_FLAG_DESCRIPTION,
-	comments: COMMENTS_FLAG_DESCRIPTION,
-	nutritionBasis: NUTRITION_BASIS_FLAG_DESCRIPTION,
+	miseEnPlace: `When the mise en place is planned: ${flagValueList(VIEW_SETTINGS.miseEnPlace)} (default: ${flagDefault(VIEW_SETTINGS.miseEnPlace)} — right before each section; upfront — all at the start; per-day — at the start of each working day). Changes the total and idle times.`,
+	rests: `How long a rest written as a range (~_{12-24h}) lasts: ${flagValueList(VIEW_SETTINGS.rests)} (default: ${flagDefault(VIEW_SETTINGS.rests)}). An exact rest and an active timer are not affected. Changes the total and idle times.`,
+	comments: `Whether to show the comments of the recipe (// like this): ${flagValueList(VIEW_SETTINGS.comments)} (default: ${flagDefault(VIEW_SETTINGS.comments)}).`,
+	nutritionBasis: `Which nutrition basis to show: ${flagValueList(VIEW_SETTINGS.nutritionBasis)} (default: ${flagDefault(VIEW_SETTINGS.nutritionBasis)} — per portion when the recipe declares one, otherwise the whole recipe)`,
 	bakersMathOnly: "Only show the percentages and hide absolute weights.",
 	stepQuantities: `Whether ingredient quantities are repeated in step text: ${flagValueList(VIEW_SETTINGS.stepQuantities)} (default: ${flagDefault(VIEW_SETTINGS.stepQuantities)}). Quantities in a section's mise en place are always shown.`,
 };

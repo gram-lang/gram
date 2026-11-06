@@ -16,7 +16,7 @@ import {
 	recipeSettingArgs,
 } from "../services/setting-args";
 import { parseScaleArg } from "../services/scaler";
-import { ExitCode, GramCLIError, getErrorMessage } from "../errors";
+import { ExitCode, exitOnError, getErrorMessage } from "../errors";
 
 export default defineCommand({
 	meta: {
@@ -121,11 +121,7 @@ async function resolveInputs(args: Args) {
 	try {
 		files = await resolveGlob(patterns);
 	} catch (err) {
-		if (err instanceof GramCLIError) {
-			log.error(err.message);
-			process.exit(err.exitCode);
-		}
-		throw err;
+		exitOnError(err);
 	}
 	if (!args["include-modules"]) {
 		files = await filterModuleRoots(files);

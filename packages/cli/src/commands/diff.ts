@@ -3,7 +3,7 @@ import { log, spinner } from "@clack/prompts";
 import { version } from "../../package.json";
 import { computeDiff } from "../services/differ";
 import { renderDiffResult } from "../ui/diff";
-import { ExitCode, GramCLIError, reportError } from "../errors";
+import { ExitCode, exitOnError } from "../errors";
 
 export default defineCommand({
 	meta: {
@@ -50,12 +50,7 @@ export default defineCommand({
 			s.stop("Done.");
 		} catch (err) {
 			s.stop("Failed.");
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			reportError(err);
-			process.exit(ExitCode.Error);
+			exitOnError(err);
 		}
 
 		renderDiffResult(result.result, result.label);

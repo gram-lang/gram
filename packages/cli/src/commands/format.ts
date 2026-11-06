@@ -6,7 +6,7 @@ import pLimit from "p-limit";
 import { resolveGlob } from "../core/glob";
 import { withFileLock, atomicWrite } from "../core/lock";
 import { formatGram, hasChanges, summarizeChanges } from "@gram-lang/format";
-import { ExitCode, GramCLIError, getErrorMessage } from "../errors";
+import { ExitCode, exitOnError, getErrorMessage } from "../errors";
 
 export default defineCommand({
 	meta: {
@@ -33,11 +33,7 @@ export default defineCommand({
 		try {
 			files = await resolveGlob(patterns);
 		} catch (err) {
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(err);
 		}
 
 		const isCheck = args.check as boolean;

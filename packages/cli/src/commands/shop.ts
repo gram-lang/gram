@@ -18,7 +18,7 @@ import {
 	renderShopMarkdown,
 	renderShopJson,
 } from "../ui/shop";
-import { ExitCode, GramCLIError, reportError } from "../errors";
+import { ExitCode, exitOnError, reportError } from "../errors";
 
 export default defineCommand({
 	meta: {
@@ -95,15 +95,12 @@ export default defineCommand({
 		try {
 			files = await resolveGlob(patterns);
 		} catch (err) {
-			if (err instanceof GramCLIError) {
-				if (isRawOutput) {
-					process.stderr.write(`gram shop: ${err.message}\n`);
-				} else {
-					log.error(err.message);
-				}
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(
+				err,
+				isRawOutput
+					? (message) => process.stderr.write(`gram shop: ${message}\n`)
+					: undefined,
+			);
 		}
 		if (!args["include-modules"]) {
 			files = await filterModuleRoots(files);

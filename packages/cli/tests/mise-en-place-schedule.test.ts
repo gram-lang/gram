@@ -3,10 +3,14 @@ import { compile, scheduleFor } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
 import { passiveTimers } from "../src/core/schedule";
 import { exportRecipe } from "../src/services/exporter";
-import { parseMiseEnPlace } from "../src/services/mise-en-place-flag";
+import { readViewSettingArgs } from "../src/services/setting-args";
 import { buildViewModel } from "../src/services/viewer";
 import { prepareRecipeData } from "../src/ui/cook/prepare";
 import { cleanupTmpFile, writeTmpFile } from "./helpers";
+
+// `--mise-en-place`, read the way every command reads it.
+const parseMiseEnPlace = (value: unknown) =>
+	readViewSettingArgs({ "mise-en-place": value }, ["miseEnPlace"]).miseEnPlace;
 
 // The three timelines of a compiled recipe, laid out from its task graph.
 const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
