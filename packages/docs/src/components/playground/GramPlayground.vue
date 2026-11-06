@@ -338,8 +338,8 @@ const activeModifiersCount = computed(() => {
 	if (
 		plan.value.serveAt !== "" ||
 		plan.value.customWeekdays ||
-		schedule.value !== "perSection" ||
-		rests.value !== "shortest"
+		schedule.value !== VIEW_SETTINGS.miseEnPlace.default ||
+		rests.value !== VIEW_SETTINGS.rests.default
 	) {
 		count++;
 	}

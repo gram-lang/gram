@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, useId } from "vue";
 import {
-	NUTRITION_BASES,
 	type NutritionBasis,
+	VIEW_SETTINGS,
 	formatDecimalToFraction,
 } from "@gram-lang/renderer";
 import { UNIT_CONVERSIONS } from "@gram-lang/i18n";
-import {
-	REST_CHOICES,
-	type MiseEnPlaceMode,
-	type RestChoice,
-} from "@gram-lang/kitchen";
+import type { MiseEnPlaceMode, RestChoice } from "@gram-lang/kitchen";
 import { WEEKDAYS, type Weekday } from "@gram-lang/scheduler";
+import { settingChoices, settingValueLabel } from "./settingLabels";
 // biome-ignore lint/correctness/noUnusedImports: PlaygroundTooltip is used in the <template> block below
 import PlaygroundTooltip from "./PlaygroundTooltip.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the template block below
@@ -122,29 +119,10 @@ function toggleSection(sec: string) {
 // Section 1: Schedule & Service
 // --------------------------------------------------------------------------
 // biome-ignore lint/correctness/noUnusedVariables: scheduleOptions is used in the <template> block below, which Biome's Vue support doesn't see.
-const scheduleOptions = computed(() => [
-	{
-		label: t.value.renderer.schedulePerSection,
-		value: "perSection",
-	},
-	{ label: t.value.renderer.scheduleUpfront, value: "upfront" },
-	{ label: t.value.renderer.schedulePerDay, value: "perDay" },
-]);
+const scheduleOptions = computed(() => settingChoices("miseEnPlace", t.value));
 
 // biome-ignore lint/correctness/noUnusedVariables: restsOptions is used in the <template> block below, which Biome's Vue support doesn't see.
-const restsOptions = computed(() =>
-	REST_CHOICES.map((value) => ({
-		label:
-			t.value.renderer[
-				value === "shortest"
-					? "restsShortest"
-					: value === "balanced"
-						? "restsBalanced"
-						: "restsLongest"
-			],
-		value,
-	})),
-);
+const restsOptions = computed(() => settingChoices("rests", t.value));
 
 const timeZones: string[] = (() => {
 	try {
@@ -225,37 +203,36 @@ const earliestTooltip = computed(() => {
 // biome-ignore lint/correctness/noUnusedVariables: rejectedTooltipText is used in the <template> block below, which Biome's Vue support doesn't see.
 const rejectedTooltipText = computed(() => {
 	if (!props.serveSuggestions?.rejected?.length) return "";
-	const header =
-		lang.value === "fr" ? "Créneaux non retenus :\n" : "Unavailable slots:\n";
-	return (
-		header + props.serveSuggestions.rejected.map((r) => `• ${r}`).join("\n")
-	);
+	return [
+		t.value.playground.options.rejectedSlots,
+		...props.serveSuggestions.rejected.map((r) => `• ${r}`),
+	].join("\n");
 });
 
-const WEEKDAY_FULL_LABELS: Record<"fr" | "en", Record<Weekday, string>> = {
-	fr: {
-		mon: "Lundi",
-		tue: "Mardi",
-		wed: "Mercredi",
-		thu: "Jeudi",
-		fri: "Vendredi",
-		sat: "Samedi",
-		sun: "Dimanche",
-	},
-	en: {
-		mon: "Monday",
-		tue: "Tuesday",
-		wed: "Wednesday",
-		thu: "Thursday",
-		fri: "Friday",
-		sat: "Saturday",
-		sun: "Sunday",
-	},
-};
+/**
+ * The name of each day of the week, in the page's language, from `Intl`:
+ * 2024-01-01 was a Monday, so the n-th day of `WEEKDAYS` falls on the n-th of
+ * January 2024. Capitalized, as it heads a row.
+ */
+const weekdayNames = computed(() => {
+	const format = new Intl.DateTimeFormat(lang.value, {
+		weekday: "long",
+		timeZone: "UTC",
+	});
+	return Object.fromEntries(
+		WEEKDAYS.map((day, i) => {
+			const name = format.format(Date.UTC(2024, 0, 1 + i));
+			return [
+				day,
+				name.charAt(0).toLocaleUpperCase(lang.value) + name.slice(1),
+			];
+		}),
+	) as Record<Weekday, string>;
+});
 
 // biome-ignore lint/correctness/noUnusedVariables: getWeekdayFullLabel is used in the <template> block below, which Biome's Vue support doesn't see.
 function getWeekdayFullLabel(day: Weekday): string {
-	return WEEKDAY_FULL_LABELS[(lang.value as "fr" | "en") || "en"]?.[day] ?? day;
+	return weekdayNames.value[day];
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: getDayEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -341,52 +318,49 @@ function updateDayTime(day: Weekday, field: "from" | "to", value: string) {
 	});
 }
 
-function getScheduleLabel(mode: string | undefined): string {
-	if (mode === "upfront") return t.value.renderer.scheduleUpfront;
-	if (mode === "perDay") return t.value.renderer.schedulePerDay;
-	if (mode === "perSection") return t.value.renderer.schedulePerSection;
-	return "";
+/**
+ * "Sun 11 Oct, 13:00": a local serving time ("2026-10-11T13:00"), in the
+ * page's language. Read as UTC and written in UTC, so the browser's own zone
+ * never moves it; the raw value when it can't be read.
+ */
+function serveAtLabel(serveAt: string): string {
+	const instant = new Date(`${serveAt}:00Z`);
+	if (Number.isNaN(instant.getTime())) return serveAt;
+	return new Intl.DateTimeFormat(lang.value, {
+		timeZone: "UTC",
+		weekday: "short",
+		day: "numeric",
+		month: "short",
+		hour: "2-digit",
+		minute: "2-digit",
+		hourCycle: "h23",
+	}).format(instant);
 }
 
-function getRestsLabel(choice: string | undefined): string {
-	if (choice === "balanced") return t.value.renderer.restsBalanced;
-	if (choice === "longest") return t.value.renderer.restsLongest;
-	if (choice === "shortest") return t.value.renderer.restsShortest;
-	return "";
-}
+const DEFAULT_SCHEDULE = VIEW_SETTINGS.miseEnPlace.default;
+const DEFAULT_RESTS = VIEW_SETTINGS.rests.default;
 
 // biome-ignore lint/correctness/noUnusedVariables: scheduleBadgeTitle is used in the <template> block below, which Biome's Vue support doesn't see.
 const scheduleBadgeTitle = computed(() => {
 	const p = props.plan;
+	const badges = t.value.playground.badges;
+	const renderer = t.value.renderer;
 	const parts: string[] = [];
 	if (p?.serveAt) {
-		let timeStr = p.serveAt;
-		try {
-			const d = new Date(p.serveAt);
-			if (!Number.isNaN(d.getTime())) {
-				timeStr = d.toLocaleTimeString([], {
-					hour: "2-digit",
-					minute: "2-digit",
-				});
-			}
-		} catch {
-			// fallback to raw string
-		}
-		const timePrefix = lang.value === "fr" ? "Service à" : "Serve at";
-		parts.push(`${timePrefix} ${timeStr}`);
+		parts.push(badges.serveAt.replace("{time}", serveAtLabel(p.serveAt)));
 	}
-	if (p?.customWeekdays) {
-		parts.push(lang.value === "fr" ? "Horaires personnalisés" : "Custom hours");
+	if (p?.customWeekdays) parts.push(badges.customHours);
+	if (props.schedule && props.schedule !== DEFAULT_SCHEDULE) {
+		parts.push(
+			`${renderer.scheduleLabel}: ${settingValueLabel("miseEnPlace", props.schedule, t.value)}`,
+		);
 	}
-	if (props.schedule && props.schedule !== "perSection") {
-		const miseLabel = getScheduleLabel(props.schedule);
-		if (miseLabel) parts.push(`Mise en place: ${miseLabel}`);
+	if (props.rests && props.rests !== DEFAULT_RESTS) {
+		parts.push(
+			`${renderer.restsLabel}: ${settingValueLabel("rests", props.rests, t.value)}`,
+		);
 	}
-	if (props.rests && props.rests !== "shortest") {
-		const restsLabel = getRestsLabel(props.rests);
-		if (restsLabel) parts.push(`Repos: ${restsLabel}`);
-	}
-	return parts.join(" · ") || t.value.playground.badges?.active || "Active";
+	return parts.join(" · ") || badges.active;
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: isScheduleModified is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -394,15 +368,15 @@ const isScheduleModified = computed(() => {
 	return Boolean(
 		props.plan?.serveAt ||
 			props.plan?.customWeekdays ||
-			(props.schedule && props.schedule !== "perSection") ||
-			(props.rests && props.rests !== "shortest"),
+			(props.schedule && props.schedule !== DEFAULT_SCHEDULE) ||
+			(props.rests && props.rests !== DEFAULT_RESTS),
 	);
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: resetScheduleSection is used in the <template> block below, which Biome's Vue support doesn't see.
 function resetScheduleSection() {
-	emit("update:schedule", "perSection");
-	emit("update:rests", "shortest");
+	emit("update:schedule", DEFAULT_SCHEDULE);
+	emit("update:rests", DEFAULT_RESTS);
 	emit("clear-plan");
 }
 
@@ -635,12 +609,12 @@ const scaleBadgeTitle = computed(() => {
 			props.scaleTargetQty !== null
 				? `${props.scaleTargetQty}${props.scaleTargetUnit ? ` ${props.scaleTargetUnit}` : ""}`
 				: "";
-		const byIng = t.value.playground.badges?.byIngredient || "By ingredient";
+		const byIng = t.value.playground.badges.byIngredient;
 		const name = item?.name || props.scaleTargetId;
 		return `${byIng}: ${name}${qtyStr ? ` (${qtyStr})` : ""}`;
 	}
 	const factor = props.scaleFactorString || "100";
-	const globalLabel = t.value.playground.options?.scaleGlobal || "Global scale";
+	const globalLabel = t.value.playground.options.scaleGlobal;
 	return `${globalLabel}: ${factor}%`;
 });
 
@@ -711,17 +685,7 @@ const nutritionBasisId = useId();
 
 // biome-ignore lint/correctness/noUnusedVariables: nutritionBasisOptions is used in the <template> block below, which Biome's Vue support doesn't see.
 const nutritionBasisOptions = computed(() =>
-	NUTRITION_BASES.map((value) => ({
-		value,
-		label:
-			value === "auto"
-				? t.value.playground.options.nutritionBasisAuto
-				: value === "total"
-					? t.value.renderer.nutritionWholeRecipe
-					: value === "perPortion"
-						? t.value.renderer.nutritionPerPortion
-						: t.value.renderer.nutritionPer100g,
-	})),
+	settingChoices("nutritionBasis", t.value),
 );
 
 const DISPLAY_KEYS = [
@@ -746,7 +710,7 @@ function resetDisplaySection() {
 
 // biome-ignore lint/correctness/noUnusedVariables: bakersBadgeTitle is used in the <template> block below, which Biome's Vue support doesn't see.
 const bakersBadgeTitle = computed(() => {
-	const title = t.value.playground.sections?.bakersMath || "Baker's Math";
+	const title = t.value.playground.sections.bakersMath;
 	if (props.options.bakersReference) {
 		return `${title}: ${props.options.bakersReference}`;
 	}
@@ -806,19 +770,17 @@ const nutritionEnabled = computed({
 const physicsBadgeTitle = computed(() => {
 	const parts: string[] = [];
 	if (props.options.massStandardization) {
-		parts.push(
-			t.value.playground.options?.standardizeMass || "Standardize mass",
-		);
+		parts.push(t.value.playground.options.massStandardization);
 	}
 	if (props.options.yieldCalculation) {
-		parts.push(t.value.playground.options?.yieldCalc || "Yield");
+		parts.push(t.value.playground.options.yieldManagement);
 	}
 	if (props.options.nutritionEstimation) {
-		parts.push(t.value.playground.options?.nutritionCalc || "Nutrition");
+		parts.push(t.value.playground.options.nutrition);
 	}
 	return parts.length > 0
 		? parts.join(" · ")
-		: t.value.playground.badges?.inactive || "Inactive";
+		: t.value.playground.badges.inactive;
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: isPhysicsModified is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -849,10 +811,7 @@ function resetPhysicsSection() {
 // biome-ignore lint/correctness/noUnusedVariables: stockBadgeTitle is used in the <template> block below, which Biome's Vue support doesn't see.
 const stockBadgeTitle = computed(() => {
 	const count = props.stockedUris?.size ?? 0;
-	return (
-		t.value.playground.badges?.inStock?.replace("{count}", String(count)) ||
-		`${count} in stock`
-	);
+	return t.value.playground.badges.inStock.replace("{count}", String(count));
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: isStockModified is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -885,7 +844,7 @@ function resetStockSection() {
           <svg class="chevron-icon" :class="{ rotated: openSections.schedule }" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-          <span class="section-title">{{ t.playground.sections?.schedule || 'Planification & Service' }}</span>
+          <span class="section-title">{{ t.playground.sections.schedule }}</span>
           <span
             v-if="isScheduleModified"
             class="section-dot"
@@ -899,7 +858,7 @@ function resetStockSection() {
           @click.stop="resetScheduleSection"
           :title="t.playground.resetSection || 'Reset'"
         >
-          {{ t.playground.resetSection || 'Reset' }}
+          {{ t.playground.resetSection }}
         </button>
       </div>
 
@@ -947,7 +906,7 @@ function resetStockSection() {
         <!-- Heure de service -->
         <div class="studio-field serve-field-group">
           <div class="studio-label-row">
-            <label class="studio-label">{{ lang === 'fr' ? 'Heure de service' : (t.playground.views.planServeAt || 'Served on') }}</label>
+            <label class="studio-label">{{ t.playground.views.planServeAt }}</label>
             <PlaygroundTooltip :text="t.playground.help.serveAt" />
             <button
               v-if="props.plan?.serveAt"
@@ -1153,7 +1112,7 @@ function resetStockSection() {
           <svg class="chevron-icon" :class="{ rotated: openSections.scale }" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-          <span class="section-title">{{ t.playground.sections?.scale || 'Portions & Échelle' }}</span>
+          <span class="section-title">{{ t.playground.sections.scale }}</span>
           <span
             v-if="isScaleModified"
             class="section-dot"
@@ -1167,7 +1126,7 @@ function resetStockSection() {
           @click.stop="resetScaleSection"
           :title="t.playground.resetSection || 'Reset'"
         >
-          {{ t.playground.resetSection || 'Reset' }}
+          {{ t.playground.resetSection }}
         </button>
       </div>
 
@@ -1267,7 +1226,7 @@ function resetStockSection() {
           <svg class="chevron-icon" :class="{ rotated: openSections.bakersMath }" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-          <span class="section-title">{{ t.playground.sections?.bakersMath || "Baker's Math" }}</span>
+          <span class="section-title">{{ t.playground.sections.bakersMath }}</span>
           <span
             v-if="isBakersModified"
             class="section-dot"
@@ -1281,7 +1240,7 @@ function resetStockSection() {
           @click.stop="resetBakersSection"
           :title="t.playground.resetSection || 'Reset'"
         >
-          {{ t.playground.resetSection || 'Reset' }}
+          {{ t.playground.resetSection }}
         </button>
       </div>
 
@@ -1334,7 +1293,7 @@ function resetStockSection() {
           <svg class="chevron-icon" :class="{ rotated: openSections.display }" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-          <span class="section-title">{{ t.playground.sections?.display || 'Display' }}</span>
+          <span class="section-title">{{ t.playground.sections.display }}</span>
           <span
             v-if="isDisplayModified"
             class="section-dot"
@@ -1348,7 +1307,7 @@ function resetStockSection() {
           @click.stop="resetDisplaySection"
           :title="t.playground.resetSection || 'Reset'"
         >
-          {{ t.playground.resetSection || 'Reset' }}
+          {{ t.playground.resetSection }}
         </button>
       </div>
 
@@ -1390,7 +1349,7 @@ function resetStockSection() {
           <svg class="chevron-icon" :class="{ rotated: openSections.physics }" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-          <span class="section-title">{{ t.playground.sections?.physics || 'Physique & Nutrition' }}</span>
+          <span class="section-title">{{ t.playground.sections.physics }}</span>
           <span
             v-if="isPhysicsModified"
             class="section-dot"
@@ -1404,7 +1363,7 @@ function resetStockSection() {
           @click.stop="resetPhysicsSection"
           :title="t.playground.resetSection || 'Reset'"
         >
-          {{ t.playground.resetSection || 'Reset' }}
+          {{ t.playground.resetSection }}
         </button>
       </div>
 
@@ -1483,7 +1442,7 @@ function resetStockSection() {
           <svg class="chevron-icon" :class="{ rotated: openSections.stock }" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-          <span class="section-title">{{ t.playground.sections?.stock || 'Stock & Modules' }}</span>
+          <span class="section-title">{{ t.playground.sections.stock }}</span>
           <span
             v-if="isStockModified"
             class="section-dot"
@@ -1497,7 +1456,7 @@ function resetStockSection() {
           @click.stop="resetStockSection"
           :title="t.playground.resetSection || 'Reset'"
         >
-          {{ t.playground.resetSection || 'Reset' }}
+          {{ t.playground.resetSection }}
         </button>
       </div>
 
