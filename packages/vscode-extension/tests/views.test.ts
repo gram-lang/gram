@@ -8,6 +8,7 @@ import {
 } from "../src/views/protocol";
 import { ViewsState } from "../src/views/state";
 import { webviewPage } from "../src/views/webview";
+import { fill, percentOf, sessionSummary } from "../src/webview/format";
 import { createClientOptions } from "../src/client-options";
 
 const A = "file:///a.gram";
@@ -162,16 +163,23 @@ describe("the page of a view panel", () => {
 	const page = webviewPage({
 		nonce: "abc123",
 		cspSource: "vscode-resource:",
-		styles: { preview: "media/preview.css", jsonTree: "media/json-tree.css" },
+		styles: {
+			preview: "media/preview.css",
+			jsonTree: "media/json-tree.css",
+			view: "dist/webview/view.css",
+		},
+		script: "dist/webview/view.js",
 		title: 'Plan "de" <travail>',
 		showError: "Voir l'erreur",
 		outputEmpty: "Rien </script><script>alert(1)</script>",
 	});
 
-	it("only runs its own script", () => {
+	it("only runs its own script, from its own file", () => {
 		expect(page).toContain("script-src 'nonce-abc123'");
 		expect(page.match(/<script/g)).toHaveLength(1);
-		expect(page).toContain('<script nonce="abc123">');
+		expect(page).toContain(
+			'<script nonce="abc123" src="dist/webview/view.js"></script>',
+		);
 	});
 
 	it("escapes what it is given", () => {
@@ -181,10 +189,11 @@ describe("the page of a view panel", () => {
 		expect(page).not.toContain("alert(1)</script>");
 	});
 
-	it("loads both stylesheets and tells the extension when it is ready", () => {
+	it("loads the renderer's stylesheets and its own", () => {
 		expect(page).toContain('href="media/preview.css"');
 		expect(page).toContain('href="media/json-tree.css"');
-		expect(page).toContain("postMessage({ type: 'ready' })");
+		expect(page).toContain('href="dist/webview/view.css"');
+		expect(page).not.toContain("<style");
 	});
 });
 
@@ -201,13 +210,12 @@ describe("the serving time of a view laid out in time", () => {
 	const base = {
 		nonce: "abc123",
 		cspSource: "vscode-resource:",
-		styles: { preview: "p.css", jsonTree: "j.css" },
+		styles: { preview: "p.css", jsonTree: "j.css", view: "v.css" },
+		script: "v.js",
 		title: "Plan",
 		showError: "Voir",
 		outputEmpty: "Rien",
 	};
-	const scriptOf = (html: string) =>
-		/<script nonce="abc123">([\s\S]*)<\/script>/.exec(html)?.[1] ?? "";
 
 	it("is offered by the views that read the run sheet, whatever their id", () => {
 		expect(
@@ -227,16 +235,6 @@ describe("the serving time of a view laid out in time", () => {
 		expect(page).toContain("Quand servir ?");
 		expect(page).toContain('title="Revenir &lt;au&gt; planning"');
 		expect(webviewPage(base)).not.toContain('id="serving"');
-	});
-
-	it("writes a script that runs, with or without the field", () => {
-		for (const page of [
-			webviewPage(base),
-			webviewPage({ ...base, serving: SERVING }),
-		]) {
-			// biome-ignore lint/security/noGlobalEval: compiles the page's own script, never runs it.
-			expect(() => new Function(scriptOf(page))).not.toThrow();
-		}
 	});
 
 	it("reads only a serving time the server can read", () => {
@@ -283,7 +281,8 @@ describe("the session of a recipe: scale, stock, baker's reference", () => {
 	const base = {
 		nonce: "abc123",
 		cspSource: "vscode-resource:",
-		styles: { preview: "p.css", jsonTree: "j.css" },
+		styles: { preview: "p.css", jsonTree: "j.css", view: "v.css" },
+		script: "v.js",
 		title: "Recette",
 		showError: "Voir",
 		outputEmpty: "Rien",
@@ -358,26 +357,38 @@ describe("the session of a recipe: scale, stock, baker's reference", () => {
 		expect(webviewPage(base)).not.toContain('id="session"');
 	});
 
-	it("writes a script that runs with every set of controls", () => {
-		const SERVING = {
-			label: "Service le",
-			clear: "Effacer",
-			clearTitle: "Effacer",
-			suggest: "Quand ?",
-			none: "Rien",
-			whyNot: "Pourquoi ?",
-			earliest: "Au plus tôt : {when}",
+	it("says in a few words what is active", () => {
+		expect(sessionSummary({}, null, SESSION)).toBe("");
+		expect(
+			sessionSummary(
+				{ scale: { type: "factor", value: 1.5 }, stock: ["file:///p.gram"] },
+				null,
+				SESSION,
+			),
+		).toBe("· 150 % · 1 en stock");
+		const choices = {
+			ingredients: [{ id: "flour", name: "farine" }],
+			imports: [],
+			bakersMath: true,
 		};
-		for (const page of [
-			webviewPage({ ...base, session: SESSION }),
-			webviewPage({ ...base, session: SESSION, serving: SERVING }),
-		]) {
-			const script =
-				/<script nonce="abc123">([\s\S]*)<\/script>/.exec(page)?.[1] ?? "";
-			expect(() => new Function(script)).not.toThrow();
-			// The placeholder pattern survives the template literal.
-			expect(script).toContain("/\\{(\\w+)\\}/g");
-		}
+		expect(
+			sessionSummary(
+				{
+					scale: { type: "target", id: "flour", qty: 300, unit: "g" },
+					bakersReference: "flour",
+				},
+				choices,
+				SESSION,
+			),
+		).toBe("· 300 g farine · Référence : flour");
+	});
+
+	it("fills the words of the page, leaving an unknown name as it is", () => {
+		expect(fill("Au plus tôt : {when}", { when: "sam. 20:00" })).toBe(
+			"Au plus tôt : sam. 20:00",
+		);
+		expect(fill("{n} en stock {other}", { n: "2" })).toBe("2 en stock {other}");
+		expect(percentOf(1.255)).toBe("125.5");
 	});
 });
 

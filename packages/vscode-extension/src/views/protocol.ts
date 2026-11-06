@@ -1,72 +1,30 @@
 /*
  * The views protocol of the language server, as the extension reads it. The
- * server is the source of truth (`packages/language-server/src/views.ts`);
- * these are the shapes it sends.
+ * shapes are the server's own (`language-server/src/protocol.ts`), imported
+ * as types only: nothing of the server is bundled, and the two cannot drift.
+ * What is here is the client's: reading what the server and the page send.
  */
 
+import type {
+	InspectorPayload,
+	ViewsCapability,
+} from "@gram-lang/language-server/src/protocol";
+import type { Session } from "@gram-lang/language-server/src/protocol";
+
+export type {
+	InspectorPayload,
+	PausedError,
+	ServeSuggestions,
+	ServingStrings,
+	Session,
+	SessionChoices,
+	SessionStrings,
+	ViewUpdate,
+	ViewsCapability,
+} from "@gram-lang/language-server/src/protocol";
+
 /** One output the server can render, from `capabilities.experimental.gramViews`. */
-export interface OutputInfo {
-	id: string;
-	kind: "renderer" | "inspector";
-	/** Its name, in the editor's language. */
-	label: string;
-	presentation?: "code" | "tree";
-	/** What a view reads from the plan; `runSheet` means it is laid out in time. */
-	needs?: string[];
-}
-
-/** The words of the serving time controls, in the editor's language. */
-export interface ServingStrings {
-	label: string;
-	clear: string;
-	clearTitle: string;
-	suggest: string;
-	none: string;
-	whyNot: string;
-	/** "Earliest: {when}". */
-	earliest: string;
-}
-
-/** The words of the session controls (scale, baker's reference, stock). */
-export interface SessionStrings {
-	title: string;
-	scale: string;
-	byIngredient: string;
-	ingredient: string;
-	qty: string;
-	unit: string;
-	apply: string;
-	bakersReference: string;
-	auto: string;
-	stock: string;
-	stockHint: string;
-	reset: string;
-	/** "{factor} %". */
-	scaled: string;
-	/** "{n} in stock". */
-	inStock: string;
-	/** "Scale not applied: {reason}". */
-	scaleError: string;
-}
-
-/** What the server says the extension can show, and the words it writes around it. */
-export interface ViewsCapability {
-	outputs: OutputInfo[];
-	strings: {
-		showError: string;
-		outputEmpty: string;
-		serving?: ServingStrings;
-		session?: SessionStrings;
-	};
-}
-
-/** The answer of `gram/sessionChoices`: what the session controls offer. */
-export interface SessionChoices {
-	ingredients: { id: string; name: string; qty?: number; unit?: string }[];
-	imports: { uri: string; specifier: string }[];
-	bakersMath: boolean;
-	scaleError?: string;
-}
+export type OutputInfo = ViewsCapability["outputs"][number];
 
 /**
  * Whether an output is laid out in time, and so shows the serving time
@@ -75,30 +33,6 @@ export interface SessionChoices {
  */
 export const isPlanned = (output: OutputInfo): boolean =>
 	output.kind === "renderer" && (output.needs ?? []).includes("runSheet");
-
-/** The answer of `gram/serveTimes`: the serving times to propose, in words. */
-export interface ServeSuggestions {
-	candidates: { serveAt: string; label: string; title: string }[];
-	rejected: string[];
-	earliest: { serveAt: string; label: string; text: string } | null;
-}
-
-/**
- * What the cook chose for one recipe this sitting, sent in `gram/setSession`.
- * Kept per document while VS Code is open, never written to the settings.
- */
-export interface Session {
-	/** A local date-time, "2026-10-11T13:00", in the project's time zone. */
-	serveAt?: string;
-	/** How much is made: a factor (2 for 200 %), or a target quantity of one ingredient. */
-	scale?:
-		| { type: "factor"; value: number }
-		| { type: "target"; id: string; qty: number; unit: string | null };
-	/** The `@use` imports already made, by the URI they resolve to. */
-	stock?: string[];
-	/** The ingredient the baker's percentages are computed against. */
-	bakersReference?: string;
-}
 
 /**
  * A change to the session asked by the page: each part given replaces the
@@ -174,41 +108,6 @@ const SERVE_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 export function readServeAt(value: unknown): string | undefined {
 	return typeof value === "string" && SERVE_AT.test(value) ? value : undefined;
 }
-
-/** Why an output is paused: the recipe has an error that stops the views. */
-export interface PausedError {
-	title: string;
-	description: string;
-	code?: string;
-	message: string;
-	/** The module the error is in, when it is not the document itself. */
-	uri?: string;
-	/** In offsets into `uri`, or into the document. */
-	range?: { start: number; end: number };
-}
-
-export interface InspectorPayload {
-	presentation: "code" | "tree";
-	language?: string;
-	text: string;
-}
-
-/** `gram/viewUpdated`. */
-export type ViewUpdate =
-	| {
-			uri: string;
-			outputId: string;
-			kind: OutputInfo["kind"];
-			state: "ok";
-			payload: string | InspectorPayload | null;
-	  }
-	| {
-			uri: string;
-			outputId: string;
-			kind: OutputInfo["kind"];
-			state: "paused";
-			error: PausedError;
-	  };
 
 /** What a panel shows, made from the last `ok` update of its output. */
 export type Content =
