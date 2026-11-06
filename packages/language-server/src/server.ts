@@ -193,7 +193,7 @@ async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
 // The views protocol (`gram/viewUpdated`, `gram/setOpenViews`,
 // `gram/setSession`). A client that declares it (`initializationOptions.views`)
 // or sends `gram/setOpenViews` gets only the outputs it has open. Any other
-// client is an older one: it keeps receiving the preview and the work plan of
+// client is an older one: it keeps receiving the preview and the run sheet of
 // every document through the notifications it reads.
 let viewsClient = false;
 // The editor's language, for the words the server writes itself (the paused
@@ -235,7 +235,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 });
 
 // The view settings (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, ...):
-// what the preview, the work plan and the title hint follow. The recipe
+// what the preview, the run sheet and the title hint follow. The recipe
 // settings (`gram.bakersMath`, `gram.massStandardization`, ...): what the
 // analyzer computes. Read once at start and again whenever the settings
 // change; a missing or unknown one is on its default, so a bad setting never
@@ -292,7 +292,7 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 	}
 }
 
-// New view settings re-render every open preview and work plan from the
+// New view settings re-render every open preview and run sheet from the
 // compilation already in hand, and refresh the title hint: nothing is parsed or
 // compiled again. New recipe settings change what the analyzer computed, so
 // every open document is analyzed again, through the same debounced refresh as
@@ -510,7 +510,7 @@ connection.onRequest("gram/sessionChoices", (params: unknown) => {
 
 /**
  * Sends the views of an already compiled document: the outputs the client has
- * open, or, to an older client, the preview and the work plan. Pure output of
+ * open, or, to an older client, the preview and the run sheet. Pure output of
  * the cached state: it neither parses nor compiles, so it can run again (a new
  * view setting, a panel opened) without touching it.
  */
@@ -540,7 +540,7 @@ let warnedLegacyViews = false;
 
 /**
  * The views of an older client, one that does not speak the views protocol:
- * the preview and the work plan of every document, and the Gantt chart, each
+ * the preview and the run sheet of every document, and the Gantt chart, each
  * in its own notification, rendered on every refresh whether shown or not.
  * Deprecated with those notifications, removed in 2.0.0.
  */

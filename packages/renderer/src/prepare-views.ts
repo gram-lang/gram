@@ -63,7 +63,7 @@ export interface ViewInput {
 	/** The plan on the calendar, ending at `serveAt`. `null` without a serving time. */
 	readonly plan: ProjectedPlan | null;
 	/**
-	 * The work plan: on the calendar with a serving time, in days before the
+	 * The run sheet: on the calendar with a serving time, in days before the
 	 * service without. `null` when there is nothing to schedule.
 	 */
 	readonly runSheet: RunSheet | null;
@@ -87,7 +87,7 @@ const ANY_SERVING_TIME = "1970-01-01T00:00";
 
 /**
  * The one entry point of the views: the recipe, the settings, and what is
- * worked out from them (the schedule, the plan, the work plan, the serving time
+ * worked out from them (the schedule, the plan, the run sheet, the serving time
  * search), computed once and only when a view asks for it.
  *
  * Analysis needs an ingredient database that each surface loads its own way,

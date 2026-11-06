@@ -1,10 +1,11 @@
 ---
 title: "@gram-lang/renderer"
-description: "Rendering compiled recipes to Markdown, HTML and print-ready documents, and the work plan of a schedule."
+description: "Rendering compiled recipes to Markdown, HTML and print-ready documents, and the run sheet of a schedule."
 ---
 
 import Since from '../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../components/Term.astro';
 
 Handles rendering of a `CompilationResult` (or `AnalyzedCompilationResult`) to Markdown, HTML, or a standalone print-ready HTML document. If you are building a custom frontend UI in a component framework (React, Vue, Svelte, etc.), you will typically consume the JSON object directly rather than using this package. See the [Building a custom UI](/docs/how-to/build-custom-ui) guide.
 
@@ -39,9 +40,9 @@ All three formatters use the same underlying traversal (`RenderBackend`). This g
 | `formatFraction` | `(value: number) => string` | Custom decimal-to-fraction formatter (defaults to common kitchen fractions, e.g. `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter (defaults to e.g. `90` → `"1h 30m"`). |
 | `hideStepQty` | `boolean` | Omits ingredient quantities from the step text (shopping and section ingredient lists retain them). By default, <Since v="1.4.0" /> all formats display the quantity immediately after each ingredient, alongside its standardized mass when available: `flour (250 ml, ~148 g)`. In HTML, this is rendered as a `<span class="step-quantity">` (`classes.stepQuantity`), with detailed conversion info in its tooltip. |
-| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | <Since v="1.4.0" /> Scheduling strategy followed by the document: preparation immediately before each section (`'perSection'`, default), grouped upfront at recipe start (`'upfront'`), or at the start of each working day (`'perDay'`). Determines total and idle times displayed in the header. The recipe instructions show no temporal schedule: the detailed timeline and required equipment list reside in the work plan (`runSheet`). The timeline is computed on the fly from the `tasks` graph. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | <Since v="1.4.0" /> Scheduling strategy followed by the document: preparation immediately before each section (`'perSection'`, default), grouped upfront at recipe start (`'upfront'`), or at the start of each working day (`'perDay'`). Determines total and idle times displayed in the header. The recipe instructions show no temporal schedule: the detailed timeline and required equipment list reside in the <Term id="runSheet" /> (`runSheet`). The timeline is computed on the fly from the `tasks` graph. |
 | `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Controls resolution for passive timers defined as ranges (`~_{12-24h}`): minimum duration (`'shortest'`, default), midpoint (`'balanced'`), or maximum duration (`'longest'`). Exact passive timers and active timers are unaffected. Governs the same computed times as `miseEnPlace`. |
-| `comments` | `'show' \| 'hide'` | <Since v="1.4.0" /> Shows (`'show'`, default) or leaves out (`'hide'`) the comments of the recipe (`// like this`): both standalone notes on their own line and inline comments at the end of a line (rendered as footnotes in recipe views). Applies uniformly across all views, including the work plan. |
+| `comments` | `'show' \| 'hide'` | <Since v="1.4.0" /> Shows (`'show'`, default) or leaves out (`'hide'`) the comments of the recipe (`// like this`): both standalone notes on their own line and inline comments at the end of a line (rendered as footnotes in recipe views). Applies uniformly across all views, including the run sheet. |
 | `bakersMathOnly` | `boolean` | Shows only baker's percentages, hiding absolute ingredient quantities. |
 | `interactiveScaling` | `boolean` | Emits interactive scaling controls for yield and ingredient adjustments (HTML only). |
 | `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Selects the nutrition calculation basis. `'auto'` (default) uses per-portion if portions are declared, otherwise whole recipe. |
@@ -84,7 +85,7 @@ Each descriptor exposes its `key`, `kind` (`"view"` or `"recipe"`), `type` (`"ch
 ## Gantt chart (`toGanttHTML` & `attachGanttInteractivity`) <Since type="deprecated" v="1.4.0" />
 
 :::caution[Deprecated, removed in 2.0.0]
-The Gantt chart is replaced by the [work plan](#the-work-plan). No Gram surface (CLI, playground, VS Code extension) renders a Gantt chart any more. The functions `toGanttHTML` and `attachGanttInteractivity`, formatters `formatTime` and `formatAxisTime`, the `Gantt*` types and `gantt.css` remain available until 2.0.0. `toGanttHTML` logs a one-time console warning (`quiet: true` silences it). To design your own timeline visualization from `runSheet()` data, see [Build a custom UI](/docs/how-to/build-custom-ui/#build-your-own-planning-view) and [Deprecations](/docs/how-to/deprecations/).
+The Gantt chart is replaced by the [run sheet](#the-run-sheet). No Gram surface (CLI, playground, VS Code extension) renders a Gantt chart any more. The functions `toGanttHTML` and `attachGanttInteractivity`, formatters `formatTime` and `formatAxisTime`, the `Gantt*` types and `gantt.css` remain available until 2.0.0. `toGanttHTML` logs a one-time console warning (`quiet: true` silences it). To design your own timeline visualization from `runSheet()` data, see [Build a custom UI](/docs/how-to/build-custom-ui/#build-your-own-planning-view) and [Deprecations](/docs/how-to/deprecations/).
 :::
 
 ```typescript
@@ -148,11 +149,11 @@ function escapeMarkdownHtml(unsafe: string | null | undefined): string   // esca
 function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
 ```
 
-## The work plan
+## The run sheet
 
 <Since v="1.4.0" />
 
-From the `RunSheet` object returned by `runSheet()` (`@gram-lang/scheduler`) and the compiled recipe, the renderer outputs the work plan in four distinct formats and exposes underlying extraction helpers:
+From the `RunSheet` object returned by `runSheet()` (`@gram-lang/scheduler`) and the compiled recipe, the renderer outputs the run sheet in four distinct formats and exposes underlying extraction helpers:
 
 ```typescript
 import { project, runSheet } from '@gram-lang/scheduler';
@@ -171,7 +172,7 @@ runSheetToPrintHTML(sheet, compiled, { lang: 'en' }); // standalone print docume
 const model = describeRunSheet(sheet, compiled);       // the plan in words, as data
 ```
 
-The work plan for a recipe without an explicit target serving time is obtained via `runSheet(compiled.schedule, { graph: compiled.tasks })` (or from `layout(...).schedule`): days are labeled relatively (`D-2`, `D-1`, `Day D`), time slots represent relative wait durations, and no absolute clock margins are computed.
+The run sheet for a recipe without an explicit target serving time is obtained via `runSheet(compiled.schedule, { graph: compiled.tasks })` (or from `layout(...).schedule`): days are labeled relatively (`D-2`, `D-1`, `Day D`), time slots represent relative wait durations, and no absolute clock margins are computed.
 
 ### `RunSheetRenderOptions`
 
@@ -188,7 +189,7 @@ The work plan for a recipe without an explicit target serving time is obtained v
 
 | Field | Description |
 |---|---|
-| `title`, `subtitle`, `summary` | "Work plan — Entremets", "For Saturday, October 17 at 20:00 · 6 servings", "3 days · 3 visits to the kitchen · 45m of work in all". |
+| `title`, `subtitle`, `summary` | "Run sheet — Entremets", "For Saturday, October 17 at 20:00 · 6 servings", "3 days · 3 visits to the kitchen · 45m of work in all". |
 | `problems` | Contextual diagnostics reported when scheduling constraints could not be met (one descriptive sentence per problem). |
 | `schedule[]` | Multi-day schedule summary: one entry per active kitchen visit (`kind: 'visit'`), background thread (`'thread'`), and the final service (`'serve'`), containing `day`, `time`, and `text`. |
 | `days[]` | Per-day details: header (`heading`), time slot (`slot`), adjusted wait notices (`notices`), and visits (`visits[]`), each with `slot`, anticipation margin (`margin`), required items (`kit[]`, groups of lines, filled in `perDay` and `upfront` modes), the sections to cook (`program[]`: a section, its `steps[]` as the recipe numbers them with their action, HTML, Markdown and text, the time it starts (`startTime`, with a serving time), a `continued` flag when it goes on from an earlier visit, its source file (`origin`) when imported, a reference such as `steps 1 to 3`, and in `perSection` mode its own `kit[]` for mise en place), and unattended background tasks (`leaving[]`). |
@@ -196,7 +197,7 @@ The work plan for a recipe without an explicit target serving time is obtained v
 
 ### `visitKit()`, `sectionProgram()` and `sectionSteps()`
 
-Three high-level extraction helpers used by the work plan are exported to simplify custom UI implementations:
+Three high-level extraction helpers used by the run sheet are exported to simplify custom UI implementations:
 
 ```typescript
 visitKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
@@ -209,7 +210,7 @@ sectionSteps(compiled, section: number, stepIndexes: number[], { lang? }): Progr
 // { number?, action?, comment?, html, md, text }: a step as the recipe view numbers it, or a standalone note
 ```
 
-Nothing is invented: names and quantities are those of the `.gram` file, and the work plan writes the steps out as the recipe has them. The mode of the kit (`perSection`, `perDay`, `upfront`) is read from `RunSheet.recipes[].miseEnPlace` (also carried by `RunSheetModel.miseEnPlace`): the renderer has no option for it. `describeServeTimes()` and `describeEarliestServe()` put the result of `findServeTimes()` and `earliestServe()` in words the same way.
+Nothing is invented: names and quantities are those of the `.gram` file, and the run sheet writes the steps out as the recipe has them. The mode of the kit (`perSection`, `perDay`, `upfront`) is read from `RunSheet.recipes[].miseEnPlace` (also carried by `RunSheetModel.miseEnPlace`): the renderer has no option for it. `describeServeTimes()` and `describeEarliestServe()` put the result of `findServeTimes()` and `earliestServe()` in words the same way.
 
 ## Related resources
 
@@ -221,7 +222,7 @@ Nothing is invented: names and quantities are those of the `.gram` file, and the
   />
   <LinkCard
     title="Scheduler API"
-    description="Generate project plans, work plans and serving time searches that feed into the renderer."
+    description="Generate project plans, run sheets and serving time searches that feed into the renderer."
     href="/docs/reference/api/scheduler/"
   />
   <LinkCard

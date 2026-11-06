@@ -96,11 +96,11 @@ const entremetsSheet = runSheet(
 	{ graph: entremets.tasks, context: entremetsContext },
 );
 
-describe("the model of the work plan", () => {
+describe("the model of the run sheet", () => {
 	const model = describeRunSheet(sheet, compiled);
 
 	it("opens with the title, when it is served for how many, and the totals", () => {
-		expect(model.title).toBe("Work plan — Country bread");
+		expect(model.title).toBe("Run sheet — Country bread");
 		expect(model.subtitle).toBe("For Sunday, October 11 at 13:00 · 4 servings");
 		expect(model.summary).toBe(
 			"2 days · 2 visits to the kitchen · 55m of work in all",
@@ -285,9 +285,9 @@ describe("a section that comes from an import, and a base kept in stock", () => 
 describe("runSheetToText", () => {
 	const text = runSheetToText(sheet, compiled);
 
-	it("starts with the planning of the days", () => {
+	it("starts with the schedule of the days", () => {
 		const lines = text.split("\n");
-		expect(lines[0]).toBe("Work plan — Country bread");
+		expect(lines[0]).toBe("Run sheet — Country bread");
 		expect(lines[1]).toBe("For Sunday, October 11 at 13:00 · 4 servings");
 		expect(text).toMatch(/SAT 10\s+▮ 21:40 – 22:00\s+Dough/);
 		expect(text).toMatch(/★ 13:00\s+Serve/);
@@ -314,7 +314,7 @@ describe("runSheetToText", () => {
 
 	it("speaks French, dates included", () => {
 		const fr = runSheetToText(sheet, compiled, { lang: "fr" });
-		expect(fr).toContain("Planning de préparation — Country bread");
+		expect(fr).toContain("Plan de marche — Country bread");
 		expect(fr).toContain("Pour le dimanche 11 octobre à 13:00 · 4 parts");
 		expect(fr).toContain("SAMEDI 10 OCTOBRE");
 		expect(
@@ -395,9 +395,7 @@ describe("what could not be fixed", () => {
 
 	it("renders an alert section in HTML with problem icon and heading", () => {
 		const html = runSheetToHTML(planOf(exact), exact);
-		expect(html).toContain(
-			'class="run-sheet-problems work-plan-problems" role="alert"',
-		);
+		expect(html).toContain('class="run-sheet-problems" role="alert"');
 		expect(html).toContain('class="problem-icon"');
 		expect(html).toContain("To fix");
 		expect(html).toContain("<li>Mise en place — Dough, around Sun 04:10");
@@ -413,7 +411,7 @@ describe("runSheetToMarkdown", () => {
 	const md = runSheetToMarkdown(sheet, compiled);
 
 	it("has a title, a heading per day and checklists", () => {
-		expect(md).toContain("# Work plan — Country bread");
+		expect(md).toContain("# Run sheet — Country bread");
 		expect(md).toContain("## Saturday, October 10 · 21:40 → 22:00");
 		expect(md).toContain(
 			"### Dough · Start: 21:40\n\n**Mise en place**\n\n- [ ] flour 500 g",
@@ -436,10 +434,10 @@ describe("runSheetToMarkdown", () => {
 describe("runSheetToHTML", () => {
 	const html = runSheetToHTML(sheet, compiled);
 
-	it("is a section with the planning, then a block per day", () => {
+	it("is a section with the schedule, then a block per day", () => {
 		expect(html).toContain('<section class="gram-run-sheet">');
-		expect(html).toContain('<ol class="work-plan-schedule">');
-		expect(html).toContain('<section class="work-plan-day">');
+		expect(html).toContain('<ol class="run-sheet-schedule">');
+		expect(html).toContain('<section class="run-sheet-day">');
 		expect(html).toContain(
 			'<span class="day-heading">Saturday, October 10</span>',
 		);
@@ -447,9 +445,9 @@ describe("runSheetToHTML", () => {
 			'<input type="checkbox"><span>flour <span class="kit-qty">500 g</span></span>',
 		);
 		expect(html).toContain('<li class="schedule-group">');
-		expect(html).toContain('class="box-123 box-step-3 work-plan-leaving"');
+		expect(html).toContain('class="box-123 box-step-3 run-sheet-leaving"');
 		expect(html).toContain('<p class="leaving-next">Serve at 13:00</p>');
-		expect(html).toContain('class="work-plan-notice"');
+		expect(html).toContain('class="run-sheet-notice"');
 	});
 
 	it("needs no script", () => {
@@ -482,9 +480,7 @@ describe("runSheetToPrintHTML", () => {
 	it("is a complete document with the plan inside and the language set", () => {
 		expect(html.startsWith("<!DOCTYPE html>")).toBe(true);
 		expect(html).toContain('<html lang="fr">');
-		expect(html).toContain(
-			"<title>Planning de préparation — Country bread</title>",
-		);
+		expect(html).toContain("<title>Plan de marche — Country bread</title>");
 		expect(html).toContain('<section class="gram-run-sheet">');
 		expect(html).toContain("page-break-before: always");
 	});
@@ -627,7 +623,7 @@ describe("the kit follows the mise en place mode of the sheet", () => {
 	});
 });
 
-describe("the work plan carries the steps of the recipe", () => {
+describe("the run sheet carries the steps of the recipe", () => {
 	it("gives each section its steps, as the recipe numbers them, with their tokens", () => {
 		const html = runSheetToHTML(sheet, compiled);
 		expect(html).toContain('<ol class="exec-steps-list">');
@@ -845,7 +841,7 @@ const sheetOf = (
 	return planIn(c, mode);
 };
 
-describe("the work plan, whatever the mode and the clock", () => {
+describe("the run sheet, whatever the mode and the clock", () => {
 	for (const [name, source] of Object.entries(RECIPES)) {
 		for (const mode of MODES) {
 			const c = compile(getAST(source));

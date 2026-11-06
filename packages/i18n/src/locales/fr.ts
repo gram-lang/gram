@@ -17,7 +17,7 @@ export const fr: GramLocale = {
 		serving: {
 			label: "Service le",
 			clear: "Effacer",
-			clearTitle: "Revenir au planning en jours avant le service",
+			clearTitle: "Revenir au plan de marche en jours avant le service",
 			suggest: "Quand servir ?",
 			none: "Aucune heure de service ne convient dans les sept prochains jours.",
 			whyNot: "Pourquoi pas les autres ?",
@@ -35,7 +35,7 @@ export const fr: GramLocale = {
 			auto: "Automatique (@*)",
 			stock: "En stock",
 			stockHint:
-				"Déjà prêt : une seule ligne d'achat, et ses étapes quittent le planning.",
+				"Déjà prêt : une seule ligne d'achat, et ses étapes quittent le plan de marche.",
 			reset: "Réinitialiser",
 			scaled: "{factor} %",
 			inStock: "{n} en stock",
@@ -43,7 +43,7 @@ export const fr: GramLocale = {
 		},
 		outputs: {
 			recipe: "Recette",
-			workPlan: "Planning de préparation",
+			runSheet: "Plan de marche",
 			ast: "AST",
 			json: "JSON",
 			"json-tree": "Arbre JSON",
@@ -92,57 +92,57 @@ export const fr: GramLocale = {
 		runSheetPast:
 			"La première tâche aurait dû commencer {start}, et nous sommes déjà {now}.",
 		runSheetMulti: "Seule la première des {count} recettes est planifiée.",
-		workPlanTitle: "Planning de préparation",
-		workPlanFor: "Pour le {date} à {time}",
-		workPlanServings: "{count} parts",
-		workPlanScaled: "{count} parts (×{factor})",
-		workPlanDays: "{n} jour",
-		workPlanDaysMany: "{n} jours",
-		workPlanVisits: "{n} passage en cuisine",
-		workPlanVisitsMany: "{n} passages en cuisine",
-		workPlanWork: "{duration} de travail en tout",
-		workPlanServe: "Servir",
-		workPlanAbout: "~ {duration}",
-		workPlanKit: "À sortir",
-		workPlanLegendCook: "en cuisine",
-		workPlanLegendThread: "ce qui continue sans vous",
-		workPlanProgram: "Au programme",
-		workPlanExecution: "Exécution",
-		workPlanIngredients: "Ingrédients",
-		workPlanStart: "Début : {time}",
-		workPlanContinued: "suite",
-		workPlanLeaving: "En partant",
-		workPlanMadeOn: "fait {day}",
-		workPlanMadeAt: "fait à {time}",
-		workPlanMadeEarlier: "fait plus tôt",
-		workPlanInStock: "en stock",
-		workPlanStep: "étape {n}",
-		workPlanSteps: "étapes {from} à {to}",
-		workPlanRange: "{min} à {max}",
-		workPlanPossibleFrom: "Possible dès {time}.",
-		workPlanFixedService:
+		runSheetTitle: "Plan de marche",
+		runSheetFor: "Pour le {date} à {time}",
+		runSheetServings: "{count} parts",
+		runSheetScaled: "{count} parts (×{factor})",
+		runSheetDays: "{n} jour",
+		runSheetDaysMany: "{n} jours",
+		runSheetVisits: "{n} passage en cuisine",
+		runSheetVisitsMany: "{n} passages en cuisine",
+		runSheetWork: "{duration} de travail en tout",
+		runSheetServe: "Servir",
+		runSheetAbout: "~ {duration}",
+		runSheetKit: "À sortir",
+		runSheetLegendCook: "en cuisine",
+		runSheetLegendThread: "ce qui continue sans vous",
+		runSheetProgram: "Au programme",
+		runSheetExecution: "Exécution",
+		runSheetIngredients: "Ingrédients",
+		runSheetStart: "Début : {time}",
+		runSheetContinued: "suite",
+		runSheetLeaving: "En partant",
+		runSheetMadeOn: "fait {day}",
+		runSheetMadeAt: "fait à {time}",
+		runSheetMadeEarlier: "fait plus tôt",
+		runSheetInStock: "en stock",
+		runSheetProgramStep: "étape {n}",
+		runSheetProgramSteps: "étapes {from} à {to}",
+		runSheetRange: "{min} à {max}",
+		runSheetPossibleFrom: "Possible dès {time}.",
+		runSheetFixedService:
 			"Début non avançable : l'attente « {rest} » ({section}) ne peut pas dépasser {length} et se termine au service.",
-		workPlanFixedVisit:
+		runSheetFixedVisit:
 			"Début non avançable : l'attente « {rest} » ({section}) ne peut pas dépasser {length} et doit être terminée avant {sections}.",
-		workPlanNextVisit: "Prochain passage : {when}",
-		workPlanNextVisitSameDay: "Prochain passage : plus tard le même jour",
-		workPlanServeAt: "Servir à {time}",
-		workPlanStretchedTo:
+		runSheetNextVisit: "Prochain passage : {when}",
+		runSheetNextVisitSameDay: "Prochain passage : plus tard le même jour",
+		runSheetServeAt: "Servir à {time}",
+		runSheetStretchedTo:
 			"{wait} prolongé à {to} (prévu {range}) pour que le travail tombe dans vos disponibilités.",
-		workPlanShortenedTo:
+		runSheetShortenedTo:
 			"{wait} raccourci à {to} (prévu {range}) pour que le travail tombe dans vos disponibilités.",
-		workPlanUntilClock: "jusqu'à {time}",
-		workPlanNothing: "Rien à planifier.",
-		workPlanFindOk: "{when} — début {start} · {visits} · {adjusted}",
-		workPlanFindRejected: "{when} — impossible. {reason}",
-		workPlanFindStart: "Il faudrait commencer {start}, c'est déjà passé.",
-		workPlanFindNone:
+		runSheetUntilClock: "jusqu'à {time}",
+		runSheetNothing: "Rien à planifier.",
+		runSheetFindOk: "{when} — début {start} · {visits} · {adjusted}",
+		runSheetFindRejected: "{when} — impossible. {reason}",
+		runSheetFindStart: "Il faudrait commencer {start}, c'est déjà passé.",
+		runSheetFindNone:
 			"Aucune heure de service ne convient entre {from} et {to}.",
-		workPlanAdjusted: "{n} attente ajustée",
-		workPlanAdjustedMany: "{n} attentes ajustées",
-		workPlanNoAdjustment: "aucune attente ajustée",
-		workPlanEarliest: "Prêt dès {when} si vous commencez maintenant.",
-		workPlanEarliestNone:
+		runSheetAdjusted: "{n} attente ajustée",
+		runSheetAdjustedMany: "{n} attentes ajustées",
+		runSheetNoAdjustment: "aucune attente ajustée",
+		runSheetEarliest: "Prêt dès {when} si vous commencez maintenant.",
+		runSheetEarliestNone:
 			"Rien ne convient dans les {days} prochains jours (cherché jusqu'au {until}).",
 		est: "(est.)",
 		passiveTimeTooltip: "Temps passif (Repos, attente...)",
@@ -253,7 +253,7 @@ export const fr: GramLocale = {
 			jsonTree: "Arbre Interactif",
 			markdown: "Markdown",
 			preview: "Aperçu (HTML)",
-			runSheet: "Planning",
+			runSheet: "Plan de marche",
 			serveWhenTitle: "Quand servir ?",
 			serveWhenNone:
 				"Aucune heure de service ne convient dans les sept prochains jours.",
@@ -301,7 +301,7 @@ export const fr: GramLocale = {
 			hideAbsolute: "Masquer les poids absolus",
 			showComments: "Afficher les commentaires",
 			commentsDesc:
-				"Les notes de la recette (// comme ceci), dans la recette et dans le planning.",
+				"Les notes de la recette (// comme ceci), dans la recette et dans le plan de marche.",
 			showStepQuantities: "Quantités dans les étapes",
 			stepQuantitiesDesc:
 				"Écrit la quantité de chaque ingrédient dans le texte des étapes, juste après son nom.",
@@ -320,17 +320,17 @@ export const fr: GramLocale = {
 		},
 		help: {
 			schedule:
-				"Détermine à quel moment préparer et peser les ingrédients dans le planning : au fur et à mesure de chaque section, regroupé tout au début de la recette, ou au démarrage de chaque journée de travail.",
+				"Détermine à quel moment préparer et peser les ingrédients dans le plan de marche : au fur et à mesure de chaque section, regroupé tout au début de la recette, ou au démarrage de chaque journée de travail.",
 			rests:
 				"Détermine la durée retenue pour les étapes qui acceptent une plage de temps (ex. 2h à 12h) : la durée minimale requise, la durée maximale autorisée, ou une valeur médiane équilibrée.",
 			serveAt:
-				"Date et heure souhaitées du repas. Le planning est calculé à rebours à partir de cette échéance pour vous indiquer quand démarrer et être prêt pile à l'heure.",
+				"Date et heure souhaitées du repas. Le plan de marche est calculé à rebours à partir de cette échéance pour vous indiquer quand démarrer et être prêt pile à l'heure.",
 			serveSuggestions:
 				"Horaires recommandés pour passer à table. Gram explore les plages de repos et vos disponibilités pour vous proposer des créneaux réalistes sans action nocturne.",
 			timeZone:
-				"Définit le fuseau horaire utilisé pour afficher les heures exactes sur le planning et gérer correctement les passages de journée.",
+				"Définit le fuseau horaire utilisé pour afficher les heures exactes sur le plan de marche et gérer correctement les passages de journée.",
 			availability:
-				"Vos horaires de disponibilité en cuisine. Le planning s'organise pour que vous n'ayez rien à faire en dehors de cette plage (la nuit par exemple).",
+				"Vos horaires de disponibilité en cuisine. Le plan de marche s'organise pour que vous n'ayez rien à faire en dehors de cette plage (la nuit par exemple).",
 			scaleGlobal:
 				"Ajuste les quantités de tous les ingrédients et le nombre de portions selon le pourcentage indiqué (ex. 200 % pour doubler, 50 % pour diviser par deux).",
 			scaleByIngredient:
@@ -338,7 +338,7 @@ export const fr: GramLocale = {
 			bakersMath:
 				"Exprime chaque ingrédient en pourcentage d'un ingrédient de base fixé à 100 % (par défaut la farine, ou l'ingrédient de votre choix), facilitant l'évaluation des équilibres et des ratios.",
 			comments:
-				"Affiche ou masque les commentaires écrits dans la recette avec // : les notes seules sur une ligne et celles en fin de ligne. Dans le planning, ils sont mis à part, discrètement.",
+				"Affiche ou masque les commentaires écrits dans la recette avec // : les notes seules sur une ligne et celles en fin de ligne. Dans le plan de marche, ils sont mis à part, discrètement.",
 			stepQuantities:
 				"Rappelle chaque quantité dans l'étape qui l'utilise, avec son poids en grammes si les masses sont standardisées. Décochez pour des étapes plus courtes : les quantités restent dans les listes d'ingrédients.",
 			nutritionBasis:
@@ -354,12 +354,12 @@ export const fr: GramLocale = {
 			nutrition:
 				"Estime les calories et les macronutriments (protéines, glucides, lipides, fibres) par portion ou pour 100 g via les tables de composition en base.",
 			scheduleNote:
-				"Ces réglages servent surtout au planning. Dans la recette, seuls le temps total et le temps d'attente changent.",
-			scheduleNoteLink: "Voir le planning de préparation",
+				"Ces réglages servent surtout au plan de marche. Dans la recette, seuls le temps total et le temps d'attente changent.",
+			scheduleNoteLink: "Voir le plan de marche",
 			physicsDisclaimer:
 				"Dans ce playground, les calculs physiques et nutritionnels reposent sur une base restreinte aux recettes d'exemple.",
 			stockItem:
-				"Déclare cette préparation importée comme déjà prête dans votre cuisine. Ses étapes de fabrication sont masquées du planning pour ne garder que son utilisation finale.",
+				"Déclare cette préparation importée comme déjà prête dans votre cuisine. Ses étapes de fabrication sont masquées du plan de marche pour ne garder que son utilisation finale.",
 		},
 		output: {
 			copy: "Copier dans le presse-papier",

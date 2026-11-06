@@ -1,10 +1,11 @@
 ---
 title: "@gram-lang/scheduler"
-description: "The scheduling engine: lays out a task graph on a timeline, projects it onto the calendar given a target serving time and availability, and groups it into the days, visits to the kitchen and threads of a work plan."
+description: "The scheduling engine: lays out a task graph on a timeline, projects it onto the calendar given a target serving time and availability, and groups it into the days, visits to the kitchen and threads of a run sheet."
 ---
 
 import Since from '../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../components/Term.astro';
 
 <Since v="1.4.0" />
 
@@ -256,11 +257,11 @@ interface RunSheetOptions {
 }
 ```
 
-Generates the data structure powering the work plan: day-by-day breakdowns for each recipe, detailing active **kitchen visits** and passive **threads** that proceed unattended.
+Generates the data structure powering the <Term id="runSheet" />: day-by-day breakdowns for each recipe, detailing active **kitchen visits** and passive **threads** that proceed unattended.
 - A `ProjectedPlan` produces a concrete timestamped calendar schedule (`mode: "calendar"`);
 - A bare `Schedule` produces a relative temporal structure measured in days before serving (`mode: "relative"`).
 
-When `graph` and `context` are provided (in calendar plans), each visit receives its calculated anticipation margin. Key terms are defined in [The scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan).
+When `graph` and `context` are provided (in calendar plans), each visit receives its calculated anticipation margin. Key terms are defined in [The scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-run-sheet).
 
 ```typescript
 interface RunSheet {
@@ -328,7 +329,7 @@ What is **not** here are words and layout: `@gram-lang/renderer` writes them (`r
 function visitWindows(sheet: RunSheet, graph: TaskGraph, context: ProjectionContext): RunSheet
 ```
 
-Gives each visit of a calendar work plan its anticipation margin (`window`), or names the wait that holds it in place (`fixedBy`). The margin of a visit assumes every other visit stays at its planned time, so it is always safe to use: moving several visits, or none, never breaks another margin. A margin is sometimes cautious, never wrong, and one shorter than `WINDOW_MIN_MINUTES` is not told.
+Gives each visit of a calendar run sheet its anticipation margin (`window`), or names the wait that holds it in place (`fixedBy`). The margin of a visit assumes every other visit stays at its planned time, so it is always safe to use: moving several visits, or none, never breaks another margin. A margin is sometimes cautious, never wrong, and one shorter than `WINDOW_MIN_MINUTES` is not told.
 
 `runSheet()` already calls it when you pass `graph` and `context`, so you only need it to add margins to a sheet you built without them. A relative sheet, or one with no serving time, is returned as it is.
 
@@ -421,7 +422,7 @@ During daylight saving time transitions, an invalid local time (e.g. 02:30 when 
   />
   <LinkCard
     title="Renderer API"
-    description="Render work plans to text, Markdown, HTML or a print document."
+    description="Render run sheets to text, Markdown, HTML or a print document."
     href="/docs/reference/api/renderer/"
   />
   <LinkCard

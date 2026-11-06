@@ -39,7 +39,7 @@ function filesIn(dir: string): string[] {
 describe("the import rule of the views", () => {
 	it("finds the views", () => {
 		expect(viewFolders).toContain("recipe");
-		expect(viewFolders).toContain("work-plan");
+		expect(viewFolders).toContain("run-sheet");
 	});
 
 	for (const view of viewFolders) {

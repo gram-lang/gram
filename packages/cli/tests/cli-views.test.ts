@@ -15,23 +15,23 @@ import { GramCLIError } from "../src/errors";
 import { PLAN_FORMATS } from "../src/services/planner";
 
 const recipe = getView("recipe")!;
-const workPlan = getView("workPlan")!;
+const runSheet = getView("runSheet")!;
 
 describe("the views on the command line", () => {
 	it("names every view of the registry in kebab case, in its order", () => {
-		expect(cliViewName("workPlan")).toBe("work-plan");
+		expect(cliViewName("runSheet")).toBe("run-sheet");
 		expect(CLI_VIEW_NAMES).toEqual(views.map((v) => cliViewName(v.id)));
-		expect(CLI_VIEW_NAMES.slice(0, 2)).toEqual(["recipe", "work-plan"]);
+		expect(CLI_VIEW_NAMES.slice(0, 2)).toEqual(["recipe", "run-sheet"]);
 	});
 
 	it("finds a view by that name, and refuses one it does not know with the list", () => {
-		expect(viewByCliName("work-plan")).toBe(workPlan);
+		expect(viewByCliName("run-sheet")).toBe(runSheet);
 		expect(() => viewByCliName("gantt")).toThrow(GramCLIError);
-		expect(() => viewByCliName("gantt")).toThrow(/recipe, work-plan/);
+		expect(() => viewByCliName("gantt")).toThrow(/recipe, run-sheet/);
 	});
 
 	it("knows which views are laid out in time", () => {
-		expect(isPlanned(workPlan)).toBe(true);
+		expect(isPlanned(runSheet)).toBe(true);
 		expect(isPlanned(recipe)).toBe(false);
 	});
 });
@@ -39,12 +39,12 @@ describe("the views on the command line", () => {
 describe("formats", () => {
 	it("offers each view the formats it has, in the command's words", () => {
 		expect(cliFormatsOf(recipe, EXPORT_FORMATS)).toEqual(["md", "html"]);
-		expect(cliFormatsOf(workPlan, EXPORT_FORMATS)).toEqual([
+		expect(cliFormatsOf(runSheet, EXPORT_FORMATS)).toEqual([
 			"md",
 			"html",
 			"text",
 		]);
-		expect(cliFormatsOf(workPlan, PLAN_SHEET_FORMATS)).toEqual([
+		expect(cliFormatsOf(runSheet, PLAN_SHEET_FORMATS)).toEqual([
 			"text",
 			"md",
 			"html",
@@ -53,8 +53,8 @@ describe("formats", () => {
 
 	it("maps a command's word to the renderer's format", () => {
 		expect(resolveCliFormat(recipe, "html", EXPORT_FORMATS)).toBe("print");
-		expect(resolveCliFormat(workPlan, "html", PLAN_SHEET_FORMATS)).toBe("html");
-		expect(resolveCliFormat(workPlan, "text", EXPORT_FORMATS)).toBe("text");
+		expect(resolveCliFormat(runSheet, "html", PLAN_SHEET_FORMATS)).toBe("html");
+		expect(resolveCliFormat(runSheet, "text", EXPORT_FORMATS)).toBe("text");
 	});
 
 	it("refuses a format the view does not have, and says what it has", () => {

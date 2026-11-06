@@ -137,7 +137,7 @@ export interface RendererOptions {
 	formatDuration?: (minutes: number) => string;
 	/**
 	 * Show (`"show"`, the default) or hide (`"hide"`) the comments of the
-	 * recipe, in every view: the recipe, the work plan, and the print.
+	 * recipe, in every view: the recipe, the run sheet, and the print.
 	 */
 	comments?: CommentsMode;
 	/** When true, ingredient quantities are omitted from step text (not from shopping list or section mise en place). */
@@ -146,7 +146,7 @@ export interface RendererOptions {
 	 * Which timeline to follow: mise en place right before each section
 	 * (`"perSection"`, the default), all of it at the start (`"upfront"`), or at
 	 * the start of each working day (`"perDay"`). Drives the total and idle
-	 * times of the recipe; what to take out, and when, is the work plan's.
+	 * times of the recipe; what to take out, and when, is the run sheet's.
 	 */
 	miseEnPlace?: MiseEnPlaceMode;
 	/**

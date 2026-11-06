@@ -51,12 +51,12 @@
       },
       {
         "command": "gram.showRunSheet",
-        "title": "Gram: Work Plan",
+        "title": "Gram: Run Sheet",
         "icon": "$(checklist)"
       },
       {
         "command": "gram.showGantt",
-        "title": "Gram: Gantt Chart (deprecated, opens the work plan)",
+        "title": "Gram: Gantt Chart (deprecated, opens the run sheet)",
         "icon": "$(graph)"
       }
     ],
@@ -126,7 +126,7 @@
             "The mise en place of each working day happens at the start of that day (days come from the sections' ~{-Nd} anchors)."
           ],
           "default": "perSection",
-          "description": "When the mise en place (gathering and preparing ingredients and cookware) is planned. Drives the total time in the preview, the work plan and the title hint."
+          "description": "When the mise en place (gathering and preparing ingredients and cookware) is planned. Drives the total time in the preview, the run sheet and the title hint."
         },
         "gram.rests": {
           "type": "string",
@@ -141,7 +141,7 @@
             "A rest written as a range lasts the longest of it."
           ],
           "default": "shortest",
-          "description": "How long a rest written as a range lasts. An exact rest and an active timer (~{20-25min}, planned on its longest figure) are not affected. Drives the total time in the preview, the work plan and the title hint."
+          "description": "How long a rest written as a range lasts. An exact rest and an active timer (~{20-25min}, planned on its longest figure) are not affected. Drives the total time in the preview, the run sheet and the title hint."
         },
         "gram.comments": {
           "type": "string",
@@ -150,11 +150,11 @@
             "hide"
           ],
           "enumDescriptions": [
-            "The comments of the recipe (// like this) are shown in the preview and the work plan, discreetly in the work plan.",
-            "The comments of the recipe are left out of the preview and the work plan."
+            "The comments of the recipe (// like this) are shown in the preview and the run sheet, discreetly in the run sheet.",
+            "The comments of the recipe are left out of the preview and the run sheet."
           ],
           "default": "show",
-          "description": "Whether the preview and the work plan show the comments of the recipe: the notes alone on a line and the ones at the end of a line."
+          "description": "Whether the preview and the run sheet show the comments of the recipe: the notes alone on a line and the ones at the end of a line."
         },
         "gram.nutritionBasis": {
           "type": "string",

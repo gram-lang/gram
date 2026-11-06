@@ -1,6 +1,6 @@
 # Contributing to the renderer
 
-The renderer turns a compiled recipe into views. The engine computes, the views only show: a view reads what `prepareViews()` worked out (the schedule, the work plan, the serving times) and never computes a schedule of its own.
+The renderer turns a compiled recipe into views. The engine computes, the views only show: a view reads what `prepareViews()` worked out (the schedule, the run sheet, the serving times) and never computes a schedule of its own.
 
 ## How it is laid out
 

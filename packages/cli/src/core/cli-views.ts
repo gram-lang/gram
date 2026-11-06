@@ -12,7 +12,7 @@ import { ExitCode, GramCLIError } from "../errors";
  * that writes one, in the formats it really has, with no edit here.
  */
 
-/** A view's name on the command line: its id in kebab case ("workPlan" → "work-plan"). */
+/** A view's name on the command line: its id in kebab case ("runSheet" → "run-sheet"). */
 export function cliViewName(id: string): string {
 	return id.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 }
@@ -57,7 +57,7 @@ export const EXPORT_EXTENSIONS: Readonly<Record<string, string>> = {
 	text: "txt",
 };
 
-/** `gram plan`: the work plan on screen, or in a file. */
+/** `gram plan`: the run sheet on screen, or in a file. */
 export const PLAN_SHEET_FORMATS: CliFormats = {
 	text: "text",
 	md: "markdown",

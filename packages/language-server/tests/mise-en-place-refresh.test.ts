@@ -179,16 +179,16 @@ describe("gram.rests in the language server", () => {
 	}, 20_000);
 });
 
-describe("the work plan in the language server", () => {
-	it("renders the work plan in days before the service", async () => {
+describe("the run sheet in the language server", () => {
+	it("renders the run sheet in days before the service", async () => {
 		client = new Client();
 		await client.start({ views: true });
 		client.open(RECIPE("Tart"));
-		client.openViews(["workPlan"]);
-		const html = await client.viewHtml("workPlan", (h) =>
-			h.includes("Work plan — Tart"),
+		client.openViews(["runSheet"]);
+		const html = await client.viewHtml("runSheet", (h) =>
+			h.includes("Run sheet — Tart"),
 		);
-		expect(html).toContain("work-plan-day");
+		expect(html).toContain("run-sheet-day");
 		// By section (the default), the things to take out sit with their section.
 		expect(html).toContain("section-station-card");
 		// No serving time in the editor: the days are counted back from it.
@@ -198,19 +198,19 @@ describe("the work plan in the language server", () => {
 
 	it("takes its kit from gram.miseEnPlace: the filling is taken out at the first visit in upfront only", async () => {
 		const firstDay = (html: string) =>
-			html.split('class="work-plan-day"')[1] ?? "";
+			html.split('class="run-sheet-day"')[1] ?? "";
 		client = new Client();
 		await client.start({ views: true });
 		client.open(RECIPE("Tart"));
-		client.openViews(["workPlan"]);
-		const bySection = await client.viewHtml("workPlan", (h) =>
-			h.includes("Work plan — Tart"),
+		client.openViews(["runSheet"]);
+		const bySection = await client.viewHtml("runSheet", (h) =>
+			h.includes("Run sheet — Tart"),
 		);
 		expect(firstDay(bySection)).not.toContain("filling");
 
 		client.setting = "upfront";
 		client.settingChanged();
-		const upfront = await client.viewHtml("workPlan", (h) =>
+		const upfront = await client.viewHtml("runSheet", (h) =>
 			firstDay(h).includes("filling"),
 		);
 		expect(firstDay(upfront)).toContain("flour");
@@ -224,7 +224,7 @@ describe("the work plan in the language server", () => {
 			h.includes("gantt"),
 		);
 		expect(html.length).toBeGreaterThan(0);
-		// The work plan has its own output now: older clients no longer get it.
+		// The run sheet has its own output now: older clients no longer get it.
 		await client.settle();
 		expect(client.notes.some((n) => n.method === "gram/runSheetUpdated")).toBe(
 			false,
@@ -247,16 +247,16 @@ Bake ~{20min}.
 `;
 
 describe("gram.comments in the language server", () => {
-	it("shows the comments in the recipe and the work plan until told otherwise", async () => {
+	it("shows the comments in the recipe and the run sheet until told otherwise", async () => {
 		client = new Client();
 		await client.start({ views: true });
 		client.open(NOTED);
-		client.openViews(["recipe", "workPlan"]);
+		client.openViews(["recipe", "runSheet"]);
 		const html = await client.viewHtml("recipe", (h) =>
 			h.includes("Do not overmix."),
 		);
 		expect(html).toContain("keep it cold");
-		const plan = await client.viewHtml("workPlan", (h) =>
+		const plan = await client.viewHtml("runSheet", (h) =>
 			h.includes("Do not overmix."),
 		);
 		expect(plan).toContain("inline-comment");
@@ -268,7 +268,7 @@ describe("gram.comments in the language server", () => {
 		client.configDelay = 300;
 		await client.start({ views: true });
 		client.open(NOTED);
-		client.openViews(["recipe", "workPlan"]);
+		client.openViews(["recipe", "runSheet"]);
 		// What is sent before the setting was read still has them: wait for the next.
 		const recipe = await client.viewHtml(
 			"recipe",
@@ -276,8 +276,8 @@ describe("gram.comments in the language server", () => {
 		);
 		expect(recipe).not.toContain("keep it cold");
 		const plan = await client.viewHtml(
-			"workPlan",
-			(h) => h.includes("Work plan") && !h.includes("Do not overmix."),
+			"runSheet",
+			(h) => h.includes("Run sheet") && !h.includes("Do not overmix."),
 		);
 		expect(plan).not.toContain("keep it cold");
 

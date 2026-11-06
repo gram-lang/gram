@@ -5,6 +5,7 @@ description: "Référence des structures JSON de l'AST, des recettes compilées 
 
 import Since from '../../../../../../components/Since.astro';
 import { LinkCard, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+import Term from '../../../../../../components/Term.astro';
 
 Voici les structures JSON qui transitent entre les étapes du pipeline, ainsi que le schéma YAML de la base de données d'ingrédients. Cette page vient en complément des références d'API : elle illustre la forme concrète des données manipulées par les fonctions du moteur Gram.
 
@@ -369,9 +370,9 @@ Les blocs `physical` et `nutrition` sont tous deux optionnels. Une entrée dépo
 
 <span id="5-le-plan-de-travail"></span>
 
-## 5. Le planning de préparation
+## 5. Le plan de marche
 
-Structure de données du planning de préparation (`@gram-lang/scheduler`), telle que produite par la fonction `runSheet()` et émise par la commande `gram plan --format json` sous la propriété `runSheet`. Exemple pour une recette planifiée avec une heure de service cible :
+Structure de données du <Term id="runSheet" /> (`@gram-lang/scheduler`), telle que produite par la fonction `runSheet()` et émise par la commande `gram plan --format json` sous la propriété `runSheet`. Exemple pour une recette planifiée avec une heure de service cible :
 
 ```json
 {
@@ -414,7 +415,7 @@ Structure de données du planning de préparation (`@gram-lang/scheduler`), tell
 - Les temps `start`, `end`, `from` et `to` sont des **minutes avant le service** (négatives avant lui), exactes, dans un plan avec ou sans heure de service. Les champs `*Local` (heure murale à la minute) et `date` n'existent qu'avec une heure de service.
 - `mode: "relative"` est la même structure pour une recette sans heure de service : ni `serveAt`, ni `date`, ni `window`.
 - `totalWork` est le nombre de minutes de votre propre travail, mise en place comprise.
-- `miseEnPlace` est le mode dans lequel le plan a été établi (`perSection`, `perDay` ou `upfront`) : le planning de préparation s'en sert pour décider de ce qui figure dans la mise en place de chaque passage.
+- `miseEnPlace` est le mode dans lequel le plan a été établi (`perSection`, `perDay` ou `upfront`) : le plan de marche s'en sert pour décider de ce qui figure dans la mise en place de chaque passage.
 - Les types et le sens de chaque champ : [`runSheet` dans la référence du scheduler](/fr/docs/reference/api/scheduler/#runsheet).
 
 ## Ressources associées

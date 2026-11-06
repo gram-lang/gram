@@ -75,7 +75,7 @@ export interface ViewDefinition extends OutputBase {
 	needs: readonly Capability[];
 	/**
 	 * The view in `format`, with the settings of `input`. `null` when the
-	 * recipe has nothing for this view (a work plan of a recipe with no tasks).
+	 * recipe has nothing for this view (a run sheet of a recipe with no tasks).
 	 */
 	render(
 		input: ViewInput,

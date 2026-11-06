@@ -8,7 +8,7 @@ import Since from '../../../../components/Since.astro';
 
 If you are developing a modern web application (using React, Vue, Svelte, or Next.js, for instance), you can directly consume the compiled **JSON** data produced by Gram and connect it to your own user interface components.
 
-While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lang/kitchen` and `@gram-lang/analyzer` transform it into a structured, render-ready JSON object. This guide explains how to extract this data and design your UI around two core pillars: rendering the recipe view and presenting time (relative execution timeline or real-world calendar work plan).
+While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lang/kitchen` and `@gram-lang/analyzer` transform it into a structured, render-ready JSON object. This guide explains how to extract this data and design your UI around two core pillars: rendering the recipe view and presenting time (relative execution timeline or real-world calendar schedule).
 
 <Steps>
 
@@ -166,11 +166,11 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
 
    By connecting each `type` discriminator to your own components, you maintain full control over styling, accessibility, and interactivity.
 
-3. ### Present time: relative timeline or calendar work plan
+3. ### Present time: relative timeline or calendar schedule
 
    Gram offers two complementary approaches to represent time depending on your application's user experience:
    1. **The relative execution timeline**: expresses time in minutes starting from $t = 0$. Ideal for an in-kitchen live cooking mode or a continuous step timeline.
-   2. **The calendar work plan**: projects steps onto concrete dates, wall-clock times, and distinct kitchen visits. Ideal for meal planning and production organization.
+   2. **The calendar schedule**: projects steps onto concrete dates, wall-clock times, and distinct kitchen visits. Ideal for meal planning and production organization.
 
    #### Option A: Relative timeline (minutes from start)
 
@@ -206,7 +206,7 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
    :::
 
    <span id="build-your-own-planning-view"></span>
-   #### Option B: Real-world calendar work plan (dates and clock times)
+   #### Option B: Real-world calendar schedule (dates and clock times)
 
    <Since v="1.4.0" />
 
@@ -263,7 +263,7 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
    - `sheet.adjustments[]` and `sheet.diagnostics[]`: lists of passive rests that were adjusted to fit your availability, and unresolved scheduling constraints that triggered warnings.
 
    > [!TIP]
-   > **Reuse label formatters:** To format ingredient and equipment checklists or step references without rewriting culinary logic, import the modular helper functions from `@gram-lang/renderer`, such as `visitKit()` (ingredients and cookware to take out) and `sectionProgram()` (the section and the range of steps a visit covers). See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan) for terminology details.
+   > **Reuse label formatters:** To format ingredient and equipment checklists or step references without rewriting culinary logic, import the modular helper functions from `@gram-lang/renderer`, such as `visitKit()` (ingredients and cookware to take out) and `sectionProgram()` (the section and the range of steps a visit covers). See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-run-sheet) for terminology details.
 
 </Steps>
 

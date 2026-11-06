@@ -57,7 +57,7 @@ class Asked<T> {
 }
 
 /**
- * One output in a webview panel: the recipe, the work plan, an inspector. Any
+ * One output in a webview panel: the recipe, the run sheet, an inspector. Any
  * output of the server opens in this same panel; it shows the document the
  * panels follow, and what it is told to show.
  */

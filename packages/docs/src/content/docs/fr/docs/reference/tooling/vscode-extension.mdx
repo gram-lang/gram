@@ -1,10 +1,11 @@
 ---
 title: "Extension VS Code"
-description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau nutritionnel, planning de préparation et correspondance d'ingrédients."
+description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau nutritionnel, plan de marche et correspondance d'ingrédients."
 ---
 
 import Since from '../../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../../components/Term.astro';
 
 L'extension officielle Gram pour VS Code transforme votre éditeur en un véritable environnement de développement dédié aux recettes. Propulsée par `@gram-lang/language-server`, elle offre des diagnostics en temps réel, une assistance à la saisie avancée et un rendu dynamique en direct.
 
@@ -19,17 +20,17 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 :::
 
 ### 2. Toutes les vues et tous les inspecteurs <Since v="1.4.0" />
-- **`Gram: Show View...`** : Affiche la liste des sorties disponibles fournies par le serveur de langage et ouvre la vue sélectionnée dans un panneau dédié : la recette, le planning de préparation ou les inspecteurs techniques (l'AST de la recette avec imports résolus et son JSON compilé, sous forme de texte brut ou d'arborescence interactive repliable). Ces inspecteurs s'actualisent en direct au fil de votre saisie, dévoilant avec précision l'interprétation du compilateur.
+- **`Gram: Show View...`** : Affiche la liste des sorties disponibles fournies par le serveur de langage et ouvre la vue sélectionnée dans un panneau dédié : la recette, le <Term id="runSheet" /> ou les inspecteurs techniques (l'AST de la recette avec imports résolus et son JSON compilé, sous forme de texte brut ou d'arborescence interactive repliable). Ces inspecteurs s'actualisent en direct au fil de votre saisie, dévoilant avec précision l'interprétation du compilateur.
 - **Synchronisation avec l'éditeur actif** : Tous les panneaux ouverts s'ajustent automatiquement au fichier `.gram` en cours de modification. Seules les vues actives sont calculées par le serveur, éliminant tout traitement superflu en arrière-plan.
-- **Raccourcis dédiés** : Les commandes `Gram: Live Preview`, `Gram: Work Plan` et `Gram: Macros` permettent d'ouvrir rapidement la vue recette, le planning de préparation ou la recette directement positionnée sur son récapitulatif nutritionnel.
-- **Échelle et stock** : La section **Échelle et stock**, en haut des panneaux de la recette et du planning, ajuste la séance en cours, comme les options `--scale`, `--stock` et `--bakers-reference` du CLI : une échelle en pourcentage (`200` pour doubler la recette) ou la quantité visée d'un ingrédient (le reste suit) ; la référence boulangère, quand `gram.bakersMath` est actif ; et les imports `@use` déjà prêts, dont les étapes quittent alors le planning. Son résumé indique ce qui est actif, et une échelle impossible à appliquer (un ingrédient absent de la recette, une unité qui ne se convertit pas) y est signalée, la recette gardant alors ses quantités d'origine. Comme l'heure de service, ces choix valent pour tous les panneaux de la recette, sont conservés tant que VS Code reste ouvert et ne sont jamais enregistrés ; les diagnostics, le survol et les annotations en ligne restent sur la recette telle qu'elle est écrite.
+- **Raccourcis dédiés** : Les commandes `Gram: Live Preview`, `Gram: Run Sheet` et `Gram: Macros` permettent d'ouvrir rapidement la vue recette, le plan de marche ou la recette directement positionnée sur son récapitulatif nutritionnel.
+- **Échelle et stock** : La section **Échelle et stock**, en haut des panneaux de la recette et du plan de marche, ajuste la séance en cours, comme les options `--scale`, `--stock` et `--bakers-reference` du CLI : une échelle en pourcentage (`200` pour doubler la recette) ou la quantité visée d'un ingrédient (le reste suit) ; la référence boulangère, quand `gram.bakersMath` est actif ; et les imports `@use` déjà prêts, dont les étapes quittent alors le plan de marche. Son résumé indique ce qui est actif, et une échelle impossible à appliquer (un ingrédient absent de la recette, une unité qui ne se convertit pas) y est signalée, la recette gardant alors ses quantités d'origine. Comme l'heure de service, ces choix valent pour tous les panneaux de la recette, sont conservés tant que VS Code reste ouvert et ne sont jamais enregistrés ; les diagnostics, le survol et les annotations en ligne restent sur la recette telle qu'elle est écrite.
 
-### 3. Vue planning de préparation
-- **Panneau dédié au planning** : Exécutez la commande `Gram: Work Plan` (ou cliquez sur l'icône de liste de tâches dans la barre d'outils de l'éditeur) pour afficher le planning complet dans une WebView dédiée, indépendante de l'aperçu standard. Il détaille pour chaque journée les plages de présence en cuisine, les ingrédients et le matériel à sortir, les tâches à réaliser et les temps de repos passifs.
-- **Décompte relatif (`J-2`, `J-1`, `Jour J`)** : Sans heure de service, le planning prend la forme d'un compte à rebours relatif, avec des durées estimées par journée (ex. : « environ 55 min »).
-- **Heure de service** <Since v="1.4.0" /> : Le champ **Service le**, en haut du panneau, cale le planning sur le calendrier, avec les dates, les horaires et les marges, dans le fuseau horaire du projet et selon ses disponibilités (`timezone` et `availability` dans `.gram/config.yaml`). **Quand servir ?** propose les heures qui conviennent sur les sept prochains jours aux heures de repas du projet (`mealTimes`), la plus proche en tête, et explique pourquoi les autres ne conviennent pas : un clic suffit pour en choisir une. **Effacer** ramène au compte à rebours. L'heure choisie est conservée pour chaque recette tant que VS Code reste ouvert, puis oubliée à la fermeture du fichier ou de la fenêtre : le planning n'est ainsi jamais calé sur une heure déjà passée.
+### 3. Vue plan de marche
+- **Panneau dédié au plan de marche** : Exécutez la commande `Gram: Run Sheet` (ou cliquez sur l'icône de liste de tâches dans la barre d'outils de l'éditeur) pour afficher le plan de marche complet dans une WebView dédiée, indépendante de l'aperçu standard. Il détaille pour chaque journée les plages de présence en cuisine, les ingrédients et le matériel à sortir, les tâches à réaliser et les temps de repos passifs.
+- **Décompte relatif (`J-2`, `J-1`, `Jour J`)** : Sans heure de service, le plan de marche prend la forme d'un compte à rebours relatif, avec des durées estimées par journée (ex. : « environ 55 min »).
+- **Heure de service** <Since v="1.4.0" /> : Le champ **Service le**, en haut du panneau, cale le plan de marche sur le calendrier, avec les dates, les horaires et les marges, dans le fuseau horaire du projet et selon ses disponibilités (`timezone` et `availability` dans `.gram/config.yaml`). **Quand servir ?** propose les heures qui conviennent sur les sept prochains jours aux heures de repas du projet (`mealTimes`), la plus proche en tête, et explique pourquoi les autres ne conviennent pas : un clic suffit pour en choisir une. **Effacer** ramène au compte à rebours. L'heure choisie est conservée pour chaque recette tant que VS Code reste ouvert, puis oubliée à la fermeture du fichier ou de la fenêtre : le plan de marche n'est ainsi jamais calé sur une heure déjà passée.
 - **Prise en compte des réglages de projet** : La vue s'adapte instantanément aux paramètres d'ordonnancement `gram.miseEnPlace`, `gram.rests` et `gram.comments` (détaillés ci-dessous).
-- **Remplacement du diagramme de Gantt** : La commande historique `Gram: Gantt Chart` est dépréciée depuis la version 1.4.0 (elle ouvre désormais le planning de préparation avec un avertissement informatif) et sera définitivement retirée en version 2.0.0.
+- **Remplacement du diagramme de Gantt** : La commande historique `Gram: Gantt Chart` est dépréciée depuis la version 1.4.0 (elle ouvre désormais le plan de marche avec un avertissement informatif) et sera définitivement retirée en version 2.0.0.
 
 #### Le réglage `gram.miseEnPlace` <Since v="1.4.0" />
 
@@ -39,7 +40,7 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 | `upfront` | L'intégralité de la mise en place est ordonnancée au début de la recette. |
 | `perDay` | La mise en place de chaque journée de travail est planifiée au début de cette journée (les journées découlant des ancres temporelles de section, `~{-Nd}`). |
 
-Ce réglage pilote l'aperçu en direct, le planning de préparation et l'indication du temps total affichée en regard du titre de la recette. Il ajuste la durée totale et le temps d'attente passif sans altérer les listes d'ingrédients, et s'applique instantanément à l'ensemble des documents ouverts sans rechargement de fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+Ce réglage pilote l'aperçu en direct, le plan de marche et l'indication du temps total affichée en regard du titre de la recette. Il ajuste la durée totale et le temps d'attente passif sans altérer les listes d'ingrédients, et s'applique instantanément à l'ensemble des documents ouverts sans rechargement de fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 
 #### Le réglage `gram.rests` <Since v="1.4.0" />
 
@@ -49,13 +50,13 @@ Ce réglage pilote l'aperçu en direct, le planning de préparation et l'indicat
 | `balanced` | Le minuteur passif est résolu sur la valeur médiane de sa fourchette. |
 | `longest` | Le minuteur passif est résolu sur sa durée maximale. |
 
-Les durées passives fixes et les minuteurs actifs définis par une plage (`~{20-25min}`, systématiquement planifiés sur leur borne supérieure) ne sont pas affectés. À l'instar de `gram.miseEnPlace`, ce paramètre pilote l'aperçu, le planning de préparation et l'indication du temps total, et s'applique immédiatement à l'ensemble des fichiers ouverts. Voir [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
+Les durées passives fixes et les minuteurs actifs définis par une plage (`~{20-25min}`, systématiquement planifiés sur leur borne supérieure) ne sont pas affectés. À l'instar de `gram.miseEnPlace`, ce paramètre pilote l'aperçu, le plan de marche et l'indication du temps total, et s'applique immédiatement à l'ensemble des fichiers ouverts. Voir [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
 
 #### Le réglage `gram.comments` <Since v="1.4.0" />
 
 | Valeur | Effet |
 |---|---|
-| `show` (par défaut) | Les commentaires de la recette (`// comme ceci`) apparaissent dans l'aperçu et dans le planning de préparation. Dans le planning, ils s'affichent discrètement en texte réduit et grisé. |
+| `show` (par défaut) | Les commentaires de la recette (`// comme ceci`) apparaissent dans l'aperçu et dans le plan de marche. Dans le plan de marche, ils s'affichent discrètement en texte réduit et grisé. |
 | `hide` | Les notes isolées comme les commentaires en fin de ligne sont masqués dans les deux vues. |
 
 Ce paramètre s'applique instantanément à tous les fichiers ouverts (toute valeur non reconnue équivaut à `show`). Ce réglage est également disponible dans la CLI (`--comments`), dans le moteur de rendu (`comments`) ainsi que dans le Playground (section **Affichage**).

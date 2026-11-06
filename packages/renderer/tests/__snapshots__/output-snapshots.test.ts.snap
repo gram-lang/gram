@@ -200,7 +200,7 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
   <style>/*
  * The base of every printed view: the page, the type, the headings and the
  * elements of a step (actions, ingredients, timers...), which the recipe and
- * the work plan both write. Each view adds its own stylesheet after it.
+ * the run sheet both write. Each view adds its own stylesheet after it.
  */
 
 @import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap");

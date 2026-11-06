@@ -11,7 +11,7 @@ import {
 	fill,
 } from "./model";
 
-/** The work plan as plain text. */
+/** The run sheet as plain text. */
 export function runSheetToText(
 	sheet: RunSheet,
 	data: RenderableCompilationResult,
@@ -23,7 +23,7 @@ export function runSheetToText(
 		value.toLocaleUpperCase(options.lang || "en");
 	const sectionHead = sectionHeading(t);
 	const startOf = (l: RunSheetProgramLine) =>
-		l.startTime ? fill(t.workPlanStart, { time: l.startTime }) : "";
+		l.startTime ? fill(t.runSheetStart, { time: l.startTime }) : "";
 	const out: string[] = [model.title];
 	if (model.subtitle) out.push(model.subtitle);
 	out.push(model.summary, "");
@@ -44,7 +44,7 @@ export function runSheetToText(
 		}
 	}
 	if (model.schedule.length > 0) {
-		out.push("", `▮ ${t.workPlanLegendCook}   ┆ ${t.workPlanLegendThread}`);
+		out.push("", `▮ ${t.runSheetLegendCook}   ┆ ${t.runSheetLegendThread}`);
 	}
 	for (const day of model.days) {
 		out.push("", `${day.heading.toUpperCase()}  ${day.slot}`);
@@ -75,7 +75,7 @@ export function runSheetToText(
 						out.push(`    ${t.miseEnPlace}`);
 						out.push(...l.kit.map(item("      ")));
 					}
-					out.push(`    ${t.workPlanExecution}`);
+					out.push(`    ${t.runSheetExecution}`);
 					out.push(...stepLines(l.steps, "      "));
 				}
 			} else {
@@ -89,14 +89,14 @@ export function runSheetToText(
 					);
 				}
 				if (p.program.length > 0) {
-					out.push(`  ${upper(t.workPlanExecution)}`);
+					out.push(`  ${upper(t.runSheetExecution)}`);
 					for (const l of p.program) {
 						out.push(`    ${headOf(l)}`);
 						out.push(...stepLines(l.steps, "      "));
 					}
 				}
 			}
-			out.push(`  ${upper(t.workPlanLeaving)}`);
+			out.push(`  ${upper(t.runSheetLeaving)}`);
 			for (const l of p.next === undefined
 				? p.leaving
 				: p.leaving.slice(0, -1)) {

@@ -5,12 +5,13 @@ description: "Comment Gram projette une recette sur le calendrier : une heure de
 
 import Since from '../../../../../components/Since.astro';
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../components/Term.astro';
 
 <Since v="1.4.0" />
 
 Une recette décrit sa propre temporalité : la liste des tâches, leur durée et leurs dépendances. Cela suffit pour déterminer une métrique globale — par exemple « cette recette nécessite 17 heures au total, dont 50 minutes de travail actif ». En revanche, cela ne suffit pas pour déterminer **à quel moment précis commencer**. Pour cela, Gram a besoin de trois paramètres que vous seul connaissez : votre heure de service cible, votre fuseau horaire et vos plages réelles de disponibilité.
 
-Une fois ces trois paramètres définis, Gram positionne chaque tâche sur le calendrier en rétroplanning depuis l'heure de service, puis organise les journées de travail, les passages en cuisine et les processus passifs intermédiaires. Le [planning de préparation](/fr/docs/how-to/plan-a-meal/) constitue la restitution opérationnelle de ces données.
+Une fois ces trois paramètres définis, Gram positionne chaque tâche sur le calendrier en rétroplanning depuis l'heure de service, puis organise les journées de travail, les passages en cuisine et les processus passifs intermédiaires. Le <Term id="runSheet" /> constitue la restitution opérationnelle de ces données.
 
 ## Paramètres d'entrée
 
@@ -99,13 +100,13 @@ Ces diagnostics sont spécifiques à la projection calendaire : ils dépendent d
 
 Les calculs internes s'effectuent en minutes absolues sur une échelle continue, la conversion en heure locale n'intervenant qu'à la restitution finale. Une attente de 24 heures (une pâte au réfrigérateur, par exemple) traversant la nuit du passage à l'heure d'hiver dure 24 heures réelles : s'il débute à 13 h 30 la veille, il s'achèvera donc à 12 h 30 sur l'horloge locale. Si une heure théorique n'existe pas (ex. 2 h 30 lors de l'avance d'une heure au printemps), elle est recalée sur la première heure valide suivante ; lorsqu'une heure se répète en automne, la première occurrence est retenue.
 
-## Le planning de préparation
+## Le plan de marche
 
-La projection calendaire produit un modèle de données complet : horodatages précis de chaque bloc, temps de repos passifs ajustés, périodes d'indisponibilité et diagnostics des contraintes non résolues. La fonction [`runSheet()`](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation) structure ces données en journées de travail, en **passages en cuisine** et en **processus passifs d'arrière-plan** (repos, fermentation, refroidissement), tout en calculant la marge d'anticipation disponible pour chaque intervention.
+La projection calendaire produit un modèle de données complet : horodatages précis de chaque bloc, temps de repos passifs ajustés, périodes d'indisponibilité et diagnostics des contraintes non résolues. La fonction [`runSheet()`](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-marche) structure ces données en journées de travail, en **passages en cuisine** et en **processus passifs d'arrière-plan** (repos, fermentation, refroidissement), tout en calculant la marge d'anticipation disponible pour chaque intervention.
 
-Le **planning de préparation** constitue la vue opérationnelle de ce modèle. Pour chaque journée, il récapitule les heures de présence requises en cuisine, le matériel et les ingrédients à sortir, les actions clés à réaliser au regard des étapes de la recette, ainsi que les processus qui continuent sans surveillance. Afin de refléter la réalité de la pratique culinaire, les horaires affichés sont arrondis aux cinq minutes les plus proches (alors que les calculs internes demeurent exacts à la minute près). Les ajustements de repos sont mentionnés en tête de la journée concernée, et les alertes d'ordonnancement regroupées en tête de document. Ces règles d'affichage (regroupement des passages au-delà d'une heure de repos passif, affichage des marges à partir de 15 minutes) relèvent de la couche de rendu et non de contraintes rigides du moteur.
+Le **plan de marche** constitue la vue opérationnelle de ce modèle. Pour chaque journée, il récapitule les heures de présence requises en cuisine, le matériel et les ingrédients à sortir, les actions clés à réaliser au regard des étapes de la recette, ainsi que les processus qui continuent sans surveillance. Afin de refléter la réalité de la pratique culinaire, les horaires affichés sont arrondis aux cinq minutes les plus proches (alors que les calculs internes demeurent exacts à la minute près). Les ajustements de repos sont mentionnés en tête de la journée concernée, et les alertes d'ordonnancement regroupées en tête de document. Ces règles d'affichage (regroupement des passages au-delà d'une heure de repos passif, affichage des marges à partir de 15 minutes) relèvent de la couche de rendu et non de contraintes rigides du moteur.
 
-Le planning peut être généré en texte brut, en Markdown, en HTML autonome, en document imprimable dédié (une journée par page avec cases à cocher) ou exporté vers un fichier iCalendar (`.ics`). Avec l'option `--view work-plan`, `gram print` et `gram export` génèrent le planning à la place de la recette. Tandis que la recette décrit **comment** cuisiner, le planning précise **quand** intervenir.
+Le planning peut être généré en texte brut, en Markdown, en HTML autonome, en document imprimable dédié (une journée par page avec cases à cocher) ou exporté vers un fichier iCalendar (`.ics`). Avec l'option `--view run-sheet`, `gram print` et `gram export` génèrent le planning à la place de la recette. Tandis que la recette décrit **comment** cuisiner, le planning précise **quand** intervenir.
 
 En l'absence d'heure de service cible, ces mêmes données sont présentées sous forme de décompte relatif (`J-2`, `J-1`, `Jour J`) avec des durées estimées par journée (ex. : « environ 55 min ») et l'indication de l'heure de dégustation la plus précoce. Les marges d'anticipation et les ajustements de repos ne sont calculés que lorsque vous définissez vos disponibilités calendaires réelles.
 
@@ -117,7 +118,7 @@ Consultez [Planifier un repas](/fr/docs/how-to/plan-a-meal/) pour le guide prati
 |---|---|
 | CLI | `gram plan recette.gram --serve "2026-10-11 13:00" --available 08:00-22:00` (option `--tz` facultative si configurée dans le projet) ; `--find` pour chercher une heure de service |
 | Playground | La vue « Planning » et le volet « Planifier », avec « Quand servir ? » |
-| VS Code | `Gram: Work Plan`, en jours avant le service, ou sur le calendrier avec le champ **Service le** et ses suggestions « Quand servir ? » |
+| VS Code | `Gram: Run Sheet`, en jours avant le service, ou sur le calendrier avec le champ **Service le** et ses suggestions « Quand servir ? » |
 | `@gram-lang/scheduler` | `project()`, `runSheet()`, `findServeTimes()` et `earliestServe()` (voir la [référence de l'API scheduler](/fr/docs/reference/api/scheduler/)) |
 | `@gram-lang/renderer` | `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, et les utilitaires modulaires associés (`visitKit`, `sectionProgram`, `sectionSteps`) |
 

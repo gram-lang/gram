@@ -70,7 +70,7 @@ describe("the views registry", () => {
 		const ids = views.map((view) => view.id);
 		expect(new Set(ids).size).toBe(ids.length);
 		expect(ids).toContain("recipe");
-		expect(ids).toContain("workPlan");
+		expect(ids).toContain("runSheet");
 		for (const view of views) {
 			expect(view.kind).toBe("renderer");
 			// Every view can be shown on screen: the editor's panel and the
@@ -83,7 +83,7 @@ describe("the views registry", () => {
 	});
 
 	it("finds a view by its id", () => {
-		expect(getView("workPlan")?.id).toBe("workPlan");
+		expect(getView("runSheet")?.id).toBe("runSheet");
 		expect(getView("gantt")).toBeUndefined();
 	});
 });
@@ -104,19 +104,19 @@ describe("render", () => {
 		);
 	});
 
-	it("writes the work plan as the functions of each format do", () => {
+	it("writes the run sheet as the functions of each format do", () => {
 		const sheet = input.runSheet!;
 		const sheetOptions = { lang: "fr", comments: "hide" } as const;
-		expect(render("workPlan", input, "html")).toBe(
+		expect(render("runSheet", input, "html")).toBe(
 			runSheetToHTML(sheet, compiled, sheetOptions),
 		);
-		expect(render("workPlan", input, "markdown")).toBe(
+		expect(render("runSheet", input, "markdown")).toBe(
 			runSheetToMarkdown(sheet, compiled, sheetOptions),
 		);
-		expect(render("workPlan", input, "text")).toBe(
+		expect(render("runSheet", input, "text")).toBe(
 			runSheetToText(sheet, compiled, sheetOptions),
 		);
-		expect(render("workPlan", input, "print")).toBe(
+		expect(render("runSheet", input, "print")).toBe(
 			runSheetToPrintHTML(sheet, compiled, sheetOptions),
 		);
 	});
@@ -133,11 +133,11 @@ describe("render", () => {
 
 	it("says so for a recipe with nothing to plan, and is null with no tasks at all", () => {
 		const empty = compile(getAST("---\ntitle: Note\n---\n"));
-		expect(render("workPlan", prepareViews(empty), "text")).toContain(
+		expect(render("runSheet", prepareViews(empty), "text")).toContain(
 			"Nothing to plan.",
 		);
 		const noTasks = { ...empty, tasks: undefined, schedule: undefined };
-		expect(render("workPlan", prepareViews(noTasks), "html")).toBeNull();
+		expect(render("runSheet", prepareViews(noTasks), "html")).toBeNull();
 	});
 
 	it("refuses a format the view does not offer, and an unknown view", () => {

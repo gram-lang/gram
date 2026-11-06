@@ -1,0 +1,44 @@
+---
+/**
+ * A term of Gram in running text: `<Term id="runSheet" />` writes "run sheet"
+ * (or "plan de marche" on a French page), bold, linking to the page that
+ * explains it. Use it for the first mention on a page; later mentions stay
+ * plain words. The name comes from `src/data/terms.ts`.
+ *
+ * - `cap`: capitalize, at the start of a sentence ("Run sheet").
+ * - `link={false}`: bold only, on the page the term links to.
+ */
+import { type TermId, termHref, termLabel } from "../data/terms";
+
+export interface Props {
+	id: TermId;
+	cap?: boolean;
+	link?: boolean;
+}
+
+const { id, cap = false, link = true } = Astro.props;
+
+const pathname = Astro.url.pathname;
+const locale =
+	pathname.startsWith("/fr/") ||
+	pathname === "/fr" ||
+	Astro.currentLocale === "fr"
+		? "fr"
+		: "en";
+
+const label = termLabel(id, locale);
+const text = cap
+	? label.charAt(0).toLocaleUpperCase(locale) + label.slice(1)
+	: label.charAt(0).toLocaleLowerCase(locale) + label.slice(1);
+const href = termHref(id, locale);
+---
+
+{
+	link ? (
+		<a class="gram-term" href={href}>
+			<strong>{text}</strong>
+		</a>
+	) : (
+		<strong class="gram-term">{text}</strong>
+	)
+}

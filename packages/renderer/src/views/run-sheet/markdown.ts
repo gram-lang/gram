@@ -12,7 +12,7 @@ import {
 	fill,
 } from "./model";
 
-/** The work plan as Markdown: a heading per day, a checklist to take out. */
+/** The run sheet as Markdown: a heading per day, a checklist to take out. */
 export function runSheetToMarkdown(
 	sheet: RunSheet,
 	data: RenderableCompilationResult,
@@ -23,7 +23,7 @@ export function runSheetToMarkdown(
 	const model = describeRunSheet(sheet, data, options);
 	const sectionHead = sectionHeading(t);
 	const startOf = (l: RunSheetProgramLine) =>
-		l.startTime ? fill(t.workPlanStart, { time: l.startTime }) : "";
+		l.startTime ? fill(t.runSheetStart, { time: l.startTime }) : "";
 	const h1 = "#";
 	const h2 = "##";
 	const h3 = "###";
@@ -79,10 +79,10 @@ export function runSheetToMarkdown(
 					if (l.kit?.length) {
 						out.push(`**${md(t.miseEnPlace)}**`, "", ...l.kit.map(item), "");
 					}
-					out.push(`**${md(t.workPlanExecution)}**`, "");
+					out.push(`**${md(t.runSheetExecution)}**`, "");
 					out.push(...stepLines(l.steps), "");
 				}
-				out.push(`${part} ${md(t.workPlanLeaving)}`, "");
+				out.push(`${part} ${md(t.runSheetLeaving)}`, "");
 			} else {
 				if (p.kit.length > 0) {
 					out.push(`${part} ${++n}. ${md(t.miseEnPlace)}`, "");
@@ -96,13 +96,13 @@ export function runSheetToMarkdown(
 					);
 				}
 				if (p.program.length > 0) {
-					out.push(`${part} ${++n}. ${md(t.workPlanExecution)}`, "");
+					out.push(`${part} ${++n}. ${md(t.runSheetExecution)}`, "");
 					for (const l of p.program) {
 						out.push(`**${md(sectionHead(l))}**${startPart(l)}`, "");
 						out.push(...stepLines(l.steps), "");
 					}
 				}
-				out.push(`${part} ${++n}. ${md(t.workPlanLeaving)}`, "");
+				out.push(`${part} ${++n}. ${md(t.runSheetLeaving)}`, "");
 			}
 			const waits = p.next === undefined ? p.leaving : p.leaving.slice(0, -1);
 			for (const l of waits) out.push(`- ${md(l)}`);

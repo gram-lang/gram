@@ -190,7 +190,7 @@ watch(outputId, () => {
 });
 // Which complete timeline the views follow: where the mise en place goes, and
 // how long a rest written as a range lasts. Reading choices, shared by the
-// preview, the work plan and the Markdown views, and remembered in the browser
+// preview, the run sheet and the Markdown views, and remembered in the browser
 // (`settingsStorage.ts`, from the renderer's setting descriptors).
 const schedule = ref<MiseEnPlaceMode>(loadSetting("miseEnPlace"));
 
@@ -207,7 +207,7 @@ watch(rests, (value) => {
 });
 
 // The plan: when it is served and when the cook is available. Setting a serving
-// time puts the work plan on the calendar (dates, margins, rests stretched to
+// time puts the run sheet on the calendar (dates, margins, rests stretched to
 // your availability); clearing it goes back to the days before the service.
 // The time zone and the hours are remembered in the browser; the serving time
 // is not: it belongs to this visit, and a plan silently laid out on a serving
@@ -318,18 +318,18 @@ function closeStudio() {
 }
 
 /**
- * From the note of the "Schedule & Service" settings: the work plan, where
+ * From the note of the "Schedule & Service" settings: the run sheet, where
  * they show. Beside a docked studio it is already in sight; over a narrow
  * screen, the studio closes so the plan can be seen.
  */
-// biome-ignore lint/correctness/noUnusedVariables: showWorkPlan is used in the <template> block below, which Biome's Vue support doesn't see.
-function showWorkPlan() {
-	outputId.value = "workPlan";
+// biome-ignore lint/correctness/noUnusedVariables: showRunSheet is used in the <template> block below, which Biome's Vue support doesn't see.
+function showRunSheet() {
+	outputId.value = "runSheet";
 	if (!isWideScreen.value) {
 		isDrawerOpen.value = false;
 		mobileTab.value = "preview";
 	}
-	trackEvent("playground-show-work-plan", { from: "schedule-note" });
+	trackEvent("playground-show-run-sheet", { from: "schedule-note" });
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: activeModifiersCount is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -1276,7 +1276,7 @@ onUnmounted(() => {
             @update:rests="(val) => (rests = val)"
             @update:plan="(val) => (plan = val)"
             @clear-plan="clearPlan"
-            @show-work-plan="showWorkPlan"
+            @show-run-sheet="showRunSheet"
             @clear-target="clearTarget"
             @scale-apply="handleScaleApply"
             @toggle-stock="toggleStock"

@@ -69,7 +69,7 @@ export type PausedError = Omit<
  * The `gram/viewUpdated` notification: one output of one document.
  *
  * - `ok`: `payload` is the output. A view's HTML, or `null` when the recipe has
- *   nothing for it (a work plan of a recipe with no tasks); an inspector's
+ *   nothing for it (a run sheet of a recipe with no tasks); an inspector's
  *   `InspectorPayload`.
  * - `paused`: the recipe stopped compiling. No payload: the client keeps the
  *   last one it showed, under a banner made from `error`. `error.range` is in

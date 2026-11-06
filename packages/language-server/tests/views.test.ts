@@ -44,16 +44,16 @@ describe("renderOutputs", () => {
 		const updates = renderOutputs(
 			URI,
 			parseDocument(TART),
-			["workPlan", "nope"],
+			["runSheet", "nope"],
 			OPTIONS,
 		);
-		expect(updates.map((u) => u.outputId)).toEqual(["workPlan"]);
+		expect(updates.map((u) => u.outputId)).toEqual(["runSheet"]);
 		expect(updates[0]).toMatchObject({
 			uri: URI,
 			kind: "renderer",
 			state: "ok",
 		});
-		expect(payloadOf(updates[0])).toContain("Work plan — Tart");
+		expect(payloadOf(updates[0])).toContain("Run sheet — Tart");
 	});
 
 	it("renders nothing when nothing is open", () => {
@@ -97,14 +97,14 @@ describe("renderOutputs", () => {
 		expect(tree.text).toContain("<details");
 	});
 
-	it("lays the work plan on a serving time when the session has one", () => {
+	it("lays the run sheet on a serving time when the session has one", () => {
 		const [days] = renderOutputs(
 			URI,
 			parseDocument(TART),
-			["workPlan"],
+			["runSheet"],
 			OPTIONS,
 		);
-		const [served] = renderOutputs(URI, parseDocument(TART), ["workPlan"], {
+		const [served] = renderOutputs(URI, parseDocument(TART), ["runSheet"], {
 			...OPTIONS,
 			serveAt: "2026-10-11T13:00",
 		});
@@ -116,7 +116,7 @@ describe("renderOutputs", () => {
 		const updates = renderOutputs(
 			URI,
 			parseDocument(BROKEN),
-			["recipe", "workPlan", "ast", "json"],
+			["recipe", "runSheet", "ast", "json"],
 			{ ...OPTIONS, locale: "fr" },
 		);
 		expect(updates.map((u) => u.state)).toEqual([
@@ -256,8 +256,8 @@ describe("describeOutputs", () => {
 	it("names every output of the renderer, in the language asked for", () => {
 		const fr = describeOutputs("fr-FR");
 		expect(fr.outputs.map((o) => o.id)).toEqual(outputs.map((o) => o.id));
-		expect(fr.outputs.find((o) => o.id === "workPlan")?.label).toBe(
-			"Planning de préparation",
+		expect(fr.outputs.find((o) => o.id === "runSheet")?.label).toBe(
+			"Plan de marche",
 		);
 		expect(fr.outputs.find((o) => o.id === "json-tree")).toMatchObject({
 			kind: "inspector",

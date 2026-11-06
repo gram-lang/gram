@@ -1,10 +1,11 @@
 ---
 title: "VS Code extension"
-description: "Overview of the Gram VS Code extension: live preview, nutrition panel, work plan view, and smart ingredient matching."
+description: "Overview of the Gram VS Code extension: live preview, nutrition panel, run sheet view, and smart ingredient matching."
 ---
 
 import Since from '../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../components/Term.astro';
 
 The official Gram VS Code extension turns your editor into a dedicated recipe development environment. Powered by `@gram-lang/language-server`, it provides real-time diagnostics, advanced editing assistance, and dynamic live rendering.
 
@@ -19,17 +20,17 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 :::
 
 ### 2. All views and inspectors <Since v="1.4.0" />
-- **`Gram: Show View...`**: Displays a quick-pick menu of all available outputs provided by the language server and opens the selected view in a dedicated panel: recipe presentation, operational work plan, and developer inspectors (composed AST and compiled JSON, formatted as source text or an interactive collapsible tree). Inspectors update live as you type, offering immediate visibility into how the compiler understands your recipe.
+- **`Gram: Show View...`**: Displays a quick-pick menu of all available outputs provided by the language server and opens the selected view in a dedicated panel: recipe presentation, operational <Term id="runSheet" />, and developer inspectors (composed AST and compiled JSON, formatted as source text or an interactive collapsible tree). Inspectors update live as you type, offering immediate visibility into how the compiler understands your recipe.
 - **Active editor synchronization**: All open panels automatically track the active `.gram` editor tab. The language server evaluates only views that are currently visible, eliminating background compute overhead.
-- **Direct shortcuts**: Dedicated commands `Gram: Live Preview`, `Gram: Work Plan`, and `Gram: Macros` quickly open the recipe view, the operational work plan, and the recipe anchored directly to its nutrition summary.
-- **Scale and stock**: The **Scale and stock** section at the top of the recipe and work plan panels adjusts this sitting, as the CLI's `--scale`, `--stock` and `--bakers-reference` do: a scale in percent (`200` for twice the recipe), or a target quantity of one ingredient (the rest follows); the baker's reference when `gram.bakersMath` is on; and the `@use` imports already made, whose steps then leave the plan. Its summary says what is active, and a scale that cannot be applied (an ingredient the recipe does not have, a unit that does not convert) is said there, the recipe staying at its written size. Like the serving time, these choices are shared by every panel of the recipe, kept while VS Code is open, and never saved; diagnostics, hover and inlay hints stay on the recipe as written.
+- **Direct shortcuts**: Dedicated commands `Gram: Live Preview`, `Gram: Run Sheet`, and `Gram: Macros` quickly open the recipe view, the operational run sheet, and the recipe anchored directly to its nutrition summary.
+- **Scale and stock**: The **Scale and stock** section at the top of the recipe and run sheet panels adjusts this sitting, as the CLI's `--scale`, `--stock` and `--bakers-reference` do: a scale in percent (`200` for twice the recipe), or a target quantity of one ingredient (the rest follows); the baker's reference when `gram.bakersMath` is on; and the `@use` imports already made, whose steps then leave the plan. Its summary says what is active, and a scale that cannot be applied (an ingredient the recipe does not have, a unit that does not convert) is said there, the recipe staying at its written size. Like the serving time, these choices are shared by every panel of the recipe, kept while VS Code is open, and never saved; diagnostics, hover and inlay hints stay on the recipe as written.
 
-### 3. Work plan view
-- **Dedicated work plan panel**: Run `Gram: Work Plan` (or click the checklist icon in the editor toolbar) to display the full schedule in a dedicated WebView independent of the live preview. It details daily kitchen presence, items to take out, tasks to perform, and background passive rests.
+### 3. Run sheet view
+- **Dedicated run sheet panel**: Run `Gram: Run Sheet` (or click the checklist icon in the editor toolbar) to display the full schedule in a dedicated WebView independent of the live preview. It details daily kitchen presence, items to take out, tasks to perform, and background passive rests.
 - **Relative countdown (`D-2`, `D-1`, `Day D`)**: Without a serving time, the schedule is presented as a relative countdown with estimated durations per day (e.g. "about 55 min").
 - **Serving time** <Since v="1.4.0" />: The **Served at** field at the top of the panel puts the plan on the calendar, with dates, clock times and margins, in your project's time zone and within its availability (`timezone` and `availability` in `.gram/config.yaml`). **When to serve?** proposes the times that work over the next seven days at your meal times (`mealTimes`), the earliest one first, and tells why the others do not; click one to use it. **Clear** goes back to the countdown. The serving time is kept per recipe while VS Code is open, and forgotten when you close the file or the window, so a plan is never laid out on a time already past.
 - **Setting synchronization**: The view adapts dynamically to the `gram.miseEnPlace`, `gram.rests` and `gram.comments` configuration settings (detailed below).
-- **Gantt chart replacement**: The legacy `Gram: Gantt Chart` command is deprecated since version 1.4.0 (it redirects to the work plan with a one-time notice) and will be removed in version 2.0.0.
+- **Gantt chart replacement**: The legacy `Gram: Gantt Chart` command is deprecated since version 1.4.0 (it redirects to the run sheet with a one-time notice) and will be removed in version 2.0.0.
 
 #### The `gram.miseEnPlace` setting <Since v="1.4.0" />
 
@@ -39,7 +40,7 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 | `upfront` | All mise en place tasks are scheduled at the start of the recipe. |
 | `perDay` | The mise en place of each working day is scheduled at the start of that day (days derive from section day anchors, `~{-Nd}`). |
 
-The setting drives the live preview, the work plan, and the total time hint displayed next to the recipe title. It adjusts computed total and idle times without altering ingredient lists, and applies immediately to all open documents without reloading the window. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
+The setting drives the live preview, the run sheet, and the total time hint displayed next to the recipe title. It adjusts computed total and idle times without altering ingredient lists, and applies immediately to all open documents without reloading the window. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 
 #### The `gram.rests` setting <Since v="1.4.0" />
 
@@ -49,13 +50,13 @@ The setting drives the live preview, the work plan, and the total time hint disp
 | `balanced` | The passive timer is resolved to the midpoint of its range. |
 | `longest` | The passive timer is resolved to its maximum duration. |
 
-Fixed passive timers and active timers with ranges (`~{20-25min}`, always planned using their upper bound) are unaffected. Like `gram.miseEnPlace`, this setting drives the live preview, the work plan, and the total time hint, applying immediately to all open files. See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges).
+Fixed passive timers and active timers with ranges (`~{20-25min}`, always planned using their upper bound) are unaffected. Like `gram.miseEnPlace`, this setting drives the live preview, the run sheet, and the total time hint, applying immediately to all open files. See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges).
 
 #### The `gram.comments` setting <Since v="1.4.0" />
 
 | Value | Effect |
 |---|---|
-| `show` (default) | Recipe comments (`// like this`) appear in the preview and in the work plan. In the work plan, they are styled discreetly in small, muted text. |
+| `show` (default) | Recipe comments (`// like this`) appear in the preview and in the run sheet. In the run sheet, they are styled discreetly in small, muted text. |
 | `hide` | Both standalone notes on their own line and end-of-line comments are omitted from both views. |
 
 This setting applies immediately to all open files (any unrecognized value defaults to `show`). The equivalent option is available in the CLI (`--comments`), the renderer API (`comments`), and the Playground (**Display** section).

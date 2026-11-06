@@ -5,6 +5,7 @@ description: "A practical guide to splitting recipes into reusable modules, orga
 
 import { Steps, Tabs, TabItem, FileTree, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Since from '../../../../components/Since.astro';
+import Term from '../../../../components/Term.astro';
 
 <Since v="1.2.0" />
 
@@ -86,7 +87,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
     [Pour] The &curd into the &baked shell{}. Chill in the fridge for ~_{2h}.
     ```
 
-    Downstream tools — the work plan, shopping list, and nutritional analysis — work seamlessly. The dough's `~_{1h}` passive rest interleaves with making the lemon curd because `@use` inlines the steps into the global schedule. The same goes for the mise en place: the base's own preparations are planned with its sections, so they can fall while something else is resting.
+    Downstream tools — the <Term id="runSheet" />, shopping list, and nutritional analysis — work seamlessly. The dough's `~_{1h}` passive rest interleaves with making the lemon curd because `@use` inlines the steps into the global schedule. The same goes for the mise en place: the base's own preparations are planned with its sections, so they can fall while something else is resting.
 
 3.  **Reuse the base across multiple recipes**
 
@@ -226,7 +227,7 @@ graph LR
 ```
 
 * **Encapsulation:** `dinner.gram` only interacts with `&veloute`. Internal variables within `chicken-stock.gram` remain completely private.
-* **Unified shopping list & timeline:** Raw ingredients (chicken, celery, carrots) and simmering steps from `chicken-stock.gram` bubble up into the main dinner shopping list and work plan, along with their mise en place.
+* **Unified shopping list & timeline:** Raw ingredients (chicken, celery, carrots) and simmering steps from `chicken-stock.gram` bubble up into the main dinner shopping list and run sheet, along with their mise en place.
 
 ### Diamond dependencies
 When a menu imports multiple dishes that share a common foundation (e.g. an entrée and a dessert that both import `shortcrust.gram`):
@@ -274,7 +275,7 @@ gram shop dinner.gram --stock @bases/shortcrust.gram
 gram cook dinner.gram --stock @bases/shortcrust.gram,@sauces/bechamel.gram
 ```
 
-* **Zero timeline overhead:** All preparation and cooking steps for stocked items are omitted from the interactive cooking guide and the work plan, and nothing inside the module is prepared. The only cost left is one minute of mise en place where your recipe takes the stocked item off the shelf.
+* **Zero timeline overhead:** All preparation and cooking steps for stocked items are omitted from the interactive cooking guide and the run sheet, and nothing inside the module is prepared. The only cost left is one minute of mise en place where your recipe takes the stocked item off the shelf.
 * **Simplified shopping list:** Aggregates as a single purchasable unit (e.g., `1 shortcrust pastry`) rather than listing raw ingredients like flour and butter.
 * **Accurate nutritional totals:** Calories and macronutrients remain fully accurate, derived directly from the base module's nutritional profile.
 
@@ -290,7 +291,7 @@ The web-based [Playground](/play) supports editing multi-file recipes: open the 
 
 ## Planning with imports
 
-When generating a [work plan](/docs/how-to/plan-a-meal/), every base imported via `@use` is fully integrated into the global schedule: its preparation steps and mise en place are coordinated alongside the host recipe.
+When generating a [run sheet](/docs/how-to/plan-a-meal/), every base imported via `@use` is fully integrated into the global schedule: its preparation steps and mise en place are coordinated alongside the host recipe.
 
 - **Multi-day scheduling:** Adding a day anchor to an import directive (for example `@use "./bases/sponge.gram" as &sponge ~{-2d}`) automatically schedules the preparation of that sub-recipe two days before the service.
 - **Stocked bases (`--stock`):** If you mark a base as already on hand in your freezer or pantry (`--stock ./bases/sponge.gram`), no cooking visit is scheduled for it. It simply appears annotated as "in stock" in the mise en place of the visit where the host recipe needs it.

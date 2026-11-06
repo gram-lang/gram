@@ -5,6 +5,7 @@ description: "Moteur d'ordonnancement : calcule la chronologie d'un graphe de t�
 
 import Since from '../../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../../components/Term.astro';
 
 <Since v="1.4.0" />
 
@@ -256,11 +257,11 @@ interface RunSheetOptions {
 }
 ```
 
-Génère la structure de données du planning de préparation : découpage par journée pour chaque recette, puis, au sein de chaque journée, identification des **passages en cuisine** actifs et des **fils** passifs qui se poursuivent de façon autonome.
+Génère la structure de données du <Term id="runSheet" /> : découpage par journée pour chaque recette, puis, au sein de chaque journée, identification des **passages en cuisine** actifs et des **fils** passifs qui se poursuivent de façon autonome.
 - Un `ProjectedPlan` produit une planification calendaire horodatée (`mode: "calendar"`) ;
 - Un `Schedule` seul produit une structure temporelle relative exprimée en jours avant le service (`mode: "relative"`).
 
-Lorsque les options `graph` et `context` sont fournies (dans le cas d'une projection calendaire), chaque passage se voit attribuer sa marge d'anticipation. Les définitions des termes clés sont détaillées dans [Le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
+Lorsque les options `graph` et `context` sont fournies (dans le cas d'une projection calendaire), chaque passage se voit attribuer sa marge d'anticipation. Les définitions des termes clés sont détaillées dans [Le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-marche).
 
 ```typescript
 interface RunSheet {
@@ -421,7 +422,7 @@ Lors du passage à l'heure d'été, une heure locale inexistante (par exemple 02
   />
   <LinkCard
     title="API Renderer"
-    description="Écrivez des plans de travail en texte, Markdown, HTML ou document imprimable."
+    description="Écrivez des plans de marche en texte, Markdown, HTML ou document imprimable."
     href="/fr/docs/reference/api/renderer/"
   />
   <LinkCard

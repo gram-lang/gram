@@ -32,18 +32,18 @@ import {
 	resolveCliFormat,
 } from "../core/cli-views";
 
-// The work plan, as the renderer's registry describes it.
-const workPlanView = getView("workPlan");
-if (!workPlanView) throw new Error("The renderer has no work plan view.");
-const WORK_PLAN = workPlanView;
+// The run sheet, as the renderer's registry describes it.
+const runSheetView = getView("runSheet");
+if (!runSheetView) throw new Error("The renderer has no run sheet view.");
+const RUN_SHEET = runSheetView;
 
 /**
- * `--format` of `gram plan`: the work plan's formats the command offers, read
+ * `--format` of `gram plan`: the run sheet's formats the command offers, read
  * from the registry, then `json`, the data of the plan rather than a view.
  */
 export type PlanFormat = string;
 export const PLAN_FORMATS: readonly PlanFormat[] = [
-	...cliFormatsOf(WORK_PLAN, PLAN_SHEET_FORMATS),
+	...cliFormatsOf(RUN_SHEET, PLAN_SHEET_FORMATS),
 	"json",
 ];
 
@@ -136,14 +136,14 @@ export function formatPlan(
 		: undefined;
 	if (format !== "json") {
 		const written =
-			WORK_PLAN.render(
+			RUN_SHEET.render(
 				result.views,
-				resolveCliFormat(WORK_PLAN, format, PLAN_SHEET_FORMATS),
+				resolveCliFormat(RUN_SHEET, format, PLAN_SHEET_FORMATS),
 				{ ...(lang !== undefined && { lang }) },
 			) ?? "";
 		if (!sentence) return written;
 		return format === "html"
-			? `${written}<p class="work-plan-earliest">${escapeHtml(sentence)}</p>\n`
+			? `${written}<p class="run-sheet-earliest">${escapeHtml(sentence)}</p>\n`
 			: `${written}\n${sentence}\n`;
 	}
 	return `${JSON.stringify(
@@ -192,7 +192,7 @@ export function findPlan(
 	return `${lines.map((l) => (format === "md" ? `- ${l}` : l)).join("\n")}\n`;
 }
 
-/** The work plan as an iCalendar file, every event stamped `stamp` (an ISO instant, UTC). */
+/** The run sheet as an iCalendar file, every event stamped `stamp` (an ISO instant, UTC). */
 export function planToICS(
 	result: PlanResult,
 	stamp: string,

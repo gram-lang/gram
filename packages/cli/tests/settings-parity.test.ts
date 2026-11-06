@@ -50,7 +50,7 @@ const EXPOSED: Record<
 		view: ["miseEnPlace", "rests", "nutritionBasis", "bakersMathOnly"],
 		recipe: ALL_RECIPE,
 	},
-	// The work plan: no nutrition, no quantities in steps, no analysis.
+	// The run sheet: no nutrition, no quantities in steps, no analysis.
 	plan: {
 		command: plan,
 		view: ["miseEnPlace", "rests", "comments"],

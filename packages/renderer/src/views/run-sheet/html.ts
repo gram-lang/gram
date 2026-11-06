@@ -49,7 +49,7 @@ function dayParts(label: string): { name: string; number?: string } {
 	return m ? { name: m[1]!, number: m[2]! } : { name: label };
 }
 
-/** The work plan as an HTML fragment, every word of the recipe escaped. */
+/** The run sheet as an HTML fragment, every word of the recipe escaped. */
 export function runSheetToHTML(
 	sheet: RunSheet,
 	data: RenderableCompilationResult,
@@ -58,13 +58,13 @@ export function runSheetToHTML(
 	const t = getDictionary(options.lang).renderer;
 	const model = describeRunSheet(sheet, data, options);
 	const e = escapeHtml;
-	let html = `<section class="gram-run-sheet">\n  <header class="work-plan-header">\n    <h2>${e(model.title)}</h2>\n`;
+	let html = `<section class="gram-run-sheet">\n  <header class="run-sheet-header">\n    <h2>${e(model.title)}</h2>\n`;
 	if (model.subtitle) {
-		html += `    <p class="work-plan-subtitle">${e(model.subtitle)}</p>\n`;
+		html += `    <p class="run-sheet-subtitle">${e(model.subtitle)}</p>\n`;
 	}
-	html += `    <p class="work-plan-summary">${e(model.summary)}</p>\n`;
+	html += `    <p class="run-sheet-summary">${e(model.summary)}</p>\n`;
 	if (model.problems.length > 0) {
-		html += `    <section class="run-sheet-problems work-plan-problems" role="alert">\n      <h3><span class="problem-icon" aria-hidden="true">${HTML_ICONS.warning}</span> <span>${e(t.runSheetProblems)}</span></h3>\n      <ul>\n`;
+		html += `    <section class="run-sheet-problems" role="alert">\n      <h3><span class="problem-icon" aria-hidden="true">${HTML_ICONS.warning}</span> <span>${e(t.runSheetProblems)}</span></h3>\n      <ul>\n`;
 		for (const p of model.problems) html += `        <li>${e(p)}</li>\n`;
 		html += `      </ul>\n    </section>\n`;
 	}
@@ -75,7 +75,7 @@ export function runSheetToHTML(
 			if (row.day || groups.length === 0) groups.push([]);
 			groups.at(-1)!.push(row);
 		}
-		html += `    <ol class="work-plan-schedule">\n`;
+		html += `    <ol class="run-sheet-schedule">\n`;
 		for (const rows of groups) {
 			const day = rows[0]?.day;
 			html += `      <li class="schedule-group">\n        <div class="schedule-day">`;
@@ -94,29 +94,29 @@ export function runSheetToHTML(
 			html += `        </div>\n      </li>\n`;
 		}
 		html += `    </ol>\n`;
-		html += `    <p class="work-plan-legend"><span class="legend-cook">${e(t.workPlanLegendCook)}</span><span class="legend-thread">${e(t.workPlanLegendThread)}</span></p>\n`;
+		html += `    <p class="run-sheet-legend"><span class="legend-cook">${e(t.runSheetLegendCook)}</span><span class="legend-thread">${e(t.runSheetLegendThread)}</span></p>\n`;
 	}
 	html += `  </header>\n`;
 	for (const day of model.days) {
-		html += `  <section class="work-plan-day">\n    <h3><span class="day-heading">${e(day.heading)}</span> <span class="day-slot">${e(day.slot)}</span></h3>\n`;
+		html += `  <section class="run-sheet-day">\n    <h3><span class="day-heading">${e(day.heading)}</span> <span class="day-slot">${e(day.slot)}</span></h3>\n`;
 		for (const n of day.notices) {
-			html += `    <p class="work-plan-notice">${e(n)}</p>\n`;
+			html += `    <p class="run-sheet-notice">${e(n)}</p>\n`;
 		}
 		for (const p of day.visits) {
-			html += `    <div class="work-plan-visit">\n`;
+			html += `    <div class="run-sheet-visit">\n`;
 			if (day.visits.length > 1) {
-				html += `      <h4 class="work-plan-visit-slot">${e(p.slot)}</h4>\n`;
+				html += `      <h4 class="run-sheet-visit-slot">${e(p.slot)}</h4>\n`;
 			}
 			if (p.margin) {
-				html += `      <p class="work-plan-margin">${e(p.margin)}</p>\n`;
+				html += `      <p class="run-sheet-margin">${e(p.margin)}</p>\n`;
 			}
-			const titles = { things: t.workPlanIngredients, tools: t.cookware };
+			const titles = { things: t.runSheetIngredients, tools: t.cookware };
 			const pill = (l: RunSheetProgramLine) =>
 				l.startTime
-					? `<span class="sec-time-pill">${e(t.workPlanStart).replace("{time}", `<strong>${e(l.startTime)}</strong>`)}</span>`
+					? `<span class="sec-time-pill">${e(t.runSheetStart).replace("{time}", `<strong>${e(l.startTime)}</strong>`)}</span>`
 					: "";
 			const title = (l: RunSheetProgramLine) =>
-				`<span class="sec-title">${e(l.section)}${l.continued ? ` <span class="sec-cont">(${e(t.workPlanContinued)})</span>` : ""}</span>${l.origin ? `<span class="sec-origin">${e(l.origin)}</span>` : ""}`;
+				`<span class="sec-title">${e(l.section)}${l.continued ? ` <span class="sec-cont">(${e(t.runSheetContinued)})</span>` : ""}</span>${l.origin ? `<span class="sec-origin">${e(l.origin)}</span>` : ""}`;
 			const steps = (l: RunSheetProgramLine) =>
 				`<ol class="exec-steps-list">\n${l.steps
 					.map((x) =>
@@ -155,7 +155,7 @@ export function runSheetToHTML(
 					}
 					html += sub(
 						++n,
-						t.workPlanExecution,
+						t.runSheetExecution,
 						`          ${steps(l)}`,
 						"station-exec",
 					);
@@ -180,7 +180,7 @@ export function runSheetToHTML(
 					for (const l of p.program) {
 						body += `        <div class="section-exec-card">\n          <div class="section-exec-header">${title(l)}${pill(l)}</div>\n          ${steps(l)}        </div>\n`;
 					}
-					html += box(++n, t.workPlanExecution, "box-step-2", body);
+					html += box(++n, t.runSheetExecution, "box-step-2", body);
 				}
 				leavingNumber = ++n;
 			}
@@ -197,8 +197,8 @@ export function runSheetToHTML(
 			}
 			html += box(
 				leavingNumber,
-				t.workPlanLeaving,
-				"box-step-3 work-plan-leaving",
+				t.runSheetLeaving,
+				"box-step-3 run-sheet-leaving",
 				leaving,
 			);
 			html += `    </div>\n`;

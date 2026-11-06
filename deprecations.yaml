@@ -109,7 +109,7 @@ deprecations:
     deprecatedIn: "1.4.0"
     targetRemoval: "2.0.0"
     status: active
-    description: "The Gantt chart (toGanttHTML, attachGanttInteractivity, formatTime, formatAxisTime, the Gantt* types and gantt.css) is replaced by the work plan: no surface of Gram draws it any more"
+    description: "The Gantt chart (toGanttHTML, attachGanttInteractivity, formatTime, formatAxisTime, the Gantt* types and gantt.css) is replaced by the run sheet: no surface of Gram draws it any more"
     replacement: "runSheetToHTML / runSheetToText / runSheetToMarkdown on the RunSheet of runSheet() (@gram-lang/scheduler), or a view of your own built from that data (how-to/build-custom-ui)"
     files:
       - "packages/renderer/src/gantt/render.ts"
@@ -123,7 +123,7 @@ deprecations:
     targetRemoval: "2.0.0"
     status: active
     description: "The gantt_* strings of playground.views, used only by the Gantt chart"
-    replacement: "None: the work plan uses the workPlan* strings of the renderer dictionary"
+    replacement: "None: the run sheet uses the runSheet* strings of the renderer dictionary"
     files:
       - "packages/i18n/src/locales/en.ts"
       - "packages/i18n/src/locales/fr.ts"
@@ -134,7 +134,7 @@ deprecations:
     targetRemoval: "2.0.0"
     status: active
     description: "The labels of the playground's old view selector: playground.viewLabel and, in playground.views, json, ast, jsonTree, markdown, preview and runSheet. The playground shows the views of the renderer as tabs and its inspectors in a menu instead"
-    replacement: "renderer.outputs (by output id: recipe, workPlan, ast, json, json-tree), renderer.formats (html, markdown, text, print) and playground.output.views / inspect"
+    replacement: "renderer.outputs (by output id: recipe, runSheet, ast, json, json-tree), renderer.formats (html, markdown, text, print) and playground.output.views / inspect"
     files:
       - "packages/i18n/src/locales/en.ts"
       - "packages/i18n/src/locales/fr.ts"
@@ -145,7 +145,7 @@ deprecations:
     targetRemoval: "2.0.0"
     status: active
     description: "The language server still sends the gram/ganttUpdated notification (the Gantt chart as HTML); the VS Code extension no longer reads it"
-    replacement: "The gram/viewUpdated notification of the views protocol (outputId workPlan), or the data of the compiled recipe (schedule, tasks) for a view of your own"
+    replacement: "The gram/viewUpdated notification of the views protocol (outputId runSheet), or the data of the compiled recipe (schedule, tasks) for a view of your own"
     files:
       - "packages/language-server/src/server.ts"
 
@@ -164,8 +164,8 @@ deprecations:
     deprecatedIn: "1.4.0"
     targetRemoval: "2.0.0"
     status: active
-    description: "The gram.showGantt command (Gram: Gantt Chart) now opens the work plan and says so once"
-    replacement: "The gram.showRunSheet command (Gram: Work Plan)"
+    description: "The gram.showGantt command (Gram: Gantt Chart) now opens the run sheet and says so once"
+    replacement: "The gram.showRunSheet command (Gram: Run Sheet)"
     files:
       - "packages/vscode-extension/src/extension.ts"
 

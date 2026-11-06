@@ -5,6 +5,7 @@ description: "Reference JSON shapes for the AST, compiled and analyzed recipes, 
 
 import Since from '../../../../../components/Since.astro';
 import { LinkCard, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+import Term from '../../../../../components/Term.astro';
 
 The JSON shapes that flow between pipeline stages, and the YAML schema for the ingredient database. This page complements the per-package references — it illustrates what the data concretely looks like when processed by Gram functions.
 
@@ -369,9 +370,9 @@ flour:
 
 <span id="5-the-run-sheet"></span>
 
-## 5. The work plan
+## 5. The run sheet
 
-Data structure of the work plan (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
+Data structure of the <Term id="runSheet" /> (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
 
 ```json
 {
@@ -414,7 +415,7 @@ Data structure of the work plan (`@gram-lang/scheduler`), as returned by `runShe
 - Times `start`, `end`, `from` and `to` are **minutes from the service** (negative before it), exact, in a plan with a serving time or without. `*Local` fields (minute-exact wall clock) and `date` come with a serving time only.
 - `mode: "relative"` is the same structure for a recipe with no serving time: no `serveAt`, no `date`, no `window`.
 - `totalWork` is the minutes of your own work, mise en place included.
-- `miseEnPlace` is the mode the plan was made in (`perSection`, `perDay` or `upfront`): the work plan reads it to decide what goes in each visit's mise en place.
+- `miseEnPlace` is the mode the plan was made in (`perSection`, `perDay` or `upfront`): the run sheet reads it to decide what goes in each visit's mise en place.
 - Types and the meaning of each field: [`runSheet` in the scheduler reference](/docs/reference/api/scheduler/#runsheet).
 
 ## Related resources

@@ -6,7 +6,7 @@ import {
 } from "./inspectors/registry";
 import type { inspectors } from "./inspectors/registry";
 import { recipeView } from "./views/recipe/view";
-import { workPlanView } from "./views/work-plan/view";
+import { runSheetView } from "./views/run-sheet/view";
 import type { views } from "./views/registry";
 
 /**
@@ -20,7 +20,7 @@ import type { views } from "./views/registry";
  */
 export const outputs: readonly OutputDefinition[] = [
 	recipeView,
-	workPlanView,
+	runSheetView,
 	astInspector,
 	jsonInspector,
 	jsonTreeInspector,

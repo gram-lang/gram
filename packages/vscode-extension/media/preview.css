@@ -1229,7 +1229,7 @@ flex-direction: column;
 .gram-preview .scale-input-inline[type=number] {
   -moz-appearance: textfield;
 }
-/* The work plan (runSheetToHTML): the days at a glance, then a block per day. */
+/* The run sheet (runSheetToHTML): the days at a glance, then a block per day. */
 .gram-run-sheet {
   max-width: 51rem;
 }
@@ -1241,11 +1241,11 @@ flex-direction: column;
   padding: 0;
 }
 
-.gram-run-sheet .work-plan-header {
+.gram-run-sheet .run-sheet-header {
 
 }
 
-.gram-run-sheet .work-plan-header h2 {
+.gram-run-sheet .run-sheet-header h2 {
   margin: 0 0 0.35rem;
   font-size: 1.85rem;
   font-weight: 800;
@@ -1254,13 +1254,13 @@ flex-direction: column;
   color: var(--color-text);
 }
 
-.gram-run-sheet .work-plan-subtitle {
+.gram-run-sheet .run-sheet-subtitle {
   margin: 0 0 0.85rem;
   font-size: 0.95rem;
   color: var(--color-text-muted);
 }
 
-.gram-run-sheet .work-plan-summary {
+.gram-run-sheet .run-sheet-summary {
   margin: 0 0 1.25rem;
   padding: 0.45rem 0.75rem;
   border: 1px solid var(--color-border);
@@ -1283,7 +1283,7 @@ flex-direction: column;
 }
 
 /* The days at a glance */
-.gram-run-sheet .work-plan-schedule {
+.gram-run-sheet .run-sheet-schedule {
   border: 1px solid var(--color-border);
   border-radius: 3px;
 }
@@ -1388,7 +1388,7 @@ flex-direction: column;
   color: var(--color-text);
 }
 
-.gram-run-sheet .work-plan-legend {
+.gram-run-sheet .run-sheet-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 0.2rem 1.25rem;
@@ -1414,13 +1414,13 @@ flex-direction: column;
 }
 
 /* One day: its visits, each with what to take out, the programme and what goes on */
-.gram-run-sheet .work-plan-day {
+.gram-run-sheet .run-sheet-day {
   margin-top: 2.5rem;
   background: var(--color-bg);
   break-inside: avoid;
 }
 
-.gram-run-sheet .work-plan-day h3 {
+.gram-run-sheet .run-sheet-day h3 {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -1437,7 +1437,7 @@ flex-direction: column;
   color: var(--color-text);
 }
 
-.gram-run-sheet .work-plan-day .day-slot {
+.gram-run-sheet .run-sheet-day .day-slot {
   text-transform: none;
   font-family: var(--gram-font-mono);
   font-size: 0.82rem;
@@ -1446,29 +1446,29 @@ flex-direction: column;
   color: var(--color-text-muted);
 }
 
-.gram-run-sheet .work-plan-notice {
+.gram-run-sheet .run-sheet-notice {
   margin: 0 0 1rem;
   font-size: 0.88rem;
   font-weight: 600;
 }
 
-.gram-run-sheet .work-plan-notice::before {
+.gram-run-sheet .run-sheet-notice::before {
   content: "⚠ ";
 }
 
-.gram-run-sheet .work-plan-visit {
+.gram-run-sheet .run-sheet-visit {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.gram-run-sheet .work-plan-visit + .work-plan-visit {
+.gram-run-sheet .run-sheet-visit + .run-sheet-visit {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--color-border);
 }
 
-.gram-run-sheet .work-plan-margin {
+.gram-run-sheet .run-sheet-margin {
   margin: 0;
   font-size: 0.88rem;
   color: var(--color-text-muted);
@@ -1635,7 +1635,7 @@ flex-direction: column;
  * and the strong text colour for contrast, so the sheet reads the same on
  * screen and on paper, light or dark.
  */
-.gram-run-sheet .work-plan-visit-slot {
+.gram-run-sheet .run-sheet-visit-slot {
   margin: 0;
   font-family: var(--gram-font-mono);
   font-size: 0.78rem;
@@ -1877,7 +1877,7 @@ flex-direction: column;
 }
 
 /* What goes on without the cook, then when to come back */
-.gram-run-sheet .work-plan-leaving {
+.gram-run-sheet .run-sheet-leaving {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -1886,7 +1886,7 @@ flex-direction: column;
   background: var(--color-bg);
 }
 
-.gram-run-sheet .work-plan-leaving ul {
+.gram-run-sheet .run-sheet-leaving ul {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -1895,7 +1895,7 @@ flex-direction: column;
   border-left: 2px dotted var(--color-text-muted);
 }
 
-.gram-run-sheet .work-plan-leaving li {
+.gram-run-sheet .run-sheet-leaving li {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
@@ -1904,7 +1904,7 @@ flex-direction: column;
   color: var(--color-text);
 }
 
-.gram-run-sheet .work-plan-leaving li::after {
+.gram-run-sheet .run-sheet-leaving li::after {
   content: "";
   order: 1;
   flex: 1;
@@ -1948,7 +1948,7 @@ flex-direction: column;
   border-radius: 3px;
 }
 
-.gram-run-sheet .work-plan-problems {
+.gram-run-sheet .run-sheet-problems {
   margin: 0 0 1.25rem;
   padding: 0.75rem 1rem;
   border: 1px dashed var(--color-border);
@@ -1956,7 +1956,7 @@ flex-direction: column;
   border-radius:3px;
 }
 
-.gram-run-sheet .work-plan-problems h3 {
+.gram-run-sheet .run-sheet-problems h3 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1968,7 +1968,7 @@ flex-direction: column;
   color: var(--color-text);
 }
 
-.gram-run-sheet .work-plan-problems .problem-icon {
+.gram-run-sheet .run-sheet-problems .problem-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1978,7 +1978,7 @@ flex-direction: column;
   flex-shrink: 0;
 }
 
-.gram-run-sheet .work-plan-problems ul {
+.gram-run-sheet .run-sheet-problems ul {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -1986,7 +1986,7 @@ flex-direction: column;
   padding: 0;
 }
 
-.gram-run-sheet .work-plan-problems li {
+.gram-run-sheet .run-sheet-problems li {
   margin-left: 1.25rem;
   list-style: disc;
   font-size: 0.9rem;

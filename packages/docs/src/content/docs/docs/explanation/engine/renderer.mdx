@@ -1,10 +1,11 @@
 ---
 title: "Rendering and output formats (@gram-lang/renderer)"
-description: "How @gram-lang/renderer transforms compiled recipe JSON into Markdown, HTML, print documents and work plans: views of the engine's data."
+description: "How @gram-lang/renderer transforms compiled recipe JSON into Markdown, HTML, print documents and run sheets: views of the engine's data."
 ---
 
 import Since from '../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../components/Term.astro';
 
 Once a recipe has been parsed by `@gram-lang/parser`, scheduled by `@gram-lang/kitchen`, and enriched by `@gram-lang/analyzer`, it is ready for visual presentation.
 
@@ -23,17 +24,17 @@ Produces clean, semantic HTML markup. The HTML formatter employs an **inversion 
 ### 3. Print-ready HTML (`toPrintHTML`)
 Generates a complete, self-contained `<!DOCTYPE html>` document featuring an inlined print stylesheet (A4 format, page-break-aware sections) and standalone vector icons. Designed for direct browser printing without external stylesheet or asset dependencies. While custom classes cannot be injected into `toPrintHTML`, formatting helpers (`formatDuration`, `formatFraction`, `hideStepQty`) remain fully supported.
 
-### 4. The work plan (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) <Since v="1.4.0" />
+### 4. The run sheet (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) <Since v="1.4.0" />
 The canonical **view of the schedule**, just as the recipe view is the canonical view of cooking instructions. It faithfully presents the structures computed by the engine (`runSheet()` from `@gram-lang/scheduler`): the calendar breakdown of days, and for each active kitchen visit, the mise en place, the steps of each section written out with their temperatures and timers, and ongoing passive processes, alongside anticipation margins and adjusted rest periods. Text labels follow the configured `lang` option.
 
 This renderer serves as a reference implementation without prescribing a single UI approach. Some display rules are view-level choices: a visit ends when a passive rest reaches at least one hour (`VISIT_GAP_MINUTES`, defined in the scheduler because it shapes schedule data), an anticipation margin is displayed only when reaching at least 15 minutes, and the mise en place and the steps are extracted directly from the compiled recipe. To allow custom interfaces to reuse this logic without duplicating it, three helper utilities are exported:
 
-- **`visitKit(data, sections, options)`**: extracts and aggregates ingredients required by the sections (with sum breakdowns), preparations from earlier visits, in-stock bases, and necessary cookware. The work plan itself composes it from three parts, following the mise en place mode carried by the sheet.
+- **`visitKit(data, sections, options)`**: extracts and aggregates ingredients required by the sections (with sum breakdowns), preparations from earlier visits, in-stock bases, and necessary cookware. The <Term id="runSheet" /> itself composes it from three parts, following the mise en place mode carried by the sheet.
 - **`sectionProgram(data, section, stepIndexes)`**: gives, for a section during a visit, its title and the first and last step it covers, as well as the source file for imported sections.
 - **`sectionSteps(data, section, stepIndexes, options)`**: writes out the steps a section does in a visit, numbered as the recipe view numbers them, as HTML, Markdown and plain text, without icons. A standalone note goes with the step that follows it.
 - **`describeRunSheet()`**: converts the complete schedule into a structured text representation (`RunSheetModel`), powering the four formatters and the CLI calendar export.
 
-Standard recipe views (`toHTML`, `toMarkdown`, `toPrintHTML`) focus exclusively on culinary execution (the *how*) without exposing the timeline. With the `runSheet` option enabled, they append the work plan right after the recipe in a single unified document. See [Build a custom UI](/docs/how-to/build-custom-ui/) to render a custom planning view directly from the underlying data.
+Standard recipe views (`toHTML`, `toMarkdown`, `toPrintHTML`) focus exclusively on culinary execution (the *how*) without exposing the timeline. With the `runSheet` option enabled, they append the run sheet right after the recipe in a single unified document. See [Build a custom UI](/docs/how-to/build-custom-ui/) to render a custom planning view directly from the underlying data.
 
 The `miseEnPlace` option (`"perSection"` by default, `"upfront"`, or `"perDay"`) and the `rests` option (`"shortest"` by default, `"balanced"`, `"longest"`) choose the timeline whose total and idle durations the document headers show (see [Scheduling the mise en place](/docs/explanation/alap-scheduling#scheduling-the-mise-en-place)).
 
@@ -43,7 +44,7 @@ The `toGanttHTML` and `attachGanttInteractivity` functions are deprecated since 
 
 ## Unified traversal (`RenderBackend`)
 
-Internally, document formatters (Markdown, HTML, Print HTML) delegate content iteration to a central orchestrator (`renderRecipe` in `traversal.ts`), which interfaces with each format's `RenderBackend` implementation. This architecture guarantees strict structural parity: titles, metadata, ingredient lists, cookware, instructions, footnotes, and nutritional breakdowns are traversed in the exact same sequence across all output targets. The work plan has its own dedicated traversal, as it follows chronological time rather than the recipe's section sequence.
+Internally, document formatters (Markdown, HTML, Print HTML) delegate content iteration to a central orchestrator (`renderRecipe` in `traversal.ts`), which interfaces with each format's `RenderBackend` implementation. This architecture guarantees strict structural parity: titles, metadata, ingredient lists, cookware, instructions, footnotes, and nutritional breakdowns are traversed in the exact same sequence across all output targets. The run sheet has its own dedicated traversal, as it follows chronological time rather than the recipe's section sequence.
 
 ## Usage example
 
@@ -104,7 +105,7 @@ The `RendererOptions` interface also provides `bakersReference`/`bakersMathOnly`
   While tag injection is prevented, `toMarkdown` does not evaluate URL protocols (e.g. `javascript:` links). When rendering untrusted third-party recipes, apply a dedicated HTML sanitizer (`DOMPurify` or `rehype-sanitize`) on the final markup.
   :::
 - **Duration formatting**: Converts raw minute integers into natural duration strings (`90` → `1h 30m`).
-- **Bundled CSS**: The package distributes `gram.css` (light/dark tokens for all components, the work plan included) and, until 2.0.0, `gantt.css` for the deprecated Gantt chart. Print documents embed these rules directly in the document `<head>`, requiring no external asset fetching.
+- **Bundled CSS**: The package distributes `gram.css` (light/dark tokens for all components, the run sheet included) and, until 2.0.0, `gantt.css` for the deprecated Gantt chart. Print documents embed these rules directly in the document `<head>`, requiring no external asset fetching.
 
 ## Direct JSON consumption
 
@@ -117,7 +118,7 @@ The JSON emitted by `@gram-lang/analyzer` is strongly typed and directly iterabl
 <CardGrid>
   <LinkCard
     title="Renderer API reference"
-    description="Complete documentation for toMarkdown, toHTML, toPrintHTML and the work plan."
+    description="Complete documentation for toMarkdown, toHTML, toPrintHTML and the run sheet."
     href="/docs/reference/api/renderer/"
   />
   <LinkCard

@@ -102,19 +102,19 @@ export async function activate(context: ExtensionContext): Promise<void> {
 			open("recipe")?.showMacros(),
 		),
 		vscode.commands.registerCommand("gram.showRunSheet", () =>
-			open("workPlan"),
+			open("runSheet"),
 		),
 		// The Gantt chart is gone from the editor: the command still works for
-		// anyone who bound a key to it, and opens the work plan.
+		// anyone who bound a key to it, and opens the run sheet.
 		// @remove-in: 2.0.0 [vscode-show-gantt]
 		vscode.commands.registerCommand("gram.showGantt", () => {
 			if (!warnedGanttCommand) {
 				warnedGanttCommand = true;
 				vscode.window.showInformationMessage(
-					"The Gantt chart has been replaced by the work plan. `Gram: Gantt Chart` opens it for now and will be removed in 2.0.0: use `Gram: Work Plan`.",
+					"The Gantt chart has been replaced by the run sheet. `Gram: Gantt Chart` opens it for now and will be removed in 2.0.0: use `Gram: Run Sheet`.",
 				);
 			}
-			open("workPlan");
+			open("runSheet");
 		}),
 	);
 }

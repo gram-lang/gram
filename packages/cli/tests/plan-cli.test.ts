@@ -60,7 +60,7 @@ describe("gram plan", () => {
 	it("prints the sheet in the language of the project, backward from the service", () => {
 		const { code, out } = gram(...PLAN, "--available", "08:00-22:00");
 		expect(code).toBe(0);
-		expect(out).toContain("Work plan — Country bread");
+		expect(out).toContain("Run sheet — Country bread");
 		expect(out).toContain("For Sunday, October 11 at 13:00");
 		expect(out).toContain("SATURDAY, OCTOBER 10");
 		expect(out).toMatch(/SUN 11\s+▮ 12:30 – 13:00\s+Bake/);
@@ -114,7 +114,7 @@ describe("gram plan", () => {
 
 	it("writes markdown, html or json", () => {
 		expect(gram(...PLAN, "--format", "md").out).toContain(
-			"# Work plan — Country bread",
+			"# Run sheet — Country bread",
 		);
 		expect(gram(...PLAN, "--format", "html").out).toContain(
 			'<section class="gram-run-sheet">',
@@ -177,12 +177,12 @@ describe("gram plan", () => {
 		];
 		const firstVisit = (out: string, marker: RegExp) =>
 			(out.split(marker)[1] ?? "").split(
-				/before leaving|en partant|work-plan-leaving/i,
+				/before leaving|en partant|run-sheet-leaving/i,
 			)[0] ?? "";
 		for (const [format, marker] of [
 			["text", /SATURDAY|SAMEDI/],
 			["md", /^## Saturday/m],
-			["html", /work-plan-day/],
+			["html", /run-sheet-day/],
 		] as const) {
 			const by = gram(...args("per-section", "--format", format)).out;
 			const up = gram(...args("upfront", "--format", format)).out;
@@ -228,7 +228,7 @@ describe("gram plan without a serving time", () => {
 	it("writes the days before the service, with no date, and the earliest it could be ready", () => {
 		const { code, out } = gram(...RELATIVE);
 		expect(code).toBe(0);
-		expect(out).toContain("Work plan — Country bread");
+		expect(out).toContain("Run sheet — Country bread");
 		expect(out).toMatch(/Day D\s+▮ ~ \d+m/);
 		expect(out).not.toContain("For Sunday");
 		expect(out).toContain("Ready as early as");
@@ -429,7 +429,7 @@ describe("the timezone setting", () => {
 	});
 });
 
-describe("the work plan with the recipe, in export and print", () => {
+describe("the run sheet with the recipe, in export and print", () => {
 	const SERVE = [
 		"--serve",
 		"2026-10-11 13:00",
@@ -445,15 +445,15 @@ describe("the work plan with the recipe, in export and print", () => {
 		const { out } = gram("view", "bread.gram", "--no-pager");
 		expect(out).not.toContain("around");
 		expect(out).not.toContain("Served");
-		expect(out).not.toContain("Work plan");
+		expect(out).not.toContain("Run sheet");
 	});
 
-	it("gram export writes the recipe by default, and the work plan alone with --view work-plan", async () => {
+	it("gram export writes the recipe by default, and the run sheet alone with --view run-sheet", async () => {
 		const path = join(dir, "annotated.md");
 		const a = gram("export", "bread.gram", "--format", "md", "-o", path);
 		expect(a.code).toBe(0);
 		const recipe = await readFile(path, "utf-8");
-		expect(recipe).not.toContain("Work plan");
+		expect(recipe).not.toContain("Run sheet");
 		expect(recipe).not.toContain("around");
 
 		const b = gram(
@@ -464,33 +464,33 @@ describe("the work plan with the recipe, in export and print", () => {
 			"-o",
 			path,
 			"--view",
-			"work-plan",
+			"run-sheet",
 			...SERVE,
 		);
 		expect(b.code).toBe(0);
 		const sheet = await readFile(path, "utf-8");
-		expect(sheet.startsWith("# Work plan — Country bread")).toBe(true);
+		expect(sheet.startsWith("# Run sheet — Country bread")).toBe(true);
 		expect(sheet).toContain("- [ ] flour 500 g");
-		// The work plan alone: the recipe is not written before it.
+		// The run sheet alone: the recipe is not written before it.
 		expect(sheet).not.toContain("Instructions");
 	});
 
-	it("gram export lays the work plan out in days without --serve, next to the recipe file", async () => {
+	it("gram export lays the run sheet out in days without --serve, next to the recipe file", async () => {
 		const { code } = gram(
 			"export",
 			"bread.gram",
 			"--format",
 			"md",
 			"--view",
-			"work-plan",
+			"run-sheet",
 		);
 		expect(code).toBe(0);
-		const md = await readFile(join(dir, "bread.work-plan.md"), "utf-8");
-		expect(md).toContain("# Work plan — Country bread");
+		const md = await readFile(join(dir, "bread.run-sheet.md"), "utf-8");
+		expect(md).toContain("# Run sheet — Country bread");
 		expect(md).not.toContain("October");
 	});
 
-	it("gram export writes the work plan as a print document, with its styles", async () => {
+	it("gram export writes the run sheet as a print document, with its styles", async () => {
 		const path = join(dir, "annotated.html");
 		const { code } = gram(
 			"export",
@@ -500,14 +500,14 @@ describe("the work plan with the recipe, in export and print", () => {
 			"-o",
 			path,
 			"--view",
-			"work-plan",
+			"run-sheet",
 			...SERVE,
 		);
 		expect(code).toBe(0);
 		const html = await readFile(path, "utf-8");
 		expect(html.startsWith("<!DOCTYPE html>")).toBe(true);
 		expect(html).toContain('<section class="gram-run-sheet">');
-		expect(html).toContain(".work-plan-day");
+		expect(html).toContain(".run-sheet-day");
 		expect(html).not.toContain('class="instructions"');
 	});
 
@@ -517,27 +517,27 @@ describe("the work plan with the recipe, in export and print", () => {
 			"bread.gram",
 			"--no-open",
 			"--view",
-			"work-plan",
+			"run-sheet",
 			...SERVE,
 		);
 		expect(code).toBe(0);
 		const path = /(\/\S*gram_print_\d+\.html)/.exec(out)![1]!;
 		const html = await readFile(path, "utf-8");
-		expect(html).toContain("Work plan — Country bread");
+		expect(html).toContain("Run sheet — Country bread");
 	});
 
-	it("gram export writes the work plan as plain text, next to the recipe file", async () => {
+	it("gram export writes the run sheet as plain text, next to the recipe file", async () => {
 		const { code } = gram(
 			"export",
 			"bread.gram",
 			"--format",
 			"text",
 			"--view",
-			"work-plan",
+			"run-sheet",
 		);
 		expect(code).toBe(0);
-		const text = await readFile(join(dir, "bread.work-plan.txt"), "utf-8");
-		expect(text).toContain("Work plan — Country bread");
+		const text = await readFile(join(dir, "bread.run-sheet.txt"), "utf-8");
+		expect(text).toContain("Run sheet — Country bread");
 		expect(text).not.toContain("<");
 		expect(text).not.toContain("# ");
 	});
@@ -582,7 +582,7 @@ describe("the work plan with the recipe, in export and print", () => {
 					"-o",
 					join(project, "out.md"),
 					"--view",
-					"work-plan",
+					"run-sheet",
 					"--serve",
 					"2026-10-11 13:00",
 				],

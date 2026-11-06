@@ -52,7 +52,7 @@ export default defineCommand({
 			type: "string",
 			alias: "o",
 			description:
-				"Output file path (default: same directory as input, with new extension; the view's name before it for any view but the recipe, e.g. .work-plan)",
+				"Output file path (default: same directory as input, with new extension; the view's name before it for any view but the recipe, e.g. .run-sheet)",
 		},
 		scale: {
 			type: "string",

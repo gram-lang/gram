@@ -5,6 +5,7 @@ description: "The compiler: transforms a parsed recipe AST into structured JSON 
 
 import Since from '../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../components/Term.astro';
 
 This is the compiler. It accepts a `RecipeAST` (from `@gram-lang/parser`) and produces a `CompilationResult`: a clean, structured JSON object ready for rendering (unified shopping list, section-sliced instructions with scheduling metadata, global registries of ingredients and cookware, and structural warnings). No ingredient database is required at this stage: physical enrichment is handled by `@gram-lang/analyzer`.
 
@@ -121,7 +122,7 @@ The [Deprecated features](/docs/how-to/deprecations) guide provides before/after
 :::
 
 :::note[Pre-1.4.0 Compiled JSON Documents]
-JSON files produced by Kitchen 1.3.0 or earlier lack `tasks` and `schedule`. They remain renderable: `scheduleTimes` reads total and idle durations from legacy `metrics.totalTime` and `metrics.idleTime`, and semantic diffing compares them accurately instead of returning zero. However, the work plan cannot be computed without task graph data. Recompile with Gram 1.4.0 or later to benefit from timelines. This transition fallback will be removed in 2.0.0.
+JSON files produced by Kitchen 1.3.0 or earlier lack `tasks` and `schedule`. They remain renderable: `scheduleTimes` reads total and idle durations from legacy `metrics.totalTime` and `metrics.idleTime`, and semantic diffing compares them accurately instead of returning zero. However, the <Term id="runSheet" /> cannot be computed without task graph data. Recompile with Gram 1.4.0 or later to benefit from timelines. This transition fallback will be removed in 2.0.0.
 :::
 
 See [Data formats](/docs/reference/api/data-formats) for an annotated example of this structure, and the [Warnings reference](/docs/reference/api/warnings) for diagnostics emitted in `warnings`.
