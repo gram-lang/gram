@@ -4,7 +4,11 @@ import type {
 	SessionStrings,
 } from "../views/protocol";
 
-/** `template` with each `{name}` replaced from `values`; an unknown name is left as is. */
+/**
+ * `template` with each `{name}` replaced from `values`; an unknown name is left
+ * as is. The same as `fillTemplate` of `@gram-lang/i18n`, copied rather than
+ * imported: this page script is a browser bundle that imports no Gram package.
+ */
 export function fill(template: string, values: Record<string, string>): string {
 	return template.replace(/\{(\w+)\}/g, (whole, key: string) =>
 		key in values ? (values[key] as string) : whole,

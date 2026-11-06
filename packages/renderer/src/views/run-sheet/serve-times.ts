@@ -1,4 +1,4 @@
-import { getDictionary } from "@gram-lang/i18n";
+import { fillTemplate, getDictionary } from "@gram-lang/i18n";
 import {
 	EARLIEST_SERVE_HORIZON_DAYS,
 	type EarliestServe,
@@ -8,34 +8,18 @@ import {
 	toLocalIso,
 } from "@gram-lang/scheduler";
 import type { ViewInput } from "../../prepare-views";
+import { longDate, shortDay } from "./dates";
 import { describeProblems } from "./model";
 import type { RunSheetRenderOptions } from "./model";
 import type { RenderableCompilationResult } from "../../types";
 
-const fill = (template: string, values: Record<string, string>) =>
-	template.replace(/\{(\w+)\}/g, (_, k: string) => values[k] ?? `{${k}}`);
-
-const dayName = (local: string, lang: string | undefined, long: boolean) =>
-	new Intl.DateTimeFormat(lang || "en", {
-		timeZone: "UTC",
-		weekday: long ? "long" : "short",
-		...(long && { day: "numeric", month: "long" }),
-	}).format(
-		Date.UTC(
-			Number(local.slice(0, 4)),
-			Number(local.slice(5, 7)) - 1,
-			Number(local.slice(8, 10)),
-			12,
-		),
-	);
-
 /** "Saturday, October 17 at 20:00" */
 const whenOf = (local: string, lang?: string) =>
-	`${dayName(local, lang, true)} ${local.slice(11, 16)}`;
+	`${longDate(local, lang)} ${local.slice(11, 16)}`;
 
 /** "Thu 19:55" */
 const startOf = (local: string, lang?: string) =>
-	`${dayName(local, lang, false)} ${local.slice(11, 16)}`;
+	`${shortDay(local, lang)} ${local.slice(11, 16)}`;
 
 /** One candidate in a sentence: when, when to start, how much of the kitchen, what was adjusted. */
 function candidateLine(
@@ -47,18 +31,18 @@ function candidateLine(
 	const lang = options.lang;
 	const when = whenOf(c.serveAt, lang);
 	if (c.ok) {
-		const visits = fill(
+		const visits = fillTemplate(
 			c.visits === 1 ? t.runSheetVisits : t.runSheetVisitsMany,
 			{ n: String(c.visits) },
 		);
 		const adjusted =
 			c.adjustments === 0
 				? t.runSheetNoAdjustment
-				: fill(
+				: fillTemplate(
 						c.adjustments === 1 ? t.runSheetAdjusted : t.runSheetAdjustedMany,
 						{ n: String(c.adjustments) },
 					);
-		return fill(t.runSheetFindOk, {
+		return fillTemplate(t.runSheetFindOk, {
 			when,
 			start: c.startsAt ? startOf(c.startsAt, lang) : "",
 			visits,
@@ -68,7 +52,7 @@ function candidateLine(
 	const past = c.reasons.some((r) => r.code === "START_IN_PAST");
 	const reason =
 		past && c.startsAt
-			? fill(t.runSheetFindStart, { start: startOf(c.startsAt, lang) })
+			? fillTemplate(t.runSheetFindStart, { start: startOf(c.startsAt, lang) })
 			: describeProblems(c.reasons, data, options, options.timeZone).reduce(
 					(text, line, i, all) =>
 						i > 0
@@ -78,7 +62,7 @@ function candidateLine(
 								: line,
 					"",
 				);
-	return fill(t.runSheetFindRejected, { when, reason });
+	return fillTemplate(t.runSheetFindRejected, { when, reason });
 }
 
 /**
@@ -97,7 +81,9 @@ export function describeServeTimes(
 ): string[] {
 	const t = getDictionary(options.lang).renderer;
 	if (search.candidates.length === 0 && search.rejected.length === 0) {
-		return [fill(t.runSheetFindNone, { from: options.from, to: options.to })];
+		return [
+			fillTemplate(t.runSheetFindNone, { from: options.from, to: options.to }),
+		];
 	}
 	return [
 		...search.candidates.map((c) => candidateLine(c, data, options)),
@@ -112,11 +98,11 @@ export function describeEarliestServe(
 ): string {
 	const t = getDictionary(options.lang).renderer;
 	if (result.found) {
-		return fill(t.runSheetEarliest, {
+		return fillTemplate(t.runSheetEarliest, {
 			when: whenOf(result.found.serveAt, options.lang),
 		});
 	}
-	return fill(t.runSheetEarliestNone, {
+	return fillTemplate(t.runSheetEarliestNone, {
 		days: String(EARLIEST_SERVE_HORIZON_DAYS),
 		until: whenOf(result.searchedUntil, options.lang),
 	});

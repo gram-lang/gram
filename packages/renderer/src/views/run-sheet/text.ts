@@ -1,4 +1,4 @@
-import { getDictionary } from "@gram-lang/i18n";
+import { fillTemplate, getDictionary } from "@gram-lang/i18n";
 import type { RunSheet } from "@gram-lang/scheduler";
 import type { RenderableCompilationResult } from "../../types";
 import { kitLines, sectionHeading } from "./lines";
@@ -8,7 +8,6 @@ import {
 	type RunSheetRenderOptions,
 	type RunSheetStepLine,
 	describeRunSheet,
-	fill,
 } from "./model";
 
 /** The run sheet as plain text. */
@@ -23,7 +22,7 @@ export function runSheetToText(
 		value.toLocaleUpperCase(options.lang || "en");
 	const sectionHead = sectionHeading(t);
 	const startOf = (l: RunSheetProgramLine) =>
-		l.startTime ? fill(t.runSheetStart, { time: l.startTime }) : "";
+		l.startTime ? fillTemplate(t.runSheetStart, { time: l.startTime }) : "";
 	const out: string[] = [model.title];
 	if (model.subtitle) out.push(model.subtitle);
 	out.push(model.summary, "");

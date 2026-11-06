@@ -1,4 +1,4 @@
-import { getDictionary } from "@gram-lang/i18n";
+import { fillTemplate, getDictionary } from "@gram-lang/i18n";
 import type { RunSheet } from "@gram-lang/scheduler";
 import { escapeMarkdownHtml } from "../../shared/utils";
 import type { RenderableCompilationResult } from "../../types";
@@ -9,7 +9,6 @@ import {
 	type RunSheetRenderOptions,
 	type RunSheetStepLine,
 	describeRunSheet,
-	fill,
 } from "./model";
 
 /** The run sheet as Markdown: a heading per day, a checklist to take out. */
@@ -23,7 +22,7 @@ export function runSheetToMarkdown(
 	const model = describeRunSheet(sheet, data, options);
 	const sectionHead = sectionHeading(t);
 	const startOf = (l: RunSheetProgramLine) =>
-		l.startTime ? fill(t.runSheetStart, { time: l.startTime }) : "";
+		l.startTime ? fillTemplate(t.runSheetStart, { time: l.startTime }) : "";
 	const h1 = "#";
 	const h2 = "##";
 	const h3 = "###";
