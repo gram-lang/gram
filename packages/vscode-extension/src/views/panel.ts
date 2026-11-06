@@ -4,8 +4,11 @@ import {
 	isPlanned,
 	type OutputInfo,
 	type PausedError,
-	readServeAt,
+	readSessionPatch,
 	type ServeSuggestions,
+	type Session,
+	type SessionChoices,
+	type SessionPatch,
 	type ViewsCapability,
 } from "./protocol";
 import type { PanelView } from "./state";
@@ -21,12 +24,35 @@ function nonce(): string {
 	return text;
 }
 
-/** What a panel asks of the extension for a view laid out in time. */
-export interface PanelServing {
-	/** The cook picked a serving time for `uri`, or cleared it (`undefined`). */
-	setServeAt(uri: string, serveAt: string | undefined): void;
-	/** The serving times to propose for `uri`. */
+/** What a panel of a view asks of the extension for the session of its recipe. */
+export interface PanelSession {
+	/** The cook changed a part of the session of `uri` (`null` clears it). */
+	update(uri: string, patch: SessionPatch): void;
+	/** The serving times to propose for `uri` (a view laid out in time). */
 	suggest(uri: string): Promise<ServeSuggestions | null>;
+	/** What the session controls offer for `uri`. */
+	choices(uri: string): Promise<SessionChoices | null>;
+}
+
+/** An answer asked while a part of the page is shown, dropped when an older one comes late. */
+class Asked<T> {
+	open = false;
+	private seq = 0;
+
+	async ask(
+		fetch: () => Promise<T | null>,
+		deliver: (data: T | null) => void,
+		stillWanted: () => boolean,
+	): Promise<void> {
+		const seq = ++this.seq;
+		let data: T | null = null;
+		try {
+			data = await fetch();
+		} catch {
+			// The server is gone or failed: nothing to offer, the fields still work.
+		}
+		if (seq === this.seq && stillWanted()) deliver(data);
+	}
 }
 
 /**
@@ -41,12 +67,14 @@ export class ViewPanel {
 	private ready = false;
 	private macrosPending = false;
 	private disposed = false;
-	/** The serving time of the recipe shown, for a view laid out in time. */
-	private serveAt: string | undefined;
-	/** Whether the page shows the suggestions: only then are they asked for. */
-	private suggestOpen = false;
-	/** Counts the requests, so an answer for an older one is dropped. */
-	private suggestSeq = 0;
+	/** What the cook chose for the recipe shown. */
+	private session: Session = {};
+	/** The serving time suggestions, asked only while the page shows them. */
+	private readonly suggestions = new Asked<ServeSuggestions>();
+	/** The session choices, asked only while the page shows the controls. */
+	private readonly choices = new Asked<SessionChoices>();
+	/** Whether this view is laid out in time, and so offers a serving time. */
+	private readonly planned: boolean;
 
 	private constructor(
 		private readonly panel: vscode.WebviewPanel,
@@ -54,8 +82,9 @@ export class ViewPanel {
 		capability: ViewsCapability,
 		extensionUri: vscode.Uri,
 		private readonly onDispose: () => void,
-		private readonly serving: PanelServing | undefined,
+		private readonly sessionHost: PanelSession | undefined,
 	) {
+		this.planned = isPlanned(output);
 		const media = (file: string) =>
 			panel.webview
 				.asWebviewUri(vscode.Uri.joinPath(extensionUri, "media", file))
@@ -70,30 +99,39 @@ export class ViewPanel {
 			title: output.label,
 			showError: capability.strings.showError,
 			outputEmpty: capability.strings.outputEmpty,
-			...(serving &&
+			...(sessionHost &&
+				this.planned &&
 				capability.strings.serving && {
 					serving: capability.strings.serving,
+				}),
+			...(sessionHost &&
+				capability.strings.session && {
+					session: capability.strings.session,
 				}),
 		});
 		panel.onDidDispose(() => this.dispose(), null, this.disposables);
 		panel.webview.onDidReceiveMessage(
-			(message: { type?: string; serveAt?: unknown; open?: unknown }) => {
+			(message: { type?: string; patch?: unknown; open?: unknown }) => {
 				if (message.type === "ready") {
 					// The page was (re)built, a hidden panel shown again included:
 					// it starts empty, with its suggestions folded, so it gets
 					// everything.
 					this.ready = true;
-					this.suggestOpen = false;
+					this.suggestions.open = false;
+					this.choices.open = false;
 					this.post(true);
-					this.postServing();
+					this.postSession();
 					if (this.macrosPending) this.showMacros();
 				} else if (message.type === "showError") {
 					void this.showError();
-				} else if (message.type === "setServeAt" && this.uri) {
-					this.serving?.setServeAt(this.uri, readServeAt(message.serveAt));
+				} else if (message.type === "setSession" && this.uri) {
+					this.sessionHost?.update(this.uri, readSessionPatch(message.patch));
 				} else if (message.type === "suggest") {
-					this.suggestOpen = message.open === true;
-					if (this.suggestOpen) void this.refreshSuggestions();
+					this.suggestions.open = message.open === true;
+					if (this.suggestions.open) void this.refreshSuggestions();
+				} else if (message.type === "choose") {
+					this.choices.open = message.open === true;
+					if (this.choices.open) void this.refreshChoices();
 				}
 			},
 			null,
@@ -106,7 +144,7 @@ export class ViewPanel {
 		capability: ViewsCapability,
 		extensionUri: vscode.Uri,
 		onDispose: () => void,
-		serving?: PanelServing,
+		session?: PanelSession,
 	): ViewPanel {
 		const column = vscode.window.activeTextEditor
 			? vscode.ViewColumn.Beside
@@ -126,7 +164,7 @@ export class ViewPanel {
 			capability,
 			extensionUri,
 			onDispose,
-			isPlanned(output) ? serving : undefined,
+			output.kind === "renderer" ? session : undefined,
 		);
 	}
 
@@ -134,45 +172,60 @@ export class ViewPanel {
 		this.panel.reveal(undefined, true);
 	}
 
-	/** Shows `view` of the document `uri`, served at `serveAt` for a view laid out in time. */
-	show(uri: string, view: PanelView, serveAt?: string): void {
+	/** Shows `view` of the document `uri`, with the session the cook chose for it. */
+	show(uri: string, view: PanelView, session: Session = {}): void {
 		const contentChanged =
 			uri !== this.uri || view.content !== this.view.content;
 		const pausedChanged = view.paused !== this.view.paused;
-		const servingChanged = uri !== this.uri || serveAt !== this.serveAt;
+		const sessionChanged =
+			uri !== this.uri ||
+			JSON.stringify(session) !== JSON.stringify(this.session);
 		this.uri = uri;
 		this.view = view;
-		this.serveAt = serveAt;
+		this.session = session;
 		const name = path.basename(vscode.Uri.parse(uri).fsPath);
 		this.panel.title = `${this.output.label}: ${name}`;
 		if (!this.ready) return;
 		if (contentChanged || pausedChanged) this.post(contentChanged);
-		if (servingChanged) this.postServing();
-		// A new plan (an edit, another recipe, other settings) may change what
-		// can be served when: ask again while the suggestions are shown.
-		if (contentChanged && this.suggestOpen) void this.refreshSuggestions();
+		if (sessionChanged) this.postSession();
+		// A new content (an edit, another recipe, other settings, a new
+		// session) may change what can be served when, and what can be chosen:
+		// ask again while it is shown.
+		if (contentChanged) {
+			if (this.suggestions.open) void this.refreshSuggestions();
+			if (this.choices.open) void this.refreshChoices();
+		}
 	}
 
-	private postServing(): void {
-		if (!this.serving) return;
+	private postSession(): void {
+		if (!this.sessionHost) return;
 		void this.panel.webview.postMessage({
-			type: "serving",
-			serveAt: this.serveAt ?? null,
+			type: "session",
+			session: this.session,
 		});
 	}
 
-	private async refreshSuggestions(): Promise<void> {
+	private refreshSuggestions(): Promise<void> {
 		const uri = this.uri;
-		if (!this.serving || !uri) return;
-		const seq = ++this.suggestSeq;
-		let data: ServeSuggestions | null = null;
-		try {
-			data = await this.serving.suggest(uri);
-		} catch {
-			// The server is gone or failed: no suggestions, the field still works.
-		}
-		if (seq !== this.suggestSeq || this.disposed || uri !== this.uri) return;
-		void this.panel.webview.postMessage({ type: "suggestions", data });
+		const host = this.sessionHost;
+		if (!host || !uri || !this.planned) return Promise.resolve();
+		return this.suggestions.ask(
+			() => host.suggest(uri),
+			(data) =>
+				void this.panel.webview.postMessage({ type: "suggestions", data }),
+			() => !this.disposed && uri === this.uri,
+		);
+	}
+
+	private refreshChoices(): Promise<void> {
+		const uri = this.uri;
+		const host = this.sessionHost;
+		if (!host || !uri) return Promise.resolve();
+		return this.choices.ask(
+			() => host.choices(uri),
+			(data) => void this.panel.webview.postMessage({ type: "choices", data }),
+			() => !this.disposed && uri === this.uri,
+		);
 	}
 
 	/** Scrolls the recipe to its nutrition panel, now or once the page is ready. */

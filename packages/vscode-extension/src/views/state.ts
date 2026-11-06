@@ -3,6 +3,7 @@ import {
 	contentOf,
 	type PausedError,
 	type Session,
+	type SessionPatch,
 	type ViewUpdate,
 } from "./protocol";
 
@@ -74,18 +75,24 @@ export class ViewsState {
 	}
 
 	/**
-	 * Sets or clears (`undefined`) the serving time of `uri`. Returns the whole
-	 * session to send, which the server takes as a replacement, or `undefined`
-	 * when nothing changed.
+	 * Applies a change to the session of `uri`: each part given replaces the
+	 * last, `null` (or `undefined`) clears it. Returns the whole session to
+	 * send, which the server takes as a replacement, or `undefined` when
+	 * nothing changed.
 	 */
-	setServeAt(uri: string, serveAt: string | undefined): Session | undefined {
+	updateSession(uri: string, patch: SessionPatch): Session | undefined {
 		const previous = this.sessionOf(uri);
-		if (previous.serveAt === serveAt) return undefined;
-		const { serveAt: _, ...rest } = previous;
-		const next: Session = { ...rest, ...(serveAt && { serveAt }) };
-		if (Object.keys(next).length === 0) this.sessions.delete(uri);
-		else this.sessions.set(uri, next);
-		return next;
+		const next: Record<string, unknown> = { ...previous };
+		for (const [key, value] of Object.entries(patch)) {
+			if (value === null || value === undefined) delete next[key];
+			else next[key] = value;
+		}
+		const session = next as Session;
+		if (JSON.stringify(sorted(session)) === JSON.stringify(sorted(previous)))
+			return undefined;
+		if (Object.keys(session).length === 0) this.sessions.delete(uri);
+		else this.sessions.set(uri, session);
+		return session;
 	}
 
 	/**
@@ -103,4 +110,9 @@ export class ViewsState {
 			}
 		}
 	}
+}
+
+/** `session` with its keys in a stable order, to compare two of them. */
+function sorted(session: Session): [string, unknown][] {
+	return Object.entries(session).sort(([a], [b]) => a.localeCompare(b));
 }

@@ -8,18 +8,22 @@
  * - `{ type: "paused", error }`: dim the content under a banner, or, with
  *   `error: null`, show it normally again.
  * - `{ type: "showMacros" }`: scroll to the nutrition panel of the recipe.
- * - `{ type: "serving", serveAt }`: the serving time of the recipe, or `null`
+ * - `{ type: "session", session }`: what the cook chose for the recipe this
+ *   sitting (serving time, scale, stock, baker's reference).
+ * - `{ type: "suggestions", data }`: the serving times to propose, or `null`
  *   (a view laid out in time only).
- * - `{ type: "suggestions", data }`: the serving times to propose, or `null`.
+ * - `{ type: "choices", data }`: what the session controls offer (the
+ *   ingredients, the imports, baker's math), or `null`.
  *
  * Messages from the page: `{ type: "ready" }` once it can receive (sent again
  * whenever VS Code rebuilds a hidden panel), `{ type: "showError" }` from the
- * banner's button, `{ type: "setServeAt", serveAt }` when the cook picks or
- * clears (`null`) a serving time, `{ type: "suggest", open }` when the
- * suggestions are shown or hidden.
+ * banner's button, `{ type: "setSession", patch }` when the cook changes a
+ * part of the session (`null` clears it), `{ type: "suggest", open }` and
+ * `{ type: "choose", open }` when the suggestions or the session controls are
+ * shown or hidden.
  */
 
-import type { ServingStrings } from "./protocol";
+import type { ServingStrings, SessionStrings } from "./protocol";
 
 export interface WebviewPageOptions {
 	nonce: string;
@@ -34,6 +38,8 @@ export interface WebviewPageOptions {
 	outputEmpty: string;
 	/** The words of the serving time controls: given for a view laid out in time only. */
 	serving?: ServingStrings;
+	/** The words of the session controls: given for a view of the recipe only. */
+	session?: SessionStrings;
 }
 
 const escapeAttr = (text: string) =>
@@ -50,6 +56,7 @@ export function webviewPage(options: WebviewPageOptions): string {
 		JSON.stringify({
 			outputEmpty: options.outputEmpty,
 			...(options.serving && { serving: options.serving }),
+			...(options.session && { session: options.session }),
 		}),
 	);
 	const serving = options.serving;
@@ -68,6 +75,38 @@ export function webviewPage(options: WebviewPageOptions): string {
 	</details>
 </div>`
 		: "";
+	const session = options.session;
+	const sessionBlock = session
+		? `<details id="session">
+	<summary>${escapeAttr(session.title)} <span class="session-summary"></span></summary>
+	<div class="session-body">
+		<p class="session-error" hidden></p>
+		<div class="session-row">
+			<label for="scale-factor">${escapeAttr(session.scale)}</label>
+			<input id="scale-factor" type="number" min="1" step="any" placeholder="100"> %
+		</div>
+		<div class="session-row">
+			<label for="scale-target">${escapeAttr(session.byIngredient)}</label>
+			<select id="scale-target"><option value="">${escapeAttr(session.ingredient)}</option></select>
+			<input id="scale-qty" type="number" min="0" step="any" placeholder="${escapeAttr(session.qty)}" aria-label="${escapeAttr(session.qty)}">
+			<input id="scale-unit" type="text" size="5" placeholder="${escapeAttr(session.unit)}" aria-label="${escapeAttr(session.unit)}">
+			<button type="button" id="scale-apply">${escapeAttr(session.apply)}</button>
+		</div>
+		<div class="session-row" id="bakers-row" hidden>
+			<label for="bakers-ref">${escapeAttr(session.bakersReference)}</label>
+			<select id="bakers-ref"><option value="">${escapeAttr(session.auto)}</option></select>
+		</div>
+		<fieldset id="stock" hidden>
+			<legend title="${escapeAttr(session.stockHint)}">${escapeAttr(session.stock)}</legend>
+		</fieldset>
+		<button type="button" id="session-reset" class="secondary">${escapeAttr(session.reset)}</button>
+	</div>
+</details>`
+		: "";
+	const controls =
+		servingBar || sessionBlock
+			? `<div id="controls">${servingBar}${sessionBlock}</div>`
+			: "";
 	return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -121,32 +160,32 @@ body { font-family: var(--gram-font-sans); color: var(--color-text-strong); }
 	color: var(--vscode-button-foreground); background: var(--vscode-button-background);
 }
 #banner button:hover { background: var(--vscode-button-hoverBackground); }
-#serving {
+#controls {
 	padding: 6px 12px;
 	font-family: var(--vscode-font-family); font-size: var(--vscode-font-size, 13px);
 	color: var(--vscode-foreground);
 	background: var(--vscode-editor-background);
 	border-bottom: 1px solid var(--vscode-widget-border, transparent);
 }
-#serving .serving-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-#serving label { color: var(--vscode-descriptionForeground); }
-#serving input {
+#controls .serving-row, #controls .session-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+#controls label { color: var(--vscode-descriptionForeground); }
+#controls input {
 	font: inherit; padding: 2px 4px; border-radius: 2px;
 	color: var(--vscode-input-foreground); background: var(--vscode-input-background);
 	border: 1px solid var(--vscode-input-border, transparent);
 	color-scheme: light dark;
 }
-#serving input:focus { outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px; }
-#serving button {
+#controls input:focus { outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px; }
+#controls button {
 	font: inherit; padding: 2px 10px; cursor: pointer; border: none; border-radius: 2px;
 	color: var(--vscode-button-foreground); background: var(--vscode-button-background);
 }
-#serving button:hover { background: var(--vscode-button-hoverBackground); }
-#serving button.secondary { color: var(--vscode-button-secondaryForeground); background: var(--vscode-button-secondaryBackground); }
-#serving button.secondary:hover { background: var(--vscode-button-secondaryHoverBackground); }
-#serving button[hidden], #serving [hidden] { display: none; }
-#serving summary { cursor: pointer; margin-top: 4px; color: var(--vscode-textLink-foreground); width: fit-content; }
-#serving summary:focus-visible { outline: 1px solid var(--vscode-focusBorder); }
+#controls button:hover { background: var(--vscode-button-hoverBackground); }
+#controls button.secondary { color: var(--vscode-button-secondaryForeground); background: var(--vscode-button-secondaryBackground); }
+#controls button.secondary:hover { background: var(--vscode-button-secondaryHoverBackground); }
+#controls button[hidden], #controls [hidden] { display: none; }
+#controls summary { cursor: pointer; margin-top: 4px; color: var(--vscode-textLink-foreground); width: fit-content; }
+#controls summary:focus-visible { outline: 1px solid var(--vscode-focusBorder); }
 .serve-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
 .serve-pills button { border-radius: 10px; padding: 2px 10px; }
 .serve-pills button.secondary[aria-pressed="true"], .serve-pills button[aria-pressed="true"] {
@@ -155,6 +194,21 @@ body { font-family: var(--gram-font-sans); color: var(--color-text-strong); }
 .serve-none { margin: 6px 0 2px; color: var(--vscode-descriptionForeground); }
 .serve-why summary { color: var(--vscode-descriptionForeground); font-size: 0.95em; }
 .serve-why ul { margin: 4px 0; padding-left: 18px; color: var(--vscode-descriptionForeground); }
+#controls select {
+	font: inherit; padding: 2px 4px; border-radius: 2px;
+	color: var(--vscode-dropdown-foreground); background: var(--vscode-dropdown-background);
+	border: 1px solid var(--vscode-dropdown-border, transparent);
+}
+#controls select:focus { outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px; }
+#controls #scale-factor { width: 6em; }
+#controls #scale-qty { width: 6em; }
+.session-body { max-height: 45vh; overflow: auto; display: flex; flex-direction: column; gap: 6px; padding: 6px 0 2px; }
+.session-body > button { align-self: flex-start; }
+.session-summary { color: var(--vscode-descriptionForeground); }
+.session-error { margin: 0; color: var(--vscode-editorWarning-foreground, var(--vscode-foreground)); }
+#stock { margin: 0; padding: 4px 8px; border: 1px solid var(--vscode-widget-border, transparent); border-radius: 2px; }
+#stock legend { color: var(--vscode-descriptionForeground); padding: 0 4px; }
+#stock label { display: flex; gap: 6px; align-items: center; color: var(--vscode-foreground); font-family: var(--vscode-editor-font-family); }
 body.paused #content { opacity: 0.45; pointer-events: none; transition: opacity 120ms; }
 .gram-empty { padding: 24px 20px; color: var(--vscode-descriptionForeground); font-family: var(--vscode-font-family); }
 .gram-code {
@@ -172,7 +226,7 @@ body.paused #content { opacity: 0.45; pointer-events: none; transition: opacity 
 	<span class="message"></span>
 	<button type="button">${escapeAttr(options.showError)}</button>
 </div>
-${servingBar}
+${controls}
 </div>
 <div id="content"></div>
 <script nonce="${nonce}">
@@ -267,18 +321,133 @@ ${servingBar}
 	if (servingBar) {
 		const input = servingBar.querySelector('#serve-at');
 		input.addEventListener('change', () => {
-			vscode.postMessage({ type: 'setServeAt', serveAt: input.value || null });
+			vscode.postMessage({ type: 'setSession', patch: { serveAt: input.value || null } });
 		});
 		servingBar.querySelector('#serve-clear').addEventListener('click', () => {
-			vscode.postMessage({ type: 'setServeAt', serveAt: null });
+			vscode.postMessage({ type: 'setSession', patch: { serveAt: null } });
 		});
 		servingBar.querySelector('.serve-pills').addEventListener('click', (event) => {
 			const button = event.target.closest('button');
-			if (button) vscode.postMessage({ type: 'setServeAt', serveAt: button.dataset.serveAt });
+			if (button) vscode.postMessage({ type: 'setSession', patch: { serveAt: button.dataset.serveAt } });
 		});
 		const suggest = servingBar.querySelector('#serve-suggest');
 		suggest.addEventListener('toggle', () => {
 			vscode.postMessage({ type: 'suggest', open: suggest.open });
+		});
+	}
+	const sessionBlock = document.getElementById('session');
+	let current = {};
+	let choices = null;
+	const fill = (template, values) =>
+		template.replace(/\\{(\\w+)\\}/g, (_, k) => (k in values ? values[k] : '{' + k + '}'));
+	function option(value, label) {
+		const o = document.createElement('option');
+		o.value = value;
+		o.textContent = label;
+		return o;
+	}
+	function setSession(session) {
+		current = session || {};
+		setServing(current.serveAt || null);
+		if (!sessionBlock) return;
+		const s = strings.session;
+		const scale = current.scale;
+		const factor = sessionBlock.querySelector('#scale-factor');
+		if (document.activeElement !== factor) {
+			factor.value = scale && scale.type === 'factor'
+				? String(Math.round(scale.value * 10000) / 100) : '';
+		}
+		const target = sessionBlock.querySelector('#scale-target');
+		if (scale && scale.type === 'target') {
+			target.value = scale.id;
+			sessionBlock.querySelector('#scale-qty').value = String(scale.qty);
+			sessionBlock.querySelector('#scale-unit').value = scale.unit || '';
+		}
+		sessionBlock.querySelector('#bakers-ref').value = current.bakersReference || '';
+		const stocked = new Set(current.stock || []);
+		for (const box of sessionBlock.querySelectorAll('#stock input')) {
+			box.checked = stocked.has(box.value);
+		}
+		const parts = [];
+		if (scale && scale.type === 'factor') {
+			parts.push(fill(s.scaled, { factor: String(Math.round(scale.value * 10000) / 100) }));
+		} else if (scale && scale.type === 'target') {
+			const item = choices && choices.ingredients.find((i) => i.id === scale.id);
+			parts.push(scale.qty + (scale.unit ? ' ' + scale.unit : '') + ' ' + (item ? item.name : scale.id));
+		}
+		if (current.bakersReference) parts.push(s.bakersReference + ' : ' + current.bakersReference);
+		if (stocked.size > 0) parts.push(fill(s.inStock, { n: String(stocked.size) }));
+		sessionBlock.querySelector('.session-summary').textContent = parts.length ? '· ' + parts.join(' · ') : '';
+	}
+	function showChoices(data) {
+		choices = data;
+		if (!sessionBlock) return;
+		const s = strings.session;
+		const ingredients = data ? data.ingredients : [];
+		const target = sessionBlock.querySelector('#scale-target');
+		target.replaceChildren(option('', s.ingredient),
+			...ingredients.map((i) => option(i.id, i.name)));
+		const bakers = sessionBlock.querySelector('#bakers-ref');
+		bakers.replaceChildren(option('', s.auto),
+			...ingredients.map((i) => option(i.id, i.name)));
+		sessionBlock.querySelector('#bakers-row').hidden = !(data && data.bakersMath);
+		const stock = sessionBlock.querySelector('#stock');
+		const legend = stock.querySelector('legend');
+		const imports = data ? data.imports : [];
+		stock.replaceChildren(legend, ...imports.map((imp) => {
+			const label = document.createElement('label');
+			const box = document.createElement('input');
+			box.type = 'checkbox';
+			box.value = imp.uri;
+			label.append(box, document.createTextNode(imp.specifier));
+			return label;
+		}));
+		stock.hidden = imports.length === 0;
+		const error = sessionBlock.querySelector('.session-error');
+		error.hidden = !(data && data.scaleError);
+		error.textContent = data && data.scaleError ? fill(s.scaleError, { reason: data.scaleError }) : '';
+		setSession(current);
+	}
+	if (sessionBlock) {
+		const post = (patch) => vscode.postMessage({ type: 'setSession', patch });
+		const factor = sessionBlock.querySelector('#scale-factor');
+		factor.addEventListener('change', () => {
+			const value = Number(factor.value);
+			post({ scale: factor.value === '' || !(value > 0) ? null : { type: 'factor', value: value / 100 } });
+		});
+		const target = sessionBlock.querySelector('#scale-target');
+		target.addEventListener('change', () => {
+			const item = choices && choices.ingredients.find((i) => i.id === target.value);
+			sessionBlock.querySelector('#scale-qty').value = item && item.qty !== undefined ? String(item.qty) : '';
+			sessionBlock.querySelector('#scale-unit').value = item && item.unit ? item.unit : '';
+		});
+		const apply = () => {
+			const qty = Number(sessionBlock.querySelector('#scale-qty').value);
+			if (!target.value || !(qty > 0)) return;
+			post({ scale: { type: 'target', id: target.value, qty,
+				unit: sessionBlock.querySelector('#scale-unit').value.trim() || null } });
+		};
+		sessionBlock.querySelector('#scale-apply').addEventListener('click', apply);
+		for (const id of ['#scale-qty', '#scale-unit']) {
+			sessionBlock.querySelector(id).addEventListener('keydown', (event) => {
+				if (event.key === 'Enter') apply();
+			});
+		}
+		sessionBlock.querySelector('#bakers-ref').addEventListener('change', (event) => {
+			post({ bakersReference: event.target.value || null });
+		});
+		sessionBlock.querySelector('#stock').addEventListener('change', () => {
+			const uris = [...sessionBlock.querySelectorAll('#stock input:checked')].map((b) => b.value);
+			post({ stock: uris.length ? uris : null });
+		});
+		sessionBlock.querySelector('#session-reset').addEventListener('click', () => {
+			target.value = '';
+			sessionBlock.querySelector('#scale-qty').value = '';
+			sessionBlock.querySelector('#scale-unit').value = '';
+			post({ scale: null, stock: null, bakersReference: null });
+		});
+		sessionBlock.addEventListener('toggle', () => {
+			vscode.postMessage({ type: 'choose', open: sessionBlock.open });
 		});
 	}
 	window.addEventListener('message', (event) => {
@@ -286,8 +455,9 @@ ${servingBar}
 		if (message.type === 'content') show(message.content);
 		else if (message.type === 'paused') pause(message.error);
 		else if (message.type === 'showMacros') showMacros();
-		else if (message.type === 'serving') setServing(message.serveAt);
+		else if (message.type === 'session') setSession(message.session);
 		else if (message.type === 'suggestions') showSuggestions(message.data);
+		else if (message.type === 'choices') showChoices(message.data);
 	});
 	banner.querySelector('button').addEventListener('click', () => {
 		vscode.postMessage({ type: 'showError' });

@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
-import { type PanelServing, ViewPanel } from "./panel";
+import { type PanelSession, ViewPanel } from "./panel";
 import type {
 	OutputInfo,
 	ServeSuggestions,
 	Session,
+	SessionChoices,
 	ViewUpdate,
 	ViewsCapability,
 } from "./protocol";
@@ -19,7 +20,7 @@ export class ViewsController implements vscode.Disposable {
 	private readonly state: ViewsState;
 	private readonly disposables: vscode.Disposable[] = [];
 	private uri: string | undefined;
-	private readonly serving: PanelServing;
+	private readonly session: PanelSession;
 
 	constructor(
 		private readonly capability: ViewsCapability,
@@ -30,18 +31,22 @@ export class ViewsController implements vscode.Disposable {
 			sendSession(uri: string, session: Session): void;
 			/** `gram/serveTimes`. */
 			serveTimes(uri: string): Promise<ServeSuggestions | null>;
+			/** `gram/sessionChoices`. */
+			sessionChoices(uri: string): Promise<SessionChoices | null>;
 		},
 	) {
 		this.state = new ViewsState(sendOpenViews);
-		this.serving = {
-			setServeAt: (uri, serveAt) => {
-				const session = this.state.setServeAt(uri, serveAt);
+		this.session = {
+			update: (uri, patch) => {
+				const session = this.state.updateSession(uri, patch);
 				if (!session) return;
 				server.sendSession(uri, session);
-				// The field shows the choice now; the plan follows from the server.
+				// Every panel of the recipe shows the choice now; the views
+				// follow from the server.
 				if (uri === this.uri) this.showAll();
 			},
 			suggest: (uri) => server.serveTimes(uri),
+			choices: (uri) => server.sessionChoices(uri),
 		};
 		this.uri = activeGramUri();
 		this.disposables.push(
@@ -86,14 +91,14 @@ export class ViewsController implements vscode.Disposable {
 					this.panels.delete(outputId);
 					this.sync();
 				},
-				this.serving,
+				this.session,
 			);
 			this.panels.set(outputId, panel);
 		}
 		panel.show(
 			uri,
 			this.state.viewOf(uri, outputId),
-			this.state.sessionOf(uri).serveAt,
+			this.state.sessionOf(uri),
 		);
 		this.sync();
 		return panel;
@@ -105,7 +110,7 @@ export class ViewsController implements vscode.Disposable {
 		if (update.uri !== this.uri) return;
 		this.panels
 			.get(update.outputId)
-			?.show(update.uri, view, this.state.sessionOf(update.uri).serveAt);
+			?.show(update.uri, view, this.state.sessionOf(update.uri));
 	}
 
 	private follow(uri: string): void {
@@ -118,9 +123,9 @@ export class ViewsController implements vscode.Disposable {
 	private showAll(): void {
 		const uri = this.uri;
 		if (!uri) return;
-		const { serveAt } = this.state.sessionOf(uri);
+		const session = this.state.sessionOf(uri);
 		for (const [id, panel] of this.panels) {
-			panel.show(uri, this.state.viewOf(uri, id), serveAt);
+			panel.show(uri, this.state.viewOf(uri, id), session);
 		}
 	}
 
