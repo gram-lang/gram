@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, useId } from "vue";
-import { formatDecimalToFraction } from "@gram-lang/renderer";
+import {
+	NUTRITION_BASES,
+	type NutritionBasis,
+	formatDecimalToFraction,
+} from "@gram-lang/renderer";
 import { UNIT_CONVERSIONS } from "@gram-lang/i18n";
 import {
 	REST_CHOICES,
@@ -10,7 +14,15 @@ import {
 import { WEEKDAYS, type Weekday } from "@gram-lang/scheduler";
 // biome-ignore lint/correctness/noUnusedImports: PlaygroundTooltip is used in the <template> block below
 import PlaygroundTooltip from "./PlaygroundTooltip.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the template block below
+import GramSelect from "./GramSelect.vue";
 import { useI18n } from "./useI18n";
+import {
+	type OPTION_SETTING_KEYS,
+	type PlaygroundOptions,
+	defaultOptions,
+	isOptionModified,
+} from "./settingsStorage";
 
 export interface DayAvailability {
 	enabled: boolean;
@@ -38,15 +50,7 @@ const knownUnits = Array.from(
 );
 
 const props = defineProps<{
-	options: {
-		enableMassStandardization: boolean;
-		enableYieldCalculation: boolean;
-		enableNutritionalEstimation: boolean;
-		bakersMath: boolean;
-		bakersMathOnly: boolean;
-		bakersReference: string | undefined;
-		comments?: "show" | "hide";
-	};
+	options: PlaygroundOptions;
 	shoppingList?: Array<{
 		id: string;
 		name: string;
@@ -85,6 +89,8 @@ const emit = defineEmits<{
 	"update:rests": [rests: RestChoice];
 	"update:plan": [plan: PlanSettings];
 	"clear-plan": [];
+	/** Show the work plan: where most of the "Schedule & Service" settings show. */
+	"show-work-plan": [];
 }>();
 
 // Accordion open/collapsed state
@@ -190,7 +196,7 @@ function clearServeAt() {
 
 // biome-ignore lint/correctness/noUnusedVariables: formatEarliestLabel is used in the <template> block below, which Biome's Vue support doesn't see.
 function formatEarliestLabel(label: string): string {
-	return lang.value === "fr" ? `Au plus tôt : ${label}` : `Earliest: ${label}`;
+	return t.value.renderer.serving.earliest.replace("{when}", label);
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: filteredCandidates is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -689,12 +695,53 @@ const showComments = computed({
 		}),
 });
 
+// The quantities written in the text of the steps: shown unless switched off.
+// biome-ignore lint/correctness/noUnusedVariables: showStepQuantities is used in the <template> block below, which Biome's Vue support doesn't see.
+const showStepQuantities = computed({
+	get: () => props.options.stepQuantities !== "hide",
+	set: (val) =>
+		emit("update:options", {
+			...props.options,
+			stepQuantities: val ? "show" : "hide",
+		}),
+});
+
+// biome-ignore lint/correctness/noUnusedVariables: nutritionBasisId is used in the <template> block below, which Biome's Vue support doesn't see.
+const nutritionBasisId = useId();
+
+// biome-ignore lint/correctness/noUnusedVariables: nutritionBasisOptions is used in the <template> block below, which Biome's Vue support doesn't see.
+const nutritionBasisOptions = computed(() =>
+	NUTRITION_BASES.map((value) => ({
+		value,
+		label:
+			value === "auto"
+				? t.value.playground.options.nutritionBasisAuto
+				: value === "total"
+					? t.value.renderer.nutritionWholeRecipe
+					: value === "perPortion"
+						? t.value.renderer.nutritionPerPortion
+						: t.value.renderer.nutritionPer100g,
+	})),
+);
+
+const DISPLAY_KEYS = [
+	"comments",
+	"stepQuantities",
+] as const satisfies readonly (typeof OPTION_SETTING_KEYS)[number][];
+
 // biome-ignore lint/correctness/noUnusedVariables: isDisplayModified is used in the <template> block below, which Biome's Vue support doesn't see.
-const isDisplayModified = computed(() => props.options.comments === "hide");
+const isDisplayModified = computed(() =>
+	DISPLAY_KEYS.some((key) => isOptionModified(props.options, key)),
+);
 
 // biome-ignore lint/correctness/noUnusedVariables: resetDisplaySection is used in the <template> block below, which Biome's Vue support doesn't see.
 function resetDisplaySection() {
-	emit("update:options", { ...props.options, comments: "show" });
+	const defaults = defaultOptions();
+	emit("update:options", {
+		...props.options,
+		comments: defaults.comments,
+		stepQuantities: defaults.stepQuantities,
+	});
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: bakersBadgeTitle is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -707,16 +754,20 @@ const bakersBadgeTitle = computed(() => {
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: isBakersModified is used in the <template> block below, which Biome's Vue support doesn't see.
-const isBakersModified = computed(() => {
-	return Boolean(props.options.bakersMath);
-});
+const isBakersModified = computed(
+	() =>
+		isOptionModified(props.options, "bakersMath") ||
+		isOptionModified(props.options, "bakersMathOnly") ||
+		Boolean(props.options.bakersReference),
+);
 
 // biome-ignore lint/correctness/noUnusedVariables: resetBakersSection is used in the <template> block below, which Biome's Vue support doesn't see.
 function resetBakersSection() {
+	const defaults = defaultOptions();
 	emit("update:options", {
 		...props.options,
-		bakersMath: false,
-		bakersMathOnly: false,
+		bakersMath: defaults.bakersMath,
+		bakersMathOnly: defaults.bakersMathOnly,
 		bakersReference: undefined,
 	});
 }
@@ -726,43 +777,43 @@ function resetBakersSection() {
 // --------------------------------------------------------------------------
 // biome-ignore lint/correctness/noUnusedVariables: massEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
 const massEnabled = computed({
-	get: () => props.options.enableMassStandardization,
+	get: () => props.options.massStandardization,
 	set: (val) =>
 		emit("update:options", {
 			...props.options,
-			enableMassStandardization: val,
+			massStandardization: val,
 		}),
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: yieldEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
 const yieldEnabled = computed({
-	get: () => props.options.enableYieldCalculation,
+	get: () => props.options.yieldCalculation,
 	set: (val) =>
-		emit("update:options", { ...props.options, enableYieldCalculation: val }),
+		emit("update:options", { ...props.options, yieldCalculation: val }),
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: nutritionEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
 const nutritionEnabled = computed({
-	get: () => props.options.enableNutritionalEstimation,
+	get: () => props.options.nutritionEstimation,
 	set: (val) =>
 		emit("update:options", {
 			...props.options,
-			enableNutritionalEstimation: val,
+			nutritionEstimation: val,
 		}),
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: physicsBadgeTitle is used in the <template> block below, which Biome's Vue support doesn't see.
 const physicsBadgeTitle = computed(() => {
 	const parts: string[] = [];
-	if (props.options.enableMassStandardization) {
+	if (props.options.massStandardization) {
 		parts.push(
 			t.value.playground.options?.standardizeMass || "Standardize mass",
 		);
 	}
-	if (props.options.enableYieldCalculation) {
+	if (props.options.yieldCalculation) {
 		parts.push(t.value.playground.options?.yieldCalc || "Yield");
 	}
-	if (props.options.enableNutritionalEstimation) {
+	if (props.options.nutritionEstimation) {
 		parts.push(t.value.playground.options?.nutritionCalc || "Nutrition");
 	}
 	return parts.length > 0
@@ -771,21 +822,23 @@ const physicsBadgeTitle = computed(() => {
 });
 
 // biome-ignore lint/correctness/noUnusedVariables: isPhysicsModified is used in the <template> block below, which Biome's Vue support doesn't see.
-const isPhysicsModified = computed(() => {
-	return (
-		!props.options.enableMassStandardization ||
-		props.options.enableYieldCalculation ||
-		!props.options.enableNutritionalEstimation
-	);
-});
+const isPhysicsModified = computed(
+	() =>
+		isOptionModified(props.options, "massStandardization") ||
+		isOptionModified(props.options, "yieldCalculation") ||
+		isOptionModified(props.options, "nutritionEstimation") ||
+		isOptionModified(props.options, "nutritionBasis"),
+);
 
 // biome-ignore lint/correctness/noUnusedVariables: resetPhysicsSection is used in the <template> block below, which Biome's Vue support doesn't see.
 function resetPhysicsSection() {
+	const defaults = defaultOptions();
 	emit("update:options", {
 		...props.options,
-		enableMassStandardization: true,
-		enableYieldCalculation: false,
-		enableNutritionalEstimation: true,
+		massStandardization: defaults.massStandardization,
+		yieldCalculation: defaults.yieldCalculation,
+		nutritionEstimation: defaults.nutritionEstimation,
+		nutritionBasis: defaults.nutritionBasis,
 	});
 }
 
@@ -851,20 +904,30 @@ function resetStockSection() {
       </div>
 
       <div v-show="openSections.schedule" class="studio-section-body">
+        <p class="studio-section-note">
+          <svg class="note-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span>
+            {{ t.playground.help.scheduleNote }}
+            <button type="button" class="studio-note-link" @click="emit('show-work-plan')">{{ t.playground.help.scheduleNoteLink }}</button>
+          </span>
+        </p>
+
         <div class="studio-field">
           <div class="studio-label-row">
             <label class="studio-label">{{ t.renderer.scheduleLabel }}</label>
             <PlaygroundTooltip :text="t.playground.help.schedule" />
           </div>
-          <select
-            class="studio-select"
-            :value="props.schedule || 'perSection'"
-            @change="emit('update:schedule', ($event.target as HTMLSelectElement).value as MiseEnPlaceMode)"
-          >
-            <option v-for="opt in scheduleOptions" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            :model-value="props.schedule || 'perSection'"
+            :options="scheduleOptions"
+            :aria-label="t.renderer.scheduleLabel"
+            @update:model-value="(value: string) => emit('update:schedule', value as MiseEnPlaceMode)"
+          />
         </div>
 
         <div class="studio-field">
@@ -872,15 +935,13 @@ function resetStockSection() {
             <label class="studio-label">{{ t.renderer.restsLabel }}</label>
             <PlaygroundTooltip :text="t.playground.help.rests" />
           </div>
-          <select
-            class="studio-select"
-            :value="props.rests || 'shortest'"
-            @change="emit('update:rests', ($event.target as HTMLSelectElement).value as RestChoice)"
-          >
-            <option v-for="opt in restsOptions" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            :model-value="props.rests || 'shortest'"
+            :options="restsOptions"
+            :aria-label="t.renderer.restsLabel"
+            @update:model-value="(value: string) => emit('update:rests', value as RestChoice)"
+          />
         </div>
 
         <!-- Heure de service -->
@@ -991,15 +1052,13 @@ function resetStockSection() {
             <label class="studio-label">{{ t.playground.views.planTimeZone }}</label>
             <PlaygroundTooltip :text="t.playground.help.timeZone" />
           </div>
-          <select
-            class="studio-select"
-            :value="props.plan?.timeZone || 'UTC'"
-            @change="updatePlanField('timeZone', ($event.target as HTMLSelectElement).value)"
-          >
-            <option v-for="zone in timeZoneOptions" :key="zone" :value="zone">
-              {{ zone }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            :model-value="props.plan?.timeZone || 'UTC'"
+            :options="timeZoneOptions.map((zone) => ({ value: zone, label: zone }))"
+            :aria-label="t.playground.views.planTimeZone"
+            @update:model-value="(value: string) => updatePlanField('timeZone', value)"
+          />
         </div>
 
         <!-- Disponibilités -->
@@ -1135,12 +1194,11 @@ function resetStockSection() {
             <span class="studio-label">{{ t.playground.options.scaleByIngredient }}</span>
             <PlaygroundTooltip :text="t.playground.help.scaleByIngredient" />
           </div>
-          <select class="studio-select" v-model="targetId">
-            <option value="">{{ t.playground.options.selectIngredient }}</option>
-            <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
-              {{ item.name }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            v-model="targetId"
+            :options="[{ value: '', label: t.playground.options.selectIngredient }, ...props.shoppingList.map((item) => ({ value: item.id, label: item.name }))]"
+          />
           <div class="scale-inputs" v-if="targetId">
             <input
               type="text"
@@ -1254,12 +1312,12 @@ function resetStockSection() {
             <span class="studio-label">{{ t.playground.options.forceReference }}</span>
             <PlaygroundTooltip :text="t.playground.help.bakersReference" />
           </div>
-          <select class="studio-select" v-model="bakersReference" :disabled="!bakersMath">
-            <option value="">{{ t.playground.options.autoDetect }}</option>
-            <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
-              {{ item.name }}
-            </option>
-          </select>
+          <GramSelect
+            block
+            v-model="bakersReference"
+            :disabled="!bakersMath"
+            :options="[{ value: '', label: t.playground.options.autoDetect }, ...props.shoppingList.map((item) => ({ value: item.id, label: item.name }))]"
+          />
         </div>
       </div>
     </div>
@@ -1303,6 +1361,17 @@ function resetStockSection() {
               <PlaygroundTooltip :text="t.playground.help.comments" />
             </div>
             <span class="option-desc">{{ t.playground.options.commentsDesc }}</span>
+          </div>
+        </label>
+
+        <label class="option-item">
+          <input type="checkbox" v-model="showStepQuantities" />
+          <div class="option-text">
+            <div class="studio-label-row">
+              <span class="option-name">{{ t.playground.options.showStepQuantities }}</span>
+              <PlaygroundTooltip :text="t.playground.help.stepQuantities" />
+            </div>
+            <span class="option-desc">{{ t.playground.options.stepQuantitiesDesc }}</span>
           </div>
         </label>
       </div>
@@ -1379,6 +1448,21 @@ function resetStockSection() {
             </div>
           </div>
         </label>
+
+        <div class="studio-field child-option" :class="{ disabled: !nutritionEnabled }">
+          <div class="studio-label-row">
+            <label class="studio-label" :for="nutritionBasisId">{{ t.playground.options.nutritionBasis }}</label>
+            <PlaygroundTooltip :text="t.playground.help.nutritionBasis" />
+          </div>
+          <GramSelect
+            block
+            :id="nutritionBasisId"
+            :model-value="props.options.nutritionBasis"
+            :disabled="!nutritionEnabled"
+            :options="nutritionBasisOptions"
+            @update:model-value="(value: string) => emit('update:options', { ...props.options, nutritionBasis: value as NutritionBasis })"
+          />
+        </div>
       </div>
     </div>
 
@@ -1535,6 +1619,27 @@ function resetStockSection() {
   background-color: var(--sl-color-bg);
 }
 
+.studio-note-link {
+  display: inline;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--sl-color-text-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.studio-note-link:hover {
+  color: var(--sl-color-white);
+}
+
+.studio-note-link:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+}
+
 .studio-section-note {
   display: flex;
   align-items: flex-start;
@@ -1573,7 +1678,6 @@ function resetStockSection() {
   letter-spacing: 0.02em;
 }
 
-.studio-select,
 .studio-input {
   width: 100%;
   padding: 6px 10px;
@@ -1586,7 +1690,6 @@ function resetStockSection() {
   box-sizing: border-box;
 }
 
-.studio-select:focus,
 .studio-input:focus {
   border-color: var(--sl-color-gray-3);
 }

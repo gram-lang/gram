@@ -547,6 +547,12 @@ svg.gicon {
   border: 1px solid var(--color-border);
 }
 
+/* A quantity written in the text of a step: part of the sentence, not a badge. */
+.gram-preview .step-quantity {
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
 .gram-preview .mass-badge {
   font-family: var(--gram-font-mono);
   font-size: 0.85em;

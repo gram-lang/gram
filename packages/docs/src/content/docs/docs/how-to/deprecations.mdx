@@ -15,6 +15,7 @@ This page documents all features currently deprecated across Gram, categorized b
 | Authoring `.gram` recipes via CLI, renderer, or playground | **None**. The recipe language syntax contains zero deprecations. |
 | Consuming compiled JSON (`gram build`, custom UI applications, scripts) | See [Compiled JSON fields](#compiled-json-fields) and [Backwards compatibility with older JSON](#backwards-compatibility-with-older-json). |
 | Rendering a Gantt chart, VS Code command or language server notifications | See [Replacement of the Gantt chart and its components](#replacement-of-the-gantt-chart-and-its-components). |
+| Writing an editor client for the language server | See [Language server preview notification](#language-server-preview-notification). |
 | Programmatic integration of `@gram-lang/kitchen` or `@gram-lang/analyzer` | See [Compiled JSON fields](#compiled-json-fields), [`calculatePreparationTime`](#the-calculatepreparationtime-function), and [Backwards compatibility with older JSON](#backwards-compatibility-with-older-json). |
 
 To audit your application code, see [Identify deprecated usages in your codebase](#identify-deprecated-usages-in-your-codebase).
@@ -131,7 +132,7 @@ The legacy Gantt chart is officially replaced by the [work plan](/docs/how-to/pl
 | `@gram-lang/renderer/gantt.css` | Not required: work plan styles are now included directly in `gram.css`. |
 | `gantt_*` keys of `playground.views` (`@gram-lang/i18n`) | Not required: the work plan uses `workPlan*` keys in the renderer dictionary. |
 | `gram.showGantt` command, `Gram: Gantt Chart` (VS Code) | `gram.showRunSheet` (`Gram: Work Plan`). The old command opens the new view with a one-time notice. |
-| `gram/ganttUpdated` notification (language server) | Listen to `gram/runSheetUpdated`, or consume compiled recipe data directly. |
+| `gram/ganttUpdated` notification (language server) | Read `gram/viewUpdated` for the `workPlan` output (see [Language server preview notification](#language-server-preview-notification)), or consume compiled recipe data directly. |
 
 The `toGanttHTML()` function logs a one-time warning to the console when called.
 
@@ -152,6 +153,51 @@ container.innerHTML = runSheetToHTML(sheet, compiled);
 ```
 
 If you need to build a custom visual timeline, `sheet.recipes[0].days[].entries[]` provides every block with its relative minutes from the service: see [Build a custom UI](/docs/how-to/build-custom-ui/#build-your-own-planning-view).
+
+### Language server preview notification
+
+<Since v="1.4.0" type="deprecated" />
+
+**Deprecated:** the `gram/previewUpdated` notification, sent to editor clients that do not declare the views protocol. **Recommended replacement:** adopt the [views protocol](/docs/reference/tooling/language-server/#views-protocol) (`gram/setOpenViews` and `gram/viewUpdated`).
+
+Until version 2.0.0, clients that do not declare the protocol continue to receive HTML preview notifications for every open recipe—whether visible or hidden—along with an inline error panel whenever compilation fails. The server logs a one-time notice in its trace. Under the new views protocol, the client explicitly declares which outputs are open so the server renders only active views. If a recipe contains syntax or compilation errors, the client retains its last valid rendered state while error details appear in standard LSP diagnostics.
+
+| Deprecated item | Recommended replacement |
+|---|---|
+| `gram/previewUpdated` notification (`{ uri, html }`) | `gram/viewUpdated` for the `recipe` output: `payload` contains the rendered HTML when `state: "ok"`, while `state: "paused"` indicates compilation errors. |
+| Error panel rendered in place of the preview | The `error` property of a `paused` update (`title`, `message`, `range`), complementing standard published diagnostics. |
+
+Migration example:
+
+```typescript
+// Before (deprecated):
+client.onNotification('gram/previewUpdated', ({ uri, html }) => show(uri, html));
+
+// After (recommended):
+const client = new LanguageClient(id, name, serverOptions, {
+  ...clientOptions,
+  initializationOptions: { views: true },
+});
+client.sendNotification('gram/setOpenViews', { uri, viewIds: ['recipe'] });
+client.onNotification('gram/viewUpdated', (update) => {
+  if (update.state === 'ok') show(update.uri, update.payload);
+  else pause(update.uri, update.error.title);
+});
+```
+
+### Playground view labels
+
+<Since v="1.4.0" type="deprecated" />
+
+**Deprecated:** the labels of the playground's old view selector in `@gram-lang/i18n`. **Recommended replacement:** the names of the renderer's outputs and formats.
+
+The playground now shows the views of the renderer as tabs, each in its formats, and its inspectors in a menu of their own, all named by their id. The old labels keep their text until 2.0.0.
+
+| Deprecated item | Recommended replacement |
+|---|---|
+| `playground.views.preview`, `runSheet`, `ast`, `json`, `jsonTree` | `renderer.outputs[id]`, with the output ids `recipe`, `workPlan`, `ast`, `json` and `json-tree` |
+| `playground.views.markdown` | `renderer.formats.markdown` (Markdown is a format of a view, not a view) |
+| `playground.viewLabel` | `playground.output.views` (the tabs) and `playground.output.inspect` (the inspector menu) |
 
 ### Backwards compatibility with older JSON
 

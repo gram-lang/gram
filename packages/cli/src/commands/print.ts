@@ -9,25 +9,27 @@ import { resolveScaleArg } from "../services/scaler";
 import { generatePrintHTML, openInBrowser } from "../services/printer";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import {
-	MISE_EN_PLACE_FLAG_DESCRIPTION,
-	parseMiseEnPlace,
-} from "../services/mise-en-place-flag";
+	PLAN_FLAG_ARGS,
+	VIEW_FLAG_ARG,
+	resolveExportView,
+} from "../services/plan-options";
+import { DEFAULT_VIEW_SETTINGS } from "@gram-lang/renderer";
+import { cliViewName } from "../core/cli-views";
 import {
-	COMMENTS_FLAG_DESCRIPTION,
-	parseComments,
-} from "../services/comments-flag";
-import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
-import { PLAN_FLAG_ARGS, resolvePlanContext } from "../services/plan-options";
-import {
-	NUTRITION_BASIS_FLAG_DESCRIPTION,
-	parseNutritionBasis,
-} from "../services/nutrition-basis";
+	EXPORT_VIEW_SETTINGS,
+	STEP_QTY_ALIAS_ARG,
+	readRecipeSettingArgs,
+	readViewSettingArgs,
+	recipeSettingArgs,
+	viewSettingArgs,
+} from "../services/setting-args";
 import { ExitCode, GramCLIError } from "../errors";
 
 export default defineCommand({
 	meta: {
 		name: "print",
-		description: "Generate a print-ready HTML and open it in the browser",
+		description:
+			"Generate a print-ready HTML of a view of a recipe (see --view) and open it in the browser",
 	},
 	args: {
 		file: {
@@ -55,48 +57,16 @@ export default defineCommand({
 			description: "Skip ingredient database",
 			default: false,
 		},
-		"step-qty": {
-			type: "boolean",
-			description:
-				"Show ingredient quantities in step text (pass --no-step-qty to hide; quantities in section mise en place are always shown)",
-			default: true,
-		},
-		"bakers-math": {
-			type: "boolean",
-			description:
-				"Display ingredient quantities as a percentage of a reference ingredient (Baker's Percentage).",
-		},
+		...viewSettingArgs(EXPORT_VIEW_SETTINGS),
+		...STEP_QTY_ALIAS_ARG,
+		...recipeSettingArgs(),
 		"bakers-reference": {
 			type: "string",
 			description:
 				"Force a specific ingredient as the baker's math reference (e.g. flour). Implies --bakers-math",
 		},
-		"bakers-math-only": {
-			type: "boolean",
-			description: "Only show the percentages and hide absolute weights.",
-		},
-		nutrition: {
-			type: "string",
-			description: NUTRITION_BASIS_FLAG_DESCRIPTION,
-		},
-		"mise-en-place": {
-			type: "string",
-			description: MISE_EN_PLACE_FLAG_DESCRIPTION,
-		},
-		rests: {
-			type: "string",
-			description: RESTS_FLAG_DESCRIPTION,
-		},
-		comments: {
-			type: "string",
-			description: COMMENTS_FLAG_DESCRIPTION,
-		},
+		...VIEW_FLAG_ARG,
 		...PLAN_FLAG_ARGS,
-		"with-sheet": {
-			type: "boolean",
-			description:
-				"With --serve: also write the production sheet after the recipe, in the same document",
-		},
 		stock: {
 			type: "string",
 			description:
@@ -121,21 +91,25 @@ export default defineCommand({
 		const bakersReference =
 			(args["bakers-reference"] as string) ||
 			(args["bakers-math"] ? "" : undefined);
-		const bakersMathOnly = args["bakers-math-only"] as boolean;
-		const nutritionBasis = parseNutritionBasis(args.nutrition);
-		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
-		const rests = parseRests(args.rests);
-		const comments = parseComments(args.comments);
-		const plan = resolvePlanContext(args, rawArgs, config);
-		if (args["with-sheet"] && !plan) {
-			log.error("--with-sheet needs --serve (when it is served).");
-			process.exit(ExitCode.Error);
-		}
-		if (plan && !args["with-sheet"]) {
-			log.error(
-				"--serve only applies with --with-sheet: the recipe itself reads the same at any time.",
-			);
-			process.exit(ExitCode.Error);
+		const settings = readViewSettingArgs(args, EXPORT_VIEW_SETTINGS);
+		const recipe = readRecipeSettingArgs(args);
+		let view: ReturnType<typeof resolveExportView>;
+		try {
+			view = resolveExportView(args, rawArgs, config);
+			// Every view a command offers has a print layout today; one that
+			// does not is refused here rather than half-printed.
+			if (!view.view.formats.includes("print")) {
+				throw new GramCLIError(
+					`The ${cliViewName(view.view.id)} view has no print layout: use gram export instead.`,
+					ExitCode.Error,
+				);
+			}
+		} catch (err) {
+			if (err instanceof GramCLIError) {
+				log.error(err.message);
+				process.exit(err.exitCode);
+			}
+			throw err;
 		}
 		const stock = resolveStockFromConfig(args.stock, config);
 
@@ -143,15 +117,10 @@ export default defineCommand({
 		let usedStock = new Set<string>();
 		try {
 			htmlPath = await generatePrintHTML(filePath, db, scaleFactor, {
-				hideStepQty: !args["step-qty"],
+				settings: { ...DEFAULT_VIEW_SETTINGS, ...settings },
 				bakersReference,
-				bakersMathOnly,
-				nutritionBasis,
-				miseEnPlace,
-				rests,
-				comments,
-				plan,
-				withSheet: args["with-sheet"] as boolean | undefined,
+				recipe,
+				view,
 				lang: config.language,
 				paths: config.paths,
 				stock,

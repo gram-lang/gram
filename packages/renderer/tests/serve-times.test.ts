@@ -2,7 +2,12 @@ import { describe, expect, it } from "bun:test";
 import { compile } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
 import { earliestServe, findServeTimes } from "@gram-lang/scheduler";
-import { describeEarliestServe, describeServeTimes } from "../src/index";
+import {
+	describeEarliestServe,
+	describeServeTimes,
+	prepareViews,
+	suggestServeTimes,
+} from "../src/index";
 
 const compiled = compile(
 	getAST(`---
@@ -92,5 +97,48 @@ describe("describeEarliestServe", () => {
 		expect(describeEarliestServe(result)).toContain(
 			"Nothing works in the next 14 days",
 		);
+	});
+});
+
+describe("suggestServeTimes", () => {
+	const kitchen = {
+		timeZone: "Europe/Paris",
+		availability: { daily: [{ start: "08:00", end: "22:00" }] },
+		now: "2026-10-10T10:00",
+	};
+
+	it("proposes the times that work over the next days, in words, and the earliest", () => {
+		const s = suggestServeTimes(prepareViews(compiled, {}, { kitchen }), {
+			days: 3,
+		});
+		expect(s).not.toBeNull();
+		expect(s!.candidates.length).toBeGreaterThan(0);
+		for (const c of s!.candidates) {
+			expect(c.serveAt >= "2026-10-10T00:00").toBe(true);
+			expect(c.serveAt <= "2026-10-13T23:59").toBe(true);
+			expect(c.label).toMatch(/\d{2}:\d{2}/);
+			expect(c.title).not.toBe("");
+		}
+		// The batter rests 20 hours at least: nothing works on the first day.
+		expect(s!.rejected.length).toBeGreaterThan(0);
+		expect(s!.earliest?.serveAt).toBeString();
+		expect(s!.earliest?.text).not.toBe("");
+	});
+
+	it("speaks the language asked for", () => {
+		const s = suggestServeTimes(prepareViews(compiled, {}, { kitchen }), {
+			lang: "fr",
+			days: 3,
+		});
+		expect(s!.earliest?.text).not.toBe(
+			suggestServeTimes(prepareViews(compiled, {}, { kitchen }), { days: 3 })!
+				.earliest?.text,
+		);
+	});
+
+	it("is null without a kitchen or without anything to schedule", () => {
+		expect(suggestServeTimes(prepareViews(compiled))).toBeNull();
+		const note = compile(getAST("---\ntitle: Note\n---\n"));
+		expect(suggestServeTimes(prepareViews(note, {}, { kitchen }))).toBeNull();
 	});
 });

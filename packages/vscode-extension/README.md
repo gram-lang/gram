@@ -44,6 +44,7 @@ Search for **"Gram - Recipe Language"** in the Extensions view (`Ctrl+Shift+X` /
 *   **Language Server Protocol (LSP)**: Real-time diagnostics, missing reference checks, and unused declaration warnings.
 *   **Live Preview**: Real-time side-by-side rendering of the recipe with a built-in, togglable nutrition/macros panel.
 *   **Work Plan View**: Shows the plan of your recipe: the days, when you are in the kitchen, what to take out for each visit and what goes on in between.
+*   **Inspectors**: `Gram: Show View...` opens technical inspectors (composed AST and compiled JSON as text or an interactive tree), updating live as you edit.
 *   **Smart Autocomplete**: Contextual suggestions for ingredients (from your local YAML database), units, and intermediate references.
 *   **Advanced Navigation**: Jump to definition, find all references, outline view, and AST-driven semantic highlighting.
 *   **Code Actions & Formatting**: Automatic document formatting (`Format Document` / `Format on Save` via `@gram-lang/format`), quick fixes for common errors, and volume-to-mass conversions.
@@ -54,8 +55,7 @@ Search for **"Gram - Recipe Language"** in the Extensions view (`Ctrl+Shift+X` /
 ## 🏗️ Structure
 
 *   `src/extension.ts`: Main entry point for the extension client.
-*   `src/preview.ts`: Manages the Live Preview webview panel and HTML rendering.
-*   `src/work-plan-panel.ts`: Manages the work plan webview panel.
+*   `src/views/`: Generic webview panels tracking outputs advertised by the language server (recipe, work plan, inspectors), automatically following the active editor and handling error-paused states.
 *   `syntaxes/`: Contains the fallback TextMate grammar for Gram.
 *   `snippets/`: Built-in code snippets for standard recipe structures.
 *   `../language-server`: The LSP implementation providing all intelligence to this extension.

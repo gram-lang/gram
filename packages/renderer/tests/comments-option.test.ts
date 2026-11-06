@@ -11,7 +11,7 @@ import {
 	toMarkdown,
 	toPrintHTML,
 } from "../src/index";
-import { withoutComments } from "../src/comments";
+import { withoutComments } from "../src/shared/comments";
 
 const SRC =
 	"## Cake\n\n[Mix] Mix @flour{100g} // keep it cold\nand stir ~{5min}.\n\n// Do not overmix.\n\n[Bake] Bake at ^{200C}.\n";
@@ -58,15 +58,6 @@ describe("the comments option, in the recipe views", () => {
 		withoutComments(compiled);
 		toHTML(compiled, { comments: "hide" });
 		expect(JSON.stringify(compiled.sections)).toBe(before);
-	});
-
-	it("hides them in the work plan written after the recipe too", () => {
-		const html = toHTML(compiled, { runSheet: sheet, comments: "hide" });
-		expect(html).not.toContain("Do not overmix.");
-		expect(html).not.toContain("keep it cold");
-		const shown = toHTML(compiled, { runSheet: sheet });
-		expect(shown).toContain("Do not overmix.");
-		expect(shown).toContain("inline-comment");
 	});
 });
 

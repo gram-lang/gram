@@ -2,7 +2,12 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readPathsConfigSync } from "../src/utils/module-paths-config";
+import {
+	readPathsConfigSync,
+	readAvailabilityConfigSync,
+	readMealTimesConfigSync,
+	readTimeZoneConfigSync,
+} from "../src/utils/module-paths-config";
 
 describe("readPathsConfigSync", () => {
 	const dirs: string[] = [];
@@ -45,5 +50,126 @@ describe("readPathsConfigSync", () => {
 	it("returns undefined for malformed YAML instead of throwing", async () => {
 		const dir = await project("paths: [this is not a map\n");
 		expect(() => readPathsConfigSync(dir)).not.toThrow();
+	});
+});
+
+describe("readTimeZoneConfigSync", () => {
+	const dirs: string[] = [];
+
+	afterEach(async () => {
+		while (dirs.length > 0)
+			await rm(dirs.pop()!, { recursive: true, force: true });
+	});
+
+	async function project(configYaml?: string): Promise<string> {
+		const dir = await mkdtemp(join(tmpdir(), "gram-tzcfg-"));
+		dirs.push(dir);
+		if (configYaml !== undefined) {
+			await mkdir(join(dir, ".gram"));
+			await writeFile(join(dir, ".gram", "config.yaml"), configYaml, "utf-8");
+		}
+		return dir;
+	}
+
+	it("reads the timezone of the project", async () => {
+		const dir = await project("timezone: Europe/Paris\n");
+		expect(readTimeZoneConfigSync(dir)).toBe("Europe/Paris");
+	});
+
+	it("is undefined without a config, a timezone, or with a zone that does not exist", async () => {
+		expect(readTimeZoneConfigSync(await project())).toBeUndefined();
+		expect(
+			readTimeZoneConfigSync(await project("paths:\n  a: ./a\n")),
+		).toBeUndefined();
+		expect(
+			readTimeZoneConfigSync(await project("timezone: Mars/Olympus\n")),
+		).toBeUndefined();
+		expect(
+			readTimeZoneConfigSync(await project("{{ not yaml")),
+		).toBeUndefined();
+	});
+});
+
+describe("readAvailabilityConfigSync", () => {
+	const dirs: string[] = [];
+
+	afterEach(async () => {
+		while (dirs.length > 0)
+			await rm(dirs.pop()!, { recursive: true, force: true });
+	});
+
+	async function project(configYaml?: string): Promise<string> {
+		const dir = await mkdtemp(join(tmpdir(), "gram-availcfg-"));
+		dirs.push(dir);
+		if (configYaml !== undefined) {
+			await mkdir(join(dir, ".gram"));
+			await writeFile(join(dir, ".gram", "config.yaml"), configYaml, "utf-8");
+		}
+		return dir;
+	}
+
+	it("reads one entry or a list of them, in the syntax of --available", async () => {
+		expect(
+			readAvailabilityConfigSync(await project("availability: 08:00-22:00\n")),
+		).toEqual({ daily: [{ start: "08:00", end: "22:00" }] });
+		expect(
+			readAvailabilityConfigSync(
+				await project("availability:\n  - 09:00-21:00\n  - sun=none\n"),
+			),
+		).toEqual({
+			daily: [{ start: "09:00", end: "21:00" }],
+			weekdays: { sun: [] },
+		});
+	});
+
+	it("is undefined without the setting, or with one that does not parse", async () => {
+		expect(readAvailabilityConfigSync(await project())).toBeUndefined();
+		expect(
+			readAvailabilityConfigSync(await project("timezone: Europe/Paris\n")),
+		).toBeUndefined();
+		expect(
+			readAvailabilityConfigSync(await project("availability: 8-22\n")),
+		).toBeUndefined();
+		expect(
+			readAvailabilityConfigSync(await project("availability: 8\n")),
+		).toBeUndefined();
+		expect(
+			readAvailabilityConfigSync(await project("{{ not yaml")),
+		).toBeUndefined();
+	});
+});
+
+describe("readMealTimesConfigSync", () => {
+	const dirs: string[] = [];
+
+	afterEach(async () => {
+		while (dirs.length > 0)
+			await rm(dirs.pop()!, { recursive: true, force: true });
+	});
+
+	async function project(configYaml?: string): Promise<string> {
+		const dir = await mkdtemp(join(tmpdir(), "gram-mealcfg-"));
+		dirs.push(dir);
+		if (configYaml !== undefined) {
+			await mkdir(join(dir, ".gram"));
+			await writeFile(join(dir, ".gram", "config.yaml"), configYaml, "utf-8");
+		}
+		return dir;
+	}
+
+	it("reads the meal times of the project", async () => {
+		expect(
+			readMealTimesConfigSync(await project('mealTimes: ["12:00", "19:30"]\n')),
+		).toEqual(["12:00", "19:30"]);
+	});
+
+	it("is undefined without them, or with a time it cannot read", async () => {
+		expect(readMealTimesConfigSync(await project())).toBeUndefined();
+		expect(
+			readMealTimesConfigSync(await project('mealTimes: ["noon"]\n')),
+		).toBeUndefined();
+		expect(
+			readMealTimesConfigSync(await project("mealTimes: 12:00\n")),
+		).toBeUndefined();
 	});
 });

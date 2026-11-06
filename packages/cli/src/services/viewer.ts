@@ -5,9 +5,10 @@ import { isCoarseUnit } from "@gram-lang/i18n";
 import type { IngredientData } from "@gram-lang/analyzer";
 import {
 	formatTimer,
-	timesOf,
+	prepareViews,
 	toCommonFraction,
 	type NutritionBasis,
+	type RecipeSettings,
 } from "@gram-lang/renderer";
 import type {
 	CompilationResult,
@@ -155,6 +156,8 @@ export async function buildViewModel(
 		db?: Record<string, IngredientData> | null;
 		scaleFactor?: number;
 		bakersReference?: string;
+		/** What the analyzer computes. Default: everything, as the engine. */
+		recipe?: RecipeSettings;
 		bakersMathOnly?: boolean;
 		nutritionBasis?: NutritionBasis;
 		/** Which timeline the total and rest times follow. Default per section. */
@@ -170,6 +173,7 @@ export async function buildViewModel(
 		db: opts.db,
 		scaleFactor: opts.scaleFactor,
 		bakersReference: opts.bakersReference,
+		recipe: opts.recipe,
 		lang: opts.lang,
 		paths: opts.paths,
 		stock: opts.stock,
@@ -193,10 +197,10 @@ export async function buildViewModel(
 	// Total and rest time follow the chosen timeline; active and preparation
 	// time are the same in all of them.
 	const m = compiled.metrics;
-	const { totalTime: total, idleTime: rest } = timesOf(compiled, {
+	const { totalTime: total, idleTime: rest } = prepareViews(compiled, {
 		miseEnPlace: opts.miseEnPlace,
 		rests: opts.rests,
-	});
+	}).times;
 	const times =
 		m && (total || rest || m.activeTime || m.preparationTime)
 			? {

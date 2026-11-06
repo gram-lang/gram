@@ -20,6 +20,12 @@
 // stopped loading the Gantt chart, that module was folded back in. The total
 // shipped (this chunk plus that one) went from 849 KB to 847 KB when the work
 // plan replaced the Gantt chart: the budget follows the move, not a growth.
+//
+// It went from 900 KB to 930 KB in 1.4.0, a growth this time: the playground
+// lists its outputs from the renderer's registry (886 KB to 920 KB), and a
+// view's render() carries every format it has, so the bundler keeps them all.
+// They are all offered: HTML, Markdown and Text in the output pane, print
+// behind the Print button.
 
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -29,7 +35,7 @@ const ASSETS_DIR = join(import.meta.dirname, "..", "dist", "_astro");
 const BUDGETS_KB = {
 	"playground chunk (client:only, but should not balloon)": {
 		pattern: /^GramPlayground\..*\.js$/,
-		maxKb: 900,
+		maxKb: 930,
 	},
 };
 

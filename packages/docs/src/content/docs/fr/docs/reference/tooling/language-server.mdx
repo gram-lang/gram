@@ -43,14 +43,44 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 | **Document Symbol** | Alimente la vue Plan (*Outline*) de l'éditeur pour une navigation fluide au sein des sections de la recette. |
 | **Folding Range** | Permet de replier proprement le frontmatter YAML et les blocs de sections `##`. |
 
-## Notifications vers le client
+## Réglages
 
-En complément des requêtes standardisées du protocole LSP, le serveur émet des notifications asynchrones contenant les vues pré-rendues d'une recette sous la forme d'un objet `{ uri, html }` :
+<Since v="1.4.0" /> Le serveur lit la section de configuration `gram` (`workspace/configuration`) au démarrage, puis à chaque notification `workspace/didChangeConfiguration`. Toute valeur absente ou non reconnue bascule automatiquement sur sa valeur par défaut : une erreur de saisie ne rend donc jamais une vue vierge.
+
+- Les réglages de vue (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, `gram.stepQuantities`, `gram.nutritionBasis`, `gram.bakersMathOnly`) actualisent l'affichage des recettes ouvertes directement à partir de leur résultat de compilation.
+- Les réglages de l'analyseur (`gram.bakersMath`, `gram.massStandardization`, `gram.yieldCalculation`, `gram.nutritionEstimation`) déclenchent une nouvelle analyse des recettes ouvertes et mettent à jour les diagnostics associés.
+- `gram.ingredientDatabase.path` recharge la base d'ingrédients depuis le disque.
+
+L'ensemble des options et valeurs par défaut correspond à la configuration de l'[extension VS Code](/fr/docs/reference/tooling/vscode-extension/), définie de façon centralisée dans le moteur de rendu (`VIEW_SETTINGS`, `RECIPE_SETTINGS`).
+
+## Protocole des vues
+
+<Since v="1.4.0" /> En complément des requêtes standardisées du protocole LSP, le serveur génère directement les vues d'une recette (la recette, le planning de préparation) ainsi que ses inspecteurs (l'AST et le JSON compilé) prêts à être affichés par l'éditeur. Le serveur ne calcule que les vues actuellement ouvertes dans le client : un panneau masqué n'induit aucun surcoût de calcul.
+
+Le client active ce protocole en transmettant `initializationOptions: { views: true }` lors de la requête `initialize`, puis dialogue avec le serveur via trois notifications spécifiques et deux requêtes :
+
+| Notification | Sens | Contenu |
+|---|---|---|
+| `gram/setOpenViews` | Client ➔ Serveur | `{ uri, viewIds }` : ensemble complet des identifiants de vues ouvertes pour ce document (`[]` si aucun volet n'est ouvert). Le serveur émet immédiatement les contenus correspondants. |
+| `gram/setSession` | Client ➔ Serveur | `{ uri, serveAt?, scale?, stock?, bakersReference? }` : paramètres contextuels de la session de travail. `serveAt` est une date et heure locale (`"2026-10-11 13:00"`), `scale` spécifie un facteur `{ type: "factor", value }` ou une cible `{ type: "target", id, qty, unit }`, et `stock` liste les URI des modules déjà prêts en cuisine. Tout paramètre non reconnu est ignoré ; un objet vide réinitialise la session. |
+| `gram/viewUpdated` | Serveur ➔ Client | `{ uri, outputId, kind, state, ... }` : émis pour chaque sortie ouverte lors de son affichage initial, puis actualisé après chaque modification ou ajustement des réglages. |
+| `gram/serveTimes` (requête) | Client ➔ Serveur | `{ uri }` → `{ candidates, rejected, earliest }` ou `null` : les heures de service à proposer à côté d'un champ d'heure de service, comme le fait le studio en ligne. `candidates` regroupe les heures qui conviennent sur les sept prochains jours aux heures de repas du projet (`mealTimes`, par défaut 12:30 et 20:00), les meilleures d'abord, chacune sous la forme `{ serveAt, label, title }` ; `rejected` explique en toutes lettres pourquoi les autres ne conviennent pas ; `earliest` vaut `{ serveAt, label, text }`, le moment le plus proche où la recette peut être prête si vous commencez maintenant. `null` si la recette n'a rien à planifier. Ne l'interrogez que lorsque les suggestions sont affichées : elle planifie quelques dizaines d'horaires. |
+| `gram/sessionChoices` (requête) | Client ➔ Serveur | `{ uri }` → `{ ingredients, imports, bakersMath, scaleError? }` ou `null` : ce que proposent les réglages de séance, lu sur la recette telle qu'elle est écrite pour que les choix ne bougent pas avec l'échelle. `ingredients` reprend la liste de courses (`{ id, name, qty?, unit? }`, pour une quantité visée ou la référence boulangère), `imports` tous les imports `@use`, y compris imbriqués (`{ uri, specifier }`, l'`uri` étant celle à placer dans `stock`), `bakersMath` indique si `gram.bakersMath` est actif, et `scaleError` explique pourquoi l'échelle de la session n'a pas pu s'appliquer. `null` tant que la recette ne compile pas. |
+
+La réponse à la requête `initialize` énumère l'ensemble des sorties disponibles dans `capabilities.experimental.gramViews` : `outputs` précise l'`id`, le `kind` et le `label` traduit de chaque vue (dans la langue de l'éditeur), ainsi que, pour une vue, ce qu'elle lit du planning (`needs` : une vue qui lit `runSheet` est calée dans le temps, et un client lui propose donc le choix de l'heure de service), tandis que `strings` fournit les libellés de l'interface environnante (`strings.serving` pour le champ d'heure de service et ses suggestions, `strings.session` pour l'échelle, la référence boulangère et le stock). Les identifiants correspondent aux sorties déclarées par le moteur de rendu : `recipe` et `workPlan` (`kind: "renderer"`), ainsi que `ast`, `json` et `json-tree` (`kind: "inspector"`). Un client qui construit dynamiquement son menu de vues à partir de cette liste prend ainsi en charge toute nouvelle vue ajoutée au moteur sans nécessiter de mise à jour spécifique.
+
+- Lorsque `state: "ok"`, `payload` contient le code HTML rendu de la vue, ou `null` si la recette ne comporte aucun contenu correspondant (par exemple un planning de préparation pour une recette dépourvue d'étapes minutées). Pour un inspecteur, `payload` contient `{ presentation, language, text }` : du texte formaté pour un volet de code (`presentation: "code"`, coloré en `json` ou en `scheme`), ou une structure HTML pour une arborescence interactive (`presentation: "tree"`).
+- Lorsque `state: "paused"`, les erreurs de compilation empêchent la génération des vues et `payload` est omis : l'éditeur doit conserver le dernier état valide affiché et signaler l'erreur via la propriété `error` (`title`, `description`, `code`, `message` et `range`). Le titre de l'erreur est traduit selon la locale de l'éditeur (`locale` d'`initialize`). Les détails complets de l'erreur demeurent accessibles via les diagnostics LSP habituels.
+
+La session est gérée par document en mémoire vive : elle est réinitialisée à la fermeture du fichier ou au redémarrage du serveur, et n'est jamais enregistrée dans les fichiers de configuration. Lorsqu'une heure de service est indiquée, le planning de préparation est calé sur le calendrier dans le fuseau horaire du projet (`timezone` dans `.gram/config.yaml`, sinon celui du système) et selon ses disponibilités (`availability`, sinon toute la journée, y compris si le réglage est illisible) ; sans heure de service, il est présenté en jours relatifs avant dégustation. Si des paramètres de session (`scale`, `stock` ou `bakersReference`) sont définis, les vues sont recompilées en intégrant ces options, tandis que les diagnostics, le survol et les annotations en ligne (*inlay hints*) continuent d'évaluer la recette telle qu'elle est rédigée. Si une mise à l'échelle ne peut pas être résolue, les vues conservent leurs proportions d'origine.
+
+### Notifications pour les clients antérieurs
+
+Les clients qui n'activent pas le protocole des vues continuent de recevoir les aperçus de chaque document ouvert via les notifications historiques ci-dessous sous la forme d'un objet `{ uri, html }`, que les volets soient affichés ou non dans l'éditeur.
 
 | Notification | Contenu |
 |---|---|
-| `gram/previewUpdated` | Rendu HTML de l'aperçu en direct, ou panneau d'erreur lorsque la recette ne compile pas. |
-| `gram/runSheetUpdated` | <Since v="1.4.0" /> Rendu HTML du planning de préparation découpé en jours relatifs (`J-2`, `J-1`, `Jour J`), consommé par la vue `Gram: Work Plan` de VS Code. |
+| `gram/previewUpdated` | <Since type="deprecated" v="1.4.0" /> Rendu HTML de l'aperçu en direct, ou panneau d'erreur lorsque la recette ne compile pas. Supprimée en version 2.0.0 : migrez vers `gram/viewUpdated` avec la sortie `recipe`. |
 | `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> Rendu HTML du diagramme de Gantt historique. Émis jusqu'en version 2.0.0 pour préserver la compatibilité avec les clients tiers (l'extension officielle VS Code ne l'écoute plus). |
 
 ## Ressources associées

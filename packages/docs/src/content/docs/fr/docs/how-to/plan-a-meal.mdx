@@ -80,7 +80,7 @@ La recette décrit **comment** réaliser chaque étape. Le planning de préparat
    ```
 
    - `--serve` : la date et l'heure cibles du repas.
-   - `--available` : vos plages de présence en cuisine (répétable, par exemple `sat=09:00-23:00` ou `2026-10-09=none`).
+   - `--available` : vos plages de présence en cuisine (répétable, par exemple `sat=09:00-23:00` ou `2026-10-09=none`). Vos horaires habituels peuvent être enregistrés une fois pour toutes dans le projet via `gram config set availability 08:00-22:00` : l'option ne sert alors qu'à les remplacer ponctuellement.
    - `--tz` : votre fuseau horaire IANA (définissable de façon permanente via `gram config set timezone Europe/Paris`).
    - `--stock` : indique qu'une préparation (ici le glaçage) est déjà disponible au congélateur. Gram ne la replanifie pas et l'annote simplement comme étant « en stock ».
 
@@ -144,17 +144,17 @@ La recette décrit **comment** réaliser chaque étape. Le planning de préparat
    Vous pouvez facilement exploiter ce planning en cuisine ou dans vos outils habituels :
 
    ```bash
-   # Imprimer la recette suivie du planning complet
-   gram print entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --with-sheet
+   # Imprimer le planning
+   gram print entremets.gram --view work-plan --serve "2026-10-17 20:00" --available 08:00-22:00
 
-   # Exporter au format Markdown avec le planning
-   gram export entremets.gram --format md --serve "2026-10-17 20:00" --with-sheet
+   # Exporter le planning en Markdown (entremets.work-plan.md)
+   gram export entremets.gram --view work-plan --format md --serve "2026-10-17 20:00"
 
    # Synchroniser les passages dans votre agenda électronique
    gram plan entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --ics entremets.ics
    ```
 
-   - **Impression papier (`--with-sheet`)** : ajoute le planning de préparation à la suite de la recette dans un document unique (avec saut de page par journée et cases à cocher).
+   - **Impression papier (`--view work-plan`)** : génère le planning de préparation à la place de la recette avec `gram print` ou `gram export` (mise en page d'une journée par page avec cases à cocher). Vous pouvez imprimer la recette séparément pour disposer des deux documents en cuisine.
    - **Agenda électronique (`--ics <fichier>`)** : génère un fichier iCalendar avec un événement pour chaque passage en cuisine, une alarme de rappel en amont, et la liste des tâches et ingrédients dans la description. Les horaires sont encodés en UTC et automatiquement ajustés par votre application d'agenda à votre fuseau local.
    - **Formats de restitution (`--format`)** : utilisez `--format md` pour vos carnets de notes en Markdown, `--format html` pour intégrer un fragment web autonome, ou `--format json` pour récupérer l'objet de données structuré (`{ plan, runSheet }`, voir [Formats de données](/fr/docs/reference/api/data-formats/#5-le-planning-de-préparation)). Les libellés respectent la langue configurée dans votre projet (`language`).
 
@@ -168,10 +168,12 @@ Si un passage prend du retard ou si votre journée est décalée, relancez simpl
 
 ## Dans le playground interactif
 
-Dans le studio en ligne, ouvrez le panneau « Plan », puis configurez votre heure de service cible, votre fuseau horaire et vos disponibilités :
-- L'onglet **Planning** affiche instantanément la chronologie calculée avec ses dates et heures réelles.
+Dans le studio en ligne, ouvrez les réglages et leur section « Planification & Service », puis configurez votre heure de service cible, votre fuseau horaire et vos disponibilités :
+- La vue **Planning de préparation** affiche instantanément la chronologie calculée avec ses dates et heures réelles.
 - Le bouton **« Quand servir ? »** teste et propose automatiquement les créneaux optimaux.
 - Le bouton **« Prêt dès »** calcule l'heure de dégustation la plus rapide si vous démarrez maintenant.
+- Au-dessus de la vue, le menu de format affiche le planning de préparation en HTML, en Markdown ou en texte brut, prêt à coller dans vos notes ou dans un message.
+- Le bouton **Imprimer** ouvre le planning de préparation dans sa mise en page d'impression, pour l'imprimer ou l'enregistrer en PDF.
 
 ## Utilisation programmatique
 

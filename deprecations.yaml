@@ -92,7 +92,7 @@ deprecations:
     description: "HTML renderer active time tooltip reads metrics.activeBreakdown instead of schedule blocks"
     replacement: "Derive active duration tooltip directly from the schedule's blocks"
     files:
-      - "packages/renderer/src/formatters/html.ts"
+      - "packages/renderer/src/views/recipe/html.ts"
 
   - id: kitchen-prep-time-breakdown-signature
     layer: api
@@ -128,13 +128,34 @@ deprecations:
       - "packages/i18n/src/locales/en.ts"
       - "packages/i18n/src/locales/fr.ts"
 
+  - id: i18n-playground-view-labels
+    layer: api
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The labels of the playground's old view selector: playground.viewLabel and, in playground.views, json, ast, jsonTree, markdown, preview and runSheet. The playground shows the views of the renderer as tabs and its inspectors in a menu instead"
+    replacement: "renderer.outputs (by output id: recipe, workPlan, ast, json, json-tree), renderer.formats (html, markdown, text, print) and playground.output.views / inspect"
+    files:
+      - "packages/i18n/src/locales/en.ts"
+      - "packages/i18n/src/locales/fr.ts"
+
   - id: lsp-gantt-notification
     layer: api
     deprecatedIn: "1.4.0"
     targetRemoval: "2.0.0"
     status: active
     description: "The language server still sends the gram/ganttUpdated notification (the Gantt chart as HTML); the VS Code extension no longer reads it"
-    replacement: "The gram/runSheetUpdated notification, which carries the work plan as HTML, or the data of the compiled recipe (schedule, tasks) for a view of your own"
+    replacement: "The gram/viewUpdated notification of the views protocol (outputId workPlan), or the data of the compiled recipe (schedule, tasks) for a view of your own"
+    files:
+      - "packages/language-server/src/server.ts"
+
+  - id: lsp-legacy-view-notifications
+    layer: api
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The language server sends gram/previewUpdated (the preview as HTML, or an error card) to a client that does not declare the views protocol, rendering every view of every open document whether it is shown or not"
+    replacement: "Declare initializationOptions.views, say which outputs are open with gram/setOpenViews and read gram/viewUpdated (outputId recipe; state paused when the recipe has an error)"
     files:
       - "packages/language-server/src/server.ts"
 

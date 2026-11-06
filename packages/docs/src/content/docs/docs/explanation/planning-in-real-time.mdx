@@ -18,7 +18,7 @@ Provide those three parameters, and Gram positions each task along a backward ca
 |---|---|---|
 | **Serving time** | `2026-10-11 13:00` | Target local date and time, expressed in the time zone below |
 | **Time zone** | `Europe/Paris` | An IANA zone: determines clock readings and daylight saving adjustments. The CLI resolves it in order: `--tz`, the project (or global) `timezone` setting, then the host machine's time zone |
-| **Availability** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | When you can work: a default daily range, plus exceptions by day of the week or by calendar date |
+| **Availability** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | When you can work: a default daily range, plus exceptions by day of the week or by calendar date. The CLI resolves it in order: `--available`, the project (or global) `availability` setting, then all day |
 
 Availability is structured as an object: a default daily range (`daily`), exceptions by day of the week (`weekdays`), and exceptions by calendar date (`dates`). A date exception always overrides a weekday rule, which in turn overrides the default daily range. An empty list indicates complete unavailability on that day. A range that ends before it starts spans across midnight continuously (e.g. `22:00-02:00`).
 
@@ -105,7 +105,7 @@ Calendar projection produces a comprehensive data model: exact timestamps for ea
 
 The **work plan** is the operational view built on top of this model. For each day, it outlines required kitchen presence, equipment and ingredients to take out, actionable steps to execute alongside recipe sections, and unattended processes that continue in the background. To reflect culinary practice, displayed times are rounded to the nearest five minutes (while internal engine calculations remain accurate to the minute). Rest adjustments are highlighted at the top of the relevant day, and unresolved constraints are grouped at the top of the document. These presentation rules (grouping tasks into a single visit across rests under one hour, displaying margins starting at 15 minutes) belong to the rendering layer rather than rigid engine constraints.
 
-The plan can be generated as plain text, Markdown, standalone HTML, a print-ready document (one day per page with check boxes), or exported to an iCalendar file (`.ics`). The `--with-sheet` option appends it directly to the recipe in a single document. While the recipe describes **how** to cook, the work plan specifies **when** to take action.
+The plan can be generated as plain text, Markdown, standalone HTML, a print-ready document (one day per page with check boxes), or exported to an iCalendar file (`.ics`). With `--view work-plan`, `gram print` and `gram export` render the work plan instead of the recipe. While the recipe describes **how** to cook, the work plan specifies **when** to take action.
 
 Without a target serving time, this same data is displayed as a relative countdown (`D-2`, `D-1`, `Day D`) with estimated durations per day (e.g. "about 55 min") and the earliest achievable serving time. Scheduling margins and rest adjustments are calculated only when real calendar availability is provided.
 
@@ -117,7 +117,7 @@ See [Plan a meal](/docs/how-to/plan-a-meal/) for an end-to-end practical guide.
 |---|---|
 | CLI | `gram plan recipe.gram --serve "2026-10-11 13:00" --available 08:00-22:00` (optional `--tz` if set in config); `--find` to look for a serving time |
 | Playground | The "Work plan" view and the "Plan" panel, with "When to serve?" |
-| VS Code | `Gram: Work Plan`, in days before the service |
+| VS Code | `Gram: Work Plan`, in days before the service, or on the calendar with the **Served at** field and its "When to serve?" suggestions |
 | `@gram-lang/scheduler` | `project()`, `runSheet()`, `findServeTimes()` and `earliestServe()` (see the [scheduler API reference](/docs/reference/api/scheduler/)) |
 | `@gram-lang/renderer` | `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, and associated modular helpers (`visitKit`, `sectionProgram`, `sectionSteps`) |
 

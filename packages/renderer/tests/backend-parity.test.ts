@@ -8,7 +8,7 @@ import type { RendererOptions } from "../src/types";
 
 // Phase 11 closure criterion (audit 2026-07-22, renderer I-4/P-1): html.ts,
 // markdown.ts and print.ts now share a single `renderRecipe` traversal
-// (../src/traversal.ts) instead of each hand-rolling document assembly, so a
+// (../src/views/recipe/traversal.ts) instead of each hand-rolling document assembly, so a
 // new section can no longer be silently wired into one backend and forgotten
 // in the others the way Phase 9's `hideStepQty` was. This test replaces
 // hide-step-qty-parity.test.ts with broader structural coverage: it still
@@ -89,15 +89,74 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 		expect(hidden).toContain("(200 g)");
 	});
 
-	it("html/print: accept hideStepQty without throwing, quantity stays available via tooltip", () => {
+	it("html/print: write the quantity in the step text, as Markdown does, and keep the tooltip", () => {
 		const c = compile(
 			getAST("## Section\n\nMix @flour{200g} with @water{100ml}.\n"),
 		);
-		const html = toHTML(c, { hideStepQty: true });
-		const print = toPrintHTML(c, { hideStepQty: true });
+		for (const out of [toHTML(c), toPrintHTML(c)]) {
+			expect(out).toContain('<span class="step-quantity">(200 g)</span>');
+			expect(out).toContain('data-tooltip="200 g"');
+		}
+	});
 
-		expect(html).toContain('data-tooltip="200 g"');
-		expect(print).toContain('data-tooltip="200 g"');
+	describe("the standardized mass next to the quantity as written", () => {
+		const analyzed = analyze(
+			compile(
+				getAST("## Dough\n\nMix @flour{250ml}, @sugar{100g} and @eggs{2}.\n"),
+			),
+			{
+				flour: { name: "flour", physical: { density: 0.59 } },
+				sugar: { name: "sugar", physical: { density: 0.85 } },
+				eggs: { name: "eggs", physical: { unit_weight: 50 } },
+			} as unknown as Record<string, IngredientData>,
+		).result;
+
+		it("is written in the step text, in HTML, print and Markdown", () => {
+			for (const out of [toHTML(analyzed), toPrintHTML(analyzed)]) {
+				expect(out).toContain(
+					'<span class="step-quantity">(250 ml, ~147.5 g)</span>',
+				);
+				expect(out).toContain('<span class="step-quantity">(2, ~100 g)</span>');
+			}
+			expect(toMarkdown(analyzed)).toContain(
+				"**flour** (250 ml, ~147.5 g), **sugar** (100 g) and **eggs** (2, ~100 g)",
+			);
+		});
+
+		it("is left out for a quantity already in grams, the badge too", () => {
+			const html = toHTML(analyzed);
+			expect(html).toContain('<span class="step-quantity">(100 g)</span>');
+			expect(html).not.toContain(">100g</span>");
+		});
+
+		it("is in the Markdown ingredient list", () => {
+			expect(toMarkdown(analyzed)).toContain("- **flour** (250 ml, ~147.5 g)");
+		});
+
+		it("is not shown when the masses are not standardized", () => {
+			const raw = analyze(
+				compile(getAST("## Dough\n\nMix @flour{250ml}.\n")),
+				{
+					flour: { name: "flour", physical: { density: 0.59 } },
+				} as unknown as Record<string, IngredientData>,
+				{ enableMassStandardization: false },
+			).result;
+			expect(toMarkdown(raw)).toContain("**flour** (250 ml)");
+			expect(toHTML(raw)).not.toContain("mass-badge");
+		});
+	});
+
+	it("html/print: hideStepQty leaves the quantity out of the step text, in the tooltip only", () => {
+		const c = compile(
+			getAST("## Section\n\nMix @flour{200g} with @water{100ml}.\n"),
+		);
+		for (const out of [
+			toHTML(c, { hideStepQty: true }),
+			toPrintHTML(c, { hideStepQty: true }),
+		]) {
+			expect(out).not.toContain('class="step-quantity"');
+			expect(out).toContain('data-tooltip="200 g"');
+		}
 	});
 
 	// Phase 12: the 4 content-completeness gaps identified in Phase 11 (see

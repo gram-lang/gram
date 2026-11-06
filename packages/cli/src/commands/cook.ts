@@ -4,7 +4,7 @@ import { PassThrough } from "node:stream";
 import { log, spinner } from "@clack/prompts";
 import chalk from "chalk";
 import { render } from "ink";
-import { scheduleTimes } from "@gram-lang/kitchen";
+import { prepareViews } from "@gram-lang/renderer";
 import React from "react";
 import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
@@ -12,13 +12,15 @@ import { loadDbSafe } from "../core/db";
 import { runPipeline } from "../core/pipeline";
 import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
-import {
-	MISE_EN_PLACE_FLAG_DESCRIPTION,
-	parseMiseEnPlace,
-} from "../services/mise-en-place-flag";
-import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
 import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
 import { prepareRecipeData } from "../ui/cook/prepare";
+import {
+	TIMELINE_SETTINGS,
+	readRecipeSettingArgs,
+	readViewSettingArgs,
+	recipeSettingArgs,
+	viewSettingArgs,
+} from "../services/setting-args";
 import App from "../ui/cook/App";
 import { ExitCode, reportError } from "../errors";
 
@@ -48,14 +50,8 @@ export default defineCommand({
 			description: "Skip ingredient database",
 			default: false,
 		},
-		"mise-en-place": {
-			type: "string",
-			description: MISE_EN_PLACE_FLAG_DESCRIPTION,
-		},
-		rests: {
-			type: "string",
-			description: RESTS_FLAG_DESCRIPTION,
-		},
+		...viewSettingArgs(TIMELINE_SETTINGS),
+		...recipeSettingArgs(),
 		stock: {
 			type: "string",
 			description:
@@ -77,8 +73,8 @@ export default defineCommand({
 				config.language,
 				config.paths,
 			)) ?? 1;
-		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
-		const rests = parseRests(args.rests);
+		const { miseEnPlace, rests } = readViewSettingArgs(args, TIMELINE_SETTINGS);
+		const recipeSettings = readRecipeSettingArgs(args);
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		const s = spinner();
@@ -90,13 +86,15 @@ export default defineCommand({
 			const { compiled, analyzed, usedStock } = await runPipeline(filePath, {
 				db,
 				skipAnalyzer: !db,
+				recipe: recipeSettings,
 				scaleFactor,
 				lang: config.language,
 				paths: config.paths,
 				stock,
 			});
 			reportUnusedStock("gram cook", "cooked", stock, [{ usedStock }]);
-			totalTime = scheduleTimes(compiled, miseEnPlace, rests).totalTime;
+			totalTime = prepareViews(compiled, { miseEnPlace, rests }).times
+				.totalTime;
 			const massMap: Record<string, number> = {};
 			for (const item of analyzed?.result?.shopping_list ?? []) {
 				if (item.id && typeof item.normalizedMass === "number")

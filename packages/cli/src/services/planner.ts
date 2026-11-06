@@ -4,15 +4,14 @@ import {
 	describeRunSheet,
 	describeServeTimes,
 	escapeHtml,
-	runSheetToHTML,
-	runSheetToMarkdown,
-	runSheetToText,
+	getView,
+	prepareViews,
+	type ViewInput,
 } from "@gram-lang/renderer";
-import {
-	type CompilationResult,
-	type MiseEnPlaceMode,
-	type RestChoice,
-	scheduleFor,
+import type {
+	CompilationResult,
+	MiseEnPlaceMode,
+	RestChoice,
 } from "@gram-lang/kitchen";
 import {
 	type Availability,
@@ -22,19 +21,29 @@ import {
 	type ProjectionInput,
 	type RunSheet,
 	type ServeCandidate,
-	earliestServe,
 	findServeTimes,
-	project,
-	runSheet,
 } from "@gram-lang/scheduler";
 import { runPipeline } from "../core/pipeline";
+import { ExitCode, GramCLIError } from "../errors";
 import { buildICS } from "./ics";
+import {
+	PLAN_SHEET_FORMATS,
+	cliFormatsOf,
+	resolveCliFormat,
+} from "../core/cli-views";
 
-export type PlanFormat = "text" | "md" | "html" | "json";
+// The work plan, as the renderer's registry describes it.
+const workPlanView = getView("workPlan");
+if (!workPlanView) throw new Error("The renderer has no work plan view.");
+const WORK_PLAN = workPlanView;
+
+/**
+ * `--format` of `gram plan`: the work plan's formats the command offers, read
+ * from the registry, then `json`, the data of the plan rather than a view.
+ */
+export type PlanFormat = string;
 export const PLAN_FORMATS: readonly PlanFormat[] = [
-	"text",
-	"md",
-	"html",
+	...cliFormatsOf(WORK_PLAN, PLAN_SHEET_FORMATS),
 	"json",
 ];
 
@@ -47,6 +56,7 @@ export interface PlanOptions {
 	now?: string;
 	miseEnPlace?: MiseEnPlaceMode;
 	rests?: RestChoice;
+	comments?: CommentsMode;
 	scaleFactor?: number;
 	lang?: string;
 	paths?: Record<string, string>;
@@ -55,6 +65,8 @@ export interface PlanOptions {
 
 export interface PlanResult {
 	compiled: CompilationResult;
+	/** What the views are written from: the settings, the kitchen, the plan. */
+	views: ViewInput;
 	/** Present with a serving time. */
 	plan?: ProjectedPlan;
 	sheet: RunSheet;
@@ -82,33 +94,34 @@ export async function planRecipe(
 		paths: options.paths,
 		stock: options.stock,
 	});
-	const input: ProjectionInput = {
-		graph: compiled.tasks,
-		title: compiled.title ?? undefined,
-		options: { miseEnPlace: options.miseEnPlace, rests: options.rests },
-	};
-	const context: ProjectionContext = {
-		// Replaced by every serving time tried; only a plan with one reads it.
-		serveAt: options.serveAt ?? "1970-01-01T00:00",
-		timeZone: options.timeZone,
-		availability: options.availability,
-		...(options.now !== undefined && { now: options.now }),
-	};
-	if (options.serveAt === undefined) {
-		const schedule = scheduleFor(compiled, options.miseEnPlace, options.rests);
-		const sheet = runSheet(schedule!, {
-			graph: compiled.tasks,
-			...(compiled.title && { title: compiled.title }),
-		});
-		const earliest = earliestServe(input, {
-			...context,
-			now: context.now ?? new Date().toISOString(),
-		});
-		return { compiled, sheet, usedStock, input, context, earliest };
+	const views = prepareViews(
+		compiled,
+		{
+			miseEnPlace: options.miseEnPlace,
+			rests: options.rests,
+			comments: options.comments,
+		},
+		{
+			...(options.lang !== undefined && { lang: options.lang }),
+			kitchen: {
+				timeZone: options.timeZone,
+				availability: options.availability,
+				...(options.now !== undefined && { now: options.now }),
+			},
+			...(options.serveAt !== undefined && { serveAt: options.serveAt }),
+		},
+	);
+	const sheet = views.runSheet;
+	if (!sheet || !views.projection) {
+		throw new GramCLIError("This recipe has nothing to plan.", ExitCode.Error);
 	}
-	const plan = project([input], context);
-	const sheet = runSheet(plan, { graph: compiled.tasks, context });
-	return { compiled, plan, sheet, usedStock, input, context };
+	const { input, context } = views.projection;
+	if (options.serveAt === undefined) {
+		const earliest = views.earliestServe() ?? undefined;
+		return { compiled, views, sheet, usedStock, input, context, earliest };
+	}
+	const plan = views.plan ?? undefined;
+	return { compiled, views, plan, sheet, usedStock, input, context };
 }
 
 /** The sheet in one of the formats `--format` offers. */
@@ -116,35 +129,37 @@ export function formatPlan(
 	result: PlanResult,
 	format: PlanFormat,
 	lang?: string,
-	comments?: CommentsMode,
 ): string {
-	const { compiled, plan, sheet, earliest } = result;
+	const { plan, sheet, earliest } = result;
 	const sentence = earliest
 		? describeEarliestServe(earliest, { lang })
 		: undefined;
-	switch (format) {
-		case "text":
-			return `${runSheetToText(sheet, compiled, { lang, comments })}${sentence ? `\n${sentence}\n` : ""}`;
-		case "md":
-			return `${runSheetToMarkdown(sheet, compiled, { lang, comments })}${sentence ? `\n${sentence}\n` : ""}`;
-		case "html":
-			return `${runSheetToHTML(sheet, compiled, { lang, comments })}${sentence ? `<p class="work-plan-earliest">${escapeHtml(sentence)}</p>\n` : ""}`;
-		case "json":
-			return `${JSON.stringify(
-				{
-					...(plan && { plan }),
-					runSheet: sheet,
-					...(earliest && {
-						earliest: {
-							...(earliest.found && { serveAt: earliest.found.serveAt }),
-							searchedUntil: earliest.searchedUntil,
-						},
-					}),
-				},
-				null,
-				2,
-			)}\n`;
+	if (format !== "json") {
+		const written =
+			WORK_PLAN.render(
+				result.views,
+				resolveCliFormat(WORK_PLAN, format, PLAN_SHEET_FORMATS),
+				{ ...(lang !== undefined && { lang }) },
+			) ?? "";
+		if (!sentence) return written;
+		return format === "html"
+			? `${written}<p class="work-plan-earliest">${escapeHtml(sentence)}</p>\n`
+			: `${written}\n${sentence}\n`;
 	}
+	return `${JSON.stringify(
+		{
+			...(plan && { plan }),
+			runSheet: sheet,
+			...(earliest && {
+				earliest: {
+					...(earliest.found && { serveAt: earliest.found.serveAt }),
+					searchedUntil: earliest.searchedUntil,
+				},
+			}),
+		},
+		null,
+		2,
+	)}\n`;
 }
 
 /** The serving times worth proposing between two moments, with the reasons of the others. */

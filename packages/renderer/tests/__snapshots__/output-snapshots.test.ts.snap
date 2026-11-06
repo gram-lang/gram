@@ -107,10 +107,10 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
     </div>
     <ol class="steps">
       <li value="1">
-        In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span> and a pinch of <span class="ingredient" data-name="salt">salt</span>.
+        In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour <span class="step-quantity">(200 g)</span></span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar <span class="step-quantity">(1 tbsp)</span></span> and a pinch of <span class="ingredient" data-name="salt">salt</span>.
       </li>
       <li value="2">
-        Add <span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
+        Add <span class="ingredient" data-name="egg" data-tooltip="2">egg <span class="step-quantity">(2)</span></span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
 egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">2 min</span></span>.
       </li>
       <li class="step-comment">
@@ -197,7 +197,13 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crêpes</title>
-  <style>@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap");
+  <style>/*
+ * The base of every printed view: the page, the type, the headings and the
+ * elements of a step (actions, ingredients, timers...), which the recipe and
+ * the work plan both write. Each view adds its own stylesheet after it.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
 	--black: #000000;
@@ -274,6 +280,88 @@ h3 {
 	border-bottom: 1px dashed var(--black);
 }
 
+/* ── Action tag ── */
+.action {
+	display: inline-block;
+	font-family: "Inter", system-ui, sans-serif;
+	font-weight: 700;
+	font-size: 7.5pt;
+	text-transform: uppercase;
+	letter-spacing: 0.15em;
+	border: 1px solid var(--black);
+	border-radius: 2px;
+	padding: 2pt 5pt;
+	margin-right: 8pt;
+	vertical-align: text-bottom;
+	white-space: nowrap;
+}
+
+/* ── Inline semantic tokens ── */
+.ingredient {
+	font-weight: 700;
+}
+.reference {
+	font-weight: 700;
+	text-decoration: underline;
+	text-decoration-style: solid;
+	text-underline-offset: 2.5pt;
+	text-decoration-thickness: 1px;
+}
+.cookware {
+	font-weight: 700;
+}
+.timer {
+	font-weight: 700;
+	border-bottom: 2px solid var(--black);
+	white-space: nowrap;
+	padding-bottom: 1px;
+}
+.timer.passive {
+	border-bottom: 2px dotted var(--black);
+}
+.temp {
+	font-weight: 700;
+	white-space: nowrap;
+	font-family: "Inter", system-ui, sans-serif;
+	font-size: 0.9em;
+	letter-spacing: 0.05em;
+}
+.quantity {
+	font-weight: normal;
+}
+.step-quantity {
+	white-space: nowrap;
+}
+.unit {
+	color: var(--dark-grey);
+	font-size: 0.95em;
+}
+.opt {
+	color: var(--grey);
+	font-style: italic;
+}
+/* strategies.alternative's non-inline "or" separator — used when an
+     alternative group now shows up in a section ingredient list. */
+.keyword {
+	font-style: italic;
+}
+.declaration {
+	font-size: 9pt;
+	font-style: italic;
+	color: var(--black);
+}
+
+/* Screen preview */
+@media screen {
+	body {
+		max-width: 210mm;
+		margin: 40px auto;
+		padding: 25mm 20mm;
+		box-shadow: 0 4px 40px rgba(0, 0, 0, 0.08);
+		border: 1px solid var(--very-light-grey);
+		min-height: 297mm;
+	}
+}
 /* ── Meta bar ── */
 .meta {
 	display: flex;
@@ -401,73 +489,6 @@ ol.steps li:not(.comment-step)::before {
 	color: var(--black);
 }
 
-/* ── Action tag ── */
-.action {
-	display: inline-block;
-	font-family: "Inter", system-ui, sans-serif;
-	font-weight: 700;
-	font-size: 7.5pt;
-	text-transform: uppercase;
-	letter-spacing: 0.15em;
-	border: 1px solid var(--black);
-	border-radius: 2px;
-	padding: 2pt 5pt;
-	margin-right: 8pt;
-	vertical-align: text-bottom;
-	white-space: nowrap;
-}
-
-/* ── Inline semantic tokens ── */
-.ingredient {
-	font-weight: 700;
-}
-.reference {
-	font-weight: 700;
-	text-decoration: underline;
-	text-decoration-style: solid;
-	text-underline-offset: 2.5pt;
-	text-decoration-thickness: 1px;
-}
-.cookware {
-	font-weight: 700;
-}
-.timer {
-	font-weight: 700;
-	border-bottom: 2px solid var(--black);
-	white-space: nowrap;
-	padding-bottom: 1px;
-}
-.timer.passive {
-	border-bottom: 2px dotted var(--black);
-}
-.temp {
-	font-weight: 700;
-	white-space: nowrap;
-	font-family: "Inter", system-ui, sans-serif;
-	font-size: 0.9em;
-	letter-spacing: 0.05em;
-}
-.quantity {
-	font-weight: normal;
-}
-.unit {
-	color: var(--dark-grey);
-	font-size: 0.95em;
-}
-.opt {
-	color: var(--grey);
-	font-style: italic;
-}
-/* strategies.alternative's non-inline "or" separator — used when an
-     alternative group now shows up in a section ingredient list. */
-.keyword {
-	font-style: italic;
-}
-.declaration {
-	font-size: 9pt;
-	font-style: italic;
-	color: var(--black);
-}
 .comment-step {
 	padding-left: 0 !important;
 	font-style: italic;
@@ -590,18 +611,6 @@ ol.steps li:not(.comment-step)::before {
 	text-decoration: none;
 	font-weight: 700;
 }
-
-/* Screen preview */
-@media screen {
-	body {
-		max-width: 210mm;
-		margin: 40px auto;
-		padding: 25mm 20mm;
-		box-shadow: 0 4px 40px rgba(0, 0, 0, 0.08);
-		border: 1px solid var(--very-light-grey);
-		min-height: 297mm;
-	}
-}
 </style>
 </head>
 <body>
@@ -643,10 +652,10 @@ ol.steps li:not(.comment-step)::before {
   </ul></div>
   <ol class="steps">
     <li value="1">
-      In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span> and a pinch of <span class="ingredient" data-name="salt">salt</span>.
+      In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour <span class="step-quantity">(200 g)</span></span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar <span class="step-quantity">(1 tbsp)</span></span> and a pinch of <span class="ingredient" data-name="salt">salt</span>.
     </li>
     <li value="2">
-      Add <span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
+      Add <span class="ingredient" data-name="egg" data-tooltip="2">egg <span class="step-quantity">(2)</span></span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
 egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">2 min</span></span>.
     </li>
     <li class="comment-step"><em>Rest the batter before cooking</em></li>

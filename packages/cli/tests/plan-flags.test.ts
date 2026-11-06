@@ -1,6 +1,7 @@
+import { getView } from "@gram-lang/renderer";
 import { describe, expect, it } from "bun:test";
 import { GramCLIError } from "../src/errors";
-import { resolvePlanContext } from "../src/services/plan-options";
+import { resolveExportView } from "../src/services/plan-options";
 import {
 	collectFlag,
 	parseAvailability,
@@ -133,6 +134,40 @@ describe("parseAvailability", () => {
 		});
 	});
 
+	it("takes the availability setting of the config without --available", () => {
+		expect(parseAvailability([], "08:00-22:00")).toEqual({
+			daily: [{ start: "08:00", end: "22:00" }],
+		});
+		expect(parseAvailability([], ["09:00-21:00", "sun=none"])).toEqual({
+			daily: [{ start: "09:00", end: "21:00" }],
+			weekdays: { sun: [] },
+		});
+		expect(parseAvailability([], "")).toEqual({
+			daily: [{ start: "00:00", end: "24:00" }],
+		});
+	});
+
+	it("lets --available replace the setting, not add to it", () => {
+		expect(parseAvailability(["18:00-22:00"], ["08:00-09:00"])).toEqual({
+			daily: [{ start: "18:00", end: "22:00" }],
+		});
+	});
+
+	it("names the setting when it is the setting that is wrong", () => {
+		const range = messageOf(() => parseAvailability([], "8-22"));
+		expect(range).toContain("`availability` setting of .gram/config.yaml");
+		expect(range).toContain("gram config set availability");
+		expect(
+			messageOf(() => parseAvailability([], ["someday=08:00-22:00"])),
+		).toContain('Unknown availability key "someday"');
+		expect(messageOf(() => parseAvailability([], 8))).toContain(
+			"must be an entry like 08:00-22:00",
+		);
+		expect(messageOf(() => parseAvailability(["8-22"]))).toContain(
+			"Expected --available like",
+		);
+	});
+
 	it("refuses what it cannot read, saying what it expects", () => {
 		expect(messageOf(() => parseAvailability(["8-22"]))).toContain(
 			"08:00-22:00",
@@ -149,52 +184,74 @@ describe("parseAvailability", () => {
 	});
 });
 
-describe("resolvePlanContext", () => {
-	const flags = (args: Record<string, unknown>, raw: string[] = []) =>
-		resolvePlanContext(args, raw, {});
+const recipeView = getView("recipe");
+const workPlanView = getView("workPlan");
 
-	it("is no plan without --serve", () => {
-		expect(flags({})).toBeUndefined();
+describe("resolveExportView", () => {
+	const view = (args: Record<string, unknown>, raw: string[] = []) =>
+		resolveExportView(args, raw, {});
+
+	it("is the recipe by default", () => {
+		expect(view({})).toEqual({ view: recipeView });
+		expect(view({ view: "recipe" })).toEqual({ view: recipeView });
 	});
 
-	it("reads the serving time, the zone, the availability and the present", () => {
-		const context = flags(
-			{
-				serve: "2026-10-11 13:00",
-				tz: "Europe/Paris",
+	it("reads the serving time, the zone, the availability and the present for the work plan", () => {
+		expect(
+			view(
+				{
+					view: "work-plan",
+					serve: "2026-10-11 13:00",
+					tz: "Europe/Paris",
+					now: "2026-10-01T09:00:00Z",
+				},
+				["--available", "08:00-22:00"],
+			),
+		).toEqual({
+			view: workPlanView,
+			serveAt: "2026-10-11T13:00",
+			kitchen: {
+				timeZone: "Europe/Paris",
+				availability: { daily: [{ start: "08:00", end: "22:00" }] },
 				now: "2026-10-01T09:00:00Z",
 			},
-			["--available", "08:00-22:00"],
-		)!;
-		expect(context).toEqual({
-			serveAt: "2026-10-11T13:00",
-			timeZone: "Europe/Paris",
-			availability: { daily: [{ start: "08:00", end: "22:00" }] },
-			now: "2026-10-01T09:00:00Z",
 		});
 	});
 
-	it("takes the configured zone, and the present from the clock", () => {
-		const context = resolvePlanContext({ serve: "2026-10-11 13:00" }, [], {
+	it("reads the configured availability for the work plan", () => {
+		const choice = resolveExportView({ view: "work-plan" }, [], {
+			availability: "fri=18:00-22:00",
+		});
+		expect(choice.kitchen?.availability).toEqual({
+			daily: [],
+			weekdays: { fri: [{ start: "18:00", end: "22:00" }] },
+		});
+	});
+
+	it("lays the work plan out in days without --serve, in the configured zone", () => {
+		const choice = resolveExportView({ view: "work-plan" }, [], {
 			timezone: "Asia/Tokyo",
-		})!;
-		expect(context.timeZone).toBe("Asia/Tokyo");
-		expect(Date.parse(context.now)).toBeGreaterThan(0);
+		});
+		expect(choice.view).toBe(workPlanView);
+		expect(choice.serveAt).toBeUndefined();
+		expect(choice.kitchen?.timeZone).toBe("Asia/Tokyo");
+		expect(Date.parse(choice.kitchen?.now ?? "")).toBeGreaterThan(0);
 	});
 
-	it("refuses a plan flag that would be ignored for want of --serve", () => {
-		expect(messageOf(() => flags({ tz: "Europe/Paris" }))).toContain("--serve");
-		expect(
-			messageOf(() => flags({}, ["--available", "08:00-22:00"])),
-		).toContain("--serve");
-		expect(messageOf(() => flags({ now: "2026-10-01T09:00:00Z" }))).toContain(
-			"--serve",
-		);
+	it("refuses a plan flag with the recipe, which reads the same at any time", () => {
+		for (const [args, raw] of [
+			[{ serve: "2026-10-11 13:00" }, []],
+			[{ tz: "Europe/Paris" }, []],
+			[{}, ["--available", "08:00-22:00"]],
+			[{ now: "2026-10-01T09:00:00Z" }, []],
+		] as const) {
+			expect(messageOf(() => view(args, [...raw]))).toContain(
+				"--view work-plan",
+			);
+		}
 	});
 
-	it("insists on --serve when the command needs a plan", () => {
-		expect(
-			messageOf(() => resolvePlanContext({}, [], {}, { required: true })),
-		).toContain("--serve");
+	it("refuses an unknown view", () => {
+		expect(messageOf(() => view({ view: "gantt" }))).toContain("gantt");
 	});
 });

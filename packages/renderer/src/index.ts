@@ -8,23 +8,101 @@ export {
 	nutritionGroups,
 	nutritionRows,
 	resolveNutritionBasis,
-} from "./nutrition";
-export { timesOf } from "./mise-en-place";
-export type { NutrientGroup, NutrientRow, ResolvedBasis } from "./nutrition";
-export { formatElement } from "./formatters/element";
-export { DEFAULT_ICONS, HTML_ICONS, MD_ICONS, PRINT_ICONS } from "./icons";
-export { toMarkdown } from "./formatters/markdown";
-export type { CommentsMode } from "./types";
-export { toHTML } from "./formatters/html";
-export { toPrintHTML } from "./formatters/print";
+} from "./shared/nutrition";
+export { timesOf } from "./shared/mise-en-place";
+export { prepareViews } from "./prepare-views";
+export { FORMATS } from "./contract";
+export type {
+	Capability,
+	Format,
+	InspectorDefinition,
+	OutputBase,
+	OutputDefinition,
+	SettingKey,
+	Stage,
+	StageArtifacts,
+	SurfaceOptions,
+	ViewDefinition,
+} from "./contract";
+export { getView, render, views } from "./views/registry";
+export type { ViewId } from "./views/registry";
 export {
-	describeRunSheet,
-	runSheetToHTML,
-	runSheetToMarkdown,
-	runSheetToText,
-} from "./run-sheet";
-export { runSheetToPrintHTML } from "./run-sheet-print";
-export { describeEarliestServe, describeServeTimes } from "./serve-times";
+	astInspector,
+	getInspector,
+	inspectors,
+	jsonInspector,
+	jsonTreeInspector,
+} from "./inspectors/registry";
+export type { InspectorId } from "./inspectors/registry";
+export { JSON_TREE_CSS, renderJsonTree } from "./inspectors/json-tree";
+export type { JsonTreeOptions } from "./inspectors/json-tree";
+export { renderSExpr } from "./inspectors/s-expr";
+export { outputs } from "./outputs";
+export { describeError } from "./describe-error";
+export type {
+	DescribableDiagnostic,
+	ErrorDescription,
+} from "./describe-error";
+export type { OutputId } from "./outputs";
+export type {
+	KitchenContext,
+	PrepareViewsOptions,
+	ViewInput,
+	ViewSchedule,
+} from "./prepare-views";
+export {
+	COMMENTS_MODES,
+	DEFAULT_RECIPE_SETTINGS,
+	DEFAULT_VIEW_SETTINGS,
+	NUTRITION_BASES,
+	RECIPE_SETTINGS,
+	SETTINGS,
+	STEP_QUANTITIES_MODES,
+	VIEW_SETTINGS,
+	parseRecipeSettings,
+	parseViewSettings,
+	recipeSettingsToAnalyzerOptions,
+	viewSettingsToRendererOptions,
+} from "./settings";
+export type {
+	AnySetting,
+	ChoiceSetting,
+	FlagSetting,
+	RecipeSettings,
+	SettingDescriptor,
+	SettingKind,
+	StepQuantitiesMode,
+	ViewSettings,
+} from "./settings";
+export type {
+	NutrientGroup,
+	NutrientRow,
+	ResolvedBasis,
+} from "./shared/nutrition";
+export { formatElement } from "./shared/element";
+export {
+	DEFAULT_ICONS,
+	HTML_ICONS,
+	MD_ICONS,
+	PRINT_ICONS,
+} from "./shared/icons";
+export { toMarkdown } from "./views/recipe/markdown";
+export type { CommentsMode } from "./types";
+export { toHTML } from "./views/recipe/html";
+export { toPrintHTML } from "./views/recipe/print";
+export { describeRunSheet } from "./views/work-plan/model";
+export { runSheetToHTML } from "./views/work-plan/html";
+export { runSheetToMarkdown } from "./views/work-plan/markdown";
+export { runSheetToText } from "./views/work-plan/text";
+export { runSheetToPrintHTML } from "./views/work-plan/print";
+export {
+	describeEarliestServe,
+	describeServeTimes,
+	type ServeSuggestion,
+	type ServeSuggestions,
+	type SuggestServeOptions,
+	suggestServeTimes,
+} from "./views/work-plan/serve-times";
 export type {
 	RunSheetDayModel,
 	RunSheetEvent,
@@ -37,19 +115,19 @@ export type {
 	RunSheetScheduleRow,
 	RunSheetStepLine,
 	RunSheetWaitLine,
-} from "./run-sheet";
+} from "./views/work-plan/model";
 export {
 	intermediateMakers,
 	visitKit,
 	sectionProgram,
 	sectionSteps,
-} from "./work-plan-parts";
+} from "./views/work-plan/parts";
 export type {
 	KitItem,
 	ProgramStep,
 	VisitKitOptions,
 	SectionProgram,
-} from "./work-plan-parts";
+} from "./views/work-plan/parts";
 export {
 	formatDecimalToFraction,
 	getQty,
@@ -60,7 +138,7 @@ export {
 	escapeHtml,
 	escapeMarkdownHtml,
 	joinStepTokens,
-} from "./utils";
+} from "./shared/utils";
 export {
 	toGanttHTML,
 	attachGanttInteractivity,

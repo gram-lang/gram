@@ -22,17 +22,12 @@ import GramWarnings from "./GramWarnings.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import GramOutput from "./GramOutput.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
-import PlaygroundDropdown from "./PlaygroundDropdown.vue";
+import GramSelect from "./GramSelect.vue";
 import {
 	compile,
 	resolveScaleFactor,
 	applyScale,
-	DEFAULT_MISE_EN_PLACE_MODE,
-	DEFAULT_REST_CHOICE,
-	scheduleFor,
 	REST_CHOICES,
-	isMiseEnPlaceMode,
-	isRestChoice,
 	type MiseEnPlaceMode,
 	type RestChoice,
 } from "@gram-lang/kitchen";
@@ -41,10 +36,6 @@ import {
 	type TimeRange,
 	type Weekday,
 	WEEKDAYS,
-	earliestServe,
-	findServeTimes,
-	project,
-	runSheet,
 } from "@gram-lang/scheduler";
 import {
 	analyze,
@@ -66,14 +57,35 @@ import {
 	sortDiagnostics,
 } from "./diagnostics";
 import {
-	describeEarliestServe,
-	describeServeTimes,
-	toMarkdown,
-	toHTML,
-	runSheetToHTML,
+	type Format,
+	type ServeSuggestions,
+	type ViewSettings,
+	VIEW_SETTINGS,
+	prepareViews,
+	recipeSettingsToAnalyzerOptions,
+	suggestServeTimes,
 } from "@gram-lang/renderer";
+import {
+	formatFor,
+	outputById,
+	inspectorOptions,
+	paneOf,
+	renderOutput,
+	screenFormatsOf,
+	viewTabs,
+} from "./outputs";
 import "@gram-lang/renderer/gram.css";
 import { DEFAULT_SOURCES } from "./db";
+import {
+	type OPTION_SETTING_KEYS,
+	type PlaygroundOptions,
+	defaultOptions,
+	isOptionModified,
+	loadOptions,
+	loadSetting,
+	saveOptions,
+	saveSetting,
+} from "./settingsStorage";
 import { DEFAULT_ENTRY_URI, createPlaygroundHost } from "./vfsHost";
 import { getDictionary } from "@gram-lang/i18n";
 import { trackEvent, debounce } from "../../lib/umami";
@@ -154,64 +166,52 @@ const errorFiles = computed(() => {
 	);
 });
 
-const viewMode = ref<
-	"preview" | "runsheet" | "json" | "ast" | "markdown" | "json-tree"
->("preview");
-// Which complete timeline the views follow: mise en place right before each
-// section, or all of it at the start. A reading choice, shared by the preview,
-// the work plan and the Markdown views, and remembered in the browser.
-const SCHEDULE_STORAGE_KEY = "gram-playground-schedule";
-
-function loadSchedule(): MiseEnPlaceMode {
-	try {
-		const saved = localStorage.getItem(SCHEDULE_STORAGE_KEY);
-		if (isMiseEnPlaceMode(saved)) return saved;
-	} catch {
-		// Storage can be blocked or absent (private window, embedded frame).
+// The output shown (an id of the renderer's `outputs`: a view or an
+// inspector) and, for a view, its format. A format the new output does not
+// have falls back on its first.
+const outputId = ref("recipe");
+const format = ref<Format>("html");
+const currentOutput = computed(() => outputById(outputId.value));
+// biome-ignore lint/correctness/noUnusedVariables: formatOptions is used in the <template> block below, which Biome's Vue support doesn't see.
+const formatOptions = computed(() =>
+	screenFormatsOf(currentOutput.value).map((value) => ({
+		value,
+		label: t.value.renderer.formats[value] ?? value,
+	})),
+);
+const pane = computed(() => paneOf(currentOutput.value, format.value));
+// The inspector the "Inspect" tab opens: the last one shown, the tree first.
+const lastInspectorId = ref("json-tree");
+watch(outputId, () => {
+	format.value = formatFor(currentOutput.value, format.value);
+	if (currentOutput.value?.kind === "inspector") {
+		lastInspectorId.value = outputId.value;
 	}
-	return DEFAULT_MISE_EN_PLACE_MODE;
-}
-
-const schedule = ref<MiseEnPlaceMode>(loadSchedule());
+});
+// Which complete timeline the views follow: where the mise en place goes, and
+// how long a rest written as a range lasts. Reading choices, shared by the
+// preview, the work plan and the Markdown views, and remembered in the browser
+// (`settingsStorage.ts`, from the renderer's setting descriptors).
+const schedule = ref<MiseEnPlaceMode>(loadSetting("miseEnPlace"));
 
 watch(schedule, (value) => {
-	try {
-		localStorage.setItem(SCHEDULE_STORAGE_KEY, value);
-	} catch {
-		// Nothing to do: the choice just won't survive a reload.
-	}
+	saveSetting("miseEnPlace", value);
 	trackEvent("playground-change-schedule", { schedule: value });
 });
 
-// How long a rest written as a range lasts: the other half of what a view
-// follows, shared and remembered the same way.
-const RESTS_STORAGE_KEY = "gram-playground-rests";
-
-function loadRests(): RestChoice {
-	try {
-		const saved = localStorage.getItem(RESTS_STORAGE_KEY);
-		if (isRestChoice(saved)) return saved;
-	} catch {
-		// Storage can be blocked or absent (private window, embedded frame).
-	}
-	return DEFAULT_REST_CHOICE;
-}
-
-const rests = ref<RestChoice>(loadRests());
+const rests = ref<RestChoice>(loadSetting("rests"));
 
 watch(rests, (value) => {
-	try {
-		localStorage.setItem(RESTS_STORAGE_KEY, value);
-	} catch {
-		// Nothing to do: the choice just won't survive a reload.
-	}
+	saveSetting("rests", value);
 	trackEvent("playground-change-rests", { rests: value });
 });
 
 // The plan: when it is served and when the cook is available. Setting a serving
 // time puts the work plan on the calendar (dates, margins, rests stretched to
 // your availability); clearing it goes back to the days before the service.
-// Remembered in the browser like the other choices.
+// The time zone and the hours are remembered in the browser; the serving time
+// is not: it belongs to this visit, and a plan silently laid out on a serving
+// time already past would mislead.
 const PLAN_STORAGE_KEY = "gram-playground-plan";
 
 function defaultTimeZone(): string {
@@ -237,7 +237,7 @@ function loadPlan(): PlanSettings {
 			const text = (v: unknown, d: string) => (typeof v === "string" ? v : d);
 			const bool = (v: unknown, d: boolean) => (typeof v === "boolean" ? v : d);
 			return {
-				serveAt: text(saved.serveAt, fallback.serveAt),
+				serveAt: fallback.serveAt,
 				timeZone: text(saved.timeZone, fallback.timeZone),
 				from: text(saved.from, fallback.from),
 				to: text(saved.to, fallback.to),
@@ -255,26 +255,16 @@ function loadPlan(): PlanSettings {
 }
 
 const plan = ref<PlanSettings>(loadPlan());
-// The work plan of the last run, as HTML: with dates when a serving time is
-// set, in days before the service otherwise.
-const runSheetHtml = ref("");
 const planError = ref("");
 
-interface ServeSuggestions {
-	/** Serving times that work, best first. */
-	candidates: { serveAt: string; label: string; title: string }[];
-	/** Why the others don't, in words. */
-	rejected: string[];
-	/** The first time it can be ready if the cook starts now. */
-	earliest: { serveAt: string; label: string; text: string } | null;
-}
 const serveSuggestions = shallowRef<ServeSuggestions | null>(null);
 
 watch(
 	plan,
 	(value) => {
 		try {
-			localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(value));
+			const { serveAt: _serveAt, ...kept } = value;
+			localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(kept));
 		} catch {
 			// Nothing to do: the plan just won't survive a reload.
 		}
@@ -327,6 +317,21 @@ function closeStudio() {
 	isDrawerOpen.value = false;
 }
 
+/**
+ * From the note of the "Schedule & Service" settings: the work plan, where
+ * they show. Beside a docked studio it is already in sight; over a narrow
+ * screen, the studio closes so the plan can be seen.
+ */
+// biome-ignore lint/correctness/noUnusedVariables: showWorkPlan is used in the <template> block below, which Biome's Vue support doesn't see.
+function showWorkPlan() {
+	outputId.value = "workPlan";
+	if (!isWideScreen.value) {
+		isDrawerOpen.value = false;
+		mobileTab.value = "preview";
+	}
+	trackEvent("playground-show-work-plan", { from: "schedule-note" });
+}
+
 // biome-ignore lint/correctness/noUnusedVariables: activeModifiersCount is used in the <template> block below, which Biome's Vue support doesn't see.
 const activeModifiersCount = computed(() => {
 	let count = 0;
@@ -341,16 +346,24 @@ const activeModifiersCount = computed(() => {
 	if (scaleFactorString.value !== "100" || scaleTargetId.value !== null) {
 		count++;
 	}
-	if (options.value.bakersMath) {
+	const modified = (...keys: (typeof OPTION_SETTING_KEYS)[number][]) =>
+		keys.some((key) => isOptionModified(options.value, key));
+	if (
+		modified("bakersMath", "bakersMathOnly") ||
+		options.value.bakersReference
+	) {
 		count++;
 	}
-	if (options.value.comments === "hide") {
+	if (modified("comments", "stepQuantities")) {
 		count++;
 	}
 	if (
-		!options.value.enableMassStandardization ||
-		options.value.enableYieldCalculation ||
-		!options.value.enableNutritionalEstimation
+		modified(
+			"massStandardization",
+			"yieldCalculation",
+			"nutritionEstimation",
+			"nutritionBasis",
+		)
 	) {
 		count++;
 	}
@@ -362,33 +375,22 @@ const activeModifiersCount = computed(() => {
 
 // biome-ignore lint/correctness/noUnusedVariables: resetAllStudioOptions is used in the <template> block below, which Biome's Vue support doesn't see.
 function resetAllStudioOptions() {
-	schedule.value = DEFAULT_MISE_EN_PLACE_MODE;
-	rests.value = DEFAULT_REST_CHOICE;
+	schedule.value = VIEW_SETTINGS.miseEnPlace.default;
+	rests.value = VIEW_SETTINGS.rests.default;
 	clearPlan();
 	scaleFactorString.value = "100";
 	clearTarget();
-	options.value = {
-		enableMassStandardization: true,
-		enableYieldCalculation: false,
-		enableNutritionalEstimation: true,
-		bakersMath: false,
-		bakersMathOnly: false,
-		bakersReference: undefined,
-		comments: "show",
-	};
+	options.value = defaultOptions();
 	stockedUris.value = new Set();
 	trackEvent("playground-reset-studio-options");
 }
 
-const options = ref({
-	enableMassStandardization: true,
-	enableYieldCalculation: false,
-	enableNutritionalEstimation: true,
-	bakersMath: false,
-	bakersMathOnly: false,
-	bakersReference: undefined as string | undefined,
-	comments: "show" as "show" | "hide",
-});
+// The studio's options: every setting of the renderer's descriptors, on its
+// default the first time and remembered in the browser afterwards (the baker's
+// reference excepted: it belongs to the recipe at hand).
+const options = ref<PlaygroundOptions>(loadOptions());
+
+watch(options, (value) => saveOptions(value), { deep: true });
 
 // URIs (already resolved, matching `ModuleHost.resolve()`'s own output —
 // same shape `composeRecipe`'s `stock` option expects) the user has flagged
@@ -418,22 +420,19 @@ const scaleTargetId = ref<string | null>(null);
 const scaleTargetQty = ref<number | null>(null);
 const scaleTargetUnit = ref("");
 
-// biome-ignore lint/correctness/noUnusedVariables: viewModeOptions is used in the <template> block below, which Biome's Vue support doesn't see.
-const viewModeOptions = computed(() => [
-	{ label: t.value.playground.views.preview, value: "preview" },
-	{ label: t.value.playground.views.runSheet, value: "runsheet" },
-	{ label: t.value.playground.views.jsonTree, value: "json-tree" },
-	{ label: t.value.playground.views.json, value: "json" },
-	{ label: t.value.playground.views.ast, value: "ast" },
-	{ label: t.value.playground.views.markdown, value: "markdown" },
-]);
+// The views in tabs, the inspectors behind one "Inspect" tab.
+// biome-ignore lint/correctness/noUnusedVariables: tabs is used in the <template> block below, which Biome's Vue support doesn't see.
+const tabs = computed(() => viewTabs(t.value));
+// biome-ignore lint/correctness/noUnusedVariables: inspectorMenu is used in the <template> block below, which Biome's Vue support doesn't see.
+const inspectorMenu = computed(() => inspectorOptions(t.value));
 
 const editorRef = ref<InstanceType<typeof GramEditor> | null>(null);
 const fileTabsRef = ref<InstanceType<typeof GramFileTabs> | null>(null);
 
 // Output State
-const htmlPreview = ref("");
-const content = ref("");
+// What the output pane shows: HTML, text to highlight, or the JSON tree, as
+// `pane` says. `null` when the recipe has nothing for the view.
+const outputContent = ref<string | null>("");
 const jsonData = shallowRef<any>({});
 
 let fullDatabase: any = {};
@@ -523,45 +522,6 @@ async function loadExample(id: string) {
 		files.value = new Map([[singleUri, text]]);
 		trackEvent("playground-load-example", { example: id });
 	}
-}
-
-function renderSExpr(node: any, level = 0): string {
-	if (node === null || node === undefined) return "nil";
-	if (typeof node !== "object") {
-		if (typeof node === "string") return `"${node}"`;
-		return String(node);
-	}
-	if (Array.isArray(node)) {
-		return node.map((n) => renderSExpr(n, level)).join("\n");
-	}
-	const indent = "  ".repeat(level);
-	const type = node.type || "Object";
-	let attrs = "";
-	let children: any[] = [];
-	const ignore = new Set(["type", "loc"]);
-
-	Object.entries(node).forEach(([k, v]) => {
-		if (ignore.has(k)) return;
-		if (v === null) return;
-		if (typeof v !== "object") {
-			attrs += ` :${k} ${typeof v === "string" ? `"${v}"` : v}`;
-		} else if (Array.isArray(v)) {
-			v.forEach((child) => {
-				children.push(child);
-			});
-		} else {
-			if (v && typeof v === "object" && "min" in v && "max" in v) {
-				attrs += ` :${k} ${(v as any).min}-${(v as any).max}`;
-			} else {
-				children.push(v);
-			}
-		}
-	});
-	if (children.length === 0) {
-		return `${indent}(${type}${attrs})`;
-	}
-	const childrenStr = children.map((c) => renderSExpr(c, level + 1)).join("\n");
-	return `${indent}(${type}${attrs}\n${childrenStr})`;
 }
 
 // Incremented on every call, so a run that's still `await`ing when a newer
@@ -698,8 +658,8 @@ async function updateGram() {
 
 		stage = "analyze";
 		const analysisOptions = {
-			...options.value,
-			enableBakersMath: options.value.bakersMath,
+			...recipeSettingsToAnalyzerOptions(options.value),
+			bakersReference: options.value.bakersReference,
 			lang: currentLang.value,
 		};
 		const analysis = analyze(result, database, analysisOptions);
@@ -716,7 +676,6 @@ async function updateGram() {
 			...enrichedWarnings,
 		]);
 		jsonData.value = result;
-		placeOnCalendar(result);
 		trackPlaygroundWarnings(diagnostics.value.map((w) => w.code));
 
 		const fileWarnings = diagnostics.value.filter(
@@ -737,28 +696,7 @@ async function updateGram() {
 			});
 		editorRef.value?.setDiagnostics(editorDiags);
 
-		if (viewMode.value === "json") {
-			content.value = JSON.stringify(result, null, 2);
-		} else if (viewMode.value === "ast") {
-			content.value = renderSExpr(composed.ast);
-		} else if (viewMode.value === "markdown") {
-			content.value = toMarkdown(result, {
-				comments: options.value.comments,
-				lang: currentLang.value,
-				miseEnPlace: schedule.value,
-				rests: rests.value,
-			});
-		} else if (viewMode.value === "preview") {
-			htmlPreview.value = toHTML(result, {
-				interactiveScaling: true,
-				interactiveNutrition: true,
-				bakersMathOnly: options.value.bakersMathOnly,
-				comments: options.value.comments,
-				lang: currentLang.value,
-				miseEnPlace: schedule.value,
-				rests: rests.value,
-			});
-		}
+		outputContent.value = renderCurrentOutput(result, composed.ast);
 		trackPlaygroundRun(true, codeLength);
 	} catch (e: any) {
 		if (token !== runToken) return;
@@ -770,6 +708,20 @@ async function updateGram() {
 		diagnostics.value = sortDiagnostics([...collectedScaleDiagnostics, diag]);
 		trackPlaygroundRun(false, codeLength, { error_type: stage });
 	}
+}
+
+/** The view settings of the studio: the same for every view. */
+function viewSettings(): ViewSettings {
+	const { comments, nutritionBasis, bakersMathOnly, stepQuantities } =
+		options.value;
+	return {
+		miseEnPlace: schedule.value,
+		rests: rests.value,
+		comments,
+		nutritionBasis,
+		bakersMathOnly,
+		stepQuantities,
+	};
 }
 
 function buildAvailability(planSettings: PlanSettings): Availability {
@@ -801,51 +753,99 @@ function buildAvailability(planSettings: PlanSettings): Availability {
 }
 
 /**
- * The work plan of the compiled recipe: on the calendar when a serving time is
- * set, in days before the service otherwise. A plan that can't be made (an
- * unknown time zone, a half-typed time) is reported next to the controls, not
- * as a problem of the recipe; what could not be fixed is at the top of the plan.
+ * The output shown, from the compiled recipe: a view, prepared once with the
+ * settings and the plan (on the calendar when a serving time is set, in days
+ * before the service otherwise), or an inspector's look at its stage. A plan
+ * that can't be made (an unknown time zone, a half-typed time) is reported
+ * next to the controls, not as a problem of the recipe.
  */
-function placeOnCalendar(result: any) {
-	runSheetHtml.value = "";
+function renderCurrentOutput(result: any, composedAst: unknown): string | null {
 	planError.value = "";
-	if (!result?.tasks) return;
-	const { serveAt, timeZone } = plan.value;
-	try {
-		const title = result.title ?? undefined;
-		let sheet: ReturnType<typeof runSheet>;
-		if (serveAt) {
-			const context = {
-				serveAt,
-				timeZone,
-				availability: buildAvailability(plan.value),
-				// Without the present, a serving time too close for the rests is
-				// drawn as if starting in the past were fine.
-				now: new Date().toISOString(),
-			};
-			const projected = project(
-				[
-					{
-						graph: result.tasks,
-						title,
-						options: { miseEnPlace: schedule.value, rests: rests.value },
-					},
-				],
-				context,
-			);
-			sheet = runSheet(projected, { graph: result.tasks, context });
-		} else {
-			const timeline = scheduleFor(result, schedule.value, rests.value);
-			if (!timeline) return;
-			sheet = runSheet(timeline, { graph: result.tasks, title });
+	const output = currentOutput.value;
+	if (!output) return null;
+	const input = prepareInput(result);
+	// The plan is checked whenever there is one to check, whatever is shown,
+	// so a mistake in the plan's controls is said where they are.
+	const needsPlan =
+		output.kind === "renderer" && output.needs.includes("runSheet");
+	if (result?.tasks && (plan.value.serveAt || needsPlan)) {
+		try {
+			void input.runSheet;
+		} catch (e: any) {
+			planError.value = e?.message ?? String(e);
+			if (needsPlan) return null;
 		}
-		runSheetHtml.value = runSheetToHTML(sheet, result, {
-			lang: currentLang.value,
-			comments: options.value.comments,
-		});
+	}
+	return renderOutput(
+		output,
+		format.value,
+		input,
+		{ composedAst: composedAst as never, analyzed: result, compiled: result },
+		SURFACE(),
+	);
+}
+
+/** What the playground can do: scale and switch the nutrition basis from the preview. */
+const SURFACE = () => ({
+	interactiveScaling: true,
+	interactiveNutrition: true,
+	lang: currentLang.value,
+});
+
+/** The views' input for `result`: the settings of the studio and its plan. */
+function prepareInput(result: any) {
+	const { serveAt, timeZone } = plan.value;
+	return prepareViews(result, viewSettings(), {
+		lang: currentLang.value,
+		kitchen: {
+			timeZone,
+			availability: buildAvailability(plan.value),
+			// Without the present, a serving time too close for the rests is
+			// drawn as if starting in the past were fine.
+			now: new Date().toISOString(),
+		},
+		...(serveAt && { serveAt }),
+	});
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: canPrint is used in the <template> block below, which Biome's Vue support doesn't see.
+const canPrint = computed(
+	() =>
+		currentOutput.value?.kind === "renderer" &&
+		currentOutput.value.formats.includes("print"),
+);
+
+/**
+ * Opens the view shown in its print format, a page of its own, and asks the
+ * browser to print it (or save it as PDF). Written on the click itself, so the
+ * new window is not taken for a popup.
+ */
+// biome-ignore lint/correctness/noUnusedVariables: printCurrentView is used in the <template> block below, which Biome's Vue support doesn't see.
+function printCurrentView() {
+	const output = currentOutput.value;
+	const result = jsonData.value;
+	if (output?.kind !== "renderer" || !result?.sections) return;
+	let html: string | null;
+	try {
+		html = renderOutput(
+			output,
+			"print",
+			prepareInput(result),
+			{},
+			{
+				lang: currentLang.value,
+			},
+		);
 	} catch (e: any) {
 		planError.value = e?.message ?? String(e);
+		return;
 	}
+	if (!html) return;
+	const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+	const page = window.open(url, "_blank");
+	page?.addEventListener("load", () => page.print(), { once: true });
+	setTimeout(() => URL.revokeObjectURL(url), 60_000);
+	trackEvent("playground-print", { view: output.id });
 }
 
 /**
@@ -861,60 +861,20 @@ function computeServeSuggestions() {
 	}
 	try {
 		const { timeZone } = plan.value;
-		const now = new Date();
-		const context = {
-			serveAt: "1970-01-01T00:00",
-			timeZone,
-			availability: buildAvailability(plan.value),
-			now: now.toISOString(),
-		};
-		const input = {
-			graph: result.tasks,
-			title: result.title ?? undefined,
-			options: { miseEnPlace: schedule.value, rests: rests.value },
-		};
-		const localDay = (offset: number) =>
-			new Intl.DateTimeFormat("en-CA", {
-				timeZone,
-				year: "numeric",
-				month: "2-digit",
-				day: "2-digit",
-			}).format(new Date(now.getTime() + offset * 86_400_000));
-		const range = { from: localDay(0), to: localDay(7) };
-		const search = findServeTimes(input, context, { ...range, limit: 6 });
-		const words = describeServeTimes(search, result, {
-			...range,
-			timeZone,
+		const views = prepareViews(
+			result,
+			{ miseEnPlace: schedule.value, rests: rests.value },
+			{
+				kitchen: {
+					timeZone,
+					availability: buildAvailability(plan.value),
+					now: new Date().toISOString(),
+				},
+			},
+		);
+		serveSuggestions.value = suggestServeTimes(views, {
 			lang: currentLang.value,
 		});
-		const label = (serveAt: string) =>
-			new Intl.DateTimeFormat(currentLang.value || "en", {
-				timeZone: "UTC",
-				weekday: "short",
-				day: "numeric",
-				month: "short",
-				hour: "2-digit",
-				minute: "2-digit",
-				hourCycle: "h23",
-			}).format(new Date(`${serveAt}:00Z`));
-		const earliest = earliestServe(input, context);
-		serveSuggestions.value = {
-			candidates: search.candidates.map((c, i) => ({
-				serveAt: c.serveAt,
-				label: label(c.serveAt),
-				title: words[i] ?? "",
-			})),
-			rejected: words.slice(search.candidates.length),
-			earliest: earliest.found
-				? {
-						serveAt: earliest.found.serveAt,
-						label: label(earliest.found.serveAt),
-						text: describeEarliestServe(earliest, {
-							lang: currentLang.value,
-						}),
-					}
-				: null,
-		};
 	} catch {
 		serveSuggestions.value = null;
 	}
@@ -961,7 +921,8 @@ watch(
 	[
 		files,
 		options,
-		viewMode,
+		outputId,
+		format,
 		currentLang,
 		activeFile,
 		stockedUris,
@@ -986,16 +947,19 @@ watch(scaleFactorString, () => {
 });
 
 watch(
-	[viewMode, () => options.value],
-	([newView, newOptions], [oldView, oldOptions]) => {
-		if (newView !== oldView) {
-			trackEvent("playground-change-view", { view: newView });
+	[outputId, format, () => options.value],
+	([newView, newFormat, newOptions], [oldView, oldFormat, oldOptions]) => {
+		if (newView !== oldView || newFormat !== oldFormat) {
+			trackEvent("playground-change-view", {
+				view: newView,
+				format: newFormat,
+			});
 		}
 		if (JSON.stringify(newOptions) !== JSON.stringify(oldOptions)) {
 			trackEvent("playground-toggle-option", {
 				bakersMath: newOptions.bakersMath,
-				nutrition: newOptions.enableNutritionalEstimation,
-				yields: newOptions.enableYieldCalculation,
+				nutrition: newOptions.nutritionEstimation,
+				yields: newOptions.yieldCalculation,
 			});
 		}
 	},
@@ -1131,7 +1095,8 @@ onUnmounted(() => {
       <div class="toolbar-right">
         <div class="toolbar-item" v-if="examples.length > 0">
           <span class="toolbar-label">{{ t.playground.recipe }}</span>
-          <PlaygroundDropdown
+          <GramSelect
+            size="lg"
             v-model="selectedExample"
             :options="examples"
             :placeholder="t.playground.loadExample"
@@ -1253,26 +1218,22 @@ onUnmounted(() => {
               </div>
               <div class="output-wrapper">
                 <GramOutput 
-                  :view-mode="viewMode as any" 
-                  :content="content" 
-                  :html-preview="htmlPreview" 
-                  :json-data="jsonData" 
-                  :run-sheet-html="runSheetHtml"
+                  :output-id="outputId"
+                  :view-tabs="tabs"
+                  :inspectors="inspectorMenu"
+                  :last-inspector-id="lastInspectorId"
+                  @update:output-id="(value: string) => (outputId = value)"
+                  :format="format"
+                  :pane="pane"
+                  :content="outputContent"
+                  :format-options="formatOptions"
+                  :can-print="canPrint"
+                  @print="printCurrentView"
+                  @update:format="(value: Format) => (format = value)"
                   :blocking-diagnostics="blockingDiagnostics"
                   @scale-update="handleScaleUpdate"
                   @jump="handleJump"
                 >
-                  <template #view-selector>
-                    <div class="header-view-wrapper">
-                      <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
-                      <PlaygroundDropdown
-                        v-model="viewMode"
-                        :options="viewModeOptions"
-                        :aria-label="t.playground.viewLabel"
-                        class="header-view-selector"
-                      />
-                    </div>
-                  </template>
                 </GramOutput>
               </div>
             </div>
@@ -1315,6 +1276,7 @@ onUnmounted(() => {
             @update:rests="(val) => (rests = val)"
             @update:plan="(val) => (plan = val)"
             @clear-plan="clearPlan"
+            @show-work-plan="showWorkPlan"
             @clear-target="clearTarget"
             @scale-apply="handleScaleApply"
             @toggle-stock="toggleStock"
@@ -1672,22 +1634,6 @@ onUnmounted(() => {
   height: 100%;
 }
 
-.header-view-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.header-view-selector :deep(.dropdown-header) {
-  border-color: transparent;
-  padding-left: 0;
-}
-
-.header-view-selector :deep(.dropdown-header:hover) {
-  border-color: transparent;
-  background-color: transparent;
-}
-
 /* Mobile Responsive Overrides */
 @media (max-width: 767px) {
   .playground-toolbar {
@@ -1719,7 +1665,7 @@ onUnmounted(() => {
     gap: 6px;
   }
 
-  .toolbar-right .toolbar-item :deep(.custom-dropdown) {
+  .toolbar-right .toolbar-item .gram-select {
     flex: 1 1 0;
     min-width: 0;
     width: 100%;

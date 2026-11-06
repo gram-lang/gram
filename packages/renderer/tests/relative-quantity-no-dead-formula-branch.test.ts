@@ -4,7 +4,7 @@ import { compile } from "@gram-lang/kitchen";
 import { toHTML, toMarkdown } from "../src/index";
 
 // Regression test for the audit (2026-07-22, renderer finding, discovered during
-// Phase 9): `item.formula?.is_partial` in `formatters/element.ts` was read in 3
+// Phase 9): `item.formula?.is_partial` in `shared/element.ts` (then `formatters/element.ts`) was read in 3
 // places but never written anywhere in kitchen/analyzer (only `.isGhost` exists
 // on `Usage["formula"]`), so those branches were dead and were removed as part
 // of Phase 10's cleanup. This pins the real, always-reachable behavior for a

@@ -1,5 +1,63 @@
+// The views of a recipe that stopped compiling: shared by the renderer's
+// error model (`describeError`) and the playground's error card.
+const VIEWS_PAUSED = {
+	title: "Generation paused",
+	description:
+		"The recipe contains blocking errors preventing preview generation.",
+};
+
 export const en = {
 	renderer: {
+		viewsPaused: VIEWS_PAUSED.title,
+		viewsPausedDescription: VIEWS_PAUSED.description,
+		/** What a surface offers next to paused views: jump to the error. */
+		showError: "Show the error",
+		/** An output the recipe has nothing for (a work plan with nothing to schedule). */
+		outputEmpty: "Nothing to show for this recipe.",
+		/** The serving time controls of a view laid out in time (the editor's panel). */
+		serving: {
+			label: "Served at",
+			clear: "Clear",
+			clearTitle: "Back to the plan in days before the service",
+			suggest: "When to serve?",
+			none: "No serving time works in the next seven days.",
+			whyNot: "Why not the others?",
+			earliest: "Earliest: {when}",
+		},
+		/** The session controls of a view (the editor's panel): scale, baker's reference, stock. */
+		session: {
+			title: "Scale and stock",
+			scale: "Scale",
+			byIngredient: "or by ingredient",
+			ingredient: "Choose an ingredient",
+			qty: "Quantity",
+			unit: "Unit",
+			apply: "Apply",
+			bakersReference: "Baker's reference",
+			auto: "Automatic (@*)",
+			stock: "In stock",
+			stockHint:
+				"Already on hand: one shopping-list line, and its steps leave the plan.",
+			reset: "Reset",
+			scaled: "{factor} %",
+			inStock: "{n} in stock",
+			scaleError: "Scale not applied: {reason}",
+		},
+		/** The name of each output of the renderer (`outputs`), by its id. */
+		outputs: {
+			recipe: "Recipe",
+			workPlan: "Work plan",
+			ast: "AST",
+			json: "JSON",
+			"json-tree": "JSON tree",
+		} as Record<string, string>,
+		/** The name of each format a view can be written in (`FORMATS`). */
+		formats: {
+			html: "HTML",
+			markdown: "Markdown",
+			text: "Text",
+			print: "Print",
+		} as Record<string, string>,
 		shoppingList: "Shopping List",
 		cookware: "Cookware",
 		equipment: "Equipment",
@@ -166,7 +224,10 @@ export const en = {
 		inputTab: "Input (.gram)",
 		writePlaceholder: "Write your recipe here...",
 		outputTab: "Output",
+		// The label of the old view selector: the views are tabs now.
+		// @remove-in: 2.0.0 [i18n-playground-view-labels]
 		viewLabel: "View:",
+		formatLabel: "Format",
 		loadExample: "Load Example...",
 		recipe: "Recipe",
 		studioTitle: "Recipe settings",
@@ -202,6 +263,9 @@ export const en = {
 			empanadas: "Beef Empanadas",
 		},
 		views: {
+			// The labels of the old view selector: the outputs are now named by
+			// `renderer.outputs`, and the formats by `renderer.formats`.
+			// @remove-in: 2.0.0 [i18n-playground-view-labels]
 			json: "JSON Output",
 			ast: "AST (Raw)",
 			jsonTree: "Interactive Tree",
@@ -255,6 +319,11 @@ export const en = {
 			showComments: "Show comments",
 			commentsDesc:
 				"The notes of the recipe (// like this), in the recipe and in the work plan.",
+			showStepQuantities: "Quantities in the steps",
+			stepQuantitiesDesc:
+				"Writes the quantity of each ingredient in the text of the steps, after its name.",
+			nutritionBasis: "Nutrition basis",
+			nutritionBasisAuto: "Automatic (choose in the preview)",
 			forceReference: "Force Reference:",
 			autoDetect: "Auto (detect @*)",
 			physicalAnalysis: "Physical Analysis",
@@ -287,6 +356,10 @@ export const en = {
 				"Expresses each ingredient as a percentage of a base ingredient set at 100% (typically flour, or any chosen ingredient), making ratios and formulation easy to evaluate.",
 			comments:
 				"Shows or leaves out the comments written in the recipe with //: the notes alone on a line and the ones at the end of a line. They are set apart discreetly in the work plan.",
+			stepQuantities:
+				"Writes each quantity in the step that uses it, with its weight in grams when the masses are standardized. Leave it off for shorter steps: the quantities stay in the ingredient lists.",
+			nutritionBasis:
+				"Which basis the nutrition panel shows, when the nutrition is estimated. Automatic lets you switch in the preview, starting per portion when the recipe declares portions.",
 			bakersMathOnly:
 				"Hides gram weights to display only relative percentages, turning the recipe into a pure ratio formula.",
 			bakersReference:
@@ -297,6 +370,10 @@ export const en = {
 				"Calculates gross purchasing weight to obtain the desired net quantity, accounting for peeling and trimming waste in the database.",
 			nutrition:
 				"Estimates calories and macronutrients (protein, carbs, fat, fiber) per serving or per 100g via the nutritional tables in the database.",
+			/** The note of the "Schedule & Service" section: what these settings change in each view. */
+			scheduleNote:
+				"These settings mostly shape the work plan. In the recipe, only the total and idle times change.",
+			scheduleNoteLink: "See the work plan",
 			physicsDisclaimer:
 				"In this playground, physical and nutritional calculations rely on an ingredient database limited to example recipes.",
 			stockItem:
@@ -304,6 +381,11 @@ export const en = {
 		},
 		output: {
 			copy: "Copy to clipboard",
+			print: "Print this view",
+			/** The tabs of the views of the recipe. */
+			views: "Views",
+			/** The tab of the inspectors (AST, JSON), apart from the views. */
+			inspect: "Inspect",
 			loading: "Loading viewer...",
 		},
 		warnings: {
@@ -320,9 +402,8 @@ export const en = {
 			collapseConsole: "Collapse console",
 		},
 		errorState: {
-			title: "Generation paused",
-			blockingDescription:
-				"The recipe contains blocking errors preventing preview generation.",
+			title: VIEWS_PAUSED.title,
+			blockingDescription: VIEWS_PAUSED.description,
 			jumpToError: "Jump to error",
 			line: "Line",
 		},

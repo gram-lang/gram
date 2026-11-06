@@ -1,7 +1,59 @@
 import type { GramLocale } from "./en";
 
+// The views of a recipe that stopped compiling: shared by the renderer's
+// error model (`describeError`) and the playground's error card.
+const VIEWS_PAUSED = {
+	title: "Génération interrompue",
+	description:
+		"La recette contient des erreurs bloquantes empêchant la génération de l'aperçu.",
+};
+
 export const fr: GramLocale = {
 	renderer: {
+		viewsPaused: VIEWS_PAUSED.title,
+		viewsPausedDescription: VIEWS_PAUSED.description,
+		showError: "Voir l'erreur",
+		outputEmpty: "Rien à afficher pour cette recette.",
+		serving: {
+			label: "Service le",
+			clear: "Effacer",
+			clearTitle: "Revenir au planning en jours avant le service",
+			suggest: "Quand servir ?",
+			none: "Aucune heure de service ne convient dans les sept prochains jours.",
+			whyNot: "Pourquoi pas les autres ?",
+			earliest: "Au plus tôt : {when}",
+		},
+		session: {
+			title: "Échelle et stock",
+			scale: "Échelle",
+			byIngredient: "ou par ingrédient",
+			ingredient: "Choisir un ingrédient",
+			qty: "Quantité",
+			unit: "Unité",
+			apply: "Appliquer",
+			bakersReference: "Référence boulangère",
+			auto: "Automatique (@*)",
+			stock: "En stock",
+			stockHint:
+				"Déjà prêt : une seule ligne d'achat, et ses étapes quittent le planning.",
+			reset: "Réinitialiser",
+			scaled: "{factor} %",
+			inStock: "{n} en stock",
+			scaleError: "Échelle non appliquée : {reason}",
+		},
+		outputs: {
+			recipe: "Recette",
+			workPlan: "Planning de préparation",
+			ast: "AST",
+			json: "JSON",
+			"json-tree": "Arbre JSON",
+		},
+		formats: {
+			html: "HTML",
+			markdown: "Markdown",
+			text: "Texte",
+			print: "Impression",
+		},
 		shoppingList: "Liste de courses",
 		cookware: "Matériel",
 		equipment: "Équipement",
@@ -157,7 +209,9 @@ export const fr: GramLocale = {
 		inputTab: "Entrée (.gram)",
 		writePlaceholder: "Écrivez votre recette ici...",
 		outputTab: "Sortie",
+		// @remove-in: 2.0.0 [i18n-playground-view-labels]
 		viewLabel: "Vue :",
+		formatLabel: "Format",
 		loadExample: "Charger un exemple...",
 		recipe: "Recette",
 		studioTitle: "Réglages de la recette",
@@ -193,6 +247,7 @@ export const fr: GramLocale = {
 			empanadas: "Empanadas de Boeuf",
 		},
 		views: {
+			// @remove-in: 2.0.0 [i18n-playground-view-labels]
 			json: "Sortie JSON",
 			ast: "AST (Brut)",
 			jsonTree: "Arbre Interactif",
@@ -247,6 +302,11 @@ export const fr: GramLocale = {
 			showComments: "Afficher les commentaires",
 			commentsDesc:
 				"Les notes de la recette (// comme ceci), dans la recette et dans le planning.",
+			showStepQuantities: "Quantités dans les étapes",
+			stepQuantitiesDesc:
+				"Écrit la quantité de chaque ingrédient dans le texte des étapes, juste après son nom.",
+			nutritionBasis: "Base nutritionnelle",
+			nutritionBasisAuto: "Automatique (au choix dans l'aperçu)",
 			forceReference: "Forcer la référence :",
 			autoDetect: "Auto (détecte @*)",
 			physicalAnalysis: "Analyse physique",
@@ -279,6 +339,10 @@ export const fr: GramLocale = {
 				"Exprime chaque ingrédient en pourcentage d'un ingrédient de base fixé à 100 % (par défaut la farine, ou l'ingrédient de votre choix), facilitant l'évaluation des équilibres et des ratios.",
 			comments:
 				"Affiche ou masque les commentaires écrits dans la recette avec // : les notes seules sur une ligne et celles en fin de ligne. Dans le planning, ils sont mis à part, discrètement.",
+			stepQuantities:
+				"Rappelle chaque quantité dans l'étape qui l'utilise, avec son poids en grammes si les masses sont standardisées. Décochez pour des étapes plus courtes : les quantités restent dans les listes d'ingrédients.",
+			nutritionBasis:
+				"La base du panneau nutritionnel, quand la nutrition est estimée. En automatique, vous choisissez dans l'aperçu ; par défaut par portion si la recette en déclare.",
 			bakersMathOnly:
 				"Masque les poids en grammes pour n'afficher que les pourcentages relatifs, transformant la recette en une formule de proportions pure.",
 			bakersReference:
@@ -289,6 +353,9 @@ export const fr: GramLocale = {
 				"Calcule le poids brut à acheter pour obtenir la quantité nette voulue, en tenant compte des pertes à l'épluchage ou au parage renseignées en base.",
 			nutrition:
 				"Estime les calories et les macronutriments (protéines, glucides, lipides, fibres) par portion ou pour 100 g via les tables de composition en base.",
+			scheduleNote:
+				"Ces réglages servent surtout au planning. Dans la recette, seuls le temps total et le temps d'attente changent.",
+			scheduleNoteLink: "Voir le planning de préparation",
 			physicsDisclaimer:
 				"Dans ce playground, les calculs physiques et nutritionnels reposent sur une base restreinte aux recettes d'exemple.",
 			stockItem:
@@ -296,6 +363,9 @@ export const fr: GramLocale = {
 		},
 		output: {
 			copy: "Copier dans le presse-papier",
+			print: "Imprimer cette vue",
+			views: "Vues",
+			inspect: "Inspecter",
 			loading: "Chargement du lecteur...",
 		},
 		warnings: {
@@ -312,9 +382,8 @@ export const fr: GramLocale = {
 			collapseConsole: "Réduire la console",
 		},
 		errorState: {
-			title: "Génération interrompue",
-			blockingDescription:
-				"La recette contient des erreurs bloquantes empêchant la génération de l'aperçu.",
+			title: VIEWS_PAUSED.title,
+			blockingDescription: VIEWS_PAUSED.description,
 			jumpToError: "Aller à l'erreur",
 			line: "Ligne",
 		},

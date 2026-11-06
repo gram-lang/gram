@@ -1,69 +1,84 @@
 import {
-	toMarkdown,
-	toPrintHTML,
-	type RendererOptions,
+	type Format,
+	prepareViews,
+	type RecipeSettings,
+	type ViewSettings,
 } from "@gram-lang/renderer";
 import { runPipeline } from "../core/pipeline";
-import { type PlanContext, workPlanFor } from "./plan-options";
+import { cliViewName } from "../core/cli-views";
+import { ExitCode, GramCLIError } from "../errors";
+import { getView } from "@gram-lang/renderer";
+import type { ExportView } from "./plan-options";
 import type { IngredientData } from "@gram-lang/analyzer";
 
 // bakersReference/lang are analyzer concerns (which ingredient is the 100%
-// base; the recipe's language for unit disambiguation), not renderer
-// options — the renderer only reads the already-computed per-item
-// `bakersPercentage` — so they're threaded through separately and only
-// forwarded to the pipeline, not into RendererOptions.
-export type ExportOptions = Pick<
-	RendererOptions,
-	| "hideStepQty"
-	| "bakersMathOnly"
-	| "nutritionBasis"
-	| "miseEnPlace"
-	| "rests"
-	| "comments"
-> & {
-	/** When it is served: what the work plan written after the recipe is made for. */
-	plan?: PlanContext;
-	/** With a `plan`: also write the work plan after the recipe. */
-	withSheet?: boolean;
+// base; the recipe's language for unit disambiguation), not view settings:
+// the views only read the already-computed per-item `bakersPercentage`, so
+// they're threaded through separately and only forwarded to the pipeline.
+export interface ExportOptions {
+	/** What the view shows (`--comments`, `--mise-en-place`, ...). Default: the defaults. */
+	settings?: Partial<ViewSettings>;
+	/** Which view to write, and for a planned one, the kitchen and when it is served. Default: the recipe. */
+	view?: ExportView;
 	bakersReference?: string;
+	/** What the analyzer computes. Default: everything, as the engine. */
+	recipe?: RecipeSettings;
 	lang?: string;
 	paths?: Record<string, string>;
 	stock?: Set<string>;
 	/** Told which `stock` entries a `@use` of the recipe matched, once known. */
 	onUsedStock?: (used: Set<string>) => void;
-};
+}
 
+/**
+ * One view of a recipe file, in one of the renderer's formats: the recipe by
+ * default, or the view `options.view` names. The caller checks the view has
+ * the format (`resolveCliFormat`).
+ */
 export async function exportRecipe(
 	filePath: string,
-	format: "md" | "html",
+	format: Format,
 	db: Record<string, IngredientData> | null,
 	scaleFactor?: number,
-	rendererOptions?: ExportOptions,
+	options: ExportOptions = {},
 ): Promise<string> {
 	const { compiled, analyzed, usedStock } = await runPipeline(filePath, {
 		db,
 		scaleFactor,
-		bakersReference: rendererOptions?.bakersReference,
-		lang: rendererOptions?.lang,
-		paths: rendererOptions?.paths,
-		stock: rendererOptions?.stock,
+		bakersReference: options.bakersReference,
+		recipe: options.recipe,
+		lang: options.lang,
+		paths: options.paths,
+		stock: options.stock,
 	});
-	rendererOptions?.onUsedStock?.(usedStock);
+	options.onUsedStock?.(usedStock);
 
-	const ast = analyzed ? analyzed.result : compiled;
-	const plan = rendererOptions?.plan;
-	const { plan: _plan, withSheet, ...rest } = rendererOptions ?? {};
-	const options: RendererOptions = {
-		...rest,
-		...(plan &&
-			withSheet && {
-				runSheet: workPlanFor(compiled, plan, {
-					miseEnPlace: rendererOptions?.miseEnPlace,
-					rests: rendererOptions?.rests,
-				}),
+	const view = options.view?.view ?? getView("recipe");
+	if (!view) throw new Error("The renderer has no recipe view.");
+	const planned = options.view?.kitchen !== undefined;
+	// A view laid out in time reads the tasks of the compiled recipe; the
+	// others show what the analyzer added (masses, nutrition).
+	const input = prepareViews(
+		planned ? compiled : (analyzed?.result ?? compiled),
+		options.settings,
+		{
+			...(options.lang !== undefined && { lang: options.lang }),
+			...(options.view?.kitchen && { kitchen: options.view.kitchen }),
+			...(options.view?.serveAt !== undefined && {
+				serveAt: options.view.serveAt,
 			}),
-	};
-
-	if (format === "md") return toMarkdown(ast, options);
-	return toPrintHTML(ast, options);
+		},
+	);
+	const written = view.render(input, format, {
+		...(options.lang !== undefined && { lang: options.lang }),
+	});
+	if (written === null) {
+		throw new GramCLIError(
+			planned
+				? "This recipe has nothing to plan."
+				: `This recipe has nothing to show in the ${cliViewName(view.id)} view.`,
+			ExitCode.Error,
+		);
+	}
+	return written;
 }

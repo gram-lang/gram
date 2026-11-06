@@ -30,6 +30,34 @@ Le CLI fonctionne aussi bien sous Node.js (>=22, chargeant nativement les fichie
 - `--verbose` / `--debug` : utilisable avec n'importe quelle commande, affiche la pile d'appels complète en cas d'erreur au lieu du message concis.
 - `--stock <specifiers>` : traite les sous-recettes indiquées comme déjà prêtes ou en stock (ignore leurs étapes de préparation sur le calendrier et les regroupe sous la forme d'un produit fini unique sur la liste de courses). Accepte une liste de chemins séparés par des virgules (`@bases/pate-sablee.gram,./sauces/bechamel.gram`).
 
+## Les réglages en ligne de commande
+
+<Since v="1.4.0" /> Les réglages d'une recette sont identiques sur toutes les interfaces : un drapeau en ligne de commande, une clé `gram.*` dans l'[extension VS Code](/fr/docs/reference/tooling/vscode-extension/) ou une option dans le playground partagent le même nom, les mêmes valeurs et la même valeur par défaut. Chaque drapeau correspond à son réglage sous-jacent et n'est accepté que par les commandes sur lesquelles il a un effet.
+
+Réglages d'affichage (pilotant la présentation visuelle) :
+
+| Flag | Valeurs | Défaut | Commandes |
+| --- | --- | --- | --- |
+| `--mise-en-place` | `per-section`, `upfront`, `per-day` | `per-section` | `view`, `print`, `export`, `plan`, `cook` |
+| `--rests` | `shortest`, `balanced`, `longest` | `shortest` | `view`, `print`, `export`, `plan`, `cook` |
+| `--comments` | `show`, `hide` | `show` | `print`, `export`, `plan` |
+| `--nutrition-basis` | `auto`, `total`, `per-portion`, `per-100g` | `auto` | `view`, `print`, `export` |
+| `--bakers-math-only` | activé ou non | non | `view`, `print`, `export` |
+| `--step-quantities` | `show`, `hide` | `show` | `print`, `export` |
+
+Réglages de l'analyseur (pilotant les calculs, tous activés par défaut ; utilisez `--no-<flag>` pour en désactiver un) :
+
+| Flag | Effet | Commandes |
+| --- | --- | --- |
+| `--bakers-math` | Calcule les pourcentages du boulanger à partir de l'ingrédient marqué `*` ou spécifié via `--bakers-reference`. Employé seul, il émet également un avertissement si la recette ne déclare aucune référence. | `view`, `print`, `export`, `cook`, `build`, `watch`, `shop` |
+| `--mass-standardization` | Standardise les quantités en grammes à l'aide de la base d'ingrédients. | idem |
+| `--yield-calculation` | Tient compte des pertes à la préparation (épluchures, noyaux) : la masse brute à acheter diffère alors de la masse nette mise en œuvre. | idem |
+| `--nutrition-estimation` | Estime les valeurs nutritionnelles de la recette. | idem |
+
+- Les anciens noms d'options `--nutrition` et `--no-step-qty` restent acceptés par souci de compatibilité descendante.
+- Toute valeur non reconnue interrompt la commande et liste les valeurs admises.
+- Avec `--step-quantities show`, la quantité est insérée directement après chaque ingrédient dans le texte des étapes, accompagnée de sa masse en grammes lorsque celle-ci est connue : `farine (250 ml, ~148 g)`.
+
 ## Commandes principales
 
 ### Gestion de projet & flux de travail développeur
@@ -72,7 +100,7 @@ gram build brioche.gram --scale 2 --output ./dist-double
 - Calcule automatiquement les données nutritionnelles et la standardisation des masses physiques à partir de la base de données.
 - `--scale <facteur>` intègre le facteur d'ajustement des proportions directement dans le JSON de sortie. Le mode par référence d'ingrédient (ex. `farine=300g`) n'est volontairement pas disponible ici : `build` traitant les fichiers par lots, un résultat reproductible ne doit pas dépendre de la lecture préalable d'une liste de courses spécifique. Utilisez `gram view` ou `gram scale` pour déterminer votre facteur, puis transmettez ce multiplicateur numérique à `build`.
 - Lorsqu'un motif de recherche ou plusieurs fichiers sont passés en argument, les modules importés (via `@use`) par d'autres recettes du lot sont exclus par défaut, évitant ainsi que leurs ingrédients ne soient comptabilisés en double (à la fois isolément et au sein de la recette hôte). Spécifiez `--include-modules` pour les compiler malgré tout.
-- Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`, `--include-modules`.
+- Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`, `--include-modules`, ainsi que les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur.
 
 #### `gram view <fichier>`
 Affiche une recette directement dans le terminal, mise en forme dans un tableau ASCII soigné.
@@ -86,8 +114,8 @@ gram view brioche.gram --scale farine=300g  # Proportions ajustées pour farine 
 - Les minuteurs préservent l'unité déclarée dans la source (`~{1h}` s'affiche `~1h`, `~{20s}` s'affiche `~20s`) et les durées sont harmonisées pour une lecture instantanée (`1h 5m`, `25m 5s`).
 - Le temps d'attente passif apparaît dans l'en-tête de la recette, et les fractions courantes telles que `1/4 tsp` restent sous forme fractionnaire dans la liste de courses.
 - Le drapeau `--scale` ajuste l'intégralité des quantités d'ingrédients (liste de courses et rappels au sein des étapes).
-- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`, `--rests <choice>`.
-- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon pour l'intégralité de la recette). `per-100g` calcule les valeurs pour 100 g de préparation brute assemblée — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
+- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que les [réglages](#les-réglages-en-ligne-de-commande) (`--mise-en-place`, `--rests`, `--nutrition-basis`, `--bakers-math-only` et ceux de l'analyseur).
+- `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (d'abord nommé `--nutrition`, toujours accepté) choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon pour l'intégralité de la recette). `per-100g` calcule les valeurs pour 100 g de préparation brute assemblée — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> définit l'ordonnancement de la mise en place : immédiatement avant chaque section (`per-section`, par défaut), au tout début de la recette (`upfront`) ou à l'ouverture de chaque journée de travail (`per-day`). Les durées totale et passive de l'en-tête reflètent cet ordonnancement, tandis que les temps actif et de préparation restent constants. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> définit la résolution des durées variables pour les minuteurs passifs (`~_{12-24h}`) : durée minimale (`shortest`, par défaut), médiane (`balanced`) ou maximale (`longest`). Les durées exactes et les minuteurs actifs ne sont pas affectés. Ajuste les mêmes durées d'en-tête que `--mise-en-place`.
 - La vue Recette ne montre aucun ordonnancement : elle se lit pareil à toute heure. Pour savoir quand venir et quoi sortir, voir `gram plan` plus bas.
@@ -143,7 +171,7 @@ gram shop "menus/*.gram" --scale 4    # Préparation par lots × 4
 - Prise en charge intégrale des micro-unités : les indications telles que `pincée`, `trait` ou `goutte` s'agrègent sans erreur.
 - `--scale <facteur>` applique un multiplicateur numérique uniforme à l'ensemble des recettes (facteur global uniquement — le ciblage par référence d'ingrédient n'est pas applicable sur plusieurs fichiers).
 - Lorsqu'un motif de recherche ou plusieurs fichiers sont fournis, les recettes importées (via `@use`) par d'autres fichiers du lot sont exclues par défaut pour éviter les doublons sur la liste de courses consolidée. Spécifiez `--include-modules` pour les inclure malgré tout.
-- Options : `--format terminal|md|json`, `--output/-o <fichier>`, `--scale <facteur>`, `--db`, `--skip-db`, `--include-modules`.
+- Options : `--format terminal|md|json`, `--output/-o <fichier>`, `--scale <facteur>`, `--db`, `--skip-db`, `--include-modules`, ainsi que les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur.
 
 #### `gram cook <fichier>`
 Lance un guide de cuisine interactif pas à pas, directement au sein du terminal.
@@ -151,7 +179,7 @@ Lance un guide de cuisine interactif pas à pas, directement au sein du terminal
 gram cook brioche.gram
 gram cook carbonara.gram --skip-db
 ```
-La durée totale affichée à l'écran de fin respecte les réglages `--mise-en-place` et `--rests`, à l'identique de `gram view` <Since v="1.4.0" />.
+La durée totale affichée à l'écran de synthèse, comme la durée de chaque minuteur, respecte les réglages `--mise-en-place` et `--rests`, à l'identique de `gram view` <Since v="1.4.0" />. Les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur s'appliquent aux masses affichées.
 
 **Déroulement :**
 <Steps>
@@ -230,7 +258,7 @@ gram watch --build --output ./dist      # Compile également les fichiers modifi
 - Les erreurs sont détaillées directement sous le nom du fichier concerné. Le processus de surveillance ne s'interrompt jamais sur une erreur de validation.
 - Un délai antirebond (*debounce*) de 150 ms prévient les exécutions redondantes lors des sauvegardes fragmentées par certains éditeurs.
 - La modification d'une recette de base déclenche automatiquement la revalidation de tous les fichiers du dossier qui l'importent via `@use` (directement ou transitivement). Une mention `→ rechecking N dependent file(s)` indique le volume de recettes impactées.
-- Options : `--build`, `--output/-o <dossier>`, `--skip-db`, `--db`.
+- Options : `--build`, `--output/-o <dossier>`, `--skip-db`, `--db`, ainsi que les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur.
 
 #### `gram suggest`
 Recherche dans votre collection les recettes réalisables à partir d'un ensemble donné d'ingrédients.
@@ -255,13 +283,13 @@ gram print brioche.gram --no-open         # Génération seule et affichage du c
 ```
 - Le document HTML est généré dans un fichier temporaire (`gram_print_<horodatage>.html` au sein du répertoire temporaire du système d'exploitation) et ouvert via la commande native appropriée (`open` sous macOS, `xdg-open` sous Linux, `cmd /c start` sous Windows).
 - Le rendu est strictement identique à `gram export --format html` — idéal pour déclencher la boîte de dialogue d'impression du navigateur (`Ctrl+P` / `Cmd+P`) et obtenir un PDF au format A4.
-- `--no-step-qty` — masque le rappel des quantités au sein du texte descriptif des étapes (particulièrement utile lorsque l'on cuisine en se référant à la liste d'ingrédients en marge).
-- Options : `--no-open`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`, `--rests <choice>`, `--comments <show|hide>`.
-- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> sélectionne la base nutritionnelle du document (par défaut `auto` : par portion si `portions:` est déclaré, sinon pour toute la recette). `per-100g` calcule les valeurs pour 100 g de préparation brute assemblée — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
+- `--step-quantities hide` <Since v="1.4.0" /> (ou `--no-step-qty`) omet les quantités d'ingrédients dans le texte des étapes, pour une lecture plus concise lors de la préparation ; les quantités sont incluses par défaut.
+- Options : `--no-open`, `--scale <facteur|réf>`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
+- `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (d'abord nommé `--nutrition`, toujours accepté) sélectionne la base nutritionnelle du document (par défaut `auto` : par portion si `portions:` est déclaré, sinon pour toute la recette). `per-100g` calcule les valeurs pour 100 g de préparation brute assemblée — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> définit l'ordonnancement de la mise en place (par défaut `per-section`), ajustant en conséquence la durée totale et le temps d'attente passif dans l'en-tête imprimé. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> définit la résolution des durées variables pour les minuteurs passifs (`~_{12-24h}`) : durée minimale (`shortest`, par défaut), médiane (`balanced`) ou maximale (`longest`). Les durées exactes et les minuteurs actifs ne sont pas affectés.
-- `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette (`// comme ceci`), tant dans la recette que dans le planning de préparation joint.
-- `--with-sheet` <Since v="1.4.0" /> ajoute le planning de préparation à la suite de la recette dans le document imprimé (avec un saut de page par journée et des cases à cocher). Cette option requiert de spécifier une heure de service via `--serve` (ainsi que les options contextuelles `--tz` et `--available`).
+- `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette (`// comme ceci`), dans la recette comme dans le planning de préparation.
+- `--view <recipe|work-plan>` <Since v="1.4.0" /> sélectionne la vue à imprimer : la recette (par défaut) ou son [planning de préparation](/fr/docs/how-to/plan-a-meal/) (mis en page à raison d'une journée par page avec des cases à cocher). En mode planning, les options de planification (`--serve`, `--tz`, `--available` et `--now`) s'utilisent comme avec `gram plan` ; en l'absence de `--serve`, le déroulement est exprimé en jours relatifs avant le service (`J-2`, `J-1`, `Jour J`). Ces options sont réservées à `--view work-plan`.
 
 #### `gram export <fichier>`
 Exporte une recette vers Markdown ou vers un document HTML prêt pour l'impression.
@@ -273,13 +301,14 @@ gram export brioche.gram --format html --scale 2       # Export avec proportions
 - `--format md` — Markdown standard structuré avec liste de courses, inventaire du matériel et étapes numérotées.
 - `--format html` — Document HTML autonome formaté pour l'impression A4 avec styles CSS intégrés et icônes vectorielles SVG Lucide (sans dépendances externes d'icônes). Les polices typographiques Courier Prime et Inter sont appelées depuis Google Fonts via une directive `@import` CSS, nécessitant un accès réseau lors de l'ouverture initiale.
 - Chemin de destination par défaut : même répertoire que le fichier source, l'extension `.gram` étant remplacée par `.md` ou `.html`.
-- `--no-step-qty` — masque les quantités au sein des étapes descriptives. **Format HTML uniquement** — sans effet avec `--format md`. La liste d'ingrédients introductive de chaque section conserve toujours ses dosages intégraux.
-- Options : `--format md|html`, `--output <chemin>`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`, `--rests <choice>`, `--comments <show|hide>`.
-- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> sélectionne la base nutritionnelle (par défaut `auto` : par portion si `portions:` est déclaré, sinon pour la recette entière).
+- `--step-quantities hide` <Since v="1.4.0" /> (ou `--no-step-qty`) omet les quantités d'ingrédients dans le texte des étapes, dans les deux formats (Markdown et HTML). Les listes d'ingrédients de chaque section les affichent systématiquement.
+- `--format text` <Since v="1.4.0" /> — texte brut, pour une vue qui le propose : le planning de préparation, tel que `gram plan` l'affiche. Chaque vue ne propose que les formats qu'elle sait produire ; si vous en demandez un autre, la commande vous indique ceux qui sont disponibles.
+- Options : `--format md|html|text`, `--output <chemin>`, `--scale <facteur|réf>`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
+- `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (d'abord nommé `--nutrition`, toujours accepté) sélectionne la base nutritionnelle (par défaut `auto` : par portion si `portions:` est déclaré, sinon pour la recette entière).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> ajuste l'ordonnancement de la mise en place (par défaut `per-section`), recalculant la durée totale et le temps d'attente passif dans l'en-tête exporté. En HTML, le mode `per-section` insère également un libellé « Mise en place » au-dessus des ingrédients de chaque section. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> définit la résolution des durées variables pour les minuteurs passifs (`~_{12-24h}`).
-- `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette (`// comme ceci`), tant dans la recette que dans le planning de préparation joint.
-- `--with-sheet` <Since v="1.4.0" /> ajoute le planning de préparation à la suite de la recette dans le document exporté. Cette option requiert de spécifier une heure de service via `--serve` (ainsi que les options contextuelles `--tz`, `--available` et `--now`).
+- `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette (`// comme ceci`), dans la recette comme dans le planning de préparation.
+- `--view <recipe|work-plan>` <Since v="1.4.0" /> sélectionne la vue à exporter : la recette (par défaut) ou son [planning de préparation](/fr/docs/how-to/plan-a-meal/), en Markdown, en document HTML prêt pour l'impression ou, pour le planning, en texte brut. En mode planning, les options de planification (`--serve`, `--tz`, `--available`, `--now`) fonctionnent comme avec `gram plan` ; sans heure de service, le planning est structuré en jours relatifs. Le fichier généré prend alors par défaut le nom `<recette>.work-plan.md` (ou `.html`, `.txt`).
 
 #### `gram plan <fichier>` <Since v="1.4.0" />
 Génère le planning opérationnel d'une recette : organisation des journées, passages en cuisine, matériel et ingrédients à sortir, et tâches à réaliser. Avec `--serve`, le rétroplanning est calculé à rebours depuis l'heure du repas en fonction de vos disponibilités. En l'absence d'heure de service, le planning est exprimé en jours relatifs (`J-2`, `J-1`, `Jour J`) et indique l'heure de dégustation la plus précoce possible en démarrant immédiatement.
@@ -293,7 +322,7 @@ gram plan pain.gram --find 2026-10-10/2026-10-14 --available 08:00-22:00   # Rec
 ```
 - `--serve "<date> <heure>"` : date et heure cibles du service dans le fuseau horaire configuré. Option facultative : en son absence, le planning est présenté en jours relatifs (`J-2`, `J-1`, `Jour J`) sans ajustement calendaire, et conclut par l'heure de dégustation la plus précoce calculée sur un horizon de 14 jours à partir de `--now`.
 - `--tz <fuseau>` : identifiant de fuseau horaire IANA (ex. `Europe/Paris`). Par défaut : valeur du paramètre `timezone` de votre projet (ou de la configuration globale), à défaut le fuseau local du système. Sert à interpréter l'heure de service, évaluer les disponibilités et gérer les changements d'heure d'été/d'hiver.
-- `--available <plage>`, répétable : définit vos plages de disponibilité pour les passages en cuisine. `08:00-22:00` s'applique à tous les jours ; un préfixe de jour de la semaine (`fri=18:00-22:00`, de `mon` à `sun`) restreint la règle à ce jour ; un préfixe de date (`2026-10-09=none`) surcharge une date précise (`none` signifiant une indisponibilité totale). Plusieurs plages peuvent être associées à une même clé, séparées par des virgules (`sat=08:00-09:00,18:00-22:00`), et une plage dont l'heure de fin précède le début traverse minuit. En l'absence d'indication, la disponibilité est considérée comme continue (24 h/24).
+- `--available <plage>`, répétable : définit vos plages de disponibilité pour les passages en cuisine. `08:00-22:00` s'applique à tous les jours ; un préfixe de jour de la semaine (`fri=18:00-22:00`, de `mon` à `sun`) restreint la règle à ce jour ; un préfixe de date (`2026-10-09=none`) surcharge une date précise (`none` signifiant une indisponibilité totale). Plusieurs plages peuvent être associées à une même clé, séparées par des virgules (`sat=08:00-09:00,18:00-22:00`), et une plage dont l'heure de fin précède le début traverse minuit. Sans l'option, c'est le réglage `availability` de votre projet (ou de la configuration globale) qui s'applique <Since v="1.4.0" />, dans la même syntaxe ; à défaut des deux, la disponibilité est considérée comme continue (24 h/24). L'option remplace le réglage, elle ne s'y ajoute pas.
 - `--find <début>/<fin>` : explore une plage temporelle (ex. `2026-10-12/2026-10-15`, dates ou horodatages complets) pour identifier les heures de service viables lors de vos repas habituels, classées par ordre de pertinence (la solution optimale en tête), en explicitant les contraintes bloquantes pour chaque créneau rejeté. Formats acceptés : `text`, `md`, `json`. Option incompatible avec `--serve`.
 - `--meal-times <HH:MM,HH:MM>` : créneaux de repas testés par la recherche `--find` (par défaut : valeur configurée via `mealTimes`, ou `12:30,20:00`).
 - Les temps de repos définis par une fourchette (`~_{8-16h}`) sont automatiquement adaptés (allongés ou raccourcis) par l'ordonnanceur afin que les passages coïncident avec vos plages de disponibilité. Le planning détaille chaque ajustement opéré ainsi que les éventuelles contraintes non résolues. Consultez le guide [Planifier en temps réel](/fr/docs/explanation/planning-in-real-time/).
@@ -477,6 +506,8 @@ language: "fr"                 # Langue cible pour l'ensemble des contenus gén�
                                # Pris en charge : en, fr, de, es, it, pt, nl, ja, zh — défaut : en
 timezone: "Europe/Paris"       # Fuseau horaire IANA de référence pour votre cuisine (valeur par défaut de `gram plan --tz`)
                                # En son absence, le fuseau système est utilisé. Modification : `gram config set timezone <fuseau>`
+availability: ["08:00-22:00", "sat=09:00-23:00"] # Vos plages de présence en cuisine, dans la syntaxe de `--available` : valeur par défaut de `gram plan --available`
+                               # Une entrée ou une liste ; sans réglage, toute la journée. Modification : `gram config set availability 08:00-22:00`
 mealTimes: ["12:30", "20:00"]  # Créneaux de repas testés par `gram plan --find` (par défaut : 12:30 et 20:00)
 updateCheck: true             # Désactivez (false) pour masquer la notification de mise à jour à l'issue des commandes
 

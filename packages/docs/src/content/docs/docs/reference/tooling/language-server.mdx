@@ -43,14 +43,44 @@ The Gram Language Server implements the following standard capabilities:
 | **Document Symbol** | Populates the editor's Outline view for clean structural navigation across recipe sections. |
 | **Folding Range** | Enables folding of YAML frontmatter blocks and `##` section headings. |
 
-## Notifications to the client
+## Settings
 
-In addition to standardized LSP requests, the server sends asynchronous notifications carrying pre-rendered recipe views as a `{ uri, html }` object:
+<Since v="1.4.0" /> The server reads the `gram` configuration section (`workspace/configuration`) at startup and reloads it upon every `workspace/didChangeConfiguration` notification. Missing or unrecognized values fall back gracefully to defaults, ensuring an invalid configuration never blanks a view.
+
+- View settings (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, `gram.stepQuantities`, `gram.nutritionBasis`, `gram.bakersMathOnly`) re-render open recipes directly from their existing compiled state.
+- Analyzer settings (`gram.bakersMath`, `gram.massStandardization`, `gram.yieldCalculation`, `gram.nutritionEstimation`) re-analyze open recipes from scratch, refreshing compiler diagnostics and derived data.
+- `gram.ingredientDatabase.path` reloads the ingredient database from disk.
+
+Available values and defaults match those of the [VS Code extension](/docs/reference/tooling/vscode-extension/), defined centrally in the renderer package (`VIEW_SETTINGS`, `RECIPE_SETTINGS`).
+
+## Views protocol
+
+<Since v="1.4.0" /> Alongside standard LSP capabilities, the server renders recipe views (the recipe and the work plan) and inspectors (the AST and the compiled JSON) for display in editor client panels. It renders only the views currently open in the client, ensuring closed panels incur no computation overhead.
+
+A client opts into the protocol by providing `initializationOptions: { views: true }` in its `initialize` request, then communicates with the server through three custom notifications and two requests:
+
+| Notification | Direction | Content |
+|---|---|---|
+| `gram/setOpenViews` | Client ➔ Server | `{ uri, viewIds }`: the complete set of active output IDs for this document (`[]` when none are open). The server immediately emits updates for each requested view. |
+| `gram/setSession` | Client ➔ Server | `{ uri, serveAt?, scale?, stock?, bakersReference? }`: transient session parameters for the current working session. `serveAt` is an ISO-like local date and time (`"2026-10-11 13:00"`), `scale` is `{ type: "factor", value }` or `{ type: "target", id, qty, unit }`, and `stock` lists URIs of pre-prepared imports. Unrecognized properties are ignored; an empty payload clears the session. |
+| `gram/viewUpdated` | Server ➔ Client | `{ uri, outputId, kind, state, ... }`: emitted for each open output upon initial opening, and refreshed after every edit or configuration change. |
+| `gram/serveTimes` (request) | Client ➔ Server | `{ uri }` → `{ candidates, rejected, earliest }` or `null`: the serving times to propose next to a serving time field, as the playground proposes them. `candidates` are the times that work over the next seven days at the project's `mealTimes` (default 12:30 and 20:00), best first, each `{ serveAt, label, title }`; `rejected` says in words why each other time does not; `earliest` is `{ serveAt, label, text }`, the first time the recipe can be ready if you start now. `null` when the recipe has nothing to schedule. Ask it only while the suggestions are shown: it plans a few dozen times. |
+| `gram/sessionChoices` (request) | Client ➔ Server | `{ uri }` → `{ ingredients, imports, bakersMath, scaleError? }` or `null`: what session controls offer, read from the recipe as written so the choices do not move with the scale. `ingredients` is the shopping list (`{ id, name, qty?, unit? }`, for a target quantity or the baker's reference), `imports` every `@use` import, nested ones included (`{ uri, specifier }`, the `uri` to put in `stock`), `bakersMath` whether `gram.bakersMath` is on, and `scaleError` why the session's scale could not be applied. `null` while the recipe does not compile. |
+
+The `initialize` response advertises available views via `capabilities.experimental.gramViews`: `outputs` describes each output's `id`, `kind`, and localized `label` (matching the editor's language), plus, for a view, what it `needs` from the plan (a view that needs `runSheet` is laid out in time, so a client offers its serving time controls), while `strings` provides UI translations for surrounding panel controls (`strings.serving` for the serving time field and its suggestions, `strings.session` for the scale, baker's reference and stock controls). Output IDs align with the renderer's exported list: `recipe` and `workPlan` (`kind: "renderer"`), plus `ast`, `json`, and `json-tree` (`kind: "inspector"`). Client implementations consuming this list dynamically support newly added views without requiring client-side updates.
+
+- With `state: "ok"`, `payload` contains the rendered HTML for a view, or `null` if the recipe has no corresponding content (such as a work plan for a recipe without schedulable steps). For inspectors, `payload` is `{ presentation, language, text }`: formatted source text for a code pane (`presentation: "code"`, highlighted as `json` or `scheme`), or structured HTML for an interactive tree view (`presentation: "tree"`).
+- With `state: "paused"`, compilation errors prevent view updates and `payload` is omitted: editor clients should retain their last valid rendered view and surface the failure via `error` (`title`, `description`, `code`, `message`, and source `range`). The error title is localized using the editor's configured locale (`locale` from `initialize`). Comprehensive error details continue to be reported via standard LSP diagnostics.
+
+Session state is maintained per document strictly in memory: it is discarded when the document closes or the server restarts, and is never persisted to project configuration. When a serving time is provided, the work plan is projected onto the calendar in the project's time zone (`timezone` in `.gram/config.yaml`, falling back to system time) and within its availability (`availability`, falling back to all day; a setting that cannot be read also falls back to all day); without a serving time, the plan is organized in relative countdown days. When session overrides (`scale`, `stock`, or `bakersReference`) are defined, the views are recompiled with these parameters while diagnostics, hover tooltips, and inlay hints continue to evaluate the recipe as written on disk. If a scale target cannot be resolved, views gracefully fall back to default proportions.
+
+### Notifications for legacy clients
+
+Clients that do not declare the views protocol and never send `gram/setOpenViews` continue to receive document views via legacy notifications as `{ uri, html }` payloads, regardless of whether the views are actively displayed in the editor.
 
 | Notification | Content |
 |---|---|
-| `gram/previewUpdated` | HTML rendering of the live preview, or the error panel when the recipe fails to compile. |
-| `gram/runSheetUpdated` | <Since v="1.4.0" /> HTML rendering of the work plan broken down into relative days (`D-2`, `D-1`, `Day D`), consumed by the VS Code `Gram: Work Plan` view. |
+| `gram/previewUpdated` | <Since type="deprecated" v="1.4.0" /> HTML rendering of the live recipe preview, or an error panel when compilation fails. Removed in version 2.0.0: migrate to `gram/viewUpdated` with the `recipe` output. |
 | `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> HTML rendering of the legacy Gantt chart. Emitted until version 2.0.0 for third-party client compatibility (the official VS Code extension no longer listens to it). |
 
 ## Related resources

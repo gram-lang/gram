@@ -3,7 +3,6 @@ import type {
 	MiseEnPlaceMode,
 	RestChoice,
 } from "@gram-lang/kitchen";
-import type { RunSheet } from "@gram-lang/scheduler";
 import type {
 	AnalyzedCompilationResult,
 	MassMetrics,
@@ -15,7 +14,7 @@ import type {
 // analyze() themselves. Kept as a small structural shape here rather than
 // importing `@gram-lang/modules`' own `ModuleInfo` type: the renderer
 // depends on neither that package nor its types, and this is all three
-// formatters' `moduleLabel()` (formatters/shared.ts) actually needs.
+// recipe views' `moduleLabel()` (views/recipe/module-label.ts) actually needs.
 export interface SectionModuleBadge {
 	binding: string;
 	uri: string;
@@ -107,6 +106,8 @@ export interface RendererClasses {
 	temperature?: string;
 	declaration?: string;
 	massBadge?: string;
+	/** A quantity written in the text of a step (default `step-quantity`). */
+	stepQuantity?: string;
 	bakersBadge?: string;
 	prepText?: string;
 	compositeParentText?: string;
@@ -136,7 +137,7 @@ export interface RendererOptions {
 	formatDuration?: (minutes: number) => string;
 	/**
 	 * Show (`"show"`, the default) or hide (`"hide"`) the comments of the
-	 * recipe, in every view: the recipe, the work plan inside it, and the print.
+	 * recipe, in every view: the recipe, the work plan, and the print.
 	 */
 	comments?: CommentsMode;
 	/** When true, ingredient quantities are omitted from step text (not from shopping list or section mise en place). */
@@ -145,8 +146,7 @@ export interface RendererOptions {
 	 * Which timeline to follow: mise en place right before each section
 	 * (`"perSection"`, the default), all of it at the start (`"upfront"`), or at
 	 * the start of each working day (`"perDay"`). Drives the total and idle
-	 * times of the recipe; what to take out, and when, is the work plan's
-	 * (`runSheet`), which follows the mode of the sheet it is given.
+	 * times of the recipe; what to take out, and when, is the work plan's.
 	 */
 	miseEnPlace?: MiseEnPlaceMode;
 	/**
@@ -157,12 +157,6 @@ export interface RendererOptions {
 	rests?: RestChoice;
 	bakersMathOnly?: boolean;
 	interactiveScaling?: boolean;
-	/**
-	 * A work plan (`runSheet()` of `@gram-lang/scheduler`) to write after the
-	 * recipe, the two in one document: the recipe says how, the plan says when
-	 * to come and what to take out. The words follow `lang`.
-	 */
-	runSheet?: RunSheet;
 	/**
 	 * Which nutrition basis to display. The analyzer computes all of them;
 	 * picking one is presentation. "auto" keeps the historical behaviour —
@@ -194,6 +188,8 @@ export interface RendererOptions {
 }
 
 export interface RenderContext {
+	/** The total and idle time of the chosen schedule, prepared once (`prepareViews`). */
+	times?: { totalTime: number; idleTime: number };
 	registry?: {
 		ingredients?: Record<string, any>;
 		cookware?: Record<string, any>;

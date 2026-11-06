@@ -1,0 +1,165 @@
+/*
+ * The base of every printed view: the page, the type, the headings and the
+ * elements of a step (actions, ingredients, timers...), which the recipe and
+ * the work plan both write. Each view adds its own stylesheet after it.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+	--black: #000000;
+	--dark-grey: #333333;
+	--grey: #666666;
+	--light-grey: #cccccc;
+	--very-light-grey: #e5e5e5;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+@page {
+	size: A4;
+	margin: 25mm 20mm;
+}
+
+body {
+	font-family: "Courier Prime", "Courier New", Courier, monospace;
+	font-size: 10pt;
+	line-height: 1.5;
+	color: var(--black);
+	background: #fff;
+	-webkit-font-smoothing: antialiased;
+}
+
+svg.gicon,
+.gicon {
+	width: 1em;
+	height: 1em;
+	vertical-align: -0.125em;
+	display: inline-block;
+}
+
+/* ── Title ── */
+h1 {
+	font-family: "Courier Prime", monospace;
+	font-size: 20pt;
+	font-weight: 700;
+	line-height: 1.1;
+	margin-bottom: 12pt;
+	padding-bottom: 8pt;
+	border-bottom: 2pt solid var(--black);
+	page-break-after: avoid;
+}
+
+/* ── Section labels (Shopping, Equipment, Instructions…) ── */
+h2 {
+	font-family: "Inter", system-ui, sans-serif;
+	font-size: 7.5pt;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.25em;
+	border-bottom: 1px solid var(--black);
+	padding-bottom: 6pt;
+	margin-top: 24pt;
+	margin-bottom: 12pt;
+	page-break-after: avoid;
+}
+
+/* ── Sub-section headers (recipe sections) ── */
+h3 {
+	font-size: 11.5pt;
+	font-weight: 700;
+	margin-top: 20pt;
+	margin-bottom: 10pt;
+	page-break-after: avoid;
+	display: inline-block;
+	border-bottom: 1px dashed var(--black);
+}
+
+/* ── Action tag ── */
+.action {
+	display: inline-block;
+	font-family: "Inter", system-ui, sans-serif;
+	font-weight: 700;
+	font-size: 7.5pt;
+	text-transform: uppercase;
+	letter-spacing: 0.15em;
+	border: 1px solid var(--black);
+	border-radius: 2px;
+	padding: 2pt 5pt;
+	margin-right: 8pt;
+	vertical-align: text-bottom;
+	white-space: nowrap;
+}
+
+/* ── Inline semantic tokens ── */
+.ingredient {
+	font-weight: 700;
+}
+.reference {
+	font-weight: 700;
+	text-decoration: underline;
+	text-decoration-style: solid;
+	text-underline-offset: 2.5pt;
+	text-decoration-thickness: 1px;
+}
+.cookware {
+	font-weight: 700;
+}
+.timer {
+	font-weight: 700;
+	border-bottom: 2px solid var(--black);
+	white-space: nowrap;
+	padding-bottom: 1px;
+}
+.timer.passive {
+	border-bottom: 2px dotted var(--black);
+}
+.temp {
+	font-weight: 700;
+	white-space: nowrap;
+	font-family: "Inter", system-ui, sans-serif;
+	font-size: 0.9em;
+	letter-spacing: 0.05em;
+}
+.quantity {
+	font-weight: normal;
+}
+.step-quantity {
+	white-space: nowrap;
+}
+.unit {
+	color: var(--dark-grey);
+	font-size: 0.95em;
+}
+.opt {
+	color: var(--grey);
+	font-style: italic;
+}
+/* strategies.alternative's non-inline "or" separator — used when an
+     alternative group now shows up in a section ingredient list. */
+.keyword {
+	font-style: italic;
+}
+.declaration {
+	font-size: 9pt;
+	font-style: italic;
+	color: var(--black);
+}
+
+/* Screen preview */
+@media screen {
+	body {
+		max-width: 210mm;
+		margin: 40px auto;
+		padding: 25mm 20mm;
+		box-shadow: 0 4px 40px rgba(0, 0, 0, 0.08);
+		border: 1px solid var(--very-light-grey);
+		min-height: 297mm;
+	}
+}

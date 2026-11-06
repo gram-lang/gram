@@ -12,10 +12,16 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { loadModuleGraph, type ModuleGraph } from "@gram-lang/modules";
 import type { AnalyzedCompilationResult } from "@gram-lang/analyzer";
+import { ALL_DAY, type Availability } from "@gram-lang/scheduler";
 import { parseDocument, type DocumentState } from "./document-state";
 import { createLspModuleHost } from "./module-host";
 import { findProjectRootSync } from "./utils/project-root";
-import { readPathsConfigSync } from "./utils/module-paths-config";
+import {
+	readPathsConfigSync,
+	readAvailabilityConfigSync,
+	readMealTimesConfigSync,
+	readTimeZoneConfigSync,
+} from "./utils/module-paths-config";
 import { affectedOpenImporters } from "./utils/module-invalidation";
 import { provideDocumentSymbols } from "./features/document-symbols";
 import { provideDiagnostics } from "./features/diagnostics";
@@ -34,31 +40,36 @@ import {
 } from "./features/semantic-tokens";
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
-import {
-	parseCommentsSetting,
-	parseMiseEnPlaceSetting,
-	parseRestsSetting,
-} from "./utils/mise-en-place-setting";
 import { provideCodeLenses } from "./features/code-lens";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
 import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
 import {
-	type CommentsMode,
+	DEFAULT_RECIPE_SETTINGS,
+	DEFAULT_VIEW_SETTINGS,
+	type KitchenContext,
+	type RecipeSettings,
+	type ViewSettings,
 	escapeHtml,
-	runSheetToHTML,
+	parseRecipeSettings,
+	parseViewSettings,
 	toGanttHTML,
 	toHTML,
+	viewSettingsToRendererOptions,
 } from "@gram-lang/renderer";
-import { runSheet } from "@gram-lang/scheduler";
 import {
-	DEFAULT_MISE_EN_PLACE_MODE,
-	type MiseEnPlaceMode,
-	DEFAULT_REST_CHOICE,
-	type RestChoice,
-	scheduleFor,
-} from "@gram-lang/kitchen";
+	compileSessionChanged,
+	compileSessionOf,
+	parseSession,
+	type Session,
+} from "./session";
+import {
+	describeOutputs,
+	renderOutputs,
+	serveTimesOf,
+	sessionChoicesOf,
+} from "./views";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -107,8 +118,54 @@ const moduleMeasureCache = new Map<string, AnalyzedCompilationResult>();
 // next refresh, same as before this cache existed.
 const projectContextCache = new Map<
 	string,
-	{ projectRoot: string; paths?: Record<string, string> }
+	{
+		projectRoot: string;
+		paths?: Record<string, string>;
+		timeZone?: string;
+		availability?: Availability;
+		mealTimes?: string[];
+	}
 >();
+
+/** The project context of the directory of `uri`, read once per directory. */
+function projectContextOf(uri: string) {
+	const dir = dirname(fileURLToPath(uri));
+	let ctx = projectContextCache.get(dir);
+	if (!ctx) {
+		const projectRoot = findProjectRootSync(dir);
+		ctx = {
+			projectRoot,
+			paths: readPathsConfigSync(projectRoot),
+			timeZone: readTimeZoneConfigSync(projectRoot),
+			availability: readAvailabilityConfigSync(projectRoot),
+			mealTimes: readMealTimesConfigSync(projectRoot),
+		};
+		projectContextCache.set(dir, ctx);
+	}
+	return ctx;
+}
+
+/**
+ * The kitchen a serving time of `uri` is laid out in: the `timezone` of the
+ * project's `.gram/config.yaml`, else this machine's; its `availability`,
+ * else all day; now.
+ */
+function kitchenOf(uri: string): KitchenContext {
+	let timeZone: string | undefined;
+	let availability: Availability | undefined;
+	if (uri.startsWith("file:")) {
+		try {
+			({ timeZone, availability } = projectContextOf(uri));
+		} catch {
+			// An unreadable project: the machine's zone, all day.
+		}
+	}
+	return {
+		timeZone: timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+		availability: availability ?? { daily: [...ALL_DAY.daily] },
+		now: new Date().toISOString(),
+	};
+}
 
 /**
  * Loads (or reloads) `uri`'s `@use` graph — never throws, and returns
@@ -124,14 +181,7 @@ const projectContextCache = new Map<
 async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
 	if (!uri.startsWith("file:")) return undefined;
 	try {
-		const filePath = fileURLToPath(uri);
-		const dir = dirname(filePath);
-		let ctx = projectContextCache.get(dir);
-		if (!ctx) {
-			const projectRoot = findProjectRootSync(dir);
-			ctx = { projectRoot, paths: readPathsConfigSync(projectRoot) };
-			projectContextCache.set(dir, ctx);
-		}
+		const ctx = projectContextOf(uri);
 		const host = createLspModuleHost(ctx.projectRoot, documents, ctx.paths);
 		return await loadModuleGraph(uri, host);
 	} catch (e) {
@@ -140,8 +190,21 @@ async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
 	}
 }
 
+// The views protocol (`gram/viewUpdated`, `gram/setOpenViews`,
+// `gram/setSession`). A client that declares it (`initializationOptions.views`)
+// or sends `gram/setOpenViews` gets only the outputs it has open. Any other
+// client is an older one: it keeps receiving the preview and the work plan of
+// every document through the notifications it reads.
+let viewsClient = false;
+// The editor's language, for the words the server writes itself (the paused
+// banner): the recipe's own language is unknown when it does not parse.
+let locale: string | undefined;
+
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 	workspaceFolders = resolveWorkspaceFolders(params.workspaceFolders);
+	locale = params.locale;
+	const init = params.initializationOptions as { views?: unknown } | undefined;
+	if (init?.views === true) viewsClient = true;
 	return {
 		capabilities: {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
@@ -163,36 +226,43 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			codeActionProvider: true,
 			inlayHintProvider: true,
 			codeLensProvider: { resolveProvider: false },
+			// What a client of the views protocol can open, named in the
+			// editor's language: it builds its choice of views from this, so
+			// a view added to the renderer appears there with no edit.
+			experimental: { gramViews: describeOutputs(locale) },
 		},
 	};
 });
 
-// `gram.miseEnPlace` and `gram.rests`: which timeline the preview, the work plan and
-// the title hint follow. Read once at start and again whenever the settings
-// change.
-let miseEnPlace: MiseEnPlaceMode = DEFAULT_MISE_EN_PLACE_MODE;
-let rests: RestChoice = DEFAULT_REST_CHOICE;
-// `gram.comments`: whether the preview and the work plan show the comments of the recipe.
-let comments: CommentsMode = "show";
+// The view settings (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, ...):
+// what the preview, the work plan and the title hint follow. The recipe
+// settings (`gram.bakersMath`, `gram.massStandardization`, ...): what the
+// analyzer computes. Read once at start and again whenever the settings
+// change; a missing or unknown one is on its default, so a bad setting never
+// blanks a view.
+let settings: ViewSettings = DEFAULT_VIEW_SETTINGS;
+let recipeSettings: RecipeSettings = DEFAULT_RECIPE_SETTINGS;
+
+function differs<T extends object>(a: T, b: T): boolean {
+	return (Object.keys(a) as (keyof T)[]).some((key) => a[key] !== b[key]);
+}
 
 // Never rejects (same rule as reloadDbAndRefreshDiagnostics below): a client
-// without workspace configuration just keeps the default.
-async function loadMiseEnPlace(): Promise<boolean> {
+// without workspace configuration just keeps the defaults.
+async function loadSettings(): Promise<{ view: boolean; recipe: boolean }> {
 	try {
 		const config = await connection.workspace.getConfiguration("gram");
-		const nextMode = parseMiseEnPlaceSetting(config);
-		const nextRests = parseRestsSetting(config);
-		const nextComments = parseCommentsSetting(config);
-		const changed =
-			nextMode !== miseEnPlace ||
-			nextRests !== rests ||
-			nextComments !== comments;
-		miseEnPlace = nextMode;
-		rests = nextRests;
-		comments = nextComments;
+		const nextView = parseViewSettings(config);
+		const nextRecipe = parseRecipeSettings(config);
+		const changed = {
+			view: differs(nextView, settings),
+			recipe: differs(nextRecipe, recipeSettings),
+		};
+		settings = nextView;
+		recipeSettings = nextRecipe;
 		return changed;
 	} catch {
-		return false;
+		return { view: false, recipe: false };
 	}
 }
 
@@ -222,13 +292,22 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 	}
 }
 
-// A new schedule re-renders every open preview and work plan from the compilation
-// already in hand, and refreshes the title hint — nothing else about the
-// documents changed, so nothing is parsed or compiled again (which would also
-// race with an edit still waiting in the debounce).
-async function reloadMiseEnPlaceAndRefresh(): Promise<void> {
-	if (!(await loadMiseEnPlace())) return;
-	for (const [uri, state] of states) renderViews(uri, state);
+// New view settings re-render every open preview and work plan from the
+// compilation already in hand, and refresh the title hint: nothing is parsed or
+// compiled again. New recipe settings change what the analyzer computed, so
+// every open document is analyzed again, through the same debounced refresh as
+// an edit (which renders its views too), never racing with one.
+async function reloadSettingsAndRefresh(): Promise<void> {
+	const changed = await loadSettings();
+	if (changed.recipe) {
+		for (const doc of documents.all()) {
+			scheduleRefresh(doc.uri, doc.getText(), doc.version);
+		}
+	} else if (changed.view) {
+		for (const uri of states.keys()) renderViews(uri);
+	} else {
+		return;
+	}
 	await connection.languages.inlayHint.refresh().catch(() => {
 		// Client without inlay hint refresh: the hint updates on next edit.
 	});
@@ -243,16 +322,16 @@ connection.onDidChangeConfiguration(() => {
 	reloadDbAndRefreshDiagnostics().catch((e) =>
 		connection.console.error(`DB reload failed: ${e}`),
 	);
-	reloadMiseEnPlaceAndRefresh().catch((e) =>
-		connection.console.error(`Mise en place refresh failed: ${e}`),
+	reloadSettingsAndRefresh().catch((e) =>
+		connection.console.error(`Settings refresh failed: ${e}`),
 	);
 });
 
 connection.onInitialized(async () => {
 	// A document may already be open by the time the setting answers: without
-	// the refresh it would keep the default schedule until its next edit.
-	await reloadMiseEnPlaceAndRefresh().catch((e) =>
-		connection.console.error(`Mise en place refresh failed: ${e}`),
+	// the refresh it would keep the default settings until its next edit.
+	await reloadSettingsAndRefresh().catch((e) =>
+		connection.console.error(`Settings refresh failed: ${e}`),
 	);
 	await reloadDbAndRefreshDiagnostics();
 
@@ -315,6 +394,7 @@ async function refresh(
 		ingredientDB,
 		version,
 		graph ? { graph, cache: moduleMeasureCache } : undefined,
+		recipeSettings,
 	);
 	states.set(uri, state);
 	connection.sendDiagnostics({
@@ -327,16 +407,151 @@ async function refresh(
 		),
 	});
 
-	renderViews(uri, state);
+	// The session's scale or stock change what is compiled: the views get a
+	// compilation of their own, the rest of the editor keeps the source as
+	// written.
+	const sitting = compileSessionOf(sessions.get(uri) ?? {});
+	if (sitting) {
+		viewStates.set(
+			uri,
+			parseDocument(
+				text,
+				ingredientDB,
+				version,
+				graph ? { graph, cache: moduleMeasureCache } : undefined,
+				recipeSettings,
+				sitting,
+			),
+		);
+	} else {
+		viewStates.delete(uri);
+	}
+
+	renderViews(uri);
 }
 
+// What each document has open, as the client last said (`gram/setOpenViews`).
+const openViews = new Map<string, Set<string>>();
+// What the cook chose for each document this sitting (`gram/setSession`).
+const sessions = new Map<string, Session>();
+// The compilation of the views, when the session's scale or stock differ from
+// the source as written; otherwise the views read `states`.
+const viewStates = new Map<string, DocumentState>();
+
+connection.onNotification(
+	"gram/setOpenViews",
+	(params: { uri?: unknown; viewIds?: unknown }) => {
+		viewsClient = true;
+		if (typeof params?.uri !== "string") return;
+		const ids = Array.isArray(params.viewIds)
+			? params.viewIds.filter((id): id is string => typeof id === "string")
+			: [];
+		if (ids.length === 0) openViews.delete(params.uri);
+		else openViews.set(params.uri, new Set(ids));
+		// A newly opened panel needs its content now, not at the next edit.
+		if (states.has(params.uri)) renderViews(params.uri);
+	},
+);
+
+connection.onNotification("gram/setSession", (params: unknown) => {
+	const uri = (params as { uri?: unknown } | null)?.uri;
+	if (typeof uri !== "string") return;
+	const previous = sessions.get(uri) ?? {};
+	const next = parseSession(params);
+	if (Object.keys(next).length === 0) sessions.delete(uri);
+	else sessions.set(uri, next);
+	const doc = documents.get(uri);
+	if (doc && compileSessionChanged(previous, next)) {
+		scheduleRefresh(uri, doc.getText(), doc.version);
+	} else if (states.has(uri)) {
+		renderViews(uri);
+	}
+});
+
+/** The `mealTimes` of the project of `uri`, when it sets them. */
+function mealTimesOf(uri: string): string[] | undefined {
+	if (!uri.startsWith("file:")) return undefined;
+	try {
+		return projectContextOf(uri).mealTimes;
+	} catch {
+		return undefined;
+	}
+}
+
+connection.onRequest("gram/serveTimes", (params: unknown) => {
+	const uri = (params as { uri?: unknown } | null)?.uri;
+	if (typeof uri !== "string") return null;
+	const state = viewStates.get(uri) ?? states.get(uri);
+	if (!state) return null;
+	try {
+		return serveTimesOf(state, {
+			settings,
+			kitchen: kitchenOf(uri),
+			locale,
+			mealTimes: mealTimesOf(uri),
+		});
+	} catch (e) {
+		connection.console.error(`serve times error: ${e}`);
+		return null;
+	}
+});
+
+connection.onRequest("gram/sessionChoices", (params: unknown) => {
+	const uri = (params as { uri?: unknown } | null)?.uri;
+	if (typeof uri !== "string") return null;
+	const state = states.get(uri);
+	if (!state) return null;
+	return sessionChoicesOf(state, {
+		graph: graphs.get(uri),
+		bakersMath: recipeSettings.bakersMath,
+		viewState: viewStates.get(uri),
+	});
+});
+
 /**
- * Renders the preview and the work plan of an already compiled document and
- * sends them to the client (and the Gantt chart, for clients that still read it). Pure output of `state`: it neither parses nor
- * compiles, so it can run again (a new `gram.miseEnPlace`) without touching the
- * cached state, which a pending edit's refresh is about to replace anyway.
+ * Sends the views of an already compiled document: the outputs the client has
+ * open, or, to an older client, the preview and the work plan. Pure output of
+ * the cached state: it neither parses nor compiles, so it can run again (a new
+ * view setting, a panel opened) without touching it.
  */
-function renderViews(uri: string, state: DocumentState): void {
+function renderViews(uri: string): void {
+	const state = viewStates.get(uri) ?? states.get(uri);
+	if (!state) return;
+	if (!viewsClient) {
+		renderLegacyViews(uri, state);
+		return;
+	}
+	const open = openViews.get(uri);
+	if (!open) return;
+	const updates = renderOutputs(uri, state, open, {
+		settings,
+		kitchen: kitchenOf(uri),
+		serveAt: sessions.get(uri)?.serveAt,
+		locale,
+		onError: (outputId, e) =>
+			connection.console.error(`${outputId} render error: ${e}`),
+	});
+	for (const update of updates) {
+		connection.sendNotification("gram/viewUpdated", update);
+	}
+}
+
+let warnedLegacyViews = false;
+
+/**
+ * The views of an older client, one that does not speak the views protocol:
+ * the preview and the work plan of every document, and the Gantt chart, each
+ * in its own notification, rendered on every refresh whether shown or not.
+ * Deprecated with those notifications, removed in 2.0.0.
+ */
+// @remove-in: 2.0.0 [lsp-legacy-view-notifications]
+function renderLegacyViews(uri: string, state: DocumentState): void {
+	if (!warnedLegacyViews) {
+		warnedLegacyViews = true;
+		connection.console.warn(
+			"gram/previewUpdated is deprecated and will be removed in 2.0.0: declare `initializationOptions.views` and read gram/viewUpdated instead.",
+		);
+	}
 	if (state.compilation) {
 		try {
 			// The VS Code preview ships the renderer's stylesheet (mirrored in
@@ -344,37 +559,11 @@ function renderViews(uri: string, state: DocumentState): void {
 			// there — quantities stay read-only.
 			const html = toHTML(state.compilation, {
 				interactiveNutrition: true,
-				miseEnPlace,
-				rests,
-				comments,
+				...viewSettingsToRendererOptions(settings),
 			});
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
 			console.error("HTML render error", e);
-		}
-
-		// Rendered and sent independently from the main preview — a bug in the
-		// work plan must not blank the HTML preview, and vice versa. Without a
-		// serving time the plan is in days before the service (J-2, J-1, day D).
-		try {
-			const timeline = scheduleFor(state.compilation, miseEnPlace, rests);
-			if (timeline) {
-				const sheet = runSheet(timeline, {
-					graph: state.compilation.tasks,
-					...(state.compilation.title && { title: state.compilation.title }),
-				});
-				const lang = state.compilation.meta?.language;
-				const workPlanHtml = runSheetToHTML(sheet, state.compilation, {
-					comments,
-					...(typeof lang === "string" && { lang }),
-				});
-				connection.sendNotification("gram/runSheetUpdated", {
-					uri,
-					html: workPlanHtml,
-				});
-			}
-		} catch (e) {
-			console.error("Work plan render error", e);
 		}
 
 		// Still sent until 2.0.0 for clients that read it; the VS Code extension
@@ -382,8 +571,8 @@ function renderViews(uri: string, state: DocumentState): void {
 		// @remove-in: 2.0.0 [lsp-gantt-notification]
 		try {
 			const ganttHtml = toGanttHTML(state.compilation, {
-				miseEnPlace,
-				rests,
+				miseEnPlace: settings.miseEnPlace,
+				rests: settings.rests,
 				// Rendered for clients that read it, not by choice of this server.
 				quiet: true,
 			});
@@ -421,7 +610,6 @@ function renderViews(uri: string, state: DocumentState): void {
             </div>
         `;
 		connection.sendNotification("gram/previewUpdated", { uri, html });
-		connection.sendNotification("gram/runSheetUpdated", { uri, html });
 		// @remove-in: 2.0.0 [lsp-gantt-notification]
 		connection.sendNotification("gram/ganttUpdated", { uri, html });
 	}
@@ -482,6 +670,7 @@ function getFreshState(uri: string): DocumentState | undefined {
 		doc.version,
 		ingredientDB,
 		graph ? { graph, cache: moduleMeasureCache } : undefined,
+		recipeSettings,
 	);
 	states.set(uri, fresh);
 	return fresh;
@@ -499,6 +688,9 @@ documents.onDidChangeContent((e) => {
 });
 documents.onDidClose((e) => {
 	states.delete(e.document.uri);
+	viewStates.delete(e.document.uri);
+	openViews.delete(e.document.uri);
+	sessions.delete(e.document.uri);
 	graphs.delete(e.document.uri);
 	const pending = pendingRefresh.get(e.document.uri);
 	if (pending) {
@@ -589,7 +781,7 @@ connection.languages.semanticTokens.on(({ textDocument: { uri } }) => {
 
 connection.languages.inlayHint.on(({ textDocument: { uri } }) => {
 	const s = states.get(uri);
-	return s ? provideInlayHints(s, miseEnPlace, rests) : [];
+	return s ? provideInlayHints(s, settings.miseEnPlace, settings.rests) : [];
 });
 
 connection.onCodeLens(({ textDocument: { uri } }) => {

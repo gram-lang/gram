@@ -18,6 +18,7 @@ export async function buildFiles(
 			limit(async () => {
 				const { compiled, analyzed, usedStock } = await runPipeline(file, {
 					db: opts.db,
+					recipe: opts.recipe,
 					scaleFactor: opts.scaleFactor,
 					lang: opts.lang,
 					paths: opts.paths,

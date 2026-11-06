@@ -14,6 +14,10 @@ import { buildWatchReverseIndex } from "../core/watch-graph";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { checkFiles } from "../services/checker";
 import { buildFiles } from "../services/builder";
+import {
+	readRecipeSettingArgs,
+	recipeSettingArgs,
+} from "../services/setting-args";
 import { getErrorMessage } from "../errors";
 
 export default defineCommand({
@@ -38,6 +42,7 @@ export default defineCommand({
 			alias: "o",
 			description: "Output directory for built JSON files (used with --build)",
 		},
+		...recipeSettingArgs(),
 		db: {
 			type: "string",
 			description: "Path to ingredient database YAML",
@@ -58,6 +63,7 @@ export default defineCommand({
 		const watchDir = args.dir ? resolve(args.dir as string) : root;
 		const config = await loadConfig();
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		const recipe = readRecipeSettingArgs(args);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
 		const stock = resolveStockFromConfig(args.stock, config);
@@ -117,6 +123,7 @@ export default defineCommand({
 				try {
 					const results = await buildFiles([abs], {
 						db: db ?? undefined,
+						recipe,
 						lang: config.language,
 						paths: config.paths,
 						stock,
