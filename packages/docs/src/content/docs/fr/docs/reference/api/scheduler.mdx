@@ -403,9 +403,12 @@ function parseLocalIso(value: string, timeZone: string): number; // "2026-10-11T
 function parseInstant(value: string, timeZone: string): number;  // instant ISO (avec 'Z' ou décalage UTC) ou heure locale
 function toLocalIso(utcMinutes: number, timeZone: string): string; // → "2026-10-11T13:00"
 function toUtcIso(utcMinutes: number): string;                    // → "2026-10-11T11:00:00Z"
+function isCalendarDate(value: string): boolean;                 // "2028-02-29" → true, "2026-02-30" → false
 ```
 
 Lors du passage à l'heure d'été, une heure locale inexistante (par exemple 02:30 lors de l'avance des horloges) est automatiquement décalée vers la première heure valide suivante ; lors du passage à l'heure d'hiver, une heure ambiguë (apparaissant deux fois lors du recul) est résolue sur sa première occurrence.
+
+Une date qui n'existe pas (un 30 février, un 31 avril) est refusée par une `RangeError` au lieu de glisser au mois suivant.
 
 ## Ressources associées
 

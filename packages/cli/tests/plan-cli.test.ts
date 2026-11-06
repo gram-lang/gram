@@ -211,6 +211,29 @@ describe("gram plan", () => {
 			expect(code).toBe(1);
 		}
 	});
+
+	it("refuses a day the calendar does not have, or a present it cannot read, with a message and no stack", () => {
+		for (const [bad, said] of [
+			[
+				["--serve", "2026-02-30 20:00"],
+				"2026-02-30 is not a day of the calendar",
+			],
+			[
+				["--available", "2026-02-30=none"],
+				'Unknown --available key "2026-02-30"',
+			],
+			[["--now", "banana"], 'Expected --now like "2026-10-11T11:00:00Z"'],
+		] as const) {
+			const args = [...PLAN];
+			const at = args.indexOf(bad[0]);
+			if (at === -1) args.push(...bad);
+			else args[at + 1] = bad[1];
+			const { code, out, err } = gram(...args);
+			expect(code).toBe(1);
+			expect(out + err).toContain(said);
+			expect(out + err).not.toContain("    at ");
+		}
+	});
 });
 
 describe("gram plan without a serving time", () => {

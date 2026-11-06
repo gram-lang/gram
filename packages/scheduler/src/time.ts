@@ -107,6 +107,33 @@ export function toUtcIso(utcMinutes: number): string {
 const LOCAL_ISO = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})$/;
 const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
 
+/** Days in a month (1-12) of a year, leap years included. */
+const daysInMonth = (year: number, month: number) =>
+	new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+/** Whether a year, month (1-12) and day name a day that exists. */
+const isRealDay = (year: number, month: number, day: number) =>
+	month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth(year, month);
+
+/**
+ * Whether "YYYY-MM-DD" names a day of the calendar: "2026-02-30" has the shape
+ * of a date but is not one, and would otherwise roll over to March 2.
+ */
+export function isCalendarDate(value: string): boolean {
+	const m = DATE_ONLY.exec(value);
+	return m !== null && isRealDay(Number(m[1]), Number(m[2]), Number(m[3]));
+}
+
+/** The year, month and day of "YYYY-MM-DD", refusing a day that does not exist. */
+function dateParts(date: string): [number, number, number] {
+	const m = DATE_ONLY.exec(date);
+	const parts = m?.slice(1).map(Number) as [number, number, number] | undefined;
+	if (!parts || !isRealDay(...parts)) {
+		throw new RangeError(`"${date}" is not a valid date`);
+	}
+	return parts;
+}
+
 /** Minutes since the epoch of a local wall-clock reading read as if it were UTC. */
 function wallClockMinutes(
 	year: number,
@@ -167,14 +194,7 @@ export function parseLocalIso(value: string, timeZone: string): number {
 		number,
 		number,
 	];
-	if (
-		hour > 23 ||
-		minute > 59 ||
-		month < 1 ||
-		month > 12 ||
-		day < 1 ||
-		day > 31
-	) {
+	if (hour > 23 || minute > 59 || !isRealDay(year, month, day)) {
 		throw new RangeError(`"${value}" is not a valid date-time`);
 	}
 	return localToUtc(year, month, day, hour * 60 + minute, timeZone);
@@ -200,30 +220,24 @@ export function localDateTime(
 	minuteOfDay: number,
 	timeZone: string,
 ): number {
-	const m = DATE_ONLY.exec(date);
-	if (!m) throw new RangeError(`"${date}" is not a valid date`);
-	const [year, month, day] = m.slice(1).map(Number) as [number, number, number];
+	const [year, month, day] = dateParts(date);
 	return localToUtc(year, month, day, minuteOfDay, timeZone);
 }
 
 /** The local date `days` after `date` (negative: before), as "YYYY-MM-DD". */
 export function addDays(date: string, days: number): string {
-	const m = DATE_ONLY.exec(date);
-	if (!m) throw new RangeError(`"${date}" is not a valid date`);
-	const [year, month, day] = m.slice(1).map(Number) as [number, number, number];
+	const [year, month, day] = dateParts(date);
 	const shifted = new Date(Date.UTC(year, month - 1, day + days));
 	return `${pad(shifted.getUTCFullYear(), 4)}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`;
 }
 
 /** Whole local days from `from` to `to` (both "YYYY-MM-DD"). */
 export function daysBetween(from: string, to: string): number {
-	const a = DATE_ONLY.exec(from);
-	const b = DATE_ONLY.exec(to);
-	if (!a || !b)
-		throw new RangeError(`"${from}" or "${to}" is not a valid date`);
-	const ms = (m: RegExpExecArray) =>
-		Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-	return Math.round((ms(b) - ms(a)) / (MINUTES_PER_DAY * MS_PER_MINUTE));
+	const ms = (date: string) => {
+		const [year, month, day] = dateParts(date);
+		return Date.UTC(year, month - 1, day);
+	};
+	return Math.round((ms(to) - ms(from)) / (MINUTES_PER_DAY * MS_PER_MINUTE));
 }
 
 /** "08:00" to minutes since midnight. */
