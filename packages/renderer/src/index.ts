@@ -11,10 +11,11 @@ export {
 } from "./shared/nutrition";
 export { timesOf } from "./shared/mise-en-place";
 export { prepareViews } from "./prepare-views";
-export { FORMATS } from "./contract";
+export { FORMAT_DEFINITIONS, FORMATS } from "./contract";
 export type {
 	Capability,
 	Format,
+	FormatDefinition,
 	InspectorDefinition,
 	OutputBase,
 	OutputDefinition,

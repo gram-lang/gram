@@ -1,7 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import { getDictionary } from "@gram-lang/i18n";
 import { compile } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
 import {
+	FORMAT_DEFINITIONS,
 	FORMATS,
 	VIEW_SETTINGS,
 	getView,
@@ -45,6 +47,23 @@ const settings = {
 const input = prepareViews(compiled, settings, { lang: "fr" });
 
 describe("the views registry", () => {
+	it("describes every format once, and lists every described format", () => {
+		expect([...FORMATS].sort()).toEqual(Object.keys(FORMAT_DEFINITIONS).sort());
+		for (const format of FORMATS) {
+			const { display, language } = FORMAT_DEFINITIONS[format];
+			if (display === "code") expect(language, format).toBeTruthy();
+		}
+	});
+
+	it("names every format in every language", () => {
+		for (const lang of ["en", "fr"]) {
+			const names = getDictionary(lang).renderer.formats;
+			for (const format of FORMATS) {
+				expect(names[format], `${format} in ${lang}`).toBeString();
+			}
+		}
+	});
+
 	it("lists each view once, with formats and settings that exist", () => {
 		// Read from the registry, not listed here: a view added there needs no
 		// edit in this test.
