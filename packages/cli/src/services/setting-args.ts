@@ -195,12 +195,12 @@ export const EXPORT_VIEW_SETTINGS: readonly ViewSettingKey[] = (
 	views.some((view) => (view.honors as readonly string[]).includes(key)),
 );
 
-/** What the work plan honors: `gram plan`. */
-export const WORK_PLAN_SETTINGS: readonly ViewSettingKey[] = [
-	"miseEnPlace",
-	"rests",
-	"comments",
-];
+/** What the work plan honors: `gram plan`. Read from its view, not copied. */
+export const WORK_PLAN_SETTINGS: readonly ViewSettingKey[] = (
+	Object.keys(VIEW_SETTINGS) as ViewSettingKey[]
+).filter((key) =>
+	views.find((view) => view.id === "workPlan")?.honors.includes(key as never),
+);
 
 /** The two settings of a timeline alone: `gram cook`'s total time and timers. */
 export const TIMELINE_SETTINGS: readonly ViewSettingKey[] = [
