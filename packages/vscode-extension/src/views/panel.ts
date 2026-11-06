@@ -12,6 +12,7 @@ import {
 	type ViewsCapability,
 } from "./protocol";
 import type { PanelView } from "./state";
+import type { FromPage, ToPage } from "../webview/messages";
 import { webviewPage } from "./webview";
 
 function nonce(): string {
@@ -85,17 +86,19 @@ export class ViewPanel {
 		private readonly sessionHost: PanelSession | undefined,
 	) {
 		this.planned = isPlanned(output);
-		const media = (file: string) =>
+		const asset = (...segments: string[]) =>
 			panel.webview
-				.asWebviewUri(vscode.Uri.joinPath(extensionUri, "media", file))
+				.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...segments))
 				.toString();
 		panel.webview.html = webviewPage({
 			nonce: nonce(),
 			cspSource: panel.webview.cspSource,
 			styles: {
-				preview: media("preview.css"),
-				jsonTree: media("json-tree.css"),
+				preview: asset("media", "preview.css"),
+				jsonTree: asset("media", "json-tree.css"),
+				view: asset("dist", "webview", "view.css"),
 			},
+			script: asset("dist", "webview", "view.js"),
 			title: output.label,
 			showError: capability.strings.showError,
 			outputEmpty: capability.strings.outputEmpty,
@@ -111,7 +114,9 @@ export class ViewPanel {
 		});
 		panel.onDidDispose(() => this.dispose(), null, this.disposables);
 		panel.webview.onDidReceiveMessage(
-			(message: { type?: string; patch?: unknown; open?: unknown }) => {
+			// Typed as the page sends them, but read with care: the page shows
+			// a recipe's HTML.
+			(message: Partial<FromPage> & { patch?: unknown; open?: unknown }) => {
 				if (message.type === "ready") {
 					// The page was (re)built, a hidden panel shown again included:
 					// it starts empty, with its suggestions folded, so it gets
@@ -119,7 +124,7 @@ export class ViewPanel {
 					this.ready = true;
 					this.suggestions.open = false;
 					this.choices.open = false;
-					this.post(true);
+					this.postView(true);
 					this.postSession();
 					if (this.macrosPending) this.showMacros();
 				} else if (message.type === "showError") {
@@ -155,7 +160,10 @@ export class ViewPanel {
 			{ viewColumn: column, preserveFocus: true },
 			{
 				enableScripts: true,
-				localResourceRoots: [vscode.Uri.joinPath(extensionUri, "media")],
+				localResourceRoots: [
+					vscode.Uri.joinPath(extensionUri, "media"),
+					vscode.Uri.joinPath(extensionUri, "dist", "webview"),
+				],
 			},
 		);
 		return new ViewPanel(
@@ -186,7 +194,7 @@ export class ViewPanel {
 		const name = path.basename(vscode.Uri.parse(uri).fsPath);
 		this.panel.title = `${this.output.label}: ${name}`;
 		if (!this.ready) return;
-		if (contentChanged || pausedChanged) this.post(contentChanged);
+		if (contentChanged || pausedChanged) this.postView(contentChanged);
 		if (sessionChanged) this.postSession();
 		// A new content (an edit, another recipe, other settings, a new
 		// session) may change what can be served when, and what can be chosen:
@@ -199,7 +207,7 @@ export class ViewPanel {
 
 	private postSession(): void {
 		if (!this.sessionHost) return;
-		void this.panel.webview.postMessage({
+		void this.post({
 			type: "session",
 			session: this.session,
 		});
@@ -211,8 +219,7 @@ export class ViewPanel {
 		if (!host || !uri || !this.planned) return Promise.resolve();
 		return this.suggestions.ask(
 			() => host.suggest(uri),
-			(data) =>
-				void this.panel.webview.postMessage({ type: "suggestions", data }),
+			(data) => void this.post({ type: "suggestions", data }),
 			() => !this.disposed && uri === this.uri,
 		);
 	}
@@ -223,7 +230,7 @@ export class ViewPanel {
 		if (!host || !uri) return Promise.resolve();
 		return this.choices.ask(
 			() => host.choices(uri),
-			(data) => void this.panel.webview.postMessage({ type: "choices", data }),
+			(data) => void this.post({ type: "choices", data }),
 			() => !this.disposed && uri === this.uri,
 		);
 	}
@@ -235,15 +242,20 @@ export class ViewPanel {
 			return;
 		}
 		this.macrosPending = false;
-		void this.panel.webview.postMessage({ type: "showMacros" });
+		void this.post({ type: "showMacros" });
 	}
 
-	private post(withContent: boolean): void {
+	/** Sends the page a message, typed as it reads them. */
+	private post(message: ToPage): Thenable<boolean> {
+		return this.panel.webview.postMessage(message);
+	}
+
+	private postView(withContent: boolean): void {
 		const { content, paused } = this.view;
 		if (withContent && content) {
-			void this.panel.webview.postMessage({ type: "content", content });
+			void this.post({ type: "content", content });
 		}
-		void this.panel.webview.postMessage({
+		void this.post({
 			type: "paused",
 			error: paused ?? null,
 		});

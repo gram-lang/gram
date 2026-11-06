@@ -1,0 +1,258 @@
+/* The page of a view panel: the renderer's colors blended into the VS Code theme, the banner, the session controls, the inspectors' panes. */
+:root,
+body.vscode-light,
+body.vscode-dark,
+body.vscode-high-contrast {
+	/* The renderer's colors, blended into the VS Code theme. */
+	--color-bg: var(--vscode-editor-background);
+	--color-bg-subtle: var(--vscode-editorWidget-background);
+	--color-bg-muted: var(--vscode-editorWidget-background);
+	--color-surface: var(--vscode-editorWidget-background);
+	--color-surface-raised: var(--vscode-editorWidget-background);
+	--color-border: var(--vscode-widget-border);
+	--color-border-strong: var(--vscode-focusBorder);
+	--color-text-muted: var(--vscode-descriptionForeground);
+	--color-text: var(--vscode-editor-foreground);
+	--color-text-strong: var(--vscode-editor-foreground);
+	--gram-font-sans: "Inter", var(--vscode-font-family);
+	--gram-font-mono: var(--vscode-editor-font-family);
+	/* The JSON tree of the inspectors. */
+	--gram-json-font: var(--vscode-editor-font-family);
+	--gram-json-key: var(
+		--vscode-symbolIcon-propertyForeground,
+		var(--vscode-textLink-foreground)
+	);
+	--gram-json-string: var(
+		--vscode-debugTokenExpression-string,
+		var(--vscode-charts-green)
+	);
+	--gram-json-punct: var(--vscode-descriptionForeground);
+	--gram-json-muted: var(--vscode-descriptionForeground);
+	--gram-json-guide: var(
+		--vscode-tree-indentGuidesStroke,
+		var(--vscode-widget-border)
+	);
+	--gram-json-hover: var(--vscode-list-hoverBackground);
+}
+html,
+body {
+	margin: 0;
+}
+body {
+	font-family: var(--gram-font-sans);
+	color: var(--color-text-strong);
+}
+#top {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+#banner {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 6px 12px;
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size, 13px);
+	color: var(--vscode-editorWarning-foreground, var(--vscode-foreground));
+	background: var(
+		--vscode-inputValidation-warningBackground,
+		var(--vscode-editorWidget-background)
+	);
+	border-bottom: 1px solid
+		var(--vscode-inputValidation-warningBorder, var(--vscode-widget-border));
+}
+#banner[hidden] {
+	display: none;
+}
+#banner .title {
+	font-weight: 600;
+}
+#banner .message {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--vscode-descriptionForeground);
+}
+#banner button {
+	font: inherit;
+	padding: 2px 10px;
+	cursor: pointer;
+	border: none;
+	border-radius: 2px;
+	color: var(--vscode-button-foreground);
+	background: var(--vscode-button-background);
+}
+#banner button:hover {
+	background: var(--vscode-button-hoverBackground);
+}
+#controls {
+	padding: 6px 12px;
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size, 13px);
+	color: var(--vscode-foreground);
+	background: var(--vscode-editor-background);
+	border-bottom: 1px solid var(--vscode-widget-border, transparent);
+}
+#controls .serving-row,
+#controls .session-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+#controls label {
+	color: var(--vscode-descriptionForeground);
+}
+#controls input {
+	font: inherit;
+	padding: 2px 4px;
+	border-radius: 2px;
+	color: var(--vscode-input-foreground);
+	background: var(--vscode-input-background);
+	border: 1px solid var(--vscode-input-border, transparent);
+	color-scheme: light dark;
+}
+#controls input:focus {
+	outline: 1px solid var(--vscode-focusBorder);
+	outline-offset: -1px;
+}
+#controls button {
+	font: inherit;
+	padding: 2px 10px;
+	cursor: pointer;
+	border: none;
+	border-radius: 2px;
+	color: var(--vscode-button-foreground);
+	background: var(--vscode-button-background);
+}
+#controls button:hover {
+	background: var(--vscode-button-hoverBackground);
+}
+#controls button.secondary {
+	color: var(--vscode-button-secondaryForeground);
+	background: var(--vscode-button-secondaryBackground);
+}
+#controls button.secondary:hover {
+	background: var(--vscode-button-secondaryHoverBackground);
+}
+#controls button[hidden],
+#controls [hidden] {
+	display: none;
+}
+#controls summary {
+	cursor: pointer;
+	margin-top: 4px;
+	color: var(--vscode-textLink-foreground);
+	width: fit-content;
+}
+#controls summary:focus-visible {
+	outline: 1px solid var(--vscode-focusBorder);
+}
+.serve-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 6px 0 2px;
+}
+.serve-pills button {
+	border-radius: 10px;
+	padding: 2px 10px;
+}
+.serve-pills button.secondary[aria-pressed="true"],
+.serve-pills button[aria-pressed="true"] {
+	outline: 1px solid var(--vscode-focusBorder);
+	outline-offset: 1px;
+}
+.serve-none {
+	margin: 6px 0 2px;
+	color: var(--vscode-descriptionForeground);
+}
+.serve-why summary {
+	color: var(--vscode-descriptionForeground);
+	font-size: 0.95em;
+}
+.serve-why ul {
+	margin: 4px 0;
+	padding-left: 18px;
+	color: var(--vscode-descriptionForeground);
+}
+#controls select {
+	font: inherit;
+	padding: 2px 4px;
+	border-radius: 2px;
+	color: var(--vscode-dropdown-foreground);
+	background: var(--vscode-dropdown-background);
+	border: 1px solid var(--vscode-dropdown-border, transparent);
+}
+#controls select:focus {
+	outline: 1px solid var(--vscode-focusBorder);
+	outline-offset: -1px;
+}
+#controls #scale-factor {
+	width: 6em;
+}
+#controls #scale-qty {
+	width: 6em;
+}
+.session-body {
+	max-height: 45vh;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 6px 0 2px;
+}
+.session-body > button {
+	align-self: flex-start;
+}
+.session-summary {
+	color: var(--vscode-descriptionForeground);
+}
+.session-error {
+	margin: 0;
+	color: var(--vscode-editorWarning-foreground, var(--vscode-foreground));
+}
+#stock {
+	margin: 0;
+	padding: 4px 8px;
+	border: 1px solid var(--vscode-widget-border, transparent);
+	border-radius: 2px;
+}
+#stock legend {
+	color: var(--vscode-descriptionForeground);
+	padding: 0 4px;
+}
+#stock label {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	color: var(--vscode-foreground);
+	font-family: var(--vscode-editor-font-family);
+}
+body.paused #content {
+	opacity: 0.45;
+	pointer-events: none;
+	transition: opacity 120ms;
+}
+.gram-empty {
+	padding: 24px 20px;
+	color: var(--vscode-descriptionForeground);
+	font-family: var(--vscode-font-family);
+}
+.gram-code {
+	margin: 0;
+	padding: 12px 16px;
+	white-space: pre;
+	overflow: auto;
+	font-family: var(--vscode-editor-font-family);
+	font-size: var(--vscode-editor-font-size, 13px);
+	color: var(--vscode-editor-foreground);
+}
+.gram-json-tree {
+	padding: 12px 16px;
+	color: var(--vscode-editor-foreground);
+	font-size: var(--vscode-editor-font-size, 13px);
+}

@@ -14,6 +14,20 @@ async function build() {
         external: ['vscode'],
     });
 
+    // The script and styles of the view panels' page, loaded by the webview
+    await esbuild.build({
+        entryPoints: ['src/webview/view.ts'],
+        bundle: true,
+        outfile: 'dist/webview/view.js',
+        format: 'iife',
+        platform: 'browser',
+        target: 'es2022',
+    });
+    fs.copyFileSync(
+        path.join(__dirname, 'src', 'webview', 'view.css'),
+        path.join(__dirname, 'dist', 'webview', 'view.css'),
+    );
+
     // Copy the language server bundle into the extension's dist/
     // so the extension can reference it as a single self-contained dist/ folder
     const serverSrc = path.join(__dirname, '..', 'language-server', 'dist', 'server.cjs');
