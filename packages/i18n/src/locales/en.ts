@@ -24,6 +24,25 @@ export const en = {
 			whyNot: "Why not the others?",
 			earliest: "Earliest: {when}",
 		},
+		/** The session controls of a view (the editor's panel): scale, baker's reference, stock. */
+		session: {
+			title: "Scale and stock",
+			scale: "Scale",
+			byIngredient: "or by ingredient",
+			ingredient: "Choose an ingredient",
+			qty: "Quantity",
+			unit: "Unit",
+			apply: "Apply",
+			bakersReference: "Baker's reference",
+			auto: "Automatic (@*)",
+			stock: "In stock",
+			stockHint:
+				"Already on hand: one shopping-list line, and its steps leave the plan.",
+			reset: "Reset",
+			scaled: "{factor} %",
+			inStock: "{n} in stock",
+			scaleError: "Scale not applied: {reason}",
+		},
 		/** The name of each output of the renderer (`outputs`), by its id. */
 		outputs: {
 			recipe: "Recipe",

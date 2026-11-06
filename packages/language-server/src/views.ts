@@ -14,6 +14,7 @@ import {
 	suggestServeTimes,
 } from "@gram-lang/renderer";
 import { getDictionary } from "@gram-lang/i18n";
+import type { ModuleGraph } from "@gram-lang/modules";
 import type { DocumentState } from "./document-state";
 
 /**
@@ -48,6 +49,8 @@ export interface ViewsCapability {
 			| "earliest",
 			string
 		>;
+		/** The session controls of a view: scale, baker's reference, stock. */
+		session: Record<string, string>;
 	};
 }
 
@@ -66,6 +69,7 @@ export function describeOutputs(locale?: string): ViewsCapability {
 			showError: t.showError,
 			outputEmpty: t.outputEmpty,
 			serving: { ...t.serving },
+			session: { ...t.session },
 		},
 	};
 }
@@ -276,4 +280,61 @@ export function serveTimesOf(
 		...(words !== undefined && { lang: words }),
 		...(options.mealTimes && { mealTimes: options.mealTimes }),
 	});
+}
+
+/** The answer of `gram/sessionChoices`: what a client offers in its session controls. */
+export interface SessionChoices {
+	/** The ingredients of the recipe as written, for a target quantity and the baker's reference. */
+	ingredients: { id: string; name: string; qty?: number; unit?: string }[];
+	/** Every `@use` import of the recipe, nested ones included, that can be marked in stock. */
+	imports: { uri: string; specifier: string }[];
+	/** Whether baker's percentages are on (`gram.bakersMath`): the reference only matters then. */
+	bakersMath: boolean;
+	/** Why the session's scale could not be applied, when it could not. */
+	scaleError?: string;
+}
+
+/**
+ * `gram/sessionChoices`: the ingredients, the imports and the baker's math of
+ * a recipe, read from its source as written (`state`), not from the views'
+ * scaled compilation, so the choices do not move with the scale. `null`
+ * without a compilation.
+ */
+export function sessionChoicesOf(
+	state: DocumentState,
+	options: {
+		graph?: ModuleGraph;
+		bakersMath: boolean;
+		/** The views' compilation, which carries the scale error. */
+		viewState?: DocumentState;
+	},
+): SessionChoices | null {
+	const compilation = state.compilation;
+	if (!compilation) return null;
+	const ingredients = (compilation.shopping_list ?? []).map((item) => ({
+		id: item.id,
+		name: item.name || item.id,
+		...(typeof item.qty === "number" && { qty: item.qty }),
+		...(item.unit && { unit: item.unit }),
+	}));
+	// Every import edge, wherever it is declared: a stocked import can be
+	// nested at any depth, as in the playground.
+	const imports: SessionChoices["imports"] = [];
+	const seen = new Set<string>();
+	const graph = options.graph;
+	for (const uri of graph?.order ?? []) {
+		for (const { decl, uri: depUri } of graph?.modules.get(uri)?.imports ??
+			[]) {
+			if (seen.has(depUri)) continue;
+			seen.add(depUri);
+			imports.push({ uri: depUri, specifier: decl.specifier });
+		}
+	}
+	const scaleError = options.viewState?.scaleError;
+	return {
+		ingredients,
+		imports,
+		bakersMath: options.bakersMath,
+		...(scaleError && { scaleError }),
+	};
 }
