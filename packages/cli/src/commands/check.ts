@@ -1,5 +1,5 @@
 import { defineCommand } from "citty";
-import { spinner, log } from "@clack/prompts";
+import { spinner } from "@clack/prompts";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
@@ -9,7 +9,7 @@ import {
 	renderCheckResult,
 	reportRejectedIngredients,
 } from "../ui/diagnostics";
-import { ExitCode, GramCLIError } from "../errors";
+import { ExitCode, exitOnError } from "../errors";
 
 export default defineCommand({
 	meta: {
@@ -49,11 +49,7 @@ export default defineCommand({
 		try {
 			files = await resolveGlob(patterns);
 		} catch (err) {
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(err);
 		}
 
 		const config = await loadConfig();

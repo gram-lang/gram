@@ -7,7 +7,7 @@ import { resolveGlob } from "../../core/glob";
 import { analyzeIngredients, applySync } from "../../services/db-sync";
 import { renderSyncResult } from "../../ui/db-sync";
 import { reportRejectedIngredients } from "../../ui/diagnostics";
-import { ExitCode, GramCLIError } from "../../errors";
+import { ExitCode, exitOnError } from "../../errors";
 import type { FuzzyMatch } from "../../types";
 
 export default defineCommand({
@@ -41,11 +41,7 @@ export default defineCommand({
 		try {
 			files = await resolveGlob(patterns);
 		} catch (err) {
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(err);
 		}
 
 		const config = await loadConfig();

@@ -14,7 +14,7 @@ import {
 	buildAcceptDecision,
 } from "../../ui/db-enrich";
 import { reportRejectedIngredients } from "../../ui/diagnostics";
-import { ExitCode, GramCLIError } from "../../errors";
+import { ExitCode, exitOnError } from "../../errors";
 
 export default defineCommand({
 	meta: {
@@ -97,11 +97,7 @@ export default defineCommand({
 			});
 		} catch (err) {
 			s.stop("Failed.");
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(err);
 		}
 
 		s.stop("Done.");

@@ -29,7 +29,7 @@ import {
 	recipeSettingArgs,
 	viewSettingArgs,
 } from "../services/setting-args";
-import { ExitCode, GramCLIError } from "../errors";
+import { ExitCode, exitOnError } from "../errors";
 
 export default defineCommand({
 	meta: {
@@ -118,11 +118,7 @@ export default defineCommand({
 			view = resolveExportView(args, rawArgs, config);
 			format = resolveCliFormat(view.view, fmt, EXPORT_FORMATS);
 		} catch (err) {
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(err);
 		}
 		const stock = resolveStockFromConfig(args.stock, config);
 
@@ -150,11 +146,7 @@ export default defineCommand({
 				},
 			});
 		} catch (err) {
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(err);
 		}
 
 		reportUnusedStock("gram export", "exported", stock, [{ usedStock }]);

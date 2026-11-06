@@ -1,5 +1,4 @@
 import { defineCommand } from "citty";
-import { log } from "@clack/prompts";
 import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parseInstant, toUtcIso } from "@gram-lang/scheduler";
@@ -20,7 +19,7 @@ import {
 	readViewSettingArgs,
 	viewSettingArgs,
 } from "../services/setting-args";
-import { ExitCode, GramCLIError } from "../errors";
+import { ExitCode, exitOnError, GramCLIError } from "../errors";
 import {
 	PLAN_FLAG_ARGS,
 	resolveKitchenContext,
@@ -167,11 +166,7 @@ export default defineCommand({
 			}
 			process.exit(ExitCode.Ok);
 		} catch (err) {
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
+			exitOnError(err);
 		}
 	},
 });

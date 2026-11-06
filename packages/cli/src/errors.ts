@@ -36,6 +36,27 @@ export function reportError(err: unknown): void {
 	}
 }
 
+/**
+ * Ends a command on an error it caught, the same way in every command: its
+ * message on one line, never a stack trace unless --verbose/--debug was
+ * passed. A `GramCLIError` exits with its own code; anything else (an engine
+ * refusing its input, a bug) with `ExitCode.Error`. `report` writes the
+ * message, for a command that prints it its own way (raw output on stderr, a
+ * styled stream).
+ */
+export function exitOnError(
+	err: unknown,
+	report: (message: string) => void = (message) => log.error(message),
+): never {
+	report(getErrorMessage(err));
+	if (verbose && !(err instanceof GramCLIError) && err instanceof Error) {
+		if (err.stack) console.error(err.stack);
+	}
+	return process.exit(
+		err instanceof GramCLIError ? err.exitCode : ExitCode.Error,
+	);
+}
+
 export class GramCLIError extends Error {
 	constructor(
 		message: string,
