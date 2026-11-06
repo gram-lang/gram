@@ -1,5 +1,5 @@
 import type { Availability, TimeRange } from "./projection";
-import { WEEKDAYS, type Weekday } from "./time";
+import { WEEKDAYS, type Weekday, isCalendarDate } from "./time";
 
 /** The cook is there all day: the availability when nothing says otherwise. */
 export const ALL_DAY: Availability = {
@@ -23,7 +23,6 @@ export type AvailabilityParse =
 	| ({ ok: false } & AvailabilityProblem);
 
 const CLOCK = /^([01]?\d|2[0-4]):([0-5]\d)$/;
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function parseRanges(text: string): TimeRange[] | string {
 	if (text === "none") return [];
@@ -76,7 +75,7 @@ export function parseAvailability(
 		} else if ((WEEKDAYS as readonly string[]).includes(key)) {
 			const day = key as Weekday;
 			weekdays[day] = [...(weekdays[day] ?? []), ...ranges];
-		} else if (DATE.test(key)) {
+		} else if (isCalendarDate(key)) {
 			dates[key] = [...(dates[key] ?? []), ...ranges];
 		} else {
 			return { ok: false, reason: "key", entry, part: entry.slice(0, eq) };

@@ -5,6 +5,8 @@ import { resolveExportView } from "../src/services/plan-options";
 import {
 	collectFlag,
 	parseAvailability,
+	parseFindRange,
+	parseNow,
 	parseServe,
 	parseTimeZone,
 } from "../src/services/plan-flags";
@@ -53,6 +55,57 @@ describe("parseServe", () => {
 			'"2026-10-11 13:00"',
 		);
 		expect(messageOf(() => parseServe(undefined))).toContain("--serve");
+	});
+
+	it("refuses a day the calendar does not have, instead of moving it to March", () => {
+		expect(messageOf(() => parseServe("2026-02-30 20:00"))).toBe(
+			'--serve "2026-02-30 20:00": 2026-02-30 is not a day of the calendar.',
+		);
+		expect(parseServe("2028-02-29 20:00")).toBe("2028-02-29T20:00");
+	});
+});
+
+describe("parseFindRange", () => {
+	it("reads two local bounds", () => {
+		expect(parseFindRange("2026-10-12/2026-10-15 20:00")).toEqual({
+			from: "2026-10-12",
+			to: "2026-10-15T20:00",
+		});
+	});
+
+	it("refuses a bound the calendar does not have", () => {
+		expect(messageOf(() => parseFindRange("2026-02-28/2026-02-31"))).toContain(
+			'Expected --find like "2026-10-12/2026-10-15"',
+		);
+		expect(
+			messageOf(() => parseFindRange("2026-02-30 12:00/2026-03-02")),
+		).toContain("--find");
+	});
+});
+
+describe("parseNow", () => {
+	it("is now without a value", () => {
+		const before = Date.now();
+		const now = Date.parse(parseNow(undefined, "Europe/Paris"));
+		expect(now).toBeGreaterThanOrEqual(before);
+	});
+
+	it("takes an instant or a local date and time, as written", () => {
+		expect(parseNow("2026-10-01T09:00:00Z", "Europe/Paris")).toBe(
+			"2026-10-01T09:00:00Z",
+		);
+		expect(parseNow("2026-10-10T10:00", "Europe/Paris")).toBe(
+			"2026-10-10T10:00",
+		);
+	});
+
+	it("refuses what it cannot read, saying what it expects", () => {
+		expect(messageOf(() => parseNow("banana", "Europe/Paris"))).toBe(
+			'Expected --now like "2026-10-11T11:00:00Z" or "2026-10-11T13:00" (a local date and time), got "banana".',
+		);
+		expect(messageOf(() => parseNow("2026-02-30T10:00", "UTC"))).toContain(
+			"--now",
+		);
 	});
 });
 
@@ -126,6 +179,12 @@ describe("parseAvailability", () => {
 				],
 			},
 		});
+	});
+
+	it("refuses a date the calendar does not have, which would never apply", () => {
+		expect(messageOf(() => parseAvailability(["2026-02-30=none"]))).toContain(
+			'Unknown --available key "2026-02-30"',
+		);
 	});
 
 	it("reads a weekday in any case, and none as not available", () => {

@@ -46,6 +46,8 @@ describe("parseSession", () => {
 			}),
 		).toEqual({});
 		expect(parseSession({ serveAt: "2026-10-11T25:00" })).toEqual({});
+		// Shaped like a date, but not a day of the calendar.
+		expect(parseSession({ serveAt: "2026-02-30T20:00" })).toEqual({});
 		expect(parseSession({ scale: { type: "target", id: "", qty: 3 } })).toEqual(
 			{},
 		);

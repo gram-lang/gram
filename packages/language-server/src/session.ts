@@ -1,4 +1,5 @@
 import type { ScaleRequest } from "@gram-lang/kitchen";
+import { isCalendarDate } from "@gram-lang/scheduler";
 
 /**
  * What the cook chose for this sitting with one recipe, sent by the client in
@@ -23,7 +24,7 @@ const SERVE_AT = /^(\d{4}-\d{2}-\d{2})[T ](\d{1,2}):(\d{2})$/;
 function parseServeAt(raw: unknown): string | undefined {
 	if (typeof raw !== "string") return undefined;
 	const m = SERVE_AT.exec(raw.trim());
-	if (!m) return undefined;
+	if (!m || !isCalendarDate(m[1]!)) return undefined;
 	const hour = Number(m[2]);
 	const minute = Number(m[3]);
 	if (hour > 23 || minute > 59) return undefined;

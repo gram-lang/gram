@@ -7,6 +7,8 @@ import {
 import {
 	addDays,
 	daysBetween,
+	isCalendarDate,
+	localDateTime,
 	parseClock,
 	parseInstant,
 	parseLocalIso,
@@ -73,6 +75,33 @@ describe("local time", () => {
 		expect(() => parseLocalIso("2026-10-11T25:00", PARIS)).toThrow(RangeError);
 		expect(() => toLocal(0, "Nowhere/Land")).toThrow(RangeError);
 		expect(() => parseClock("8h")).toThrow(RangeError);
+	});
+
+	it("refuses a day the month does not have, instead of rolling over", () => {
+		expect(() => parseLocalIso("2026-02-30T20:00", PARIS)).toThrow(
+			'"2026-02-30T20:00" is not a valid date-time',
+		);
+		expect(() => parseLocalIso("2026-04-31T20:00", PARIS)).toThrow(RangeError);
+		expect(() => parseLocalIso("2026-02-29T20:00", PARIS)).toThrow(RangeError);
+		expect(toLocalIso(parseLocalIso("2028-02-29T20:00", PARIS), PARIS)).toBe(
+			"2028-02-29T20:00",
+		);
+		expect(() => addDays("2026-02-30", 1)).toThrow(RangeError);
+		expect(() => daysBetween("2026-02-28", "2026-02-31")).toThrow(RangeError);
+		expect(() => localDateTime("2026-06-31", 600, PARIS)).toThrow(
+			'"2026-06-31" is not a valid date',
+		);
+	});
+
+	it("tells a day of the calendar from a date-shaped string", () => {
+		expect(isCalendarDate("2026-02-28")).toBe(true);
+		expect(isCalendarDate("2028-02-29")).toBe(true);
+		expect(isCalendarDate("2026-02-29")).toBe(false);
+		expect(isCalendarDate("2026-02-30")).toBe(false);
+		expect(isCalendarDate("2026-13-01")).toBe(false);
+		expect(isCalendarDate("2026-00-10")).toBe(false);
+		expect(isCalendarDate("2026-1-10")).toBe(false);
+		expect(isCalendarDate("2026-10-11T13:00")).toBe(false);
 	});
 
 	it("counts days on the calendar", () => {

@@ -65,7 +65,13 @@ export type {
 	TimeRange,
 } from "./projection";
 export { WEEKDAYS, type Weekday } from "./time";
-export { parseInstant, parseLocalIso, toLocalIso, toUtcIso } from "./time";
+export {
+	isCalendarDate,
+	parseInstant,
+	parseLocalIso,
+	toLocalIso,
+	toUtcIso,
+} from "./time";
 export {
 	DEFAULT_MEAL_TIMES,
 	EARLIEST_SERVE_HORIZON_DAYS,

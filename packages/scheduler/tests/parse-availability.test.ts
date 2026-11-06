@@ -45,6 +45,16 @@ describe("parseAvailability", () => {
 			entry: "someday=08:00-22:00",
 			part: "someday",
 		});
+		// Shaped like a date, but February has no 30th: it would never apply.
+		expect(parseAvailability(["2026-02-30=none"])).toEqual({
+			ok: false,
+			reason: "key",
+			entry: "2026-02-30=none",
+			part: "2026-02-30",
+		});
+		expect(parseAvailability(["2028-02-29=none"])).toMatchObject({
+			ok: true,
+		});
 		expect(parseAvailability(["25:00-26:00"])).toMatchObject({
 			ok: false,
 			reason: "range",

@@ -403,9 +403,12 @@ function parseLocalIso(value: string, timeZone: string): number; // "2026-10-11T
 function parseInstant(value: string, timeZone: string): number;  // ISO instant (with 'Z' or UTC offset) or local time
 function toLocalIso(utcMinutes: number, timeZone: string): string; // → "2026-10-11T13:00"
 function toUtcIso(utcMinutes: number): string;                    // → "2026-10-11T11:00:00Z"
+function isCalendarDate(value: string): boolean;                 // "2028-02-29" → true, "2026-02-30" → false
 ```
 
 During daylight saving time transitions, an invalid local time (e.g. 02:30 when clocks spring forward) shifts to the next valid time; an ambiguous local time (occurring twice when clocks fall back) resolves to its first occurrence.
+
+A date that does not exist (a 30th of February, a 31st of April) is refused with a `RangeError` rather than moved to the next month.
 
 ## Related resources
 

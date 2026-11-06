@@ -1,7 +1,9 @@
 import type { Availability } from "@gram-lang/scheduler";
 import {
 	WEEKDAYS,
+	isCalendarDate,
 	parseAvailability as parseEntries,
+	parseInstant,
 } from "@gram-lang/scheduler";
 import { ExitCode, GramCLIError } from "../errors";
 
@@ -42,7 +44,31 @@ export function parseServe(value: unknown): string {
 			`Expected --serve like "2026-10-11 13:00" (a local date and time), got "${text}".`,
 		);
 	}
+	if (!isCalendarDate(m[1]!)) {
+		return fail(`--serve "${text}": ${m[1]} is not a day of the calendar.`);
+	}
 	return `${m[1]}T${m[2]!.padStart(2, "0")}:${m[3]}`;
+}
+
+/**
+ * `--now`: the present, an instant with `Z` or an offset
+ * ("2026-10-11T11:00:00Z") or a local date and time in the time zone of the
+ * plan. Without it, now. Checked here so a typo is a message, not a stack
+ * trace raised while the plan is drawn.
+ */
+export function parseNow(value: unknown, timeZone: string): string {
+	if (value === undefined || value === null || value === "") {
+		return new Date().toISOString();
+	}
+	const text = String(value).trim();
+	try {
+		parseInstant(text, timeZone);
+		return text;
+	} catch {
+		return fail(
+			`Expected --now like "2026-10-11T11:00:00Z" or "2026-10-11T13:00" (a local date and time), got "${text}".`,
+		);
+	}
 }
 
 const isTimeZone = (zone: string) => {
@@ -165,7 +191,10 @@ export function parseFindRange(value: unknown): { from: string; to: string } {
 	const parts = text.split("/");
 	if (
 		parts.length !== 2 ||
-		!parts.every((p) => LOCAL_BOUND.test(p.trim())) ||
+		!parts.every(
+			(p) =>
+				LOCAL_BOUND.test(p.trim()) && isCalendarDate(p.trim().slice(0, 10)),
+		) ||
 		parts[0]!.trim() > parts[1]!.trim()
 	) {
 		return fail(

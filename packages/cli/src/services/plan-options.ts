@@ -10,6 +10,7 @@ import { ExitCode, GramCLIError } from "../errors";
 import {
 	collectFlag,
 	parseAvailability,
+	parseNow,
 	parseServe,
 	parseTimeZone,
 } from "./plan-flags";
@@ -59,13 +60,14 @@ export function resolveKitchenContext(
 	rawArgs: string[] | undefined,
 	config: { timezone?: string; availability?: unknown },
 ): KitchenContext {
+	const timeZone = parseTimeZone(args.tz, config.timezone);
 	return {
-		timeZone: parseTimeZone(args.tz, config.timezone),
+		timeZone,
 		availability: parseAvailability(
 			collectFlag(rawArgs ?? [], "available"),
 			config.availability,
 		),
-		now: (args.now as string | undefined) ?? new Date().toISOString(),
+		now: parseNow(args.now, timeZone),
 	};
 }
 
