@@ -13,7 +13,7 @@ Cooking is a bit like an algorithm: you take raw ingredients as input and output
 
 I've always loved the idea of writing recipes in plain text, heavily inspired by pioneering projects like the excellent [Cooklang](https://cooklang.org). Cooklang is fantastic for quick, straightforward home recipes. But when things get a bit more complex—like professional pastry formulas with multiple sub-components, baker's math, or tricky scheduling—relying entirely on natural language can get messy. 
 
-Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced presentations: a work plan for the kitchen, tabular flowcharts, and calendar exports. The engine computes; the views, like the work plan, only show what it computed.
+Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced presentations: a <Term id="runSheet" /> for the kitchen, tabular flowcharts, and calendar exports. The engine computes; the views, like the run sheet, only show what it computed.
 
 I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic**, **physical accuracy**, **modular composition**, and **predictive scheduling** into your recipe writing:
 
@@ -56,7 +56,7 @@ The Gram ecosystem gives you everything you need to treat recipes like software:
   
   ### Renderer
 
-    **`@gram-lang/renderer`**: Instantly generate Semantic HTML, work plans, and Markdown from your compiled JSON: views of data you can also draw yourself.
+    **`@gram-lang/renderer`**: Instantly generate Semantic HTML, run sheets, and Markdown from your compiled JSON: views of data you can also draw yourself.
   
 
 
@@ -249,7 +249,7 @@ Steps can optionally start with an **Action** enclosed in brackets `[]`. This hi
 ```
 
 :::tip[Name the action]
-Starting steps with an action verb in brackets is strongly recommended, especially for timed steps: the [work plan](/docs/how-to/plan-a-meal/) and summary views rely on these actions to name each step clearly.
+Starting steps with an action verb in brackets is strongly recommended, especially for timed steps: the <Term id="runSheet" /> and summary views rely on these actions to name each step clearly.
 :::
 
 ## 4. Sections
@@ -605,7 +605,7 @@ Unlike an `@ingredient` which scales proportionally by default, `#cookware` scal
 | **With quantity** | `#pan{1}` or `#ramekins{4}` | [Scalable] | Doubling portions asks for 2 pans or 8 ramekins. |
 | **Explicit fixed** | `#=pan{2}` | [Fixed] | Stays fixed at 2 pans even if the recipe is scaled up. |
 
-## Cookware and the work plan
+## Cookware and the run sheet
 
 Cookware items required by a section are inventoried in the mise en place of the kitchen visit where that section is executed (once per visit). If two passive timers overlap across steps that cite the same cookware without a shared named track, the compiler reports the [`PASSIVE_OVERLAP_SAME_COOKWARE`](/docs/reference/api/warnings/#passive_overlap_same_cookware) warning and suggests assigning a dedicated track to serialize equipment access.
 
@@ -710,7 +710,7 @@ Roast the chicken for ~{40-50min}.
 The interpretation of a range differs fundamentally based on timer type:
 
 - **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning in real time](/docs/explanation/planning-in-real-time/)).
-- **How the work plan reflects ranges.** The work plan displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 (12 to 48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Can't start earlier"). See [Plan a meal](/docs/how-to/plan-a-meal/).
+- **How the <Term id="runSheet" /> reflects ranges.** The run sheet displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 (12 to 48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Can't start earlier"). See [Plan a meal](/docs/how-to/plan-a-meal/).
 - **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
 
 :::note
@@ -1981,9 +1981,9 @@ flour:
 
 <span id="5-the-run-sheet"></span>
 
-## 5. The work plan
+## 5. The run sheet
 
-Data structure of the work plan (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
+Data structure of the <Term id="runSheet" /> (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
 
 ```json
 {
@@ -2026,7 +2026,7 @@ Data structure of the work plan (`@gram-lang/scheduler`), as returned by `runShe
 - Times `start`, `end`, `from` and `to` are **minutes from the service** (negative before it), exact, in a plan with a serving time or without. `*Local` fields (minute-exact wall clock) and `date` come with a serving time only.
 - `mode: "relative"` is the same structure for a recipe with no serving time: no `serveAt`, no `date`, no `window`.
 - `totalWork` is the minutes of your own work, mise en place included.
-- `miseEnPlace` is the mode the plan was made in (`perSection`, `perDay` or `upfront`): the work plan reads it to decide what goes in each visit's mise en place.
+- `miseEnPlace` is the mode the plan was made in (`perSection`, `perDay` or `upfront`): the run sheet reads it to decide what goes in each visit's mise en place.
 - Types and the meaning of each field: [`runSheet` in the scheduler reference](/docs/reference/api/scheduler/#runsheet).
 
 ## Related resources

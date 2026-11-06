@@ -43,7 +43,7 @@ describe("the view tabs and the inspector menu", () => {
 			outputs.map((o) => o.id),
 		);
 		expect(tabs).toContainEqual({ label: "Recipe", value: "recipe" });
-		expect(tabs).toContainEqual({ label: "Work plan", value: "workPlan" });
+		expect(tabs).toContainEqual({ label: "Run sheet", value: "runSheet" });
 	});
 
 	it("names every output, in every language", () => {
@@ -63,7 +63,7 @@ describe("the view tabs and the inspector menu", () => {
 describe("formats", () => {
 	it("offers the on-screen formats of a view, never print", () => {
 		expect(screenFormatsOf(outputById("recipe"))).toEqual(["html", "markdown"]);
-		expect(screenFormatsOf(outputById("workPlan"))).toEqual([
+		expect(screenFormatsOf(outputById("runSheet"))).toEqual([
 			"html",
 			"markdown",
 			"text",
@@ -84,7 +84,7 @@ describe("panes", () => {
 			type: "code",
 			language: "markdown",
 		});
-		expect(paneOf(outputById("workPlan"), "text")).toEqual({
+		expect(paneOf(outputById("runSheet"), "text")).toEqual({
 			type: "code",
 			language: "text",
 		});

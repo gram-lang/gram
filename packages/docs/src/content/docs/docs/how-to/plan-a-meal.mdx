@@ -1,16 +1,17 @@
 ---
 title: "Plan a meal"
-description: "Choose when to serve, get the work plan of a recipe (the days, the visits to the kitchen, what to take out), print it with the recipe and send it to your calendar."
+description: "Choose when to serve, get the run sheet of a recipe (the days, the visits to the kitchen, what to take out), print it with the recipe and send it to your calendar."
 ---
 
 import Since from '../../../../components/Since.astro';
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../components/Term.astro';
 
 <Since v="1.4.0" />
 
 You want to serve a pistachio and raspberry entremets on Saturday at 8 p.m. It needs three days of work, a sponge and an insert made two days before, a glaze you may already have in the freezer, and you can cook between 8 a.m. and 10 p.m. This guide shows you how to turn a recipe into an actionable plan to follow in the kitchen or integrate into your calendar.
 
-The recipe says **how** to do things. The work plan says **when to come** and **what to take out**. Gram computes it directly from the recipe, so there is nothing to write twice.
+The recipe says **how** to do things. The <Term id="runSheet" link={false} /> says **when to come** and **what to take out**. Gram computes it directly from the recipe, so there is nothing to write twice.
 
 <Steps>
 
@@ -44,7 +45,7 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges) and [Days and hours](/docs/reference/syntax/times/#days-and-hours).
 
    > [!TIP]
-   > **Name your steps with `[Action]`**: The work plan names steps and background threads after their actions (e.g. `Mousse : Assemble 12h to 48h` in the timeline and in the waits you leave running). Prefixing each step that carries a timer or wait with an `[Action]` ensures clear, descriptive labels there rather than raw durations or generic fallbacks like `Rest`.
+   > **Name your steps with `[Action]`**: The run sheet names steps and background threads after their actions (e.g. `Mousse : Assemble 12h to 48h` in the timeline and in the waits you leave running). Prefixing each step that carries a timer or wait with an `[Action]` ensures clear, descriptive labels there rather than raw durations or generic fallbacks like `Rest`.
 
 2. ### Choose when to serve
 
@@ -70,7 +71,7 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    > [!TIP]
    > If you do not provide any serving time, `gram plan entremets.gram` simply calculates the earliest possible serving time starting right now.
 
-3. ### Generate the work plan
+3. ### Generate the run sheet
 
    Once you have chosen your serving time, ask Gram to compute the full schedule:
 
@@ -85,7 +86,7 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    - `--stock`: indicates that a preparation (here the glaze) is already made in your freezer. Gram does not schedule it and flags it as "in stock".
 
    ```text
-   Work plan — Pistachio raspberry entremets
+   Run sheet — Pistachio raspberry entremets
    For Saturday, October 17 at 20:00 · 6 servings
    3 days · 3 visits to the kitchen · 45m of work in all
 
@@ -144,17 +145,17 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    You can easily use this plan in the kitchen or export it to your workflow tools:
 
    ```bash
-   # Print the work plan
-   gram print entremets.gram --view work-plan --serve "2026-10-17 20:00" --available 08:00-22:00
+   # Print the run sheet
+   gram print entremets.gram --view run-sheet --serve "2026-10-17 20:00" --available 08:00-22:00
 
-   # Export the work plan to Markdown (entremets.work-plan.md)
-   gram export entremets.gram --view work-plan --format md --serve "2026-10-17 20:00"
+   # Export the run sheet to Markdown (entremets.run-sheet.md)
+   gram export entremets.gram --view run-sheet --format md --serve "2026-10-17 20:00"
 
    # Export visits to an iCalendar file
    gram plan entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --ics entremets.ics
    ```
 
-   - **Print layout (`--view work-plan`)**: generates the work plan instead of the recipe with `gram print` or `gram export` (formatted with one day per page and checkboxes). You can still print or export the recipe separately to keep both references handy.
+   - **Print layout (`--view run-sheet`)**: generates the run sheet instead of the recipe with `gram print` or `gram export` (formatted with one day per page and checkboxes). You can still print or export the recipe separately to keep both references handy.
    - **Electronic calendar (`--ics <file>`)**: writes one calendar event per kitchen visit, with a reminder alarm and task/ingredient checklists in the description. Events are in UTC and your calendar displays them in your local time zone.
    - **Data formats (`--format`)**: use `--format md` for Markdown note-taking tools, `--format html` for a standalone web snippet, or `--format json` to inspect the structured data object (`{ plan, runSheet }`, see [Data formats](/docs/reference/api/data-formats/#5-the-run-sheet)). Text strings follow your project's configured `language`.
 
@@ -169,11 +170,11 @@ If a visit takes longer than expected or your day gets shifted, simply run `gram
 ## In the playground
 
 In the online studio, open the settings and their "Schedule & Service" section, then enter a serving time, time zone, and your availability:
-- The **Work plan** view instantly displays the schedule with real dates and times.
+- The **Run sheet** view instantly displays the schedule with real dates and times.
 - The **"When to serve?"** buttons test and propose optimal meal slots.
 - The **"Ready as early as"** button calculates the fastest serving time starting right now.
-- The format menu above the view shows the work plan as HTML, Markdown or plain text, ready to copy into notes or a message.
-- The **Print** button opens the work plan in its print layout, to print it or save it as a PDF.
+- The format menu above the view shows the run sheet as HTML, Markdown or plain text, ready to copy into notes or a message.
+- The **Print** button opens the run sheet in its print layout, to print it or save it as a PDF.
 
 ## From code
 
@@ -204,7 +205,7 @@ The plain text output above is only one presentation layer: the scheduler produc
 <CardGrid>
   <LinkCard
     title="The scheduler"
-    description="Days, visits, threads, margins: what the engine computes and what the work plan shows."
+    description="Days, visits, threads, margins: what the engine computes and what the run sheet shows."
     href="/docs/explanation/engine/scheduler/"
   />
   <LinkCard

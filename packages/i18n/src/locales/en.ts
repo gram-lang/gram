@@ -12,7 +12,7 @@ export const en = {
 		viewsPausedDescription: VIEWS_PAUSED.description,
 		/** What a surface offers next to paused views: jump to the error. */
 		showError: "Show the error",
-		/** An output the recipe has nothing for (a work plan with nothing to schedule). */
+		/** An output the recipe has nothing for (a run sheet with nothing to schedule). */
 		outputEmpty: "Nothing to show for this recipe.",
 		/** The serving time controls of a view laid out in time (the editor's panel). */
 		serving: {
@@ -46,7 +46,7 @@ export const en = {
 		/** The name of each output of the renderer (`outputs`), by its id. */
 		outputs: {
 			recipe: "Recipe",
-			workPlan: "Work plan",
+			runSheet: "Run sheet",
 			ast: "AST",
 			json: "JSON",
 			"json-tree": "JSON tree",
@@ -95,56 +95,56 @@ export const en = {
 		runSheetPast:
 			"The first task should have started {start}, and it is already {now}.",
 		runSheetMulti: "Only the first of {count} recipes is planned.",
-		workPlanTitle: "Work plan",
-		workPlanFor: "For {date} at {time}",
-		workPlanServings: "{count} servings",
-		workPlanScaled: "{count} servings (×{factor})",
-		workPlanDays: "{n} day",
-		workPlanDaysMany: "{n} days",
-		workPlanVisits: "{n} visit to the kitchen",
-		workPlanVisitsMany: "{n} visits to the kitchen",
-		workPlanWork: "{duration} of work in all",
-		workPlanServe: "Serve",
-		workPlanAbout: "~ {duration}",
-		workPlanKit: "To take out",
-		workPlanLegendCook: "in the kitchen",
-		workPlanLegendThread: "what goes on without you",
-		workPlanProgram: "To do",
-		workPlanExecution: "Execution",
-		workPlanIngredients: "Ingredients",
-		workPlanStart: "Start: {time}",
-		workPlanContinued: "continued",
-		workPlanLeaving: "Before leaving",
-		workPlanMadeOn: "made {day}",
-		workPlanMadeAt: "made at {time}",
-		workPlanMadeEarlier: "made earlier",
-		workPlanInStock: "in stock",
-		workPlanStep: "step {n}",
-		workPlanSteps: "steps {from} to {to}",
-		workPlanRange: "{min} to {max}",
-		workPlanPossibleFrom: "Possible from {time}.",
-		workPlanFixedService:
+		runSheetTitle: "Run sheet",
+		runSheetFor: "For {date} at {time}",
+		runSheetServings: "{count} servings",
+		runSheetScaled: "{count} servings (×{factor})",
+		runSheetDays: "{n} day",
+		runSheetDaysMany: "{n} days",
+		runSheetVisits: "{n} visit to the kitchen",
+		runSheetVisitsMany: "{n} visits to the kitchen",
+		runSheetWork: "{duration} of work in all",
+		runSheetServe: "Serve",
+		runSheetAbout: "~ {duration}",
+		runSheetKit: "To take out",
+		runSheetLegendCook: "in the kitchen",
+		runSheetLegendThread: "what goes on without you",
+		runSheetProgram: "To do",
+		runSheetExecution: "Execution",
+		runSheetIngredients: "Ingredients",
+		runSheetStart: "Start: {time}",
+		runSheetContinued: "continued",
+		runSheetLeaving: "Before leaving",
+		runSheetMadeOn: "made {day}",
+		runSheetMadeAt: "made at {time}",
+		runSheetMadeEarlier: "made earlier",
+		runSheetInStock: "in stock",
+		runSheetProgramStep: "step {n}",
+		runSheetProgramSteps: "steps {from} to {to}",
+		runSheetRange: "{min} to {max}",
+		runSheetPossibleFrom: "Possible from {time}.",
+		runSheetFixedService:
 			"Can't start earlier: the “{rest}” wait ({section}) can't be longer than {length} and ends when you serve.",
-		workPlanFixedVisit:
+		runSheetFixedVisit:
 			"Can't start earlier: the “{rest}” wait ({section}) can't be longer than {length} and must be over before {sections}.",
-		workPlanNextVisit: "Next visit: {when}",
-		workPlanNextVisitSameDay: "Next visit: later the same day",
-		workPlanServeAt: "Serve at {time}",
-		workPlanStretchedTo:
+		runSheetNextVisit: "Next visit: {when}",
+		runSheetNextVisitSameDay: "Next visit: later the same day",
+		runSheetServeAt: "Serve at {time}",
+		runSheetStretchedTo:
 			"{wait} extended to {to} (planned {range}) so the work falls within your availability.",
-		workPlanShortenedTo:
+		runSheetShortenedTo:
 			"{wait} shortened to {to} (planned {range}) so the work falls within your availability.",
-		workPlanUntilClock: "until {time}",
-		workPlanNothing: "Nothing to plan.",
-		workPlanFindOk: "{when} — start {start} · {visits} · {adjusted}",
-		workPlanFindRejected: "{when} — not possible. {reason}",
-		workPlanFindStart: "You would have to start {start}, which has passed.",
-		workPlanFindNone: "No serving time works between {from} and {to}.",
-		workPlanAdjusted: "{n} wait adjusted",
-		workPlanAdjustedMany: "{n} waits adjusted",
-		workPlanNoAdjustment: "no wait adjusted",
-		workPlanEarliest: "Ready as early as {when} if you start now.",
-		workPlanEarliestNone:
+		runSheetUntilClock: "until {time}",
+		runSheetNothing: "Nothing to plan.",
+		runSheetFindOk: "{when} — start {start} · {visits} · {adjusted}",
+		runSheetFindRejected: "{when} — not possible. {reason}",
+		runSheetFindStart: "You would have to start {start}, which has passed.",
+		runSheetFindNone: "No serving time works between {from} and {to}.",
+		runSheetAdjusted: "{n} wait adjusted",
+		runSheetAdjustedMany: "{n} waits adjusted",
+		runSheetNoAdjustment: "no wait adjusted",
+		runSheetEarliest: "Ready as early as {when} if you start now.",
+		runSheetEarliestNone:
 			"Nothing works in the next {days} days (searched until {until}).",
 		est: "(est.)",
 		passiveTimeTooltip: "Passive Time (Waiting, resting...)",
@@ -271,7 +271,7 @@ export const en = {
 			jsonTree: "Interactive Tree",
 			markdown: "Markdown",
 			preview: "Preview (HTML)",
-			runSheet: "Work plan",
+			runSheet: "Run sheet",
 			serveWhenTitle: "When to serve?",
 			serveWhenNone: "No serving time works in the next seven days.",
 			serveWhenWhyNot: "Why not the others?",
@@ -318,7 +318,7 @@ export const en = {
 			hideAbsolute: "Hide absolute weights",
 			showComments: "Show comments",
 			commentsDesc:
-				"The notes of the recipe (// like this), in the recipe and in the work plan.",
+				"The notes of the recipe (// like this), in the recipe and in the run sheet.",
 			showStepQuantities: "Quantities in the steps",
 			stepQuantitiesDesc:
 				"Writes the quantity of each ingredient in the text of the steps, after its name.",
@@ -345,7 +345,7 @@ export const en = {
 			serveSuggestions:
 				"Recommended serving times. Gram evaluates rest ranges and your kitchen hours to suggest feasible meal times that require no overnight work.",
 			timeZone:
-				"Sets the time zone used to display exact clock times on the work plan and accurately handle day transitions.",
+				"Sets the time zone used to display exact clock times on the run sheet and accurately handle day transitions.",
 			availability:
 				"Your daily kitchen hours. The schedule organizes tasks so you never have to cook outside this window (such as overnight).",
 			scaleGlobal:
@@ -355,7 +355,7 @@ export const en = {
 			bakersMath:
 				"Expresses each ingredient as a percentage of a base ingredient set at 100% (typically flour, or any chosen ingredient), making ratios and formulation easy to evaluate.",
 			comments:
-				"Shows or leaves out the comments written in the recipe with //: the notes alone on a line and the ones at the end of a line. They are set apart discreetly in the work plan.",
+				"Shows or leaves out the comments written in the recipe with //: the notes alone on a line and the ones at the end of a line. They are set apart discreetly in the run sheet.",
 			stepQuantities:
 				"Writes each quantity in the step that uses it, with its weight in grams when the masses are standardized. Leave it off for shorter steps: the quantities stay in the ingredient lists.",
 			nutritionBasis:
@@ -372,8 +372,8 @@ export const en = {
 				"Estimates calories and macronutrients (protein, carbs, fat, fiber) per serving or per 100g via the nutritional tables in the database.",
 			/** The note of the "Schedule & Service" section: what these settings change in each view. */
 			scheduleNote:
-				"These settings mostly shape the work plan. In the recipe, only the total and idle times change.",
-			scheduleNoteLink: "See the work plan",
+				"These settings mostly shape the run sheet. In the recipe, only the total and idle times change.",
+			scheduleNoteLink: "See the run sheet",
 			physicsDisclaimer:
 				"In this playground, physical and nutritional calculations rely on an ingredient database limited to example recipes.",
 			stockItem:

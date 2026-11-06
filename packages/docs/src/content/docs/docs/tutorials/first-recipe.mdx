@@ -5,6 +5,7 @@ description: "A step-by-step tutorial writing a complete Lemon Tart recipe using
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Term from '../../../../components/Term.astro';
 
 Time to bake! In this tutorial, a complete recipe for a **Lemon Tart** is written.
 
@@ -44,7 +45,7 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 ```
 </CodeTabs>
 
-Notice the `[Action]` tags at the start of each line (e.g., `[Process]`, `[Rest]`). While not strictly required, it is a highly recommended convention to start each step with its main action enclosed in brackets. This allows the [work plan](/docs/how-to/plan-a-meal/) and UI tools to name each wait and each problem clearly.
+Notice the `[Action]` tags at the start of each line (e.g., `[Process]`, `[Rest]`). While not strictly required, it is a highly recommended convention to start each step with its main action enclosed in brackets. This allows the <Term id="runSheet" /> and UI tools to name each wait and each problem clearly.
 
 Furthermore, this syntax is highly readable. The compiler will automatically extract the ingredients into a shopping list and sum the active time (assuming 2 minutes per step by default) plus the 1-hour timer.
 

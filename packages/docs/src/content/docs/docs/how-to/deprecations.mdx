@@ -5,6 +5,7 @@ description: "Inventory of deprecated features in Gram, scheduled removal milest
 
 import Since from '../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../components/Term.astro';
 
 This page documents all features currently deprecated across Gram, categorized by their target major removal milestone. **A deprecated feature remains fully operational and maintains its exact behavior until that version**. Each element provides an immediate modern replacement, enabling smooth incremental migration without sudden breaking changes.
 
@@ -124,15 +125,15 @@ A compiled recipe carries this identical breakdown inside its `miseEnPlace` fiel
 
 <Since v="1.4.0" type="deprecated" />
 
-The legacy Gantt chart is officially replaced by the [work plan](/docs/how-to/plan-a-meal/): no Gram interface (CLI, playground, VS Code extension) draws this chart anymore, and its code is now frozen until its removal in version 2.0.0.
+The legacy Gantt chart is officially replaced by the <Term id="runSheet" />: no Gram interface (CLI, playground, VS Code extension) draws this chart anymore, and its code is now frozen until its removal in version 2.0.0.
 
 | Deprecated item | Recommended replacement |
 |---|---|
-| `toGanttHTML()`, `attachGanttInteractivity()`, `formatTime()`, `formatAxisTime()`, and `Gantt*` types (`@gram-lang/renderer`) | Use work plan rendering functions (`runSheetToHTML()`, `runSheetToText()`, `runSheetToMarkdown()`, `runSheetToPrintHTML()`) on the `RunSheet` object returned by `runSheet()`, or build a custom view from this data. |
-| `@gram-lang/renderer/gantt.css` | Not required: work plan styles are now included directly in `gram.css`. |
-| `gantt_*` keys of `playground.views` (`@gram-lang/i18n`) | Not required: the work plan uses `workPlan*` keys in the renderer dictionary. |
-| `gram.showGantt` command, `Gram: Gantt Chart` (VS Code) | `gram.showRunSheet` (`Gram: Work Plan`). The old command opens the new view with a one-time notice. |
-| `gram/ganttUpdated` notification (language server) | Read `gram/viewUpdated` for the `workPlan` output (see [Language server preview notification](#language-server-preview-notification)), or consume compiled recipe data directly. |
+| `toGanttHTML()`, `attachGanttInteractivity()`, `formatTime()`, `formatAxisTime()`, and `Gantt*` types (`@gram-lang/renderer`) | Use run sheet rendering functions (`runSheetToHTML()`, `runSheetToText()`, `runSheetToMarkdown()`, `runSheetToPrintHTML()`) on the `RunSheet` object returned by `runSheet()`, or build a custom view from this data. |
+| `@gram-lang/renderer/gantt.css` | Not required: run sheet styles are now included directly in `gram.css`. |
+| `gantt_*` keys of `playground.views` (`@gram-lang/i18n`) | Not required: the run sheet uses `runSheet*` keys in the renderer dictionary. |
+| `gram.showGantt` command, `Gram: Gantt Chart` (VS Code) | `gram.showRunSheet` (`Gram: Run Sheet`). The old command opens the new view with a one-time notice. |
+| `gram/ganttUpdated` notification (language server) | Read `gram/viewUpdated` for the `runSheet` output (see [Language server preview notification](#language-server-preview-notification)), or consume compiled recipe data directly. |
 
 The `toGanttHTML()` function logs a one-time warning to the console when called.
 
@@ -195,7 +196,7 @@ The playground now shows the views of the renderer as tabs, each in its formats,
 
 | Deprecated item | Recommended replacement |
 |---|---|
-| `playground.views.preview`, `runSheet`, `ast`, `json`, `jsonTree` | `renderer.outputs[id]`, with the output ids `recipe`, `workPlan`, `ast`, `json` and `json-tree` |
+| `playground.views.preview`, `runSheet`, `ast`, `json`, `jsonTree` | `renderer.outputs[id]`, with the output ids `recipe`, `runSheet`, `ast`, `json` and `json-tree` |
 | `playground.views.markdown` | `renderer.formats.markdown` (Markdown is a format of a view, not a view) |
 | `playground.viewLabel` | `playground.output.views` (the tabs) and `playground.output.inspect` (the inspector menu) |
 

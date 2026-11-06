@@ -5,6 +5,7 @@ description: "How Gram distinguishes what a recipe needs, the preparation work, 
 
 import Since from '../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../components/Term.astro';
 
 <Since v="1.4.0" />
 
@@ -18,7 +19,7 @@ For a straightforward recipe, default settings handle scheduling automatically w
 |---|---|---|
 | **Ingredients** | Material requirements: section ingredient lists, consolidated shopping list | No |
 | **Mise en place** | Preparation work: fetching, weighing, washing, peeling, chopping. Each section reports its own preparation cost (`miseEnPlace`) | No |
-| **Planning** | Temporal scheduling: relative timeline, total duration, overall passive duration, and the work plan | **Yes**, this is the only dimension modified |
+| **Planning** | Temporal scheduling: relative timeline, total duration, overall passive duration, and the <Term id="runSheet" /> | **Yes**, this is the only dimension modified |
 
 A recipe never imposes its own schedule. It declares culinary facts (required ingredients and estimated preparation time); it is up to the **user** to decide how to organize this work along the timeline.
 
@@ -121,7 +122,7 @@ A passive duration can be fixed (`~_{12h}`) or specified as a range (`~_{12-24h}
 - **`balanced`**: selects the median duration;
 - **`longest`**: selects the maximum duration.
 
-This selection affects total duration, idle passive time, and the work plan, while leaving active cooking work unchanged. Conversely, an active timer specified as a range (`~{40-50min}`) reflects cooking uncertainty rather than elasticity: it is always scheduled using its maximum duration to ensure service is never delayed.
+This selection affects total duration, idle passive time, and the run sheet, while leaving active cooking work unchanged. Conversely, an active timer specified as a range (`~{40-50min}`) reflects cooking uncertainty rather than elasticity: it is always scheduled using its maximum duration to ensure service is never delayed.
 
 When a target serving time and cooking availability are provided, Gram utilizes this elasticity to shift active work away from overnight hours: see [Planning in real time](/docs/explanation/planning-in-real-time/).
 
@@ -212,7 +213,7 @@ At the start of each working day, Gram consolidates the mise en place required f
 
 Cumulative preparation time and active cooking work remain strictly identical across all scheduling strategies.
 
-The recipe text does not directly materialize these step blocks: mise en place is accounted for as an overhead in the recipe's time badges and schedule calculation. The concrete list of items required and their exact moment of use correspond to the **"To take out"** list displayed at the start of each visit in the [work plan](/docs/how-to/plan-a-meal/), computed for every strategy: by section, each section carries its own raw ingredients, right before its steps; per working day, they are listed together at the top of the visit with the quantities summed; upfront, they are all listed at the first visit. A preparation is always listed at the visit of the first step that uses it.
+The recipe text does not directly materialize these step blocks: mise en place is accounted for as an overhead in the recipe's time badges and schedule calculation. The concrete list of items required and their exact moment of use correspond to the **"To take out"** list displayed at the start of each visit in the [run sheet](/docs/how-to/plan-a-meal/), computed for every strategy: by section, each section carries its own raw ingredients, right before its steps; per working day, they are listed together at the top of the visit with the quantities summed; upfront, they are all listed at the first visit. A preparation is always listed at the visit of the first step that uses it.
 
 :::tip[Chaining sections]
 When several sections follow each other on the same day, anchor only the final one (`## Tart ~{-1d}`) and leave upstream sections unanchored (like the crust above): they automatically inherit its day and sequence immediately before it. Assigning `~{-1d}` to each creates concurrent deadlines at the exact same moment, causing a time paradox warning when dependencies exist between them.

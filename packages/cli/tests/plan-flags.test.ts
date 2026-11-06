@@ -185,7 +185,7 @@ describe("parseAvailability", () => {
 });
 
 const recipeView = getView("recipe");
-const workPlanView = getView("workPlan");
+const runSheetView = getView("runSheet");
 
 describe("resolveExportView", () => {
 	const view = (args: Record<string, unknown>, raw: string[] = []) =>
@@ -196,11 +196,11 @@ describe("resolveExportView", () => {
 		expect(view({ view: "recipe" })).toEqual({ view: recipeView });
 	});
 
-	it("reads the serving time, the zone, the availability and the present for the work plan", () => {
+	it("reads the serving time, the zone, the availability and the present for the run sheet", () => {
 		expect(
 			view(
 				{
-					view: "work-plan",
+					view: "run-sheet",
 					serve: "2026-10-11 13:00",
 					tz: "Europe/Paris",
 					now: "2026-10-01T09:00:00Z",
@@ -208,7 +208,7 @@ describe("resolveExportView", () => {
 				["--available", "08:00-22:00"],
 			),
 		).toEqual({
-			view: workPlanView,
+			view: runSheetView,
 			serveAt: "2026-10-11T13:00",
 			kitchen: {
 				timeZone: "Europe/Paris",
@@ -218,8 +218,8 @@ describe("resolveExportView", () => {
 		});
 	});
 
-	it("reads the configured availability for the work plan", () => {
-		const choice = resolveExportView({ view: "work-plan" }, [], {
+	it("reads the configured availability for the run sheet", () => {
+		const choice = resolveExportView({ view: "run-sheet" }, [], {
 			availability: "fri=18:00-22:00",
 		});
 		expect(choice.kitchen?.availability).toEqual({
@@ -228,11 +228,11 @@ describe("resolveExportView", () => {
 		});
 	});
 
-	it("lays the work plan out in days without --serve, in the configured zone", () => {
-		const choice = resolveExportView({ view: "work-plan" }, [], {
+	it("lays the run sheet out in days without --serve, in the configured zone", () => {
+		const choice = resolveExportView({ view: "run-sheet" }, [], {
 			timezone: "Asia/Tokyo",
 		});
-		expect(choice.view).toBe(workPlanView);
+		expect(choice.view).toBe(runSheetView);
 		expect(choice.serveAt).toBeUndefined();
 		expect(choice.kitchen?.timeZone).toBe("Asia/Tokyo");
 		expect(Date.parse(choice.kitchen?.now ?? "")).toBeGreaterThan(0);
@@ -246,7 +246,7 @@ describe("resolveExportView", () => {
 			[{ now: "2026-10-01T09:00:00Z" }, []],
 		] as const) {
 			expect(messageOf(() => view(args, [...raw]))).toContain(
-				"--view work-plan",
+				"--view run-sheet",
 			);
 		}
 	});

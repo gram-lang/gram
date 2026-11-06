@@ -6,6 +6,7 @@ description: "Reference for the .gram file structure: YAML frontmatter, function
 import { CodeTabs } from 'starlight-theme-nova/components';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Since from '../../../../../components/Since.astro';
+import Term from '../../../../../components/Term.astro';
 
 A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata, Sections, Steps, and Comments.
 
@@ -90,7 +91,7 @@ Steps can optionally start with an **Action** enclosed in brackets `[]`. This hi
 ```
 
 :::tip[Name the action]
-Starting steps with an action verb in brackets is strongly recommended, especially for timed steps: the [work plan](/docs/how-to/plan-a-meal/) and summary views rely on these actions to name each step clearly.
+Starting steps with an action verb in brackets is strongly recommended, especially for timed steps: the <Term id="runSheet" /> and summary views rely on these actions to name each step clearly.
 :::
 
 ## 4. Sections

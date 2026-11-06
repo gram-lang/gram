@@ -36,7 +36,7 @@ export interface RunSheetRenderOptions {
 	comments?: CommentsMode;
 }
 
-/** One line of the planning of the days: a visit, what continues without the cook, or the service. */
+/** One line of the schedule of the days: a visit, what continues without the cook, or the service. */
 export interface RunSheetScheduleRow {
 	kind: "visit" | "thread" | "serve";
 	/** "THU 15", "D-2": set on the first row of a day only. */
@@ -134,11 +134,11 @@ export interface RunSheetDayModel {
 	visits: RunSheetVisitModel[];
 }
 
-/** The work plan in words: what every output (text, Markdown, HTML, calendar) is made from. */
+/** The run sheet in words: what every output (text, Markdown, HTML, calendar) is made from. */
 export interface RunSheetModel {
-	/** "Work plan — Entremets" */
+	/** "Run sheet — Entremets" */
 	title: string;
-	/** Where the mise en place goes: the work plan is laid out accordingly. */
+	/** Where the mise en place goes: the run sheet is laid out accordingly. */
 	miseEnPlace: MiseEnPlaceMode;
 	/** "For Saturday, October 17 at 20:00 · 6 servings" */
 	subtitle: string;
@@ -287,7 +287,7 @@ export function describeProblems(
 }
 
 /**
- * The words of a work plan, from its structure (`runSheet()` of the scheduler)
+ * The words of a run sheet, from its structure (`runSheet()` of the scheduler)
  * and the recipe it is for. Every figure is the scheduler's; what is chosen
  * here is the wording and the rounding, which another interface is free to
  * make differently from the same data.
@@ -328,7 +328,7 @@ export function describeRunSheet(
 			: undefined;
 	};
 	const rangeText = (r: { min: number; max: number }) =>
-		fill(t.workPlanRange, { min: fmt(r.min), max: fmt(r.max) });
+		fill(t.runSheetRange, { min: fmt(r.min), max: fmt(r.max) });
 
 	/** The name and the planned length of a wait, with the written range when it differs. */
 	const threadParts = (
@@ -393,7 +393,7 @@ export function describeRunSheet(
 		const slotOf = (p: RunSheetVisit) =>
 			calendar && p.startLocal && p.endLocal
 				? `${clock(p.startLocal)} → ${clock(p.endLocal)}`
-				: fill(t.workPlanAbout, { duration: fmt(rounded(p.end - p.start)) });
+				: fill(t.runSheetAbout, { duration: fmt(rounded(p.end - p.start)) });
 		const rowLabel =
 			calendar && day.date
 				? `${shortDay(day.date, lang)} ${Number(day.date.slice(8, 10))}`.toUpperCase()
@@ -464,13 +464,13 @@ export function describeRunSheet(
 						if (!made || made.visit === p) return undefined;
 						if (made.day === d) {
 							return calendar && made.visit.startLocal
-								? fill(t.workPlanMadeAt, {
+								? fill(t.runSheetMadeAt, {
 										time: clock(made.visit.startLocal),
 									})
-								: t.workPlanMadeEarlier;
+								: t.runSheetMadeEarlier;
 						}
 						const madeDay = days[made.day]!;
-						return fill(t.workPlanMadeOn, {
+						return fill(t.runSheetMadeOn, {
 							day:
 								calendar && madeDay.date
 									? weekdayName(madeDay.date, lang)
@@ -493,8 +493,8 @@ export function describeRunSheet(
 				)?.startLocal;
 				const range =
 					prog.from === prog.to
-						? fill(t.workPlanStep, { n: String(prog.from) })
-						: fill(t.workPlanSteps, {
+						? fill(t.runSheetProgramStep, { n: String(prog.from) })
+						: fill(t.runSheetProgramSteps, {
 								from: String(prog.from),
 								to: String(prog.to),
 							});
@@ -566,7 +566,7 @@ export function describeRunSheet(
 				const endsEarly =
 					nextVisit && th.to < nextVisit.start - 1
 						? th.toLocal
-							? fill(t.workPlanUntilClock, { time: clock(th.toLocal) })
+							? fill(t.runSheetUntilClock, { time: clock(th.toLocal) })
 							: undefined
 						: undefined;
 				leaving.push(threadText(th, endsEarly));
@@ -586,24 +586,24 @@ export function describeRunSheet(
 							: `${weekdayName(date, lang)} ${clock(nextVisit.startLocal)}`;
 				} else if (nextDay === day) {
 					// No clock without a serving time: say it is the same day.
-					leaving.push(t.workPlanNextVisitSameDay);
+					leaving.push(t.runSheetNextVisitSameDay);
 					when = "";
 				} else {
 					when = nextDay ? dayLabel(nextDay) : "";
 				}
-				if (when) leaving.push(fill(t.workPlanNextVisit, { when }));
+				if (when) leaving.push(fill(t.runSheetNextVisit, { when }));
 			} else if (calendar && sheet.serveAt) {
 				leaving.push(
-					fill(t.workPlanServeAt, { time: sheet.serveAt.slice(11, 16) }),
+					fill(t.runSheetServeAt, { time: sheet.serveAt.slice(11, 16) }),
 				);
 			} else {
-				leaving.push(t.workPlanServe);
+				leaving.push(t.runSheetServe);
 			}
 
 			// The margin, or what holds the visit.
 			let margin: string | undefined;
 			if (p.window) {
-				margin = fill(t.workPlanPossibleFrom, {
+				margin = fill(t.runSheetPossibleFrom, {
 					time: clock(p.window.earliestLocal),
 				});
 			} else if (p.fixedBy) {
@@ -618,8 +618,8 @@ export function describeRunSheet(
 				};
 				margin =
 					p.fixedBy.before === "service"
-						? fill(t.workPlanFixedService, wait)
-						: fill(t.workPlanFixedVisit, {
+						? fill(t.runSheetFixedService, wait)
+						: fill(t.runSheetFixedVisit, {
 								...wait,
 								sections: (p.fixedBy.sections ?? [])
 									.map(sectionTitle)
@@ -649,7 +649,7 @@ export function describeRunSheet(
 					const lines = [
 						...(kit.length > 0
 							? [
-									`${t.workPlanKit} :`,
+									`${t.runSheetKit} :`,
 									...kitLines(kit, {
 										title: (section) => `${section} :`,
 										item: (l) => `- ${l.text}`,
@@ -659,7 +659,7 @@ export function describeRunSheet(
 							: []),
 						...(program.length > 0
 							? [
-									`${t.workPlanProgram} :`,
+									`${t.runSheetProgram} :`,
 									...program.flatMap((l) => [
 										`- ${l.section} (${l.reference})`,
 										...(l.kit ?? []).map((k) => `  - ${k.text}`),
@@ -684,7 +684,7 @@ export function describeRunSheet(
 			.map((a) => {
 				const r = rangeOf(a.task);
 				return fill(
-					a.to > a.from ? t.workPlanStretchedTo : t.workPlanShortenedTo,
+					a.to > a.from ? t.runSheetStretchedTo : t.runSheetShortenedTo,
 					{
 						wait: waitName(a),
 						to: fmt(Math.round(a.to)),
@@ -701,14 +701,14 @@ export function describeRunSheet(
 		});
 	});
 
-	// The service closes the planning.
+	// The service closes the schedule.
 	if (days.length > 0) {
 		schedule.push({
 			kind: "serve",
 			...(!calendar &&
 				days.at(-1)?.daysBefore !== 0 && { day: workingDayLabel(0, t) }),
 			...(calendar && sheet.serveAt && { time: sheet.serveAt.slice(11, 16) }),
-			text: t.workPlanServe,
+			text: t.runSheetServe,
 		});
 	}
 
@@ -718,17 +718,17 @@ export function describeRunSheet(
 	const servings =
 		portions !== undefined && portions !== null && String(portions) !== ""
 			? typeof scale === "number" && Math.abs(scale - 1) > 1e-6
-				? fill(t.workPlanScaled, {
+				? fill(t.runSheetScaled, {
 						count: String(portions),
 						factor: new Intl.NumberFormat(lang || "en", {
 							maximumFractionDigits: 2,
 						}).format(scale),
 					})
-				: fill(t.workPlanServings, { count: String(portions) })
+				: fill(t.runSheetServings, { count: String(portions) })
 			: undefined;
 	const subtitle = [
 		calendar && sheet.serveAt
-			? fill(t.workPlanFor, {
+			? fill(t.runSheetFor, {
 					date: longDate(sheet.serveAt.slice(0, 10), lang),
 					time: sheet.serveAt.slice(11, 16),
 				})
@@ -739,19 +739,19 @@ export function describeRunSheet(
 		.join(" · ");
 	const summary =
 		days.length === 0
-			? t.workPlanNothing
+			? t.runSheetNothing
 			: [
-					plural(days.length, t.workPlanDays, t.workPlanDaysMany),
-					plural(visits, t.workPlanVisits, t.workPlanVisitsMany),
-					fill(t.workPlanWork, {
+					plural(days.length, t.runSheetDays, t.runSheetDaysMany),
+					plural(visits, t.runSheetVisits, t.runSheetVisitsMany),
+					fill(t.runSheetWork, {
 						duration: fmt(rounded(recipe?.totalWork ?? 0)),
 					}),
 				].join(" · ");
 
 	return {
 		title: recipeTitle
-			? `${t.workPlanTitle} — ${recipeTitle}`
-			: t.workPlanTitle,
+			? `${t.runSheetTitle} — ${recipeTitle}`
+			: t.runSheetTitle,
 		miseEnPlace: mode,
 		subtitle,
 		summary,

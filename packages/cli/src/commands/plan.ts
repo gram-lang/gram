@@ -16,7 +16,7 @@ import {
 	planToICS,
 } from "../services/planner";
 import {
-	WORK_PLAN_SETTINGS,
+	RUN_SHEET_SETTINGS,
 	readViewSettingArgs,
 	viewSettingArgs,
 } from "../services/setting-args";
@@ -69,7 +69,7 @@ export default defineCommand({
 			description:
 				"Scale factor (e.g. 1.5) or reference ingredient (e.g. farine=300g)",
 		},
-		...viewSettingArgs(WORK_PLAN_SETTINGS),
+		...viewSettingArgs(RUN_SHEET_SETTINGS),
 		stock: {
 			type: "string",
 			description:
@@ -108,7 +108,7 @@ export default defineCommand({
 			}
 			const { miseEnPlace, rests, comments } = readViewSettingArgs(
 				args,
-				WORK_PLAN_SETTINGS,
+				RUN_SHEET_SETTINGS,
 			);
 			const stock = resolveStockFromConfig(args.stock, config);
 			const scaleFactor =

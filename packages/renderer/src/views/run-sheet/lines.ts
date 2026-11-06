@@ -6,8 +6,8 @@ import type {
 
 /** A section's name in a programme, marked when it goes on from an earlier visit. */
 export const sectionHeading =
-	(t: { workPlanContinued: string }) => (l: RunSheetProgramLine) =>
-		l.continued ? `${l.section} (${t.workPlanContinued})` : l.section;
+	(t: { runSheetContinued: string }) => (l: RunSheetProgramLine) =>
+		l.continued ? `${l.section} (${t.runSheetContinued})` : l.section;
 
 /**
  * The lines of a kit, group by group: a title above the lines of a group that

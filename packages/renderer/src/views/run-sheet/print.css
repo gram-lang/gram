@@ -1,4 +1,4 @@
-.gram-run-sheet .work-plan-header {
+.gram-run-sheet .run-sheet-header {
 	border-top: 2pt solid #000;
 	page-break-after: avoid;
 	padding-top: 8pt;
@@ -9,11 +9,11 @@
 	margin-top: 0;
 	margin-bottom: 4pt;
 }
-.gram-run-sheet .work-plan-subtitle {
+.gram-run-sheet .run-sheet-subtitle {
 	color: var(--grey);
 	margin-bottom: 6pt;
 }
-.gram-run-sheet .work-plan-summary {
+.gram-run-sheet .run-sheet-summary {
 	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 8.5pt;
 	font-weight: 700;
@@ -32,11 +32,11 @@
 	margin: 0 0 0 16pt;
 	padding: 0;
 }
-.gram-run-sheet .work-plan-schedule {
+.gram-run-sheet .run-sheet-schedule {
 	margin: 0 0 4pt;
 	border: 0.75pt solid #000;
 }
-.gram-run-sheet .work-plan-schedule li {
+.gram-run-sheet .run-sheet-schedule li {
 	margin-bottom: 0;
 }
 .gram-run-sheet .schedule-group {
@@ -103,7 +103,7 @@
 	font-weight: 800;
 	text-transform: uppercase;
 }
-.gram-run-sheet .work-plan-legend {
+.gram-run-sheet .run-sheet-legend {
 	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 7.5pt;
 	color: var(--grey);
@@ -111,11 +111,11 @@
 .gram-run-sheet .legend-thread {
 	margin-left: 12pt;
 }
-.gram-run-sheet .work-plan-day {
+.gram-run-sheet .run-sheet-day {
 	margin-bottom: 12pt;
 	page-break-before: always;
 }
-.gram-run-sheet .work-plan-day h3 {
+.gram-run-sheet .run-sheet-day h3 {
 	font-size: 13pt;
 	font-weight: 800;
 	margin: 0 0 8pt;
@@ -123,7 +123,7 @@
 	padding-bottom: 3pt;
 	display: block;
 }
-.gram-run-sheet .work-plan-day .day-slot {
+.gram-run-sheet .run-sheet-day .day-slot {
 	float: right;
 	text-transform: none;
 	font-family: ui-monospace, Menlo, Consolas, monospace;
@@ -131,7 +131,7 @@
 	font-weight: 700;
 	color: var(--grey);
 }
-.gram-run-sheet .work-plan-visit h4 {
+.gram-run-sheet .run-sheet-visit h4 {
 	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 7.5pt;
 	font-weight: 700;
@@ -139,17 +139,17 @@
 	color: var(--grey);
 	margin: 10pt 0 3pt;
 }
-.gram-run-sheet .work-plan-notice {
+.gram-run-sheet .run-sheet-notice {
 	font-weight: 700;
 	margin: 6pt 0;
 }
-.gram-run-sheet .work-plan-notice::before {
+.gram-run-sheet .run-sheet-notice::before {
 	content: "⚠ ";
 }
-.gram-run-sheet .work-plan-margin {
+.gram-run-sheet .run-sheet-margin {
 	color: var(--grey);
 }
-.gram-run-sheet .work-plan-visit-slot {
+.gram-run-sheet .run-sheet-visit-slot {
 	margin-top: 8pt;
 }
 .gram-run-sheet .box-123,
@@ -165,12 +165,12 @@
 .gram-run-sheet .section-exec-card,
 .gram-run-sheet .station-mep,
 .gram-run-sheet .exec-steps-list li,
-.gram-run-sheet .work-plan-leaving,
-.gram-run-sheet .work-plan-margin {
+.gram-run-sheet .run-sheet-leaving,
+.gram-run-sheet .run-sheet-margin {
 	page-break-inside: avoid;
 }
-.gram-run-sheet .work-plan-day > h3,
-.gram-run-sheet .work-plan-margin,
+.gram-run-sheet .run-sheet-day > h3,
+.gram-run-sheet .run-sheet-margin,
 .gram-run-sheet .station-header,
 .gram-run-sheet .section-exec-header,
 .gram-run-sheet .step-123-title,
@@ -379,24 +379,24 @@
 	font-size: 8.5pt;
 	color: var(--grey);
 }
-.gram-run-sheet .work-plan-leaving {
+.gram-run-sheet .run-sheet-leaving {
 	border: 1pt dashed #000;
 }
-.gram-run-sheet .work-plan-leaving h4 {
+.gram-run-sheet .run-sheet-leaving h4 {
 	margin-top: 0;
 }
-.gram-run-sheet .work-plan-leaving ul {
+.gram-run-sheet .run-sheet-leaving ul {
 	margin-left: 2pt;
 	padding-left: 8pt;
 	border-left: 1.5pt dotted #000;
 }
-.gram-run-sheet .work-plan-leaving li {
+.gram-run-sheet .run-sheet-leaving li {
 	display: flex;
 	align-items: baseline;
 	gap: 4pt;
 	margin-bottom: 2pt;
 }
-.gram-run-sheet .work-plan-leaving li::after {
+.gram-run-sheet .run-sheet-leaving li::after {
 	content: "";
 	order: 1;
 	flex: 1;
@@ -436,7 +436,7 @@
 	border-radius: 2pt;
 	page-break-inside: avoid;
 }
-.gram-run-sheet .work-plan-problems {
+.gram-run-sheet .run-sheet-problems {
 	border: 0.75pt dashed #000;
 	border-radius: 2pt;
 	padding: 6pt 9pt;
@@ -444,7 +444,7 @@
 	background: #fafafa;
 	page-break-inside: avoid;
 }
-.gram-run-sheet .work-plan-problems h3 {
+.gram-run-sheet .run-sheet-problems h3 {
 	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 8.5pt;
 	font-weight: 800;
@@ -454,21 +454,21 @@
 	align-items: center;
 	gap: 4pt;
 }
-.gram-run-sheet .work-plan-problems .problem-icon {
+.gram-run-sheet .run-sheet-problems .problem-icon {
 	display: inline-flex;
 	align-items: center;
 }
-.gram-run-sheet .work-plan-problems ul {
+.gram-run-sheet .run-sheet-problems ul {
 	margin: 0;
 	padding: 0;
 }
-.gram-run-sheet .work-plan-problems li {
+.gram-run-sheet .run-sheet-problems li {
 	margin-left: 1.2em;
 	list-style: disc;
 	margin-bottom: 2pt;
 	font-size: 8.5pt;
 }
-.gram-run-sheet .work-plan-problems li:last-child {
+.gram-run-sheet .run-sheet-problems li:last-child {
 	margin-bottom: 0;
 }
 .gram-run-sheet .kit-mass {

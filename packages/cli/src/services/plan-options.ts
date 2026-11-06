@@ -17,7 +17,7 @@ import {
 /**
  * The flags that put a recipe on the calendar, shared by `gram plan` and by the
  * commands that write a view of a recipe (`export`, `print`), where they go with
- * `--view work-plan`. Spread them into a command's `args`.
+ * `--view run-sheet`. Spread them into a command's `args`.
  */
 export const PLAN_FLAG_ARGS = {
 	serve: {
@@ -73,14 +73,14 @@ export function resolveKitchenContext(
 export const VIEW_FLAG_ARG = {
 	view: {
 		type: "string",
-		description: `Which view to write: ${CLI_VIEW_NAMES.join(" | ")} (default: recipe). The work plan takes the plan flags; without --serve it is laid out in days before the service`,
+		description: `Which view to write: ${CLI_VIEW_NAMES.join(" | ")} (default: recipe). The run sheet takes the plan flags; without --serve it is laid out in days before the service`,
 	},
 } as const;
 
 /** What `--view` and the plan flags ask for: a view, and for a planned one, the kitchen and when it is served. */
 export interface ExportView {
 	view: ViewDefinition;
-	/** For a view laid out in time (the work plan). */
+	/** For a view laid out in time (the run sheet). */
 	kitchen?: KitchenContext;
 	serveAt?: string;
 }

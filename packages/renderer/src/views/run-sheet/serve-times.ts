@@ -48,17 +48,17 @@ function candidateLine(
 	const when = whenOf(c.serveAt, lang);
 	if (c.ok) {
 		const visits = fill(
-			c.visits === 1 ? t.workPlanVisits : t.workPlanVisitsMany,
+			c.visits === 1 ? t.runSheetVisits : t.runSheetVisitsMany,
 			{ n: String(c.visits) },
 		);
 		const adjusted =
 			c.adjustments === 0
-				? t.workPlanNoAdjustment
+				? t.runSheetNoAdjustment
 				: fill(
-						c.adjustments === 1 ? t.workPlanAdjusted : t.workPlanAdjustedMany,
+						c.adjustments === 1 ? t.runSheetAdjusted : t.runSheetAdjustedMany,
 						{ n: String(c.adjustments) },
 					);
-		return fill(t.workPlanFindOk, {
+		return fill(t.runSheetFindOk, {
 			when,
 			start: c.startsAt ? startOf(c.startsAt, lang) : "",
 			visits,
@@ -68,7 +68,7 @@ function candidateLine(
 	const past = c.reasons.some((r) => r.code === "START_IN_PAST");
 	const reason =
 		past && c.startsAt
-			? fill(t.workPlanFindStart, { start: startOf(c.startsAt, lang) })
+			? fill(t.runSheetFindStart, { start: startOf(c.startsAt, lang) })
 			: describeProblems(c.reasons, data, options, options.timeZone).reduce(
 					(text, line, i, all) =>
 						i > 0
@@ -78,7 +78,7 @@ function candidateLine(
 								: line,
 					"",
 				);
-	return fill(t.workPlanFindRejected, { when, reason });
+	return fill(t.runSheetFindRejected, { when, reason });
 }
 
 /**
@@ -97,7 +97,7 @@ export function describeServeTimes(
 ): string[] {
 	const t = getDictionary(options.lang).renderer;
 	if (search.candidates.length === 0 && search.rejected.length === 0) {
-		return [fill(t.workPlanFindNone, { from: options.from, to: options.to })];
+		return [fill(t.runSheetFindNone, { from: options.from, to: options.to })];
 	}
 	return [
 		...search.candidates.map((c) => candidateLine(c, data, options)),
@@ -112,11 +112,11 @@ export function describeEarliestServe(
 ): string {
 	const t = getDictionary(options.lang).renderer;
 	if (result.found) {
-		return fill(t.workPlanEarliest, {
+		return fill(t.runSheetEarliest, {
 			when: whenOf(result.found.serveAt, options.lang),
 		});
 	}
-	return fill(t.workPlanEarliestNone, {
+	return fill(t.runSheetEarliestNone, {
 		days: String(EARLIEST_SERVE_HORIZON_DAYS),
 		until: whenOf(result.searchedUntil, options.lang),
 	});
@@ -174,7 +174,7 @@ function addDays(date: string, days: number): string {
  * The serving times to propose for a prepared recipe, in words: those that
  * work over the next days at the meal times, best first, why the others do
  * not, and the earliest from now. The same for every surface that suggests a
- * serving time (the playground, the editor's work plan). `null` without a
+ * serving time (the playground, the editor's run sheet). `null` without a
  * kitchen or without anything to schedule.
  */
 export function suggestServeTimes(

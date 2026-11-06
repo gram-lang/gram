@@ -19,7 +19,7 @@ function warnGanttDeprecated(options: GanttRenderOptions): void {
 	if (warned || options.quiet) return;
 	warned = true;
 	console.warn(
-		"[gram] toGanttHTML() is deprecated since 1.4.0 and will be removed in 2.0.0: the Gantt chart is replaced by the work plan (runSheetToHTML). See https://gram-lang.org/docs/how-to/deprecations/",
+		"[gram] toGanttHTML() is deprecated since 1.4.0 and will be removed in 2.0.0: the Gantt chart is replaced by the run sheet (runSheetToHTML). See https://gram-lang.org/docs/how-to/deprecations/",
 	);
 }
 

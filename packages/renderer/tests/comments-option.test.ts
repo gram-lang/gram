@@ -61,7 +61,7 @@ describe("the comments option, in the recipe views", () => {
 	});
 });
 
-describe("the comments option, in the work plan", () => {
+describe("the comments option, in the run sheet", () => {
 	it("shows a comment at the end of a line inside its sentence, set apart", () => {
 		const [line] = describeRunSheet(sheet, compiled).days[0]!.visits[0]!
 			.program;

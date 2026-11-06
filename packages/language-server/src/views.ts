@@ -101,7 +101,7 @@ function artifactOf(
 
 /**
  * Renders the outputs `outputIds` of an already compiled document, and only
- * those: the costly parts of the views (the schedule, the work plan) are worked
+ * those: the costly parts of the views (the schedule, the run sheet) are worked
  * out the first time an open view reads them, and never for a closed one. An
  * unknown id is skipped. Each output is rendered on its own: one that throws is
  * reported to `onError` and left out, the others are still returned.

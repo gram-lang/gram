@@ -47,7 +47,7 @@ describe("compiled data used below", () => {
 describe("HTML — perSection (default)", () => {
 	const html = toHTML(compiled);
 
-	it("shows no mise en place label: the work plan says what to take out", () => {
+	it("shows no mise en place label: the run sheet says what to take out", () => {
 		expect(html).not.toContain("section-prep");
 		expect(html).not.toContain("mise-en-place-session");
 		expect(html).not.toContain("Mise en place for this section");
@@ -255,7 +255,7 @@ describe("perDay", () => {
 	const multi = compile(getAST(MULTI_DAY));
 	const options = { miseEnPlace: "perDay" } as const;
 
-	it("leaves the working days to the work plan: no block in the recipe", () => {
+	it("leaves the working days to the run sheet: no block in the recipe", () => {
 		const html = toHTML(multi, options);
 		expect(html).not.toContain("mise-en-place-session");
 		expect(html).not.toContain("Mise en place — D-");

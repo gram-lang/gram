@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 /*
  * `--comments show|hide` end to end: the real CLI is started as a process,
- * so what is checked is what a user sees in the recipe and in the work plan.
+ * so what is checked is what a user sees in the recipe and in the run sheet.
  */
 
 const ENTRY = join(import.meta.dir, "..", "src", "index.ts");
@@ -54,7 +54,7 @@ const PLAN = [
 ];
 
 describe("gram plan --comments", () => {
-	it("shows the comments in the work plan by default and with show", () => {
+	it("shows the comments in the run sheet by default and with show", () => {
 		for (const extra of [[], ["--comments", "show"]]) {
 			const { code, out } = gram(...PLAN, ...extra);
 			expect(code).toBe(0);
@@ -114,7 +114,7 @@ describe("gram export --comments", () => {
 		expect(without).toContain("Bake");
 	});
 
-	it("leaves them out of the work plan too", async () => {
+	it("leaves them out of the run sheet too", async () => {
 		const out = join(dir, "sheet.md");
 		const run = gram(
 			"export",
@@ -122,7 +122,7 @@ describe("gram export --comments", () => {
 			"--format",
 			"md",
 			"--view",
-			"work-plan",
+			"run-sheet",
 			"--serve",
 			"2026-10-11 13:00",
 			"--tz",
@@ -134,7 +134,7 @@ describe("gram export --comments", () => {
 		);
 		expect(run.code).toBe(0);
 		const text = await readFile(out, "utf-8");
-		expect(text).toContain("Work plan");
+		expect(text).toContain("Run sheet");
 		expect(text).not.toContain("Do not overmix.");
 		expect(text).not.toContain("keep it cold");
 	});

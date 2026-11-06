@@ -45,7 +45,7 @@ describe("prepareViews", () => {
 		expect(input.times).toBe(input.times);
 	});
 
-	it("lays the work plan out in days before the service without a serving time", () => {
+	it("lays the run sheet out in days before the service without a serving time", () => {
 		const input = prepareViews(compiled);
 		expect(input.plan).toBeNull();
 		expect(input.runSheet).toEqual(
@@ -56,7 +56,7 @@ describe("prepareViews", () => {
 		);
 	});
 
-	it("puts the work plan on the calendar with a serving time", () => {
+	it("puts the run sheet on the calendar with a serving time", () => {
 		const serveAt = "2026-11-15T20:00";
 		const input = prepareViews(compiled, {}, { kitchen, serveAt });
 		const context = { ...kitchen, serveAt };
@@ -97,7 +97,7 @@ describe("prepareViews", () => {
 		expect(search?.candidates.length).toBeGreaterThan(0);
 	});
 
-	it("has no plan, work plan or search without what they need", () => {
+	it("has no plan, run sheet or search without what they need", () => {
 		const bare = compile(getAST("## A\n\nNothing to plan.\n"));
 		const input = prepareViews({
 			...bare,

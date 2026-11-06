@@ -21,9 +21,9 @@ const WRITERS: Record<Format, Writer> = {
 	print: runSheetToPrintHTML,
 };
 
-/** The work plan: the days, the visits to the kitchen, what to take out and what to do. */
-export const workPlanView = {
-	id: "workPlan",
+/** The run sheet: the days, the visits to the kitchen, what to take out and what to do. */
+export const runSheetView = {
+	id: "runSheet",
 	kind: "renderer",
 	formats: ["html", "markdown", "text", "print"],
 	honors: ["miseEnPlace", "rests", "comments"],
@@ -31,7 +31,7 @@ export const workPlanView = {
 	render(input: ViewInput, format: Format, surface: SurfaceOptions = {}) {
 		const write = WRITERS[format];
 		if (!write) {
-			throw new RangeError(`The work plan view has no "${format}" format.`);
+			throw new RangeError(`The run sheet view has no "${format}" format.`);
 		}
 		const sheet = input.runSheet;
 		if (!sheet) return null;

@@ -12,7 +12,7 @@ const event = (over: Partial<RunSheetEvent> = {}): RunSheetEvent => ({
 });
 
 const model = (...events: RunSheetEvent[]): RunSheetModel => ({
-	title: "Work plan — Bread",
+	title: "Run sheet — Bread",
 	subtitle: "For Sunday, October 11 at 13:00",
 	summary: "2 days",
 	problems: [],
@@ -30,7 +30,7 @@ describe("buildICS", () => {
 		expect(ics.startsWith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n")).toBe(true);
 		expect(ics.endsWith("END:VCALENDAR\r\n")).toBe(true);
 		expect(ics.replace(/\r\n/g, "")).not.toContain("\n");
-		expect(ics).toContain("X-WR-CALNAME:Work plan — Bread");
+		expect(ics).toContain("X-WR-CALNAME:Run sheet — Bread");
 	});
 
 	it("writes an event per visit in UTC, stamped as asked, with a stable id", () => {

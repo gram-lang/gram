@@ -1,14 +1,14 @@
 import type { Format, SurfaceOptions, ViewDefinition } from "../contract";
 import type { ViewInput } from "../prepare-views";
 import { recipeView } from "./recipe/view";
-import { workPlanView } from "./work-plan/view";
+import { runSheetView } from "./run-sheet/view";
 
 /**
  * Every view of a recipe, in the order the surfaces list them. A surface
  * builds its choice of views from this list, so a view added here appears
  * everywhere.
  */
-export const views = [recipeView, workPlanView] as const;
+export const views = [recipeView, runSheetView] as const;
 
 /** The id of a view of the registry. */
 export type ViewId = (typeof views)[number]["id"];

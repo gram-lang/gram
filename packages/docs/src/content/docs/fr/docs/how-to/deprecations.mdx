@@ -5,6 +5,7 @@ description: "Inventaire des fonctionnalités dépréciées dans Gram, version c
 
 import Since from '../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../components/Term.astro';
 
 Cette page répertorie l'ensemble des éléments dépréciés dans Gram, organisés selon leur version majeure de suppression cible. **Une fonctionnalité dépréciée demeure pleinement opérationnelle et préserve son comportement nominal jusqu'à la version indiquée**. Chaque élément dispose d'une alternative moderne accessible immédiatement, facilitant une migration progressive sans rupture brutale.
 
@@ -124,15 +125,15 @@ Une recette compilée porte déjà cette décomposition au sein de son champ `mi
 
 <Since v="1.4.0" type="deprecated" />
 
-Le diagramme de Gantt historique est officiellement remplacé par le [planning de préparation](/fr/docs/how-to/plan-a-meal/). Plus aucune interface de Gram (CLI, playground, extension VS Code) ne génère ce graphique, et son code est désormais gelé jusqu'à sa suppression définitive en version 2.0.0.
+Le diagramme de Gantt historique est officiellement remplacé par le <Term id="runSheet" />. Plus aucune interface de Gram (CLI, playground, extension VS Code) ne génère ce graphique, et son code est désormais gelé jusqu'à sa suppression définitive en version 2.0.0.
 
 | Élément déprécié | Remplacement préconisé |
 |---|---|
-| `toGanttHTML()`, `attachGanttInteractivity()`, `formatTime()`, `formatAxisTime()` et types `Gantt*` (`@gram-lang/renderer`) | Utilisez les fonctions de rendu du planning (`runSheetToHTML()`, `runSheetToText()`, `runSheetToMarkdown()`, `runSheetToPrintHTML()`) sur l'objet `RunSheet` issu de `runSheet()`, ou concevez votre propre vue personnalisée à partir de ces données. |
-| `@gram-lang/renderer/gantt.css` | Non requis : les styles du planning de préparation sont désormais intégrés directement dans `gram.css`. |
-| Clés `gantt_*` de `playground.views` (`@gram-lang/i18n`) | Non requis : le planning s'appuie sur les clés `workPlan*` du dictionnaire du renderer. |
-| Commande `gram.showGantt`, `Gram: Gantt Chart` (VS Code) | Commande `gram.showRunSheet` (`Gram: Work Plan`). L'ancienne commande ouvre la nouvelle vue tout en affichant un avertissement explicatif unique. |
-| Notification `gram/ganttUpdated` (serveur de langage) | Lisez `gram/viewUpdated` pour la sortie `workPlan` (voir [Notification d'aperçu du serveur de langage](#notification-daperçu-du-serveur-de-langage)), ou consommez directement les données de la recette compilée. |
+| `toGanttHTML()`, `attachGanttInteractivity()`, `formatTime()`, `formatAxisTime()` et types `Gantt*` (`@gram-lang/renderer`) | Utilisez les fonctions de rendu du plan de marche (`runSheetToHTML()`, `runSheetToText()`, `runSheetToMarkdown()`, `runSheetToPrintHTML()`) sur l'objet `RunSheet` issu de `runSheet()`, ou concevez votre propre vue personnalisée à partir de ces données. |
+| `@gram-lang/renderer/gantt.css` | Non requis : les styles du plan de marche sont désormais intégrés directement dans `gram.css`. |
+| Clés `gantt_*` de `playground.views` (`@gram-lang/i18n`) | Non requis : le plan de marche s'appuie sur les clés `runSheet*` du dictionnaire du renderer. |
+| Commande `gram.showGantt`, `Gram: Gantt Chart` (VS Code) | Commande `gram.showRunSheet` (`Gram: Run Sheet`). L'ancienne commande ouvre la nouvelle vue tout en affichant un avertissement explicatif unique. |
+| Notification `gram/ganttUpdated` (serveur de langage) | Lisez `gram/viewUpdated` pour la sortie `runSheet` (voir [Notification d'aperçu du serveur de langage](#notification-daperçu-du-serveur-de-langage)), ou consommez directement les données de la recette compilée. |
 
 La fonction `toGanttHTML()` émet un avertissement unique dans la console lors de son exécution.
 
@@ -195,7 +196,7 @@ Le playground présente désormais les vues du moteur de rendu sous forme d'ongl
 
 | Élément déprécié | Remplacement conseillé |
 |---|---|
-| `playground.views.preview`, `runSheet`, `ast`, `json`, `jsonTree` | `renderer.outputs[id]`, avec les identifiants de sortie `recipe`, `workPlan`, `ast`, `json` et `json-tree` |
+| `playground.views.preview`, `runSheet`, `ast`, `json`, `jsonTree` | `renderer.outputs[id]`, avec les identifiants de sortie `recipe`, `runSheet`, `ast`, `json` et `json-tree` |
 | `playground.views.markdown` | `renderer.formats.markdown` (le Markdown est un format de vue, pas une vue) |
 | `playground.viewLabel` | `playground.output.views` (les onglets) et `playground.output.inspect` (le menu des inspecteurs) |
 

@@ -378,7 +378,7 @@ function handlePreviewClick(e: MouseEvent) {
         @jump="(start, end, uri) => emit('jump', start, end, uri)"
       />
 
-      <!-- The recipe has nothing for this view (a work plan with nothing to schedule) -->
+      <!-- The recipe has nothing for this view (a run sheet with nothing to schedule) -->
       <p v-else-if="isEmpty" class="output-empty">{{ t.renderer.outputEmpty }}</p>
 
       <template v-else>

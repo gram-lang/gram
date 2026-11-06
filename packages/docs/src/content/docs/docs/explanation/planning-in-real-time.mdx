@@ -5,12 +5,13 @@ description: "How Gram puts a recipe on the calendar: a serving time, a time zon
 
 import Since from '../../../../components/Since.astro';
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../components/Term.astro';
 
 <Since v="1.4.0" />
 
 A recipe describes its own timing: tasks, how long they last, and what dependencies they wait for. That is enough to calculate an overall metric—such as "this recipe takes 17 hours, 50 minutes of it in active work". It is not enough to say **when to start**. For that, Gram needs three inputs that only you know: when you serve, in which time zone, and when you can actually cook.
 
-Provide those three parameters, and Gram positions each task along a backward calendar schedule from the serving time, organizing work days, active kitchen visits, and background resting intervals. The [work plan](/docs/how-to/plan-a-meal/) provides the operational presentation of this data.
+Provide those three parameters, and Gram positions each task along a backward calendar schedule from the serving time, organizing work days, active kitchen visits, and background resting intervals. The <Term id="runSheet" /> provides the operational presentation of this data.
 
 ## Inputs
 
@@ -99,13 +100,13 @@ These diagnostics are specific to calendar projection: they depend directly on *
 
 Calculations take place in absolute minutes along a continuous timeline; conversion to local wall-clock time occurs only during final output rendering. A 24-hour wait (a dough in the fridge, say) spanning the autumn daylight saving transition lasts 24 true hours: if it begins at 13:30 on the clock the day before, it ends at 12:30 local time. Non-existent local times (e.g. 02:30 during the spring forward transition) are shifted to the next valid time; repeated times in autumn resolve to the first occurrence.
 
-## The work plan
+## The run sheet
 
-Calendar projection produces a comprehensive data model: exact timestamps for each block, adjusted passive rests, non-working intervals, and diagnostics for unresolved constraints. The [`runSheet()`](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan) function organizes this data into work days, **active kitchen visits**, and **background resting threads** (proofing, chilling, resting), while calculating the scheduling margin available for each intervention.
+Calendar projection produces a comprehensive data model: exact timestamps for each block, adjusted passive rests, non-working intervals, and diagnostics for unresolved constraints. The [`runSheet()`](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-run-sheet) function organizes this data into work days, **active kitchen visits**, and **background resting threads** (proofing, chilling, resting), while calculating the scheduling margin available for each intervention.
 
-The **work plan** is the operational view built on top of this model. For each day, it outlines required kitchen presence, equipment and ingredients to take out, actionable steps to execute alongside recipe sections, and unattended processes that continue in the background. To reflect culinary practice, displayed times are rounded to the nearest five minutes (while internal engine calculations remain accurate to the minute). Rest adjustments are highlighted at the top of the relevant day, and unresolved constraints are grouped at the top of the document. These presentation rules (grouping tasks into a single visit across rests under one hour, displaying margins starting at 15 minutes) belong to the rendering layer rather than rigid engine constraints.
+The **run sheet** is the operational view built on top of this model. For each day, it outlines required kitchen presence, equipment and ingredients to take out, actionable steps to execute alongside recipe sections, and unattended processes that continue in the background. To reflect culinary practice, displayed times are rounded to the nearest five minutes (while internal engine calculations remain accurate to the minute). Rest adjustments are highlighted at the top of the relevant day, and unresolved constraints are grouped at the top of the document. These presentation rules (grouping tasks into a single visit across rests under one hour, displaying margins starting at 15 minutes) belong to the rendering layer rather than rigid engine constraints.
 
-The plan can be generated as plain text, Markdown, standalone HTML, a print-ready document (one day per page with check boxes), or exported to an iCalendar file (`.ics`). With `--view work-plan`, `gram print` and `gram export` render the work plan instead of the recipe. While the recipe describes **how** to cook, the work plan specifies **when** to take action.
+The plan can be generated as plain text, Markdown, standalone HTML, a print-ready document (one day per page with check boxes), or exported to an iCalendar file (`.ics`). With `--view run-sheet`, `gram print` and `gram export` render the run sheet instead of the recipe. While the recipe describes **how** to cook, the run sheet specifies **when** to take action.
 
 Without a target serving time, this same data is displayed as a relative countdown (`D-2`, `D-1`, `Day D`) with estimated durations per day (e.g. "about 55 min") and the earliest achievable serving time. Scheduling margins and rest adjustments are calculated only when real calendar availability is provided.
 
@@ -116,8 +117,8 @@ See [Plan a meal](/docs/how-to/plan-a-meal/) for an end-to-end practical guide.
 | Tool | Usage |
 |---|---|
 | CLI | `gram plan recipe.gram --serve "2026-10-11 13:00" --available 08:00-22:00` (optional `--tz` if set in config); `--find` to look for a serving time |
-| Playground | The "Work plan" view and the "Plan" panel, with "When to serve?" |
-| VS Code | `Gram: Work Plan`, in days before the service, or on the calendar with the **Served at** field and its "When to serve?" suggestions |
+| Playground | The "Run sheet" view and the "Plan" panel, with "When to serve?" |
+| VS Code | `Gram: Run Sheet`, in days before the service, or on the calendar with the **Served at** field and its "When to serve?" suggestions |
 | `@gram-lang/scheduler` | `project()`, `runSheet()`, `findServeTimes()` and `earliestServe()` (see the [scheduler API reference](/docs/reference/api/scheduler/)) |
 | `@gram-lang/renderer` | `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, and associated modular helpers (`visitKit`, `sectionProgram`, `sectionSteps`) |
 
@@ -133,7 +134,7 @@ See [Plan a meal](/docs/how-to/plan-a-meal/) for an end-to-end practical guide.
 <CardGrid>
   <LinkCard
     title="Plan a meal"
-    description="Step-by-step practical guide to the work plan, the serving time search and the calendar."
+    description="Step-by-step practical guide to the run sheet, the serving time search and the calendar."
     href="/docs/how-to/plan-a-meal/"
   />
   <LinkCard

@@ -177,7 +177,7 @@ export function kitIngredients(
 					.map((n) => formatDecimalToFraction(n, line.unit))
 					.join(" + "),
 			}),
-			...(entry?.is_module_synthetic && { note: t.workPlanInStock }),
+			...(entry?.is_module_synthetic && { note: t.runSheetInStock }),
 		};
 	});
 }
@@ -217,7 +217,7 @@ export function kitPrepared(
 				prepared.push({
 					kind: "prepared",
 					name: String(usage.name ?? entry.name ?? id),
-					note: t.workPlanInStock,
+					note: t.runSheetInStock,
 				});
 				continue;
 			}
@@ -382,7 +382,7 @@ const htmlToText = (html: string) =>
 		.trim();
 
 /**
- * The steps a section does in a visit, written out: for the work plan, which
+ * The steps a section does in a visit, written out: for the run sheet, which
  * is read on paper. Each step is as the recipe view numbers it (comments
  * excluded) and says the same thing; only the icons are left out, since a
  * printed sheet has no use for them.

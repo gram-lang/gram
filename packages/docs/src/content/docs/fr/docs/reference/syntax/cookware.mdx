@@ -58,7 +58,7 @@ Contrairement à un `@ingrédient` dont les quantités sont proportionnelles par
 | **Avec quantité** | `#poêle{1}` ou `#ramequins{4}` | <Badge text="Évolutif" variant="tip" /> | Doubler les portions demandera 2 poêles ou 8 ramequins. |
 | **Fixe explicite** | `#=poêle{2}` | <Badge text="Fixe" variant="note" /> | Reste fixé à 2 poêles même si la recette est multipliée. |
 
-## Ustensiles et planning de préparation
+## Ustensiles et plan de marche
 
 Les ustensiles requis par une section sont inventoriés dans la mise en place du passage en cuisine où cette section est exécutée (une seule fois par passage). Si deux minuteurs passifs se chevauchent au sein d'étapes mobilisant le même ustensile sans piste nommée partagée, le compilateur émet l'avertissement [`PASSIVE_OVERLAP_SAME_COOKWARE`](/fr/docs/reference/api/warnings/#passive_overlap_same_cookware) et suggère l'usage d'une piste dédiée pour sérialiser l'accès à l'équipement.
 

@@ -29,9 +29,9 @@ function recorder() {
 describe("ViewsState: what is open", () => {
 	it("sends the open set of the followed recipe, once", () => {
 		const { sent, state } = recorder();
-		state.syncOpen(A, ["workPlan", "recipe"]);
-		state.syncOpen(A, ["recipe", "workPlan"]);
-		expect(sent).toEqual([[A, ["recipe", "workPlan"]]]);
+		state.syncOpen(A, ["runSheet", "recipe"]);
+		state.syncOpen(A, ["recipe", "runSheet"]);
+		expect(sent).toEqual([[A, ["recipe", "runSheet"]]]);
 	});
 
 	it("closes everything on the old recipe when the panels follow another", () => {
@@ -201,7 +201,7 @@ describe("the serving time of a view laid out in time", () => {
 	const SERVING = {
 		label: "Service le",
 		clear: "Effacer",
-		clearTitle: "Revenir <au> planning",
+		clearTitle: "Revenir <au> plan de marche",
 		suggest: "Quand servir ?",
 		none: "Rien",
 		whyNot: "Pourquoi pas les autres ?",
@@ -222,7 +222,7 @@ describe("the serving time of a view laid out in time", () => {
 			isPlanned({ id: "x", kind: "renderer", label: "X", needs: ["runSheet"] }),
 		).toBe(true);
 		expect(
-			isPlanned({ id: "workPlan", kind: "renderer", label: "W", needs: [] }),
+			isPlanned({ id: "runSheet", kind: "renderer", label: "W", needs: [] }),
 		).toBe(false);
 		expect(isPlanned({ id: "json", kind: "inspector", label: "J" })).toBe(
 			false,
@@ -233,7 +233,7 @@ describe("the serving time of a view laid out in time", () => {
 		const page = webviewPage({ ...base, serving: SERVING });
 		expect(page).toContain('type="datetime-local"');
 		expect(page).toContain("Quand servir ?");
-		expect(page).toContain('title="Revenir &lt;au&gt; planning"');
+		expect(page).toContain('title="Revenir &lt;au&gt; plan de marche"');
 		expect(webviewPage(base)).not.toContain('id="serving"');
 	});
 

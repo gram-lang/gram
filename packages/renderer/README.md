@@ -78,7 +78,7 @@ const html = toHTML(recipe, {
 // 3. Print-optimized HTML rendering (self-contained, single-page layout)
 const printHtml = toPrintHTML(recipe);
 
-// 4. The work plan of a schedule: the days, the visits to the kitchen, what to take out.
+// 4. The run sheet of a schedule: the days, the visits to the kitchen, what to take out.
 // `runSheet()` (from @gram-lang/scheduler) computes it; the renderer writes it.
 const context = {
   serveAt: '2026-10-17T20:00',
@@ -100,13 +100,13 @@ const document = toHTML(recipe, { runSheet: sheet });
 *   `src/index.ts`: The main entry point exporting public APIs.
 *   `src/types.ts`: TypeScript interfaces for `RendererOptions`, `RendererIcons`, and `RendererClasses`.
 *   `src/utils.ts`: Common helpers (decimal-to-fraction formatting, HTML escaping, duration formatting).
-*   `src/run-sheet.ts`, `src/work-plan-parts.ts`, `src/serve-times.ts`: The work plan in words (`describeRunSheet`, `runSheetTo*`), what to take out and what to do (`visitKit`, `sectionProgram`), and the serving time search in words.
+*   `src/run-sheet.ts`, `src/run-sheet-parts.ts`, `src/serve-times.ts`: The run sheet in words (`describeRunSheet`, `runSheetTo*`), what to take out and what to do (`visitKit`, `sectionProgram`), and the serving time search in words.
 *   `src/gantt/`: The deprecated Gantt chart (removed in 2.0.0): layout computation, HTML fragment rendering, and event delegation interactivity.
 *   `src/formatters/element.ts`: Universal formatter for individual AST nodes (ingredients, cookware, timers, alternative groups).
 *   `src/formatters/markdown.ts`: Orchestrates Markdown generation for full recipes.
 *   `src/formatters/html.ts`: Orchestrates HTML generation for full recipes using classes and icons injection.
 *   `src/formatters/print.ts`: Orchestrates self-contained, print-optimized HTML generation (`toPrintHTML`).
-*   `gram.css`: Stylesheet of the recipe and the work plan.
+*   `gram.css`: Stylesheet of the recipe and the run sheet.
 *   `gantt.css`: Stylesheet of the deprecated Gantt chart.
 
 ---

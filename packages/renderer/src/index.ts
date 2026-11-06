@@ -91,11 +91,11 @@ export { toMarkdown } from "./views/recipe/markdown";
 export type { CommentsMode } from "./types";
 export { toHTML } from "./views/recipe/html";
 export { toPrintHTML } from "./views/recipe/print";
-export { describeRunSheet } from "./views/work-plan/model";
-export { runSheetToHTML } from "./views/work-plan/html";
-export { runSheetToMarkdown } from "./views/work-plan/markdown";
-export { runSheetToText } from "./views/work-plan/text";
-export { runSheetToPrintHTML } from "./views/work-plan/print";
+export { describeRunSheet } from "./views/run-sheet/model";
+export { runSheetToHTML } from "./views/run-sheet/html";
+export { runSheetToMarkdown } from "./views/run-sheet/markdown";
+export { runSheetToText } from "./views/run-sheet/text";
+export { runSheetToPrintHTML } from "./views/run-sheet/print";
 export {
 	describeEarliestServe,
 	describeServeTimes,
@@ -103,7 +103,7 @@ export {
 	type ServeSuggestions,
 	type SuggestServeOptions,
 	suggestServeTimes,
-} from "./views/work-plan/serve-times";
+} from "./views/run-sheet/serve-times";
 export type {
 	RunSheetDayModel,
 	RunSheetEvent,
@@ -116,19 +116,19 @@ export type {
 	RunSheetScheduleRow,
 	RunSheetStepLine,
 	RunSheetWaitLine,
-} from "./views/work-plan/model";
+} from "./views/run-sheet/model";
 export {
 	intermediateMakers,
 	visitKit,
 	sectionProgram,
 	sectionSteps,
-} from "./views/work-plan/parts";
+} from "./views/run-sheet/parts";
 export type {
 	KitItem,
 	ProgramStep,
 	VisitKitOptions,
 	SectionProgram,
-} from "./views/work-plan/parts";
+} from "./views/run-sheet/parts";
 export {
 	formatDecimalToFraction,
 	getQty,

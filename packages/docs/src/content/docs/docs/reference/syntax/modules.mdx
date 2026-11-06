@@ -5,6 +5,7 @@ description: "Import another .gram file as a reusable sub-component with @use, a
 
 import { Tabs, TabItem, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Since from '../../../../../components/Since.astro';
+import Term from '../../../../../components/Term.astro';
 
 <Since v="1.2.0" />
 
@@ -218,7 +219,7 @@ gram shop dinner.gram --stock @bases/bouillon.gram
 gram cook dinner.gram --stock @bases/bouillon.gram
 ```
 
-* **Work plan**: Preparation steps for stocked modules are omitted and open no dedicated kitchen visits; the base is simply listed "in stock" within the visit using it.
+* <Term id="runSheet" cap />: Preparation steps for stocked modules are omitted and open no dedicated kitchen visits; the base is simply listed "in stock" within the visit using it.
 * **Shopping List**: Appears as a single purchasable item (e.g. `1 bouillon`) instead of raw ingredients.
 * **Nutrition**: Exact caloric and macronutrient values are preserved.
 
@@ -248,7 +249,7 @@ When a fresh preparation must be started in advance (e.g. a sourdough starter or
 The Gram Language Server resolves `@use` directives in real time:
 
 * **Instant Diagnostics**: Cross-file validation updates live as you type.
-* **Work plan & live preview**: Real-time update incorporating spliced steps and scaled quantities. An imported base integrates into kitchen visits, and a time anchor (e.g. `~{-2d}`) on its `@use` directive automatically opens a dedicated working day.
+* **Run sheet & live preview**: Real-time update incorporating spliced steps and scaled quantities. An imported base integrates into kitchen visits, and a time anchor (e.g. `~{-2d}`) on its `@use` directive automatically opens a dedicated working day.
 * **Go to Definition**: Jumping to `&pate` opens the source module at the exact exported section.
 * **Auto-completion**: Typing `@use "` completes `./`, `../`, `@/`, and configured `paths:` aliases.
 

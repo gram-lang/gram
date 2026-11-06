@@ -89,8 +89,8 @@ const emit = defineEmits<{
 	"update:rests": [rests: RestChoice];
 	"update:plan": [plan: PlanSettings];
 	"clear-plan": [];
-	/** Show the work plan: where most of the "Schedule & Service" settings show. */
-	"show-work-plan": [];
+	/** Show the run sheet: where most of the "Schedule & Service" settings show. */
+	"show-run-sheet": [];
 }>();
 
 // Accordion open/collapsed state
@@ -912,7 +912,7 @@ function resetStockSection() {
           </svg>
           <span>
             {{ t.playground.help.scheduleNote }}
-            <button type="button" class="studio-note-link" @click="emit('show-work-plan')">{{ t.playground.help.scheduleNoteLink }}</button>
+            <button type="button" class="studio-note-link" @click="emit('show-run-sheet')">{{ t.playground.help.scheduleNoteLink }}</button>
           </span>
         </p>
 

@@ -82,7 +82,7 @@ describe("the views protocol", () => {
 		};
 		const listed = result.capabilities.experimental?.gramViews?.outputs ?? [];
 		expect(listed.map((o) => o.id)).toEqual(outputs.map((o) => o.id));
-		expect(listed.find((o) => o.id === "workPlan")?.label).toBe("Work plan");
+		expect(listed.find((o) => o.id === "runSheet")?.label).toBe("Run sheet");
 	}, 20_000);
 
 	it("says what each view reads, and the words of the serving time controls", async () => {
@@ -113,8 +113,8 @@ describe("the views protocol", () => {
 		client = new Client();
 		await client.start({ views: true });
 		client.open(TART("Tart"));
-		client.notify("gram/setOpenViews", { uri: URI, viewIds: ["workPlan"] });
-		await waitFor(client, (u) => u.outputId === "workPlan");
+		client.notify("gram/setOpenViews", { uri: URI, viewIds: ["runSheet"] });
+		await waitFor(client, (u) => u.outputId === "runSheet");
 		const suggestions = (await client.request("gram/serveTimes", {
 			uri: URI,
 		})) as {
@@ -145,20 +145,20 @@ describe("the views protocol", () => {
 		client = new Client();
 		await client.start({ views: true });
 		client.open(TART("Tart"));
-		client.notify("gram/setOpenViews", { uri: URI, viewIds: ["workPlan"] });
+		client.notify("gram/setOpenViews", { uri: URI, viewIds: ["runSheet"] });
 		await waitFor(
 			client,
-			htmlIs("workPlan", (h) => h.includes("Work plan — Tart")),
+			htmlIs("runSheet", (h) => h.includes("Run sheet — Tart")),
 		);
 
 		client.change(TART("Pie"), 2);
 		await waitFor(
 			client,
-			htmlIs("workPlan", (h) => h.includes("Work plan — Pie")),
+			htmlIs("runSheet", (h) => h.includes("Run sheet — Pie")),
 		);
 		await client.settle();
 		expect(new Set(updatesOf(client).map((u) => u.outputId))).toEqual(
-			new Set(["workPlan"]),
+			new Set(["runSheet"]),
 		);
 	}, 20_000);
 
@@ -196,27 +196,27 @@ describe("the views protocol", () => {
 		);
 	}, 20_000);
 
-	it("lays the work plan on the session's serving time, and back in days without", async () => {
+	it("lays the run sheet on the session's serving time, and back in days without", async () => {
 		client = new Client();
 		await client.start({ views: true });
 		client.open(TART("Tart"));
-		client.notify("gram/setOpenViews", { uri: URI, viewIds: ["workPlan"] });
+		client.notify("gram/setOpenViews", { uri: URI, viewIds: ["runSheet"] });
 		await waitFor(
 			client,
-			htmlIs("workPlan", (h) => h.includes("D-2")),
+			htmlIs("runSheet", (h) => h.includes("D-2")),
 		);
 
 		client.notify("gram/setSession", { uri: URI, serveAt: "2026-10-11 13:00" });
 		await waitFor(
 			client,
-			htmlIs("workPlan", (h) => !h.includes("D-2")),
+			htmlIs("runSheet", (h) => !h.includes("D-2")),
 		);
 
 		client.notes.length = 0;
 		client.notify("gram/setSession", { uri: URI });
 		await waitFor(
 			client,
-			htmlIs("workPlan", (h) => h.includes("D-2")),
+			htmlIs("runSheet", (h) => h.includes("D-2")),
 		);
 	}, 20_000);
 

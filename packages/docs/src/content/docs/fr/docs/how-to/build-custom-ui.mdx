@@ -170,7 +170,7 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
 
    Gram propose deux approches complémentaires pour visualiser le temps, selon les besoins de votre application :
    1. **La chronologie d'exécution relative** : exprime le déroulement en minutes depuis le départ ($t = 0$). Idéale pour un guidage pas-à-pas en cours de préparation ou une frise linéaire de cuisson.
-   2. **Le planning de préparation calendaire** : projette les étapes sur des dates, des heures d'horloge murale et des passages en cuisine réels. Idéale pour l'organisation logistique d'un repas.
+   2. **Le planning calendaire** : projette les étapes sur des dates, des heures d'horloge murale et des passages en cuisine réels. Idéale pour l'organisation logistique d'un repas.
 
    #### Option A : La chronologie relative (en minutes depuis le début)
 
@@ -206,7 +206,7 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
    :::
 
    <span id="construire-sa-propre-vue-planning"></span>
-   #### Option B : Le planning de préparation calendaire (dates et heures réelles)
+   #### Option B : Le planning calendaire (dates et heures réelles)
 
    <Since v="1.4.0" />
 
@@ -263,7 +263,7 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
    - `sheet.adjustments[]` et `sheet.diagnostics[]` : récapitulent respectivement les durées de repos passif adaptées pour respecter vos disponibilités, et les contraintes insolubles ayant généré des alertes.
 
    > [!TIP]
-   > **Réutiliser les générateurs d'intitulés :** Pour formater les listes de courses, le matériel à sortir ou les renvois aux étapes sans réécrire la logique métier, vous pouvez directement importer les utilitaires modulaires du package `@gram-lang/renderer`, notamment `visitKit()` (ingrédients et matériel à sortir) et `sectionProgram()` (la section et la plage d'étapes d'un passage). Pour en savoir plus, consultez [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
+   > **Réutiliser les générateurs d'intitulés :** Pour formater les listes de courses, le matériel à sortir ou les renvois aux étapes sans réécrire la logique métier, vous pouvez directement importer les utilitaires modulaires du package `@gram-lang/renderer`, notamment `visitKit()` (ingrédients et matériel à sortir) et `sectionProgram()` (la section et la plage d'étapes d'un passage). Pour en savoir plus, consultez [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-marche).
 
 </Steps>
 
