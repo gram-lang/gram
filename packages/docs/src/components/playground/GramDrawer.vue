@@ -305,7 +305,7 @@ onUnmounted(() => {
               <button
                 type="button"
                 class="gram-drawer-close-btn"
-                :aria-label="t.playground.a11y?.closeDrawer || 'Close'"
+                :aria-label="t.playground.a11y.closeDrawer"
                 @click="emit('close')"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
