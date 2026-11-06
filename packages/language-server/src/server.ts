@@ -22,6 +22,7 @@ import {
 	readMealTimesConfigSync,
 	readTimeZoneConfigSync,
 } from "./utils/module-paths-config";
+import { LatestRefresh } from "./utils/latest-refresh";
 import { affectedOpenImporters } from "./utils/module-invalidation";
 import { provideDocumentSymbols } from "./features/document-symbols";
 import { provideDiagnostics } from "./features/diagnostics";
@@ -359,17 +360,24 @@ connection.onInitialized(async () => {
 	}
 	connection.onDidChangeWatchedFiles((params) => {
 		let dbChanged = false;
+		let configChanged = false;
 		for (const change of params.changes) {
 			if (change.uri.endsWith(".gram")) {
 				invalidateDependents(change.uri);
 			} else if (change.uri.endsWith(".gram/config.yaml")) {
-				// A `paths:` alias edit invalidates every cached project
-				// root/paths lookup (`loadGraphFor`'s `projectContextCache`) — the
-				// next debounced refresh of each open document recomputes it fresh,
-				// same as every refresh did before that cache existed.
-				projectContextCache.clear();
+				// The project's settings changed: its `paths:` aliases (the graph),
+				// `timezone` and `availability` (the views). Every cached project
+				// context is dropped and every open document refreshed now, rather
+				// than at its next edit.
+				configChanged = true;
 			} else {
 				dbChanged = true;
+			}
+		}
+		if (configChanged) {
+			projectContextCache.clear();
+			for (const doc of documents.all()) {
+				scheduleRefresh(doc.uri, doc.getText(), doc.version);
 			}
 		}
 		if (dbChanged) {
@@ -380,12 +388,19 @@ connection.onInitialized(async () => {
 	});
 });
 
+const latestRefresh = new LatestRefresh();
+
 async function refresh(
 	uri: string,
 	text: string,
 	version?: number,
 ): Promise<void> {
+	const token = latestRefresh.begin(uri);
 	const graph = await loadGraphFor(uri);
+	// A newer refresh started while the graph loaded, or the document closed:
+	// this one's result is stale. Everything below is synchronous, so this one
+	// check is enough.
+	if (!latestRefresh.isLatest(uri, token)) return;
 	if (graph) graphs.set(uri, graph);
 	else graphs.delete(uri);
 
@@ -687,6 +702,7 @@ documents.onDidChangeContent((e) => {
 	invalidateDependents(e.document.uri);
 });
 documents.onDidClose((e) => {
+	latestRefresh.forget(e.document.uri);
 	states.delete(e.document.uri);
 	viewStates.delete(e.document.uri);
 	openViews.delete(e.document.uri);
