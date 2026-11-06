@@ -1,9 +1,12 @@
 import type { Availability } from "@gram-lang/scheduler";
 import {
 	WEEKDAYS,
+	availabilityEntries,
 	isCalendarDate,
+	isTimeZone,
 	parseAvailability as parseEntries,
 	parseInstant,
+	parseMealTimes as readMealTimes,
 } from "@gram-lang/scheduler";
 import { ExitCode, GramCLIError } from "../errors";
 
@@ -71,15 +74,6 @@ export function parseNow(value: unknown, timeZone: string): string {
 	}
 }
 
-const isTimeZone = (zone: string) => {
-	try {
-		new Intl.DateTimeFormat("en", { timeZone: zone });
-		return true;
-	} catch {
-		return false;
-	}
-};
-
 /**
  * The time zone of a plan, from the first of: `--tz Europe/Paris`, the
  * `timezone` of the project (or global) config, this machine's. A typo is a
@@ -141,20 +135,13 @@ export function parseAvailability(
 
 /** The entries of the `availability` setting: one entry, or a list of them. */
 function configEntries(configured: unknown): string[] {
-	if (typeof configured === "string")
-		return configured === "" ? [] : [configured];
-	if (
-		Array.isArray(configured) &&
-		configured.every((entry) => typeof entry === "string")
-	) {
-		return configured;
-	}
-	return fail(
-		"The `availability` setting of .gram/config.yaml must be an entry like 08:00-22:00, or a list of them.",
+	return (
+		availabilityEntries(configured) ??
+		fail(
+			"The `availability` setting of .gram/config.yaml must be an entry like 08:00-22:00, or a list of them.",
+		)
 	);
 }
-
-const MEAL = /^([01]?\d|2[0-3]):([0-5]\d)$/;
 
 /**
  * `--meal-times 12:30,20:00`, else the `mealTimes` of the config, else none
@@ -169,15 +156,11 @@ export function parseMealTimes(
 			? value.split(",").map((v) => v.trim())
 			: configured;
 	if (raw === undefined || raw.length === 0) return undefined;
-	return raw.map((time) => {
-		if (!MEAL.test(time)) {
-			return fail(
-				`Expected --meal-times like 12:30,20:00 (the \`mealTimes\` setting is a list of "HH:MM"), got "${time}".`,
-			);
-		}
-		const [h, m] = time.split(":") as [string, string];
-		return `${h.padStart(2, "0")}:${m}`;
-	});
+	const parsed = readMealTimes(raw);
+	if (parsed.ok) return parsed.times;
+	return fail(
+		`Expected --meal-times like 12:30,20:00 (the \`mealTimes\` setting is a list of "HH:MM"), got "${parsed.part}".`,
+	);
 }
 
 const LOCAL_BOUND = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{1,2}:\d{2})?$/;

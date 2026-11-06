@@ -67,6 +67,7 @@ export type {
 export { WEEKDAYS, type Weekday } from "./time";
 export {
 	isCalendarDate,
+	isTimeZone,
 	parseInstant,
 	parseLocalIso,
 	toLocalIso,
@@ -77,11 +78,13 @@ export {
 	EARLIEST_SERVE_HORIZON_DAYS,
 	earliestServe,
 	findServeTimes,
+	parseMealTimes,
 	tryServeAt,
 } from "./serve";
 export type {
 	EarliestServe,
 	FindServeOptions,
+	MealTimesParse,
 	ServeCandidate,
 	ServeSearch,
 } from "./serve";
@@ -89,5 +92,6 @@ export {
 	ALL_DAY,
 	type AvailabilityParse,
 	type AvailabilityProblem,
+	availabilityEntries,
 	parseAvailability,
 } from "./parse-availability";

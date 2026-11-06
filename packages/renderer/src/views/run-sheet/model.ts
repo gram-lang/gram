@@ -1,4 +1,5 @@
-import { getDictionary } from "@gram-lang/i18n";
+import { fillTemplate, getDictionary } from "@gram-lang/i18n";
+import { longDate, shortDay, weekdayName } from "./dates";
 import {
 	DEFAULT_MISE_EN_PLACE_MODE,
 	type MiseEnPlaceMode,
@@ -173,33 +174,6 @@ function roundedClock(local: string, step: number): string {
 	return `${pad(Math.floor(rounded / 60))}:${pad(rounded % 60)}`;
 }
 
-/** Midday UTC of a "YYYY-MM-DD" date: a safe instant to name a calendar day with `timeZone: "UTC"`. */
-const noonOf = (date: string) =>
-	Date.UTC(
-		Number(date.slice(0, 4)),
-		Number(date.slice(5, 7)) - 1,
-		Number(date.slice(8, 10)),
-		12,
-	);
-
-const dateFormat = (
-	date: string,
-	lang: string | undefined,
-	options: Intl.DateTimeFormatOptions,
-) =>
-	new Intl.DateTimeFormat(lang || "en", { timeZone: "UTC", ...options }).format(
-		noonOf(date),
-	);
-
-const longDate = (date: string, lang?: string) =>
-	dateFormat(date, lang, { weekday: "long", day: "numeric", month: "long" });
-
-const weekdayName = (date: string, lang?: string) =>
-	dateFormat(date, lang, { weekday: "long" });
-
-const shortDay = (date: string, lang?: string) =>
-	dateFormat(date, lang, { weekday: "short" });
-
 /** What a rest is called: its track, else the action of its step, else "Rest". */
 const restName = (
 	fallback: string,
@@ -210,11 +184,8 @@ const restName = (
 		? track.charAt(0).toUpperCase() + track.slice(1)
 		: action || fallback;
 
-export const fill = (template: string, values: Record<string, string>) =>
-	template.replace(/\{(\w+)\}/g, (_, k: string) => values[k] ?? `{${k}}`);
-
 const plural = (n: number, one: string, many: string) =>
-	fill(n === 1 ? one : many, { n: String(n) });
+	fillTemplate(n === 1 ? one : many, { n: String(n) });
 
 /** What the plan could not fix, one sentence each. */
 export function describeProblems(
@@ -253,12 +224,12 @@ export function describeProblems(
 	return diagnostics.map((d): string => {
 		switch (d.code) {
 			case "ACTIVE_OUTSIDE_AVAILABILITY":
-				return fill(t.runSheetOutside, {
+				return fillTemplate(t.runSheetOutside, {
 					task: labelOf(d.task),
 					time: `${shortDay(d.local.slice(0, 10), lang)} ${roundedClock(d.local, step)}`,
 				});
 			case "ACTIVE_BLOCK_EXCEEDS_AVAILABILITY":
-				return fill(t.runSheetExceeds, {
+				return fillTemplate(t.runSheetExceeds, {
 					task: [
 						...new Set(
 							d.tasks.map((id) => sectionTitle(tasks.get(id)?.section ?? 0)),
@@ -268,15 +239,18 @@ export function describeProblems(
 					largest: fmt(d.largest),
 				});
 			case "DAY_MISMATCH":
-				return fill(t.runSheetDayMismatch, {
+				return fillTemplate(t.runSheetDayMismatch, {
 					day: workingDayLabel(d.day, t),
 					actual: longDate(d.actual, lang),
 					expected: longDate(d.expected, lang),
 				});
 			case "START_IN_PAST":
-				return fill(t.runSheetPast, { start: when(d.start), now: when(d.now) });
+				return fillTemplate(t.runSheetPast, {
+					start: when(d.start),
+					now: when(d.now),
+				});
 			case "MULTI_RECIPE_UNSUPPORTED":
-				return fill(t.runSheetMulti, { count: String(d.recipes) });
+				return fillTemplate(t.runSheetMulti, { count: String(d.recipes) });
 			default: {
 				// A new code in the scheduler is a compile error here, not a blank line.
 				const unknown: never = d;
@@ -328,7 +302,7 @@ export function describeRunSheet(
 			: undefined;
 	};
 	const rangeText = (r: { min: number; max: number }) =>
-		fill(t.runSheetRange, { min: fmt(r.min), max: fmt(r.max) });
+		fillTemplate(t.runSheetRange, { min: fmt(r.min), max: fmt(r.max) });
 
 	/** The name and the planned length of a wait, with the written range when it differs. */
 	const threadParts = (
@@ -393,7 +367,9 @@ export function describeRunSheet(
 		const slotOf = (p: RunSheetVisit) =>
 			calendar && p.startLocal && p.endLocal
 				? `${clock(p.startLocal)} → ${clock(p.endLocal)}`
-				: fill(t.runSheetAbout, { duration: fmt(rounded(p.end - p.start)) });
+				: fillTemplate(t.runSheetAbout, {
+						duration: fmt(rounded(p.end - p.start)),
+					});
 		const rowLabel =
 			calendar && day.date
 				? `${shortDay(day.date, lang)} ${Number(day.date.slice(8, 10))}`.toUpperCase()
@@ -464,13 +440,13 @@ export function describeRunSheet(
 						if (!made || made.visit === p) return undefined;
 						if (made.day === d) {
 							return calendar && made.visit.startLocal
-								? fill(t.runSheetMadeAt, {
+								? fillTemplate(t.runSheetMadeAt, {
 										time: clock(made.visit.startLocal),
 									})
 								: t.runSheetMadeEarlier;
 						}
 						const madeDay = days[made.day]!;
-						return fill(t.runSheetMadeOn, {
+						return fillTemplate(t.runSheetMadeOn, {
 							day:
 								calendar && madeDay.date
 									? weekdayName(madeDay.date, lang)
@@ -493,8 +469,8 @@ export function describeRunSheet(
 				)?.startLocal;
 				const range =
 					prog.from === prog.to
-						? fill(t.runSheetProgramStep, { n: String(prog.from) })
-						: fill(t.runSheetProgramSteps, {
+						? fillTemplate(t.runSheetProgramStep, { n: String(prog.from) })
+						: fillTemplate(t.runSheetProgramSteps, {
 								from: String(prog.from),
 								to: String(prog.to),
 							});
@@ -566,7 +542,7 @@ export function describeRunSheet(
 				const endsEarly =
 					nextVisit && th.to < nextVisit.start - 1
 						? th.toLocal
-							? fill(t.runSheetUntilClock, { time: clock(th.toLocal) })
+							? fillTemplate(t.runSheetUntilClock, { time: clock(th.toLocal) })
 							: undefined
 						: undefined;
 				leaving.push(threadText(th, endsEarly));
@@ -591,10 +567,12 @@ export function describeRunSheet(
 				} else {
 					when = nextDay ? dayLabel(nextDay) : "";
 				}
-				if (when) leaving.push(fill(t.runSheetNextVisit, { when }));
+				if (when) leaving.push(fillTemplate(t.runSheetNextVisit, { when }));
 			} else if (calendar && sheet.serveAt) {
 				leaving.push(
-					fill(t.runSheetServeAt, { time: sheet.serveAt.slice(11, 16) }),
+					fillTemplate(t.runSheetServeAt, {
+						time: sheet.serveAt.slice(11, 16),
+					}),
 				);
 			} else {
 				leaving.push(t.runSheetServe);
@@ -603,7 +581,7 @@ export function describeRunSheet(
 			// The margin, or what holds the visit.
 			let margin: string | undefined;
 			if (p.window) {
-				margin = fill(t.runSheetPossibleFrom, {
+				margin = fillTemplate(t.runSheetPossibleFrom, {
 					time: clock(p.window.earliestLocal),
 				});
 			} else if (p.fixedBy) {
@@ -618,8 +596,8 @@ export function describeRunSheet(
 				};
 				margin =
 					p.fixedBy.before === "service"
-						? fill(t.runSheetFixedService, wait)
-						: fill(t.runSheetFixedVisit, {
+						? fillTemplate(t.runSheetFixedService, wait)
+						: fillTemplate(t.runSheetFixedVisit, {
 								...wait,
 								sections: (p.fixedBy.sections ?? [])
 									.map(sectionTitle)
@@ -683,7 +661,7 @@ export function describeRunSheet(
 			.filter((a) => a.day === day.daysBefore)
 			.map((a) => {
 				const r = rangeOf(a.task);
-				return fill(
+				return fillTemplate(
 					a.to > a.from ? t.runSheetStretchedTo : t.runSheetShortenedTo,
 					{
 						wait: waitName(a),
@@ -718,17 +696,17 @@ export function describeRunSheet(
 	const servings =
 		portions !== undefined && portions !== null && String(portions) !== ""
 			? typeof scale === "number" && Math.abs(scale - 1) > 1e-6
-				? fill(t.runSheetScaled, {
+				? fillTemplate(t.runSheetScaled, {
 						count: String(portions),
 						factor: new Intl.NumberFormat(lang || "en", {
 							maximumFractionDigits: 2,
 						}).format(scale),
 					})
-				: fill(t.runSheetServings, { count: String(portions) })
+				: fillTemplate(t.runSheetServings, { count: String(portions) })
 			: undefined;
 	const subtitle = [
 		calendar && sheet.serveAt
-			? fill(t.runSheetFor, {
+			? fillTemplate(t.runSheetFor, {
 					date: longDate(sheet.serveAt.slice(0, 10), lang),
 					time: sheet.serveAt.slice(11, 16),
 				})
@@ -743,7 +721,7 @@ export function describeRunSheet(
 			: [
 					plural(days.length, t.runSheetDays, t.runSheetDaysMany),
 					plural(visits, t.runSheetVisits, t.runSheetVisitsMany),
-					fill(t.runSheetWork, {
+					fillTemplate(t.runSheetWork, {
 						duration: fmt(rounded(recipe?.totalWork ?? 0)),
 					}),
 				].join(" · ");

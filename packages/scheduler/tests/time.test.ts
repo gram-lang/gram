@@ -8,6 +8,7 @@ import {
 	addDays,
 	daysBetween,
 	isCalendarDate,
+	isTimeZone,
 	localDateTime,
 	parseClock,
 	parseInstant,
@@ -102,6 +103,13 @@ describe("local time", () => {
 		expect(isCalendarDate("2026-00-10")).toBe(false);
 		expect(isCalendarDate("2026-1-10")).toBe(false);
 		expect(isCalendarDate("2026-10-11T13:00")).toBe(false);
+	});
+
+	it("tells an IANA time zone from a typo", () => {
+		expect(isTimeZone("Europe/Paris")).toBe(true);
+		expect(isTimeZone("UTC")).toBe(true);
+		expect(isTimeZone("Mars/Olympus")).toBe(false);
+		expect(isTimeZone("")).toBe(false);
 	});
 
 	it("counts days on the calendar", () => {

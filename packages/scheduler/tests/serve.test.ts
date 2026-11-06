@@ -5,6 +5,7 @@ import {
 	DEFAULT_MEAL_TIMES,
 	earliestServe,
 	findServeTimes,
+	parseMealTimes,
 	tryServeAt,
 } from "../src/serve";
 
@@ -181,5 +182,23 @@ describe("earliestServe", () => {
 		expect(() =>
 			earliestServe({ graph: quick }, context({ now: undefined })),
 		).toThrow(RangeError);
+	});
+});
+
+describe("parseMealTimes", () => {
+	it("reads times of day, padding the hour", () => {
+		expect(parseMealTimes(["12:30", "9:05", " 20:00 "])).toEqual({
+			ok: true,
+			times: ["12:30", "09:05", "20:00"],
+		});
+		expect(parseMealTimes([])).toEqual({ ok: true, times: [] });
+	});
+
+	it("says which time it cannot read, as data", () => {
+		expect(parseMealTimes(["12:30", "24:00", "8h"])).toEqual({
+			ok: false,
+			part: "24:00",
+		});
+		expect(parseMealTimes(["noon"])).toEqual({ ok: false, part: "noon" });
 	});
 });

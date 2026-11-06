@@ -17,11 +17,9 @@ import { parseDocument, type DocumentState } from "./document-state";
 import { createLspModuleHost } from "./module-host";
 import { findProjectRootSync } from "./utils/project-root";
 import {
-	readPathsConfigSync,
-	readAvailabilityConfigSync,
-	readMealTimesConfigSync,
-	readTimeZoneConfigSync,
-} from "./utils/module-paths-config";
+	type ProjectConfig,
+	readProjectConfigSync,
+} from "./utils/project-config";
 import { LatestRefresh } from "./utils/latest-refresh";
 import { affectedOpenImporters } from "./utils/module-invalidation";
 import { provideDocumentSymbols } from "./features/document-symbols";
@@ -107,8 +105,8 @@ let workspaceFolders: string[] = [];
 const graphs = new Map<string, ModuleGraph>();
 const moduleMeasureCache = new Map<string, AnalyzedCompilationResult>();
 
-// `findProjectRootSync`/`readPathsConfigSync` are both blocking (`existsSync`
-// walks up the directory tree, `readPathsConfigSync` does a sync file read +
+// `findProjectRootSync`/`readProjectConfigSync` are both blocking (`existsSync`
+// walks up the directory tree, `readProjectConfigSync` does a sync file read +
 // YAML parse) — cheap once, but `loadGraphFor` used to redo them on every
 // 150ms-debounced edit of every open document, stalling the event loop on
 // every keystroke even for documents with no `@use` at all. Keyed by
@@ -119,13 +117,7 @@ const moduleMeasureCache = new Map<string, AnalyzedCompilationResult>();
 // next refresh, same as before this cache existed.
 const projectContextCache = new Map<
 	string,
-	{
-		projectRoot: string;
-		paths?: Record<string, string>;
-		timeZone?: string;
-		availability?: Availability;
-		mealTimes?: string[];
-	}
+	ProjectConfig & { projectRoot: string }
 >();
 
 /** The project context of the directory of `uri`, read once per directory. */
@@ -134,13 +126,7 @@ function projectContextOf(uri: string) {
 	let ctx = projectContextCache.get(dir);
 	if (!ctx) {
 		const projectRoot = findProjectRootSync(dir);
-		ctx = {
-			projectRoot,
-			paths: readPathsConfigSync(projectRoot),
-			timeZone: readTimeZoneConfigSync(projectRoot),
-			availability: readAvailabilityConfigSync(projectRoot),
-			mealTimes: readMealTimesConfigSync(projectRoot),
-		};
+		ctx = { projectRoot, ...readProjectConfigSync(projectRoot) };
 		projectContextCache.set(dir, ctx);
 	}
 	return ctx;

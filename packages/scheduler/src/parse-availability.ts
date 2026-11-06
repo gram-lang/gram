@@ -44,6 +44,19 @@ function parseRanges(text: string): TimeRange[] | string {
 }
 
 /**
+ * The entries of an `availability` setting as a project writes it: one entry
+ * ("08:00-22:00") or a list of them. An empty entry is no entry. Undefined
+ * when it is neither, for the caller to report or ignore.
+ */
+export function availabilityEntries(value: unknown): string[] | undefined {
+	if (typeof value === "string") return value === "" ? [] : [value];
+	if (Array.isArray(value) && value.every((v) => typeof v === "string")) {
+		return value as string[];
+	}
+	return undefined;
+}
+
+/**
  * The availability that entries write, each one of:
  *   08:00-22:00            every day
  *   fri=18:00-22:00        a day of the week (mon … sun, in any case)
