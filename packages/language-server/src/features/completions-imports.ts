@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { type CompletionItem, CompletionItemKind } from "vscode-languageserver";
 import { findProjectRootSync } from "../utils/project-root";
-import { readPathsConfigSync } from "../utils/module-paths-config";
+import { readProjectConfigSync } from "../utils/project-config";
 
 const USE_SPECIFIER_RE = /^\s*@use\s+"([^"]*)$/;
 
@@ -58,7 +58,7 @@ export function provideImportPathCompletions(
 	if (!uri.startsWith("file:")) return [];
 	const fromDir = dirname(fileURLToPath(uri));
 	const projectRoot = findProjectRootSync(fromDir);
-	const paths = readPathsConfigSync(projectRoot);
+	const { paths } = readProjectConfigSync(projectRoot);
 
 	if (partial.startsWith("./") || partial.startsWith("../")) {
 		const dirPart = partial.slice(0, partial.lastIndexOf("/") + 1);

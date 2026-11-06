@@ -30,6 +30,16 @@ export interface LocalTime {
 
 const formatters = new Map<string, Intl.DateTimeFormat>();
 
+/** Whether `zone` is an IANA time zone this runtime knows ("Europe/Paris"). */
+export function isTimeZone(zone: string): boolean {
+	try {
+		formatterFor(zone);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 /** Throws a `RangeError` naming the zone when it is not a valid IANA zone. */
 function formatterFor(timeZone: string): Intl.DateTimeFormat {
 	let formatter = formatters.get(timeZone);

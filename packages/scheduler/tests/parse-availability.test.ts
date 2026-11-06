@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { ALL_DAY, parseAvailability } from "../src/index";
+import { ALL_DAY, availabilityEntries, parseAvailability } from "../src/index";
 
 describe("parseAvailability", () => {
 	it("is all day without any entry", () => {
@@ -65,5 +65,23 @@ describe("parseAvailability", () => {
 		const parsed = parseAvailability([]);
 		if (parsed.ok) parsed.availability.daily.push({ start: "x", end: "y" });
 		expect(ALL_DAY.daily).toHaveLength(1);
+	});
+});
+
+describe("availabilityEntries", () => {
+	it("reads one entry or a list of them", () => {
+		expect(availabilityEntries("08:00-22:00")).toEqual(["08:00-22:00"]);
+		expect(availabilityEntries(["08:00-12:00", "fri=none"])).toEqual([
+			"08:00-12:00",
+			"fri=none",
+		]);
+		expect(availabilityEntries("")).toEqual([]);
+	});
+
+	it("is undefined for anything else", () => {
+		expect(availabilityEntries(8)).toBeUndefined();
+		expect(availabilityEntries(["08:00-12:00", 9])).toBeUndefined();
+		expect(availabilityEntries({ daily: [] })).toBeUndefined();
+		expect(availabilityEntries(undefined)).toBeUndefined();
 	});
 });
