@@ -1088,9 +1088,9 @@ onUnmounted(() => {
             { 'is-clickable': diagnostics.length > 0 }
           ]"
           @click="diagnostics.length > 0 && (isConsoleCollapsed = false)"
-          :title="diagnostics.length > 0 ? (t.playground.warnings.consoleTitle || 'Diagnostics & Débogage') : ''"
+          :title="diagnostics.length > 0 ? t.playground.warnings.consoleTitle : ''"
         >
-          {{ hasBlocking ? (t.playground.warnings.errors || 'Errors') : (diagnostics.length > 0 ? (t.playground.statusWarnings || 'Warnings') : t.playground.statusValid) }}
+          {{ hasBlocking ? t.playground.warnings.errors : (diagnostics.length > 0 ? t.playground.statusWarnings : t.playground.statusValid) }}
         </button>
       </div>
       <div class="toolbar-right">
@@ -1129,7 +1129,7 @@ onUnmounted(() => {
           <span v-if="activeModifiersCount > 0" class="active-badge">{{ activeModifiersCount }}</span>
         </button>
         
-        <button class="toolbar-icon-btn" @click="toggleFullscreen" :title="isFullscreen ? (t.playground.exitFullscreen || 'Exit Fullscreen') : (t.playground.fullscreen || 'Fullscreen')">
+        <button class="toolbar-icon-btn" @click="toggleFullscreen" :title="isFullscreen ? t.playground.exitFullscreen : t.playground.fullscreen">
           <svg v-if="!isFullscreen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M21 3H13.5L16.5429 6.04289L13.2929 9.29289L14.7071 10.7071L17.9571 7.45711L21 10.5V3ZM3 21H10.5L7.45711 17.9571L10.7071 14.7071L9.29289 13.2929L6.04289 16.5429L3 13.5V21Z"></path></svg>
           <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20.5 11.0001H13V3.50008L16.0429 6.54297L19.2929 3.29297L20.7071 4.70718L17.4571 7.95718L20.5 11.0001ZM3.50008 13H11.0001V20.5L7.95718 17.4571L4.70718 20.7071L3.29297 19.2929L6.54297 16.0429L3.50008 13Z"></path></svg>
         </button>
@@ -1148,7 +1148,7 @@ onUnmounted(() => {
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
             <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path>
           </svg>
-          {{ t.playground.mobileTabs?.editor || (currentLang === 'fr' ? 'Éditeur' : 'Editor') }}
+          {{ t.playground.mobileTabs.editor }}
           <span v-if="errorFiles.size > 0" class="mobile-tab-dot dot-error"></span>
         </button>
 
@@ -1161,7 +1161,7 @@ onUnmounted(() => {
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
             <path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.47,133.47,0,0,1,231,128,133.33,133.33,0,0,1,207.93,158.75C185.67,180.81,158.78,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"></path>
           </svg>
-          {{ t.playground.mobileTabs?.preview || (currentLang === 'fr' ? 'Aperçu' : 'Preview') }}
+          {{ t.playground.mobileTabs.preview }}
           <span v-if="hasBlocking" class="mobile-tab-dot dot-error"></span>
           <span v-else-if="diagnostics.length > 0" class="mobile-tab-dot dot-warning"></span>
         </button>

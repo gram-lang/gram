@@ -122,7 +122,7 @@ const overallSeverity = computed<WarningSeverity>(() => {
       <div class="console-header-left">
         <span class="console-title">
          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3ZM4 5V19H20V5H4ZM7 13H9V17H7V13ZM11 7H13V17H11V7ZM15 10H17V17H15V10Z"></path></svg>
-          {{ t.playground.warnings.consoleTitle || 'Diagnostics & Débogage' }}
+          {{ t.playground.warnings.consoleTitle }}
         </span>
 
         <div class="filter-pills">
@@ -159,7 +159,7 @@ const overallSeverity = computed<WarningSeverity>(() => {
       </div>
 
       <div class="console-header-right">
-        <button class="console-toggle-btn" :title="isCollapsed ? (t.playground.warnings.expandConsole || 'Expand console') : (t.playground.warnings.collapseConsole || 'Collapse console')">
+        <button class="console-toggle-btn" :title="isCollapsed ? t.playground.warnings.expandConsole : t.playground.warnings.collapseConsole">
           <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
             <path d="M213.66,165.66a8,8,0,0,1-11.32,0L128,91.31,53.66,165.66a8,8,0,0,1-11.32-11.32l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,213.66,165.66Z"></path>
           </svg>
