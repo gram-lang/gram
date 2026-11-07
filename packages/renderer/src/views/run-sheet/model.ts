@@ -1,29 +1,17 @@
 import { fillTemplate, getDictionary } from "@gram-lang/i18n";
-import { longDate, shortDay, weekdayName } from "./dates";
-import {
-	DEFAULT_MISE_EN_PLACE_MODE,
-	type MiseEnPlaceMode,
-	type ProjectionDiagnostic,
-	type RunSheet,
-	type RunSheetDay,
-	type RunSheetVisit,
-	type RunSheetThread,
-	visitSections,
+import type {
+	MiseEnPlaceMode,
+	ProjectionDiagnostic,
+	RunSheet,
 } from "@gram-lang/scheduler";
 import { workingDayLabel } from "../../shared/mise-en-place";
 import { servingsLabel } from "../../shared/servings";
-import type { CommentsMode, RenderableCompilationResult } from "../../types";
-import {
-	type KitItem,
-	kitCookware,
-	kitIngredients,
-	kitPrepared,
-	type ProgramStep,
-	sectionProgram,
-	sectionSteps,
-} from "./parts";
 import { formatDuration } from "../../shared/utils";
-import { kitLines } from "./lines";
+import type { CommentsMode, RenderableCompilationResult } from "../../types";
+import { longDate, shortDay } from "./dates";
+import type { KitItem, ProgramStep } from "./parts";
+import { type VisitPass, describeDay, startPass } from "./visits";
+import { plural, roundedClock, runSheetWords } from "./words";
 
 export interface RunSheetRenderOptions {
 	/** Locale code (e.g. 'en', 'fr') for the words and the dates. */
@@ -165,29 +153,6 @@ export interface RunSheetEvent {
 	description: string;
 }
 
-const pad = (n: number) => String(n).padStart(2, "0");
-
-/** "21:38" shown as "21:40": the calculation stays to the minute, only the display rounds. */
-function roundedClock(local: string, step: number): string {
-	const minutes =
-		Number(local.slice(11, 13)) * 60 + Number(local.slice(14, 16));
-	const rounded = (Math.round(minutes / step) * step) % 1440;
-	return `${pad(Math.floor(rounded / 60))}:${pad(rounded % 60)}`;
-}
-
-/** What a rest is called: its track, else the action of its step, else "Rest". */
-const restName = (
-	fallback: string,
-	track: string | undefined,
-	action: string | undefined,
-) =>
-	track !== undefined
-		? track.charAt(0).toUpperCase() + track.slice(1)
-		: action || fallback;
-
-const plural = (n: number, one: string, many: string) =>
-	fillTemplate(n === 1 ? one : many, { n: String(n) });
-
 /** What the plan could not fix, one sentence each. */
 export function describeProblems(
 	diagnostics: ProjectionDiagnostic[],
@@ -261,438 +226,11 @@ export function describeProblems(
 	});
 }
 
-/**
- * The words of a run sheet, from its structure (`runSheet()` of the scheduler)
- * and the recipe it is for. Every figure is the scheduler's; what is chosen
- * here is the wording and the rounding, which another interface is free to
- * make differently from the same data.
- */
-export function describeRunSheet(
-	sheet: RunSheet,
-	data: RenderableCompilationResult,
-	options: RunSheetRenderOptions = {},
-): RunSheetModel {
-	const t = getDictionary(options.lang).renderer;
-	const lang = options.lang;
-	const step = options.roundTo && options.roundTo > 0 ? options.roundTo : 5;
-	const fmt = options.formatDuration ?? formatDuration;
-	const calendar = sheet.mode === "calendar";
-	const recipe = sheet.recipes[0];
-	const days = recipe?.days ?? [];
-	const tasks = new Map((data.tasks?.tasks ?? []).map((x) => [x.id, x]));
-
-	const sectionTitle = (index: number) =>
-		data.sections?.[index]?.title || t.runSheetUnnamedSection;
-	const stepAction = (section: number, index: number | undefined) => {
-		if (index === undefined) return undefined;
-		const s = data.sections?.[section]?.steps[index];
-		return s?.type === "step" ? s.action : undefined;
-	};
-	const waitName = (w: { section: number; step?: number; track?: string }) =>
-		`${sectionTitle(w.section)} : ${restName(t.runSheetRest, w.track, stepAction(w.section, w.step))}`;
-	const clock = (local: string) => roundedClock(local, step);
-	const rounded = (minutes: number) =>
-		Math.max(step, Math.round(minutes / step) * step);
-	const dayLabel = (day: RunSheetDay) => workingDayLabel(day.daysBefore, t);
-	const rangeOf = (id: string) => {
-		const task = tasks.get(id);
-		if (task?.kind !== "passive") return undefined;
-		const { min, max } = task.duration;
-		return min !== undefined && max !== undefined && min < max
-			? { min, max }
-			: undefined;
-	};
-	const rangeText = (r: { min: number; max: number }) =>
-		fillTemplate(t.runSheetRange, { min: fmt(r.min), max: fmt(r.max) });
-
-	/** The name and the planned length of a wait, with the written range when it differs. */
-	const threadParts = (
-		th: RunSheetThread,
-	): { name: string; length: string } => {
-		const name = waitName(th);
-		const planned = Math.round(th.planned);
-		const range = th.range ?? rangeOf(th.task);
-		let length: string;
-		if (range && Math.abs(th.planned - range.min) < 1) {
-			length = rangeText(range);
-		} else if (range) {
-			length = `${fmt(planned)} (${rangeText(range)})`;
-		} else {
-			length = fmt(planned);
-		}
-		return { name, length };
-	};
-	/** "Insert : Freeze 12 to 72 h" */
-	const threadText = (th: RunSheetThread, until?: string) => {
-		const { name, length } = threadParts(th);
-		return `${name} ${length}${until ? `, ${until}` : ""}`;
-	};
-
-	// Where each section's work ends, to say when a preparation was made.
-	const lastVisit = new Map<number, { day: number; visit: RunSheetVisit }>();
-	days.forEach((day, d) => {
-		for (const p of day.visits) {
-			for (const s of p.sections) lastVisit.set(s, { day: d, visit: p });
-		}
-	});
-
-	// The mode comes from the sheet: the plan and its kit cannot disagree.
-	const mode = recipe?.miseEnPlace ?? DEFAULT_MISE_EN_PLACE_MODE;
-	const allVisits = days.flatMap((day) => day.visits);
-	const stepSection = (id: string) => {
-		const task = tasks.get(id);
-		return task?.kind === "step" ? task.section : undefined;
-	};
-	// Where a section is first seen, and where its first step is: a preparation
-	// is needed at the step, not at the mise en place that may come before.
-	const firstSeen = new Map<number, RunSheetVisit>();
-	const firstWork = new Map<number, RunSheetVisit>();
-	for (const p of allVisits) {
-		for (const s of p.sections) if (!firstSeen.has(s)) firstSeen.set(s, p);
-		for (const id of p.tasks) {
-			const s = stepSection(id);
-			if (s !== undefined && !firstWork.has(s)) firstWork.set(s, p);
-		}
-	}
-	const claimed = new Set<number>();
-	// The sections already worked in an earlier visit: the next one goes on with them.
-	const worked = new Set<number>();
-	const schedule: RunSheetScheduleRow[] = [];
-	const events: RunSheetEvent[] = [];
-	const dayModels: RunSheetDayModel[] = [];
-	const recipeTitle = recipe?.title ?? data.title ?? undefined;
-
-	days.forEach((day, d) => {
-		const heading =
-			calendar && day.date ? longDate(day.date, lang) : dayLabel(day);
-		const slotOf = (p: RunSheetVisit) =>
-			calendar && p.startLocal && p.endLocal
-				? `${clock(p.startLocal)} → ${clock(p.endLocal)}`
-				: fillTemplate(t.runSheetAbout, {
-						duration: fmt(rounded(p.end - p.start)),
-					});
-		const rowLabel =
-			calendar && day.date
-				? `${shortDay(day.date, lang)} ${Number(day.date.slice(8, 10))}`.toUpperCase()
-				: dayLabel(day);
-
-		const visitModels: RunSheetVisitModel[] = [];
-		day.visits.forEach((p, k) => {
-			const nextVisit =
-				day.visits[k + 1] ?? days[d + 1]?.visits[0] ?? undefined;
-			const threads = day.threads.filter((th) => th.visit === k);
-
-			schedule.push({
-				kind: "visit",
-				...(k === 0 && { day: rowLabel }),
-				time: slotOf(p).replace(" → ", " – "),
-				text: visitSections(p).map(sectionTitle).join(", "),
-			});
-			for (const th of threads) {
-				schedule.push({ kind: "thread", text: threadText(th) });
-			}
-
-			// To take out: the raw things of a section once, at its first visit
-			// (all of them at the first visit in `upfront`); a preparation at the
-			// visit of its first step, whatever the mode.
-			const present = new Set(
-				p.tasks.flatMap((id) => {
-					const s = stepSection(id);
-					return s === undefined ? [] : [s];
-				}),
-			);
-			const rawSections =
-				mode === "upfront"
-					? p === allVisits[0]
-						? [...new Set(allVisits.flatMap((x) => x.sections))]
-						: []
-					: p.sections.filter((s) => !claimed.has(s));
-			for (const s of rawSections) claimed.add(s);
-			const preparedSections = [...firstSeen.keys()].filter(
-				(s) => (firstWork.get(s) ?? firstSeen.get(s)) === p,
-			);
-			const line = (item: KitItem): RunSheetKitLine => {
-				// A tin reads "tart tin ×2 (24cm)"; the rest "flour 2 cup · 260 g, made Thursday".
-				const text =
-					item.kind === "cookware"
-						? `${item.name}${item.quantity ? ` ${item.quantity}` : ""}${item.note ? ` (${item.note})` : ""}`
-						: [
-								`${item.quantity ? `${item.name} ${item.quantity}` : item.name}${item.mass ? ` · ${item.mass}` : ""}`,
-								item.note,
-							]
-								.filter(Boolean)
-								.join(", ");
-				return {
-					kind: item.kind,
-					text,
-					name: item.name,
-					...(item.quantity && { quantity: item.quantity }),
-					...(item.mass && { mass: item.mass }),
-					...(item.note && { note: item.note }),
-					...(item.detail && { detail: item.detail }),
-				};
-			};
-			const prepared = (sections: number[]) =>
-				kitPrepared(data, sections, {
-					lang,
-					present,
-					madeBefore: (_id, maker) => {
-						const made = lastVisit.get(maker);
-						if (!made || made.visit === p) return undefined;
-						if (made.day === d) {
-							return calendar && made.visit.startLocal
-								? fillTemplate(t.runSheetMadeAt, {
-										time: clock(made.visit.startLocal),
-									})
-								: t.runSheetMadeEarlier;
-						}
-						const madeDay = days[made.day]!;
-						return fillTemplate(t.runSheetMadeOn, {
-							day:
-								calendar && madeDay.date
-									? weekdayName(madeDay.date, lang)
-									: dayLabel(madeDay),
-						});
-					},
-				});
-			// The programme: where to read each section in the recipe.
-			const program: RunSheetProgramLine[] = [];
-			const programOf = new Map<number, RunSheetProgramLine>();
-			for (const s of p.sections) {
-				const indexes = p.tasks.flatMap((id) => {
-					const task = tasks.get(id);
-					return task?.kind === "step" && task.section === s ? [task.step] : [];
-				});
-				const prog = sectionProgram(data, s, indexes, { lang });
-				if (!prog) continue;
-				const startAt = p.sectionStarts.find(
-					(x) => x.section === s,
-				)?.startLocal;
-				const range =
-					prog.from === prog.to
-						? fillTemplate(t.runSheetProgramStep, { n: String(prog.from) })
-						: fillTemplate(t.runSheetProgramSteps, {
-								from: String(prog.from),
-								to: String(prog.to),
-							});
-				const entry: RunSheetProgramLine = {
-					section: prog.title,
-					reference: prog.origin ? `${prog.origin}, ${range}` : range,
-					...(prog.origin && { origin: prog.origin }),
-					...(calendar && startAt && { startTime: clock(startAt) }),
-					...(worked.has(s) && { continued: true }),
-					steps: sectionSteps(data, s, indexes, {
-						lang,
-						comments: options.comments,
-					}),
-				};
-				program.push(entry);
-				programOf.set(s, entry);
-			}
-			for (const s of p.worked) worked.add(s);
-
-			// By section, what to take out sits with its section, right before the
-			// steps that need it; the cookware is told once, at the first section that
-			// uses it. Otherwise it is one block at the top of the visit.
-			const kit: RunSheetKitGroup[] = [];
-			if (mode === "perSection") {
-				const own = [...new Set([...rawSections, ...preparedSections])].sort(
-					(a, b) => a - b,
-				);
-				// A tool is told once, at the first section that uses it, with the most
-				// the visit asks of it: the tray of the second section is the first one's.
-				const cookwareKey = (c: KitItem) => `${c.name}|${c.note ?? ""}`;
-				const mostCookware = new Map(
-					kitCookware(data, rawSections).map((c) => [cookwareKey(c), c]),
-				);
-				const seenCookware = new Set<string>();
-				for (const s of own) {
-					const lines = [
-						...(rawSections.includes(s)
-							? kitIngredients(data, [s], { lang })
-							: []),
-						...(preparedSections.includes(s) ? prepared([s]) : []),
-						...(rawSections.includes(s)
-							? kitCookware(data, [s]).flatMap((c) => {
-									const key = cookwareKey(c);
-									if (seenCookware.has(key)) return [];
-									seenCookware.add(key);
-									return [mostCookware.get(key) ?? c];
-								})
-							: []),
-					];
-					if (lines.length === 0) continue;
-					const entry = programOf.get(s);
-					if (entry) entry.kit = lines.map(line);
-					// A section with no step in this visit has no line to hold its things.
-					else kit.push({ section: sectionTitle(s), items: lines.map(line) });
-				}
-			} else {
-				const items = [
-					...kitIngredients(data, rawSections, { lang }),
-					...prepared(preparedSections),
-					...kitCookware(data, rawSections),
-				];
-				if (items.length > 0) kit.push({ items: items.map(line) });
-			}
-
-			// Leaving: what goes on, then when to come back.
-			const leaving: string[] = [];
-			const waits: RunSheetWaitLine[] = [];
-			for (const th of threads) {
-				const endsEarly =
-					nextVisit && th.to < nextVisit.start - 1
-						? th.toLocal
-							? fillTemplate(t.runSheetUntilClock, { time: clock(th.toLocal) })
-							: undefined
-						: undefined;
-				leaving.push(threadText(th, endsEarly));
-				waits.push({
-					...threadParts(th),
-					...(endsEarly && { until: endsEarly }),
-				});
-			}
-			if (nextVisit) {
-				const nextDay = days.find((x) => x.visits.includes(nextVisit));
-				let when: string;
-				if (calendar && nextVisit.startLocal) {
-					const date = nextVisit.startLocal.slice(0, 10);
-					when =
-						date === day.date
-							? clock(nextVisit.startLocal)
-							: `${weekdayName(date, lang)} ${clock(nextVisit.startLocal)}`;
-				} else if (nextDay === day) {
-					// No clock without a serving time: say it is the same day.
-					leaving.push(t.runSheetNextVisitSameDay);
-					when = "";
-				} else {
-					when = nextDay ? dayLabel(nextDay) : "";
-				}
-				if (when) leaving.push(fillTemplate(t.runSheetNextVisit, { when }));
-			} else if (calendar && sheet.serveAt) {
-				leaving.push(
-					fillTemplate(t.runSheetServeAt, {
-						time: sheet.serveAt.slice(11, 16),
-					}),
-				);
-			} else {
-				leaving.push(t.runSheetServe);
-			}
-
-			// The margin, or what holds the visit.
-			let margin: string | undefined;
-			if (p.window) {
-				margin = fillTemplate(t.runSheetPossibleFrom, {
-					time: clock(p.window.earliestLocal),
-				});
-			} else if (p.fixedBy) {
-				const wait = {
-					rest: restName(
-						t.runSheetRest,
-						p.fixedBy.track,
-						stepAction(p.fixedBy.section, p.fixedBy.step),
-					),
-					section: sectionTitle(p.fixedBy.section),
-					length: fmt(Math.round(p.fixedBy.planned)),
-				};
-				margin =
-					p.fixedBy.before === "service"
-						? fillTemplate(t.runSheetFixedService, wait)
-						: fillTemplate(t.runSheetFixedVisit, {
-								...wait,
-								sections: (p.fixedBy.sections ?? [])
-									.map(sectionTitle)
-									.join(", "),
-							});
-			}
-
-			visitModels.push({
-				slot: slotOf(p),
-				...(margin !== undefined && { margin }),
-				kit,
-				program,
-				leaving,
-				waits,
-				...(leaving.length > 0 && { next: leaving.at(-1) }),
-			});
-
-			// One calendar event per visit, in UTC, with the lists as plain lines.
-			if (calendar && p.startLocal && p.endLocal && sheet.timeZone) {
-				const start = day.entries.find(
-					(e) => e.start && e.from >= p.start - 1e-6,
-				);
-				const last = [...day.entries]
-					.reverse()
-					.find((e) => e.end && e.active && e.to <= p.end + 1e-6);
-				if (start?.start && last?.end) {
-					const lines = [
-						...(kit.length > 0
-							? [
-									`${t.runSheetKit} :`,
-									...kitLines(kit, {
-										title: (section) => `${section} :`,
-										item: (l) => `- ${l.text}`,
-									}),
-									"",
-								]
-							: []),
-						...(program.length > 0
-							? [
-									`${t.runSheetProgram} :`,
-									...program.flatMap((l) => [
-										`- ${l.section} (${l.reference})`,
-										...(l.kit ?? []).map((k) => `  - ${k.text}`),
-									]),
-								]
-							: []),
-					];
-					events.push({
-						start: start.start,
-						end: last.end,
-						title: [recipeTitle, visitSections(p).map(sectionTitle).join(", ")]
-							.filter(Boolean)
-							.join(" · "),
-						description: lines.join("\n").trim(),
-					});
-				}
-			}
-		});
-
-		const notices = sheet.adjustments
-			.filter((a) => a.day === day.daysBefore)
-			.map((a) => {
-				const r = rangeOf(a.task);
-				return fillTemplate(
-					a.to > a.from ? t.runSheetStretchedTo : t.runSheetShortenedTo,
-					{
-						wait: waitName(a),
-						to: fmt(Math.round(a.to)),
-						range: r ? rangeText(r) : fmt(Math.round(a.from)),
-					},
-				);
-			});
-
-		dayModels.push({
-			heading,
-			slot: visitModels.map((p) => p.slot).join(" · "),
-			notices,
-			visits: visitModels,
-		});
-	});
-
-	// The service closes the schedule.
-	if (days.length > 0) {
-		schedule.push({
-			kind: "serve",
-			...(!calendar &&
-				days.at(-1)?.daysBefore !== 0 && { day: workingDayLabel(0, t) }),
-			...(calendar && sheet.serveAt && { time: sheet.serveAt.slice(11, 16) }),
-			text: t.runSheetServe,
-		});
-	}
-
+/** The subtitle (when, for how many) and the summary (days, visits, work) of a run sheet. */
+function describeSummary(pass: VisitPass) {
+	const { sheet, data, days, w } = pass;
+	const { t, lang, calendar, fmt, rounded } = w;
 	const visits = days.reduce((n, d) => n + d.visits.length, 0);
-	const servings = servingsLabel(data, lang);
 	const subtitle = [
 		calendar && sheet.serveAt
 			? fillTemplate(t.runSheetFor, {
@@ -700,7 +238,7 @@ export function describeRunSheet(
 					time: sheet.serveAt.slice(11, 16),
 				})
 			: undefined,
-		servings,
+		servingsLabel(data, lang),
 	]
 		.filter(Boolean)
 		.join(" · ");
@@ -711,15 +249,57 @@ export function describeRunSheet(
 					plural(days.length, t.runSheetDays, t.runSheetDaysMany),
 					plural(visits, t.runSheetVisits, t.runSheetVisitsMany),
 					fillTemplate(t.runSheetWork, {
-						duration: fmt(rounded(recipe?.totalWork ?? 0)),
+						duration: fmt(rounded(sheet.recipes[0]?.totalWork ?? 0)),
 					}),
 				].join(" · ");
+	return { subtitle, summary };
+}
 
+/**
+ * The words of a run sheet, from its structure (`runSheet()` of the scheduler)
+ * and the recipe it is for. Every figure is the scheduler's; what is chosen
+ * here is the wording and the rounding, which another interface is free to
+ * make differently from the same data.
+ *
+ * The words and the clock are built once (`words.ts`), the days and their
+ * visits are described in order (`visits.ts`); this chains them.
+ */
+export function describeRunSheet(
+	sheet: RunSheet,
+	data: RenderableCompilationResult,
+	options: RunSheetRenderOptions = {},
+): RunSheetModel {
+	const w = runSheetWords(data, options, sheet.mode === "calendar");
+	const pass = startPass(sheet, data, options, w);
+	const { t, calendar } = w;
+
+	const schedule: RunSheetScheduleRow[] = [];
+	const events: RunSheetEvent[] = [];
+	const days: RunSheetDayModel[] = [];
+	pass.days.forEach((day, d) => {
+		const described = describeDay(pass, day, d);
+		schedule.push(...described.rows);
+		events.push(...described.events);
+		days.push(described.model);
+	});
+
+	// The service closes the schedule.
+	if (pass.days.length > 0) {
+		schedule.push({
+			kind: "serve",
+			...(!calendar &&
+				pass.days.at(-1)?.daysBefore !== 0 && { day: workingDayLabel(0, t) }),
+			...(calendar && sheet.serveAt && { time: sheet.serveAt.slice(11, 16) }),
+			text: t.runSheetServe,
+		});
+	}
+
+	const { subtitle, summary } = describeSummary(pass);
 	return {
-		title: recipeTitle
-			? `${t.runSheetTitle} — ${recipeTitle}`
+		title: pass.recipeTitle
+			? `${t.runSheetTitle} — ${pass.recipeTitle}`
 			: t.runSheetTitle,
-		miseEnPlace: mode,
+		miseEnPlace: pass.mode,
 		subtitle,
 		summary,
 		problems: describeProblems(
@@ -729,9 +309,7 @@ export function describeRunSheet(
 			sheet.timeZone ?? "UTC",
 		),
 		schedule,
-		days: dayModels,
+		days,
 		events,
 	};
 }
-
-/** "Montage (continued)": the title of a section, told when a visit goes on with it. */
