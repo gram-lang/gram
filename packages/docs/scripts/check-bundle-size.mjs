@@ -26,6 +26,11 @@
 // view's render() carries every format it has, so the bundler keeps them all.
 // They are all offered: HTML, Markdown and Text in the output pane, print
 // behind the Print button.
+//
+// It went from 930 KB to 1000 KB, still in 1.4.0: the recipe view gained its
+// text format (927.6 KB against the 930 KB budget before the words of the other
+// formats moved into the dictionaries). The playground is a showcase, and the
+// budget is an alarm against a bundle that balloons, not a target to squeeze.
 
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -35,7 +40,7 @@ const ASSETS_DIR = join(import.meta.dirname, "..", "dist", "_astro");
 const BUDGETS_KB = {
 	"playground chunk (client:only, but should not balloon)": {
 		pattern: /^GramPlayground\..*\.js$/,
-		maxKb: 930,
+		maxKb: 1000,
 	},
 };
 
