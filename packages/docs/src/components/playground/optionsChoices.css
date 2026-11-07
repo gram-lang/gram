@@ -1,0 +1,62 @@
+.option-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.option-text {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.option-name {
+	color: var(--sl-color-text);
+	font-weight: 500;
+	font-size: 13px;
+	line-height: 1.2;
+}
+
+.option-desc {
+	color: var(--sl-color-gray-3);
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.option-item:hover .option-name {
+	color: var(--sl-color-orange-high);
+}
+
+.child-option {
+	margin-left: 24px;
+	position: relative;
+}
+
+.child-option::before {
+	content: "";
+	position: absolute;
+	left: -17px;
+	top: -14px;
+	width: 2px;
+	height: 22px;
+	background-color: var(--sl-color-border);
+	border-bottom-left-radius: 0;
+}
+
+.child-option::after {
+	content: "";
+	position: absolute;
+	left: -17px;
+	top: 8px;
+	width: 12px;
+	height: 2px;
+	background-color: var(--sl-color-border);
+}
+
+.child-option.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}

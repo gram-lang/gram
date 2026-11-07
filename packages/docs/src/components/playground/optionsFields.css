@@ -1,0 +1,58 @@
+.studio-section-note {
+	display: flex;
+	align-items: flex-start;
+	gap: 7px;
+	margin: 0 0 2px;
+	padding: 8px 10px;
+	background-color: var(--sl-color-gray-7, #24201c);
+	border: 1px solid var(--sl-color-gray-6, #36302a);
+	font-size: 11.5px;
+	line-height: 1.45;
+	color: var(--sl-color-gray-2, #c4bebb);
+}
+
+.note-icon {
+	flex-shrink: 0;
+	margin-top: 1px;
+	color: var(--sl-color-gray-3, #9e948f);
+}
+
+.studio-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.studio-label-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.studio-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--sl-color-gray-3);
+	letter-spacing: 0.02em;
+}
+
+.studio-input {
+	width: 100%;
+	padding: 6px 10px;
+	border: 1px solid var(--sl-color-border);
+	background-color: var(--sl-color-bg);
+	color: var(--sl-color-text);
+	font-size: 13px;
+	border-radius: 0;
+	outline: none;
+	box-sizing: border-box;
+}
+
+.studio-input:focus {
+	border-color: var(--sl-color-gray-3);
+}
+
+input[type="checkbox"] {
+	cursor: inherit;
+	margin-top: 2px;
+}
