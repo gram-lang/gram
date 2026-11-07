@@ -26,8 +26,6 @@ import GramOutput from "./GramOutput.vue";
 import GramSelect from "./GramSelect.vue";
 import {
 	compile,
-	resolveScaleFactor,
-	applyScale,
 	REST_CHOICES,
 	type MiseEnPlaceMode,
 	type RestChoice,
@@ -38,12 +36,7 @@ import {
 	type Weekday,
 	WEEKDAYS,
 } from "@gram-lang/scheduler";
-import {
-	analyze,
-	convertUnit,
-	resolveIngredientDensity,
-	parseDensityOverrides,
-} from "@gram-lang/analyzer";
+import { analyze } from "@gram-lang/analyzer";
 import {
 	loadModuleGraph,
 	composeRecipe,
@@ -57,6 +50,7 @@ import {
 	enrichWarning,
 	sortDiagnostics,
 } from "./diagnostics";
+import { scaleRecipe } from "./scaling";
 import {
 	type Format,
 	type ServeSuggestions,
@@ -608,53 +602,26 @@ async function updateGram() {
 		const database = { ...composed.syntheticIngredients, ...fullDatabase };
 		const collectedScaleDiagnostics: PlaygroundDiagnostic[] = [];
 
-		if (scaleTargetId.value && scaleTargetQty.value !== null) {
-			try {
-				// Same-family units (g<->kg, ml<->l...) always convert; crossing
-				// mass<->volume (e.g. targeting "water=150g" in a recipe written in
-				// ml) also works whenever a density is available, from the recipe's
-				// own `densities:` frontmatter or the loaded ingredient database.
-				const overrides = parseDensityOverrides(result.meta);
-				const density = resolveIngredientDensity(
-					scaleTargetId.value,
-					database,
-					overrides,
-				)?.density;
-				const resolution = resolveScaleFactor(
-					result,
-					{
-						type: "target",
-						id: scaleTargetId.value,
-						qty: scaleTargetQty.value,
-						unit: scaleTargetUnit.value || null,
-					},
-					(value, from, to) =>
-						convertUnit(value, from, to, density, currentLang.value),
-				);
-				result = applyScale(result, resolution.factor);
-				scaleFactorString.value = (resolution.factor * 100)
-					.toFixed(2)
-					.replace(/\.00$/, "");
-			} catch (e: any) {
-				collectedScaleDiagnostics.push(
-					scaleErrorToDiagnostic(e.message, previewEntry),
-				);
-			}
-		} else {
-			const factor = parseFloat(scaleFactorString.value) / 100;
-			if (!Number.isNaN(factor) && factor > 0 && factor !== 1) {
-				try {
-					const resolution = resolveScaleFactor(result, {
-						type: "factor",
-						value: factor,
-					});
-					result = applyScale(result, resolution.factor);
-				} catch (e: any) {
-					collectedScaleDiagnostics.push(
-						scaleErrorToDiagnostic(e.message, previewEntry),
-					);
-				}
-			}
+		const scaled = scaleRecipe(
+			result,
+			{
+				targetId: scaleTargetId.value,
+				targetQty: scaleTargetQty.value,
+				targetUnit: scaleTargetUnit.value,
+				factorString: scaleFactorString.value,
+			},
+			database,
+			currentLang.value,
+		);
+		result = scaled.result;
+		// A target resolves to a percentage: show it in the whole-recipe field.
+		if (scaled.factorString !== undefined) {
+			scaleFactorString.value = scaled.factorString;
+		}
+		if (scaled.error !== undefined) {
+			collectedScaleDiagnostics.push(
+				scaleErrorToDiagnostic(scaled.error, previewEntry),
+			);
 		}
 
 		stage = "analyze";
@@ -940,8 +907,10 @@ watch(
 // The scale factor is the one input a target overrides: with a target set,
 // `updateGram` itself writes the factor it resolved from it, and re-running
 // on that write would go around in circles. The target is applied from its
-// own button (`handleScaleApply`).
-watch(scaleFactorString, () => {
+// own button (`handleScaleApply`). Clearing it is a change like any other: the
+// recipe goes back to its own scale, and a scale error goes with it, even when
+// the percentage did not move.
+watch([scaleFactorString, scaleTargetId], () => {
 	if (!scaleTargetId.value) {
 		updateGram();
 	}
