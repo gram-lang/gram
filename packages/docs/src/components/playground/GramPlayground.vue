@@ -14,7 +14,8 @@ import GramEditor from "./GramEditor.vue";
 // biome-ignore lint/style/useImportType: GramFileTabs is used as a component in the <template> block below.
 import GramFileTabs from "./GramFileTabs.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
-import GramOptions, { type PlanSettings } from "./GramOptions.vue";
+import GramOptions from "./GramOptions.vue";
+import type { PlanSettings } from "./planSettings";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import GramDrawer from "./GramDrawer.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
