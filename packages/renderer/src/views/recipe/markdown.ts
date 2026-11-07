@@ -56,7 +56,7 @@ export const markdownBackend: RenderBackend = {
 		const t = getDictionary(options.lang);
 		const formatDuration = options.formatDuration || defaultFormatDuration;
 
-		let md = `> **Metadata**\n`;
+		let md = `> **${t.renderer.metadata}**\n`;
 		if (data.metrics) {
 			// Total and idle time follow the chosen schedule; the other two do not.
 			const { totalTime, idleTime } = timesIn(context);
@@ -103,7 +103,7 @@ export const markdownBackend: RenderBackend = {
 					...context,
 					formatMode: "shopping-list",
 				});
-				md += `- ${parentStr} **(Composite)**:\n`;
+				md += `- ${parentStr} **(${t.renderer.composite})**${t.renderer.colon.trimEnd()}\n`;
 				item.usage.forEach((child: any) => {
 					md += `  - ${formatElement(child, "md", { ...context, formatMode: "shopping-list" })}\n`;
 				});
@@ -152,7 +152,8 @@ export const markdownBackend: RenderBackend = {
 			? { ...context, hideIngredientQty: true }
 			: context;
 
-		let md = `## 👨‍🍳 Instructions\n\n`;
+		const t = getDictionary(options.lang);
+		let md = `## 👨‍🍳 ${t.renderer.instructions}\n\n`;
 		data.sections.forEach((sec: any) => {
 			if (sec.title) {
 				md += `### ${escapeMarkdownHtml(sec.title)}`;
@@ -169,7 +170,7 @@ export const markdownBackend: RenderBackend = {
 				sec.ingredients ?? [],
 			).map(aggToRendererItem);
 			if (sectionItems.length > 0) {
-				md += `**Ingredients**:\n`;
+				md += `**${t.renderer.ingredients}**${t.renderer.colon.trimEnd()}\n`;
 				sectionItems.forEach((item: any) => {
 					md += `- ${formatElement(item, "md", { ...context, formatMode: "mise-en-place" })}\n`;
 				});
