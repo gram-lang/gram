@@ -78,45 +78,81 @@ const PREFERENCE: Record<RestChoice, ("shrink" | "stretch")[]> = {
 };
 
 /**
- * Places a recipe's timeline on the calendar, ending when it is served, and
- * moves the rests that can move so the cook's own work falls when they are
- * available.
- *
- * Pure: the same graph and context always give the same plan, whatever the
- * machine's time zone. Instants are minutes since the epoch, so a day of 23 or
- * 25 hours counts for what it lasts; availability is read as local time.
- *
- * Greedy and explainable, not optimal. Walking back from the service, a stretch
- * of work outside the availability is moved by making the nearest rest after it
- * that is written as a range longer (the work moves earlier, to the evening
- * before) or shorter (it moves later, to the morning), in the direction the
- * choice of `rests` prefers, never beyond the range and never for a rest that is
- * exact. A rest on a named track is only stretched if the track stays free.
- * Whatever remains is reported, not hidden.
+ * How far a stretch of work has to move to fall whole inside an availability:
+ * `later` (a rest before it shrinks) or `earlier` (one stretches), to the
+ * nearest availability that holds it, `undefined` when none does.
  */
-export function project(
-	inputs: ProjectionInput[],
-	context: ProjectionContext,
-): ProjectedPlan {
-	const { timeZone } = context;
-	const serve = parseLocalIso(context.serveAt, timeZone);
-	const plan: ProjectedPlan = {
-		serveAt: context.serveAt,
-		timeZone,
-		recipes: [],
-		adjustments: [],
-		unavailable: [],
-		diagnostics: [],
-	};
-	const input = inputs[0];
-	if (!input) return plan;
-	if (inputs.length > 1) {
-		plan.diagnostics.push({
-			code: "MULTI_RECIPE_UNSUPPORTED",
-			recipes: inputs.length,
-		});
+function distancesToFit(
+	group: Group,
+	intervals: Interval[],
+): { later: number | undefined; earlier: number | undefined } {
+	const length = group.end - group.start;
+	let later: number | undefined;
+	for (const i of intervals) {
+		const start = Math.max(group.start, i.start);
+		if (start + length <= i.end + EPS) {
+			later = start - group.start;
+			break;
+		}
 	}
+	let earlier: number | undefined;
+	for (const i of [...intervals].reverse()) {
+		const end = Math.min(group.end, i.end);
+		if (end - length >= i.start - EPS) {
+			earlier = group.end - end;
+			break;
+		}
+	}
+	return { later, earlier };
+}
 
+/**
+ * The directions worth trying, best first: the ones that can fit the work, in
+ * the order `rests` prefers, or the shortest move first for `balanced`.
+ */
+function preferredDirections(
+	rests: RestChoice,
+	later: number | undefined,
+	earlier: number | undefined,
+): ("shrink" | "stretch")[] {
+	const preference = PREFERENCE[rests];
+	return (["shrink", "stretch"] as const)
+		.filter((d) => (d === "shrink" ? later : earlier) !== undefined)
+		.sort((a, b) => {
+			const rank = (d: "shrink" | "stretch") =>
+				preference.length > 0
+					? preference.indexOf(d)
+					: (d === "shrink" ? later : earlier)!;
+			return rank(a) - rank(b);
+		});
+}
+
+/** What moving the rests came to: the layout that stays, what moved, and the availability it fits. */
+interface Fit {
+	current: Plan;
+	/** The new length of each rest that moved, by task id. */
+	overrides: Record<string, number>;
+	/** The length of a rest before anything moved. */
+	baseOf: (id: string) => number | undefined;
+	/** When the cook is available, from the start of the plan to the service. */
+	intervals: Interval[];
+	/** The longest stretch of availability. */
+	largest: number;
+}
+
+/**
+ * Moves the rests that can move so the cook's own work falls when they are
+ * available, one stretch of work at a time, walking back from the service.
+ * Each rest is only tried inside its range and on a layout that makes no new
+ * contention for a named track; a move is kept only if it fixes that stretch
+ * and leaves fewer stretches out of place than before.
+ */
+function fitRestsToAvailability(
+	input: ProjectionInput,
+	serve: number,
+	context: ProjectionContext,
+): Fit {
+	const { timeZone } = context;
 	const options = input.options ?? {};
 	const timers = new Map<string, TimerTask>();
 	for (const task of input.graph.tasks) {
@@ -190,35 +226,12 @@ export function project(
 			.filter((g) => !tried.has(g.tasks[0]!))
 			.at(-1);
 		if (!group) break;
-		const length = group.end - group.start;
-		// How far to move the work to make it fit: later (shrink a rest) or earlier
-		// (stretch one), to the nearest availability that holds it whole.
-		let later: number | undefined;
-		for (const i of intervals) {
-			const start = Math.max(group.start, i.start);
-			if (start + length <= i.end + EPS) {
-				later = start - group.start;
-				break;
-			}
-		}
-		let earlier: number | undefined;
-		for (const i of [...intervals].reverse()) {
-			const end = Math.min(group.end, i.end);
-			if (end - length >= i.start - EPS) {
-				earlier = group.end - end;
-				break;
-			}
-		}
-		const preference = PREFERENCE[options.rests ?? DEFAULT_REST_CHOICE];
-		const directions = (["shrink", "stretch"] as const)
-			.filter((d) => (d === "shrink" ? later : earlier) !== undefined)
-			.sort((a, b) => {
-				const rank = (d: "shrink" | "stretch") =>
-					preference.length > 0
-						? preference.indexOf(d)
-						: (d === "shrink" ? later : earlier)!;
-				return rank(a) - rank(b);
-			});
+		const { later, earlier } = distancesToFit(group, intervals);
+		const directions = preferredDirections(
+			options.rests ?? DEFAULT_REST_CHOICE,
+			later,
+			earlier,
+		);
 
 		let fixed = false;
 		search: for (const rest of candidates(current, group)) {
@@ -253,6 +266,54 @@ export function project(
 		if (!fixed) tried.add(group.tasks[0]!);
 	}
 
+	return { current, overrides, baseOf, intervals, largest: largest() };
+}
+
+/**
+ * Places a recipe's timeline on the calendar, ending when it is served, and
+ * moves the rests that can move so the cook's own work falls when they are
+ * available.
+ *
+ * Pure: the same graph and context always give the same plan, whatever the
+ * machine's time zone. Instants are minutes since the epoch, so a day of 23 or
+ * 25 hours counts for what it lasts; availability is read as local time.
+ *
+ * Greedy and explainable, not optimal. Walking back from the service, a stretch
+ * of work outside the availability is moved by making the nearest rest after it
+ * that is written as a range longer (the work moves earlier, to the evening
+ * before) or shorter (it moves later, to the morning), in the direction the
+ * choice of `rests` prefers, never beyond the range and never for a rest that is
+ * exact. A rest on a named track is only stretched if the track stays free.
+ * Whatever remains is reported, not hidden.
+ */
+export function project(
+	inputs: ProjectionInput[],
+	context: ProjectionContext,
+): ProjectedPlan {
+	const { timeZone } = context;
+	const serve = parseLocalIso(context.serveAt, timeZone);
+	const plan: ProjectedPlan = {
+		serveAt: context.serveAt,
+		timeZone,
+		recipes: [],
+		adjustments: [],
+		unavailable: [],
+		diagnostics: [],
+	};
+	const input = inputs[0];
+	if (!input) return plan;
+	if (inputs.length > 1) {
+		plan.diagnostics.push({
+			code: "MULTI_RECIPE_UNSUPPORTED",
+			recipes: inputs.length,
+		});
+	}
+
+	const options = input.options ?? {};
+	const { current, overrides, baseOf, intervals, largest } =
+		fitRestsToAvailability(input, serve, context);
+	const exceeds = (g: Group) => g.end - g.start > largest + EPS;
+
 	const { schedule } = current.result;
 	const { offset } = current;
 	const at = (t: number) => t + offset;
@@ -271,7 +332,7 @@ export function project(
 				code: "ACTIVE_BLOCK_EXCEEDS_AVAILABILITY",
 				tasks: group.tasks,
 				minutes: group.end - group.start,
-				largest: largest(),
+				largest,
 			});
 		} else if (!fits(group, intervals)) {
 			const rest = schedule.blocks
