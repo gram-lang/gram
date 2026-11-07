@@ -11,6 +11,7 @@ import {
 	visitSections,
 } from "@gram-lang/scheduler";
 import { workingDayLabel } from "../../shared/mise-en-place";
+import { servingsLabel } from "../../shared/servings";
 import type { CommentsMode, RenderableCompilationResult } from "../../types";
 import {
 	type KitItem,
@@ -691,19 +692,7 @@ export function describeRunSheet(
 	}
 
 	const visits = days.reduce((n, d) => n + d.visits.length, 0);
-	const portions = (data.meta as Record<string, unknown> | undefined)?.portions;
-	const scale = data.scaleFactor;
-	const servings =
-		portions !== undefined && portions !== null && String(portions) !== ""
-			? typeof scale === "number" && Math.abs(scale - 1) > 1e-6
-				? fillTemplate(t.runSheetScaled, {
-						count: String(portions),
-						factor: new Intl.NumberFormat(lang || "en", {
-							maximumFractionDigits: 2,
-						}).format(scale),
-					})
-				: fillTemplate(t.runSheetServings, { count: String(portions) })
-			: undefined;
+	const servings = servingsLabel(data, lang);
 	const subtitle = [
 		calendar && sheet.serveAt
 			? fillTemplate(t.runSheetFor, {

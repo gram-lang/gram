@@ -62,7 +62,11 @@ describe("the view tabs and the inspector menu", () => {
 
 describe("formats", () => {
 	it("offers the on-screen formats of a view, never print", () => {
-		expect(screenFormatsOf(outputById("recipe"))).toEqual(["html", "markdown"]);
+		expect(screenFormatsOf(outputById("recipe"))).toEqual([
+			"html",
+			"markdown",
+			"text",
+		]);
 		expect(screenFormatsOf(outputById("runSheet"))).toEqual([
 			"html",
 			"markdown",
@@ -73,7 +77,13 @@ describe("formats", () => {
 
 	it("keeps the chosen format when the next view has it, else takes its first", () => {
 		expect(formatFor(outputById("recipe"), "markdown")).toBe("markdown");
-		expect(formatFor(outputById("recipe"), "text")).toBe("html");
+		// Every view has every format today: a view without text stands in.
+		const recipe = outputById("recipe");
+		const noText =
+			recipe?.kind === "renderer"
+				? { ...recipe, formats: ["html", "markdown", "print"] as const }
+				: undefined;
+		expect(formatFor(noText, "text")).toBe("html");
 	});
 });
 

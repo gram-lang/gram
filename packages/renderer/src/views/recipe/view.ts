@@ -4,11 +4,13 @@ import { viewSettingsToRendererOptions } from "../../settings";
 import { htmlBackend } from "./html";
 import { markdownBackend } from "./markdown";
 import { printBackend } from "./print";
+import { textBackend } from "./text";
 import { type RenderBackend, renderRecipe } from "./traversal";
 
 const BACKENDS: Partial<Record<Format, RenderBackend>> = {
 	html: htmlBackend,
 	markdown: markdownBackend,
+	text: textBackend,
 	print: printBackend,
 };
 
@@ -16,7 +18,7 @@ const BACKENDS: Partial<Record<Format, RenderBackend>> = {
 export const recipeView = {
 	id: "recipe",
 	kind: "renderer",
-	formats: ["html", "markdown", "print"],
+	formats: ["html", "markdown", "text", "print"],
 	honors: [
 		"miseEnPlace",
 		"rests",

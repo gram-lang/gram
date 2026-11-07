@@ -1,4 +1,4 @@
-import type { RenderContext } from "../types";
+import type { RenderContext, TextStyle } from "../types";
 import {
 	escapeHtml,
 	escapeMarkdownHtml,
@@ -13,9 +13,41 @@ import { DEFAULT_ICONS } from "./icons";
 
 export { DEFAULT_ICONS };
 
+/**
+ * What `formatElement` writes: HTML, Markdown, or plain text (the `text`
+ * format, for a terminal or a plain file: no markup, no escaping, no icons).
+ */
+export type ElementFormat = "html" | "md" | "text";
+
+/** A piece of plain text, set apart as the surface asked (`TextStyle`). */
+function styled(
+	context: RenderContext,
+	kind: keyof TextStyle,
+	text: string,
+): string {
+	return context.textStyle?.[kind]?.(text) ?? text;
+}
+
+/**
+ * A name and its quantity in the `text` format: in a column when the list asks
+ * for one (`textColumn`, the name padded to it), between parentheses in a
+ * sentence (`flour (200 g)`). The name is measured before it is styled.
+ */
+function textRow(
+	context: RenderContext,
+	name: string,
+	styledName: string,
+	detail: string,
+): string {
+	if (!detail) return styledName;
+	if (context.textColumn === undefined) return `${styledName} (${detail})`;
+	const gap = " ".repeat(Math.max(1, context.textColumn - name.length + 1));
+	return `${styledName}${gap}${detail}`;
+}
+
 const strategies: Record<
 	string,
-	(item: any, format: "html" | "md", context: RenderContext) => string
+	(item: any, format: ElementFormat, context: RenderContext) => string
 > = {
 	ingredient: (item, format, context) => {
 		const t = getDictionary(context.lang);
@@ -29,7 +61,7 @@ const strategies: Record<
 		// original ids and misses once `.id` becomes canonical, which used to
 		// silently fall back to that canonical (often English) id.
 		const baseName =
-			item.name || def?.name || item.id || "[Unknown Ingredient]";
+			item.name || def?.name || item.id || t.renderer.unknownIngredient;
 		const name = item.alias || baseName;
 
 		// item.parent/item.parentPreparation are only ever populated by the
@@ -110,7 +142,7 @@ const strategies: Record<
 			normalizeUnit(item.unit, context.lang) !== "g";
 		const massText =
 			massAddsInfo && item.bakersPercentage === undefined
-				? `${isEstimate ? "~" : ""}${normalizedMass} g`
+				? `${isEstimate ? (format === "text" ? "≈" : "~") : ""}${normalizedMass} g`
 				: "";
 		// The quantity written in a sentence or a Markdown list: as written,
 		// then the mass when it adds something (`250 ml, ~147.5 g`).
@@ -199,11 +231,38 @@ const strategies: Record<
 				}
 				if (isOptional) {
 					const optClass = context.classes?.optionalText || "opt";
-					html += ` <span class="${optClass}">(optional)</span>`;
+					html += ` <span class="${optClass}">(${t.renderer.optional.toLocaleLowerCase(context.lang || "en")})</span>`;
 				}
 				html += `</span>`;
 				return html;
 			}
+		} else if (format === "text") {
+			const mode = context.formatMode || "inline";
+			const label = name + parentSuffixMd;
+			const styledLabel = styled(
+				context,
+				item.type === "reference" ? "reference" : "ingredient",
+				name,
+			);
+			const qtyText = !context.hideIngredientQty ? textQty : "";
+			const extras: string[] = [];
+			if (prep && mode !== "shopping-list") {
+				extras.push(mode === "mise-en-place" ? `— ${prep}` : `(${prep})`);
+			}
+			if (isOptional) {
+				extras.push(
+					`(${t.renderer.optional.toLocaleLowerCase(context.lang || "en")})`,
+				);
+			}
+			return [
+				textRow(
+					mode === "inline" ? { ...context, textColumn: undefined } : context,
+					label,
+					styledLabel + parentSuffixMd,
+					qtyText,
+				),
+				...extras,
+			].join(" ");
 		} else {
 			const mdName = escapeMarkdownHtml(name);
 			let md = item.type === "reference" ? `👉*${mdName}*` : `**${mdName}**`;
@@ -219,7 +278,8 @@ const strategies: Record<
 				if (mode === "mise-en-place") md += ` — ${mdPrep}`;
 				else md += ` (${mdPrep})`;
 			}
-			if (isOptional) md += " (optional)";
+			if (isOptional)
+				md += ` (${t.renderer.optional.toLocaleLowerCase(context.lang || "en")})`;
 			return md;
 		}
 	},
@@ -251,6 +311,15 @@ const strategies: Record<
 				html += `</span>`;
 				return html;
 			}
+		} else if (format === "text") {
+			const detail = qtyVal !== null ? String(qtyVal) : "";
+			const mode = context.formatMode || "inline";
+			return textRow(
+				mode === "inline" ? { ...context, textColumn: undefined } : context,
+				name,
+				styled(context, "cookware", name),
+				detail,
+			);
 		} else {
 			let md = `*${escapeMarkdownHtml(name)}*`;
 			if (qtyVal !== null) md += ` (${qtyVal})`;
@@ -278,6 +347,8 @@ const strategies: Record<
 				? t.renderer.passiveTimeTooltip
 				: t.renderer.activeTimeTooltip;
 			return `<span class="${className}" data-tooltip="${tooltipStr}" data-value="${escapeHtml(dataValue)}" data-unit="${escapeHtml(item.unit || "")}">${icon} <span class="timer-text">${escapeHtml(qVal)}${escapeHtml(unitStr)}</span></span>`;
+		} else if (format === "text") {
+			return styled(context, "timer", `${qVal}${unitStr}`);
 		} else {
 			const prefix =
 				context.icons?.hourglass !== undefined
@@ -287,7 +358,9 @@ const strategies: Record<
 					: isPassive
 						? DEFAULT_ICONS.md.hourglass
 						: DEFAULT_ICONS.md.timer;
-			const suffix = isPassive ? " (passive)" : "";
+			const suffix = isPassive
+				? ` (${getDictionary(context.lang).renderer.passive})`
+				: "";
 			return `${prefix}${escapeMarkdownHtml(qVal)}${escapeMarkdownHtml(unitStr)}${suffix}`;
 		}
 	},
@@ -299,6 +372,12 @@ const strategies: Record<
 				? DEFAULT_ICONS.html.thermometer
 				: DEFAULT_ICONS.md.thermometer);
 		const className = context.classes?.temperature || "temp";
+		if (format === "text") {
+			const value = item.text
+				? String(item.text)
+				: `${formatQuantityValue(item.quantity || { value: "" })}${item.unit ? ` ${item.unit}` : ""}`;
+			return styled(context, "timer", value);
+		}
 		if (item.text) {
 			const textVal = item.text;
 			if (format === "html") {
@@ -323,7 +402,7 @@ const strategies: Record<
 		const registry = context.registry || {};
 		const ingredients = registry.ingredients || {};
 		const def = ingredients[item.id];
-		const name = def ? def.name : item.id || "[Unknown Reference]";
+		const name = def ? def.name : item.id || t.renderer.unknownReference;
 		const qty = getQty(item);
 
 		if (format === "html") {
@@ -363,6 +442,22 @@ const strategies: Record<
 				html += `</span>`;
 				return html;
 			}
+		} else if (format === "text") {
+			let detail = "";
+			if (qty) {
+				const parts = [
+					`${qty.text || formatDecimalToFraction(qty.value, item.unit)}${item.unit ? ` ${item.unit}` : ""}`,
+					...(item.variable_entries ?? []),
+				];
+				detail = parts.join(" + ");
+			}
+			const mode = context.formatMode || "inline";
+			return textRow(
+				mode === "inline" ? { ...context, textColumn: undefined } : context,
+				name,
+				styled(context, "reference", name),
+				detail,
+			);
 		} else {
 			let md = `👉*${escapeMarkdownHtml(name)}*`;
 			if (qty) {
@@ -392,6 +487,8 @@ const strategies: Record<
 				DEFAULT_ICONS.html.arrowElbowDownRight;
 			const className = `${context.classes?.declaration || "declaration"} declaration-block`;
 			return `<span class="${className}">${arrowIcon} ${escapeHtml(name)}</span>`;
+		} else if (format === "text") {
+			return `→ ${styled(context, "reference", name)}`;
 		} else {
 			const prefix = context.icons?.arrowRight ?? DEFAULT_ICONS.md.arrowRight;
 			return `${prefix}${escapeMarkdownHtml(name)}`;
@@ -408,6 +505,7 @@ const strategies: Record<
 			context._inlineComments.push(text);
 			const index = context._inlineComments.length;
 			const renderId = context._renderId || "note";
+			if (format === "text") return styled(context, "dim", `[${index}]`);
 			if (format === "html") {
 				return `<sup class="footnote-ref"><a href="#${renderId}-${index}" id="ref-${renderId}-${index}">[${index}]</a></sup>`;
 			}
@@ -419,6 +517,7 @@ const strategies: Record<
 		if (format === "html") {
 			return `<span class="inline-comment">${escapeHtml(text)}</span>`;
 		}
+		if (format === "text") return styled(context, "dim", `(${text})`);
 		return ` *${escapeMarkdownHtml(text)}*`;
 	},
 
@@ -443,10 +542,10 @@ const strategies: Record<
 					.map((opt: any) => opt.name || opt.display || opt.id);
 
 				let html = formatElement(resolvedOpt, format, context);
-				html += ` <span class="ingredient-alt-badge" data-tooltip="${escapeHtml(t.renderer.alternatives)}:\n${escapeHtml(altNames.join("\n"))}">(alt)</span>`;
+				html += ` <span class="ingredient-alt-badge" data-tooltip="${escapeHtml(t.renderer.alternatives)}:\n${escapeHtml(altNames.join("\n"))}">(${escapeHtml(t.renderer.alt)})</span>`;
 				return html;
 			} else {
-				const separator = ' <span class="keyword">or</span> ';
+				const separator = ` <span class="keyword">${escapeHtml(t.renderer.or)}</span> `;
 				const joined = item.options
 					.map((opt: any) => {
 						const isCookware =
@@ -468,7 +567,11 @@ const strategies: Record<
 				return `<span class="${groupClass}">${joined}</span>`;
 			}
 		} else {
-			const separator = " or ";
+			// Plain text says "or" in the reader's language; Markdown keeps its word.
+			const separator = ` ${t.renderer.or} `;
+			// The options of a list row share one line: no column between them.
+			const optionContext =
+				format === "text" ? { ...context, textColumn: undefined } : context;
 			return item.options
 				.map((opt: any) => {
 					const isCookware = opt.type === "cookware" || !!cookwareList[opt.id];
@@ -476,7 +579,7 @@ const strategies: Record<
 						...opt,
 						type: opt.type || (isCookware ? "cookware" : "ingredient"),
 					};
-					return formatElement(resolvedOpt, format, context);
+					return formatElement(resolvedOpt, format, optionContext);
 				})
 				.join(separator);
 		}
@@ -499,12 +602,13 @@ const strategies: Record<
 
 	text: (item, format) => {
 		const text = item.value || "";
+		if (format === "text") return text;
 		return format === "html" ? escapeHtml(text) : escapeMarkdownHtml(text);
 	},
 };
 
 /**
- * Entry point to format an AST element for either the html or md backend.
+ * Entry point to format an AST element as HTML, Markdown or plain text.
  *
  * `element` is typed `unknown` rather than a union because call sites pass
  * genuinely heterogeneous shapes (a `Usage`, a `StepToken`, an aggregated
@@ -515,11 +619,12 @@ const strategies: Record<
  */
 export function formatElement(
 	element: unknown,
-	format: "html" | "md",
+	format: ElementFormat,
 	context: RenderContext = {},
 ): string {
 	if (element === null || element === undefined) return "";
 	if (typeof element === "string") {
+		if (format === "text") return element;
 		return format === "html"
 			? escapeHtml(element)
 			: escapeMarkdownHtml(element);
@@ -548,6 +653,7 @@ export function formatElement(
 		return strategy(el, format, context);
 	}
 
+	if (format === "text") return String(el.value || "");
 	return format === "html"
 		? escapeHtml(String(el.value || ""))
 		: escapeMarkdownHtml(String(el.value || ""));

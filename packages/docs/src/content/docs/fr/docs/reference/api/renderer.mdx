@@ -7,9 +7,9 @@ import Since from '../../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../../components/Term.astro';
 
-Gère le rendu d'un `CompilationResult` (ou d'un `AnalyzedCompilationResult`) en Markdown, en HTML, ou en un document HTML autonome optimisé pour l'impression. Si vous construisez une interface front-end native (React, Vue, Svelte, etc.), vous consommerez le plus souvent le JSON directement. Consultez le guide [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui).
+Gère le rendu d'un `CompilationResult` (ou d'un `AnalyzedCompilationResult`) en Markdown, en HTML, en un document HTML autonome optimisé pour l'impression, ou en texte brut. Si vous construisez une interface front-end native (React, Vue, Svelte, etc.), vous consommerez le plus souvent le JSON directement. Consultez le guide [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui).
 
-## `toMarkdown` / `toHTML` / `toPrintHTML`
+## `toMarkdown` / `toHTML` / `toPrintHTML` / `toText`
 
 ```typescript
 type RenderableCompilationResult = CompilationResult | AnalyzedCompilationResult;
@@ -17,6 +17,7 @@ type RenderableCompilationResult = CompilationResult | AnalyzedCompilationResult
 function toMarkdown(data: RenderableCompilationResult, options?: RendererOptions): string
 function toHTML(data: RenderableCompilationResult, options?: RendererOptions): string
 function toPrintHTML(data: RenderableCompilationResult, options?: RendererOptions): string
+function toText(data: RenderableCompilationResult, options?: RendererOptions): string
 ```
 
 ```typescript
@@ -29,7 +30,20 @@ const html = toHTML(compiled, { lang: 'fr' });
 
 `toPrintHTML` génère un document HTML complet et autonome (`<style>` inline, règles `@page` A4, aucune dépendance externe), idéal pour les fonctionnalités d'export PDF ou d'impression papier. À l'inverse, `toHTML` retourne un fragment HTML conçu pour s'intégrer discrètement dans une mise en page existante.
 
-Ces trois formateurs partagent la même architecture de traversée (`RenderBackend`). Cela garantit que les résumés nutritionnels, les notes de bas de page, les badges de masse brute ou les avertissements d'unités incompatibles sont restitués de manière rigoureusement homogène, que vous cibliez du Markdown, du HTML ou du Print.
+`toText` <Since v="1.4.0" /> écrit la recette en texte brut, pour un terminal ou un simple fichier : un cadre avec le titre, les portions et les durées, puis la liste de courses, le matériel, chaque section (ses ingrédients, puis ses étapes numérotées), les notes et la nutrition. Rien n'y est échappé ni balisé, et les libellés viennent de `@gram-lang/i18n`. C'est le format `text` de la vue recette (`render("recipe", input, "text")`) : ce qu'affiche `gram view` et ce qu'écrit `gram export --format text`. Les couleurs restent l'affaire de l'outil qui l'affiche, via `textStyle` :
+
+```typescript
+import chalk from 'chalk';
+import { toText } from '@gram-lang/renderer';
+
+const text = toText(compiled, {
+  lang: 'fr',
+  width: process.stdout.columns,
+  textStyle: { title: chalk.bold, ingredient: chalk.yellow, dim: chalk.dim },
+});
+```
+
+Ces quatre formateurs partagent la même architecture de traversée (`RenderBackend`). Cela garantit que les résumés nutritionnels, les notes de bas de page, les badges de masse brute ou les avertissements d'unités incompatibles sont restitués de manière rigoureusement homogène, que vous cibliez du Markdown, du HTML, du Print ou du texte brut.
 
 ### `RendererOptions`
 
@@ -49,6 +63,8 @@ Ces trois formateurs partagent la même architecture de traversée (`RenderBacke
 | `interactiveNutrition` | `boolean` | HTML uniquement : génère toutes les bases nutritionnelles disponibles sous un sélecteur interactif en CSS pur. Requiert la feuille de style du renderer ; ignoré si `nutritionBasis` force une base spécifique. |
 | `lang` | `string` | Code de langue (ex. : `'en'`, `'fr'`) pour la traduction des libellés UI via `@gram-lang/i18n`. |
 | `renderId` | `string` | Préfixe pour les identifiants d'ancres de notes de bas de page — utile pour éviter les collisions lors du rendu de plusieurs recettes sur une même page. |
+| `textStyle` | `TextStyle` | <Since v="1.4.0" /> Texte brut uniquement : la façon de faire ressortir chaque élément, avec une fonction par élément (`title`, `heading`, `dim`, `ingredient`, `reference`, `cookware`, `timer`, `action`). Chacune reçoit un morceau de texte et le rend mis en forme, sans en changer la largeur visible (les couleurs d'un terminal, par exemple). Un élément absent reste tel quel : le renderer ne dépend ainsi d'aucune bibliothèque de terminal. |
+| `width` | `number` | <Since v="1.4.0" /> Texte brut uniquement : la largeur du cadre de titre et des filets de section (`78` par défaut, `DEFAULT_TEXT_WIDTH`). |
 
 ## Réglages <Since v="1.4.0" />
 
