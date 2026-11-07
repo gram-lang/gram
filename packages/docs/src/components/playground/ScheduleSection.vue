@@ -177,9 +177,9 @@ function resetSection() {
           type="button"
           class="clear-serve-btn"
           @click="updatePlanField('serveAt', '')"
-          :title="lang === 'fr' ? 'Effacer la date de service' : 'Clear serve time'"
+          :title="t.playground.views.serveAtClearTitle"
         >
-          {{ lang === 'fr' ? 'Effacer' : 'Clear' }}
+          {{ t.playground.views.serveAtClear }}
         </button>
       </div>
 
@@ -236,7 +236,7 @@ function resetSection() {
           >
             <PlaygroundTooltip
               :text="rejectedTooltip(props.serveSuggestions, t)"
-              :aria-label="lang === 'fr' ? 'Pourquoi pas les autres créneaux ?' : 'Why not other slots?'"
+              :aria-label="t.playground.views.serveWhenWhyNot"
             >
               <span class="rejected-chip">
                 <svg
@@ -254,7 +254,7 @@ function resetSection() {
                   <line x1="12" y1="16" x2="12" y2="12" />
                   <line x1="12" y1="8" x2="12.01" y2="8" />
                 </svg>
-                <span>{{ lang === 'fr' ? 'Autres créneaux' : 'Other slots' }}</span>
+                <span>{{ t.playground.views.serveOtherSlots }}</span>
               </span>
             </PlaygroundTooltip>
           </div>
@@ -287,7 +287,7 @@ function resetSection() {
     <!-- Disponibilités -->
     <div class="studio-field">
       <div class="studio-label-row">
-        <label class="studio-label">{{ lang === 'fr' ? 'Disponibilité quotidienne' : (t.playground.views.planAvailableFrom + ' / ' + t.playground.views.planAvailableTo) }}</label>
+        <label class="studio-label">{{ t.playground.views.planAvailability }}</label>
         <PlaygroundTooltip :text="t.playground.help.availability" />
       </div>
       <div class="studio-time-range">
@@ -313,7 +313,7 @@ function resetSection() {
           :checked="Boolean(props.plan?.customWeekdays)"
           @change="toggleCustomWeekdays"
         />
-        <span>{{ lang === 'fr' ? 'Horaires spécifiques par jour' : 'Specific hours by day of the week' }}</span>
+        <span>{{ t.playground.views.planSpecificHours }}</span>
       </label>
 
       <!-- Grille des 7 jours si activée -->
@@ -334,7 +334,7 @@ function resetSection() {
               <span class="weekday-name">{{ weekdays[day] }}</span>
             </label>
             <span v-if="!dayEnabled(props.plan, day)" class="weekday-status-closed">
-              {{ lang === 'fr' ? 'Indisponible' : 'Unavailable' }}
+              {{ t.playground.views.planDayUnavailable }}
             </span>
           </div>
 
