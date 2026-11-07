@@ -201,6 +201,7 @@ export const fr: GramLocale = {
 		nutritionRawMassNote: "Sur {mass} d'ingrédients, avant cuisson",
 		nutritionRawMassNotePartial: "Sur les {mass} renseignés, avant cuisson",
 		incompleteData: "Données incomplètes",
+		nutritionEstimated: "valeurs estimées",
 		ofWhich: "dont",
 		nutrients: {
 			calories: "Calories",

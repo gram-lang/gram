@@ -128,10 +128,12 @@ export const textBackend: RenderBackend = {
 		const raw = data.title || "";
 		const title =
 			raw.length > room ? `${raw.slice(0, Math.max(1, room - 1))}…` : raw;
+		// A recipe with no title gets a plain box, not an empty gap in it.
+		const label = title ? ` ${title} ` : "";
 		const fill = "─".repeat(
-			Math.max(2, width - 6 - title.length - tail.length),
+			Math.max(2, width - 4 - label.length - tail.length),
 		);
-		const lines = [style(options, "title", `┌─ ${title} ${fill}${tail}─┐`)];
+		const lines = [style(options, "title", `┌─${label}${fill}${tail}─┐`)];
 
 		if (data.metrics) {
 			const formatDuration = context.formatDuration ?? defaultFormatDuration;
@@ -352,6 +354,9 @@ export const textBackend: RenderBackend = {
 			lines.push(`  ${(labels[i] ?? "").padEnd(column)}${value} ${row.unit}`);
 		});
 		if (basis.note) lines.push(style(options, "dim", `  ${basis.note}`));
+		if (nutrition.isEstimate) {
+			lines.push(style(options, "dim", `  * ${t.nutritionEstimated}`));
+		}
 		for (const warning of nutrition.warnings ?? []) {
 			lines.push(
 				style(
