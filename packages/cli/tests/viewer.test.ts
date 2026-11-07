@@ -1,12 +1,13 @@
-import { describe, it, expect, afterEach } from "bun:test";
-import { buildViewModel } from "../src/services/viewer";
-import { writeTmpFile, cleanupTmpFile, makeDb } from "./helpers";
+import { afterEach, describe, expect, it } from "bun:test";
+import { basename } from "node:path";
+import { viewRecipe } from "../src/services/viewer";
+import { cleanupTmpFile, makeDb, writeTmpFile } from "./helpers";
 
-describe("buildViewModel", () => {
+describe("viewRecipe", () => {
 	const paths: string[] = [];
 
 	afterEach(async () => {
-		while (paths.length > 0) await cleanupTmpFile(paths.pop()!);
+		while (paths.length > 0) await cleanupTmpFile(paths.pop() as string);
 	});
 
 	async function tmp(content: string): Promise<string> {
@@ -15,80 +16,62 @@ describe("buildViewModel", () => {
 		return path;
 	}
 
-	it("extracts title, servings, and section/step/ingredient structure", async () => {
-		const path = await tmp(
+	const text = async (
+		source: string,
+		options: Parameters<typeof viewRecipe>[1] = {},
+	) => (await viewRecipe(await tmp(source), options)).text;
+
+	it("writes the title, the servings, and the sections with their steps", async () => {
+		const out = await text(
 			'---\ntitle: "Crepes"\nportions: 4\n---\n## Batter\n[Mix] Combine the @flour{200g} and @eggs{2}.\n',
 		);
-		const vm = await buildViewModel(path, {});
-		expect(vm.title).toBe("Crepes");
-		// `portions` is the canonical key. This used to read `meta.servings` —
-		// a field the language doesn't have — and hand back the raw string, so
-		// the header never showed a serving count.
-		expect(vm.servings).toBe(4);
-		expect(vm.sections).toHaveLength(1);
-		expect(vm.sections[0]?.title).toBe("Batter");
-		expect(vm.sections[0]?.ingredients.map((i) => i.name)).toEqual([
-			"flour",
-			"eggs",
-		]);
-		expect(vm.sections[0]?.steps).toHaveLength(1);
-		expect(vm.sections[0]?.steps[0]?.action).toBe("Mix");
-		expect(vm.sections[0]?.steps[0]?.text).toContain("flour");
+		const lines = out.split("\n");
+		expect(lines[0]).toStartWith("┌─ Crepes ");
+		// `portions` is the canonical key: it used to be read from a field the
+		// language doesn't have, so the header never showed a serving count.
+		expect(lines[0]).toContain(" 4 servings ");
+		expect(out).toContain("─── Batter ");
+		expect(out).toContain("1. [Mix] Combine the flour (200 g) and eggs (2).");
 	});
 
-	it("reports no serving count when the recipe declares none", async () => {
-		const path = await tmp("## Batter\n[Mix] Add @flour{200g}.\n");
-		const vm = await buildViewModel(path, {});
-		expect(vm.servings).toBeNull();
+	it("shows no serving count when the recipe declares none", async () => {
+		const out = await text("## Batter\n[Mix] Add @flour{200g}.\n");
+		expect(out).not.toContain("servings");
 	});
 
-	it("falls back to the file basename when no title is set", async () => {
+	it("calls a recipe with no title by its file name", async () => {
 		const path = await tmp("## Prep\n[Mix] Add @flour{200g}.\n");
-		const vm = await buildViewModel(path, {});
-		expect(vm.title).not.toBe("");
-		expect(vm.servings).toBeNull();
+		const { text: out } = await viewRecipe(path);
+		expect(out.split("\n")[0]).toStartWith(`┌─ ${basename(path, ".gram")} `);
 	});
 
 	it("builds the shopping list without a database", async () => {
-		const path = await tmp("## Prep\n[Mix] Add @flour{200g}.\n");
-		const vm = await buildViewModel(path, {});
-		expect(vm.shoppingList).toEqual([
-			{ name: "flour", displayQty: "200 g", isEstimate: false },
-		]);
+		const out = await text("## Prep\n[Mix] Add @flour{200g}.\n");
+		expect(out).toMatch(/SHOPPING LIST\n {2}flour +200 g\n/);
 	});
 
-	it("uses the database display name in the shopping list and sections when analyzed", async () => {
+	it("uses the database display name in the shopping list when analyzed, and the recipe's own name in the sections", async () => {
 		const db = makeDb({
 			flour: { name: "Wheat Flour", physical: { density: 0.59 } },
 		});
-		const path = await tmp("## Prep\n[Mix] Add @flour{200g}.\n");
-		const vm = await buildViewModel(path, { db });
-		expect(vm.shoppingList[0]?.name).toBe("Wheat Flour");
-		expect(vm.sections[0]?.ingredients[0]?.name).toBe("Wheat Flour");
+		const out = await text("## Prep\n[Mix] Add @flour{200g}.\n", { db });
+		expect(out).toMatch(/SHOPPING LIST\n {2}Wheat Flour +200 g/);
+		expect(out).toMatch(/• flour +200 g/);
 	});
 
 	it("keeps the recipe's own (non-English) name in the shopping list even with an English-only database", async () => {
 		const db = makeDb({ flour: { aliases: ["farine"] } });
-		const path = await tmp("## Prep\n[Mix] Add @farine{200g}.\n");
-		const vm = await buildViewModel(path, { db });
-		expect(vm.shoppingList[0]?.name).toBe("farine");
+		const out = await text("## Prep\n[Mix] Add @farine{200g}.\n", { db });
+		expect(out).toMatch(/SHOPPING LIST\n {2}farine +200 g/);
 	});
 
 	it("groups composite ingredient children under their parent with a MAX-rule parent quantity", async () => {
-		const path = await tmp(
+		const out = await text(
 			"## Prep\n[Separate] Crack the @egg yolks{2}<@eggs{2} and @egg whites{4}<@eggs{4}.\n",
 		);
-		const vm = await buildViewModel(path, {});
-		const composite = vm.sections[0]?.ingredients.find(
-			(i) => i.name === "eggs",
-		);
-		expect(composite).toBeDefined();
-		expect(composite?.children?.map((c) => c.name).sort()).toEqual([
-			"egg whites",
-			"egg yolks",
-		]);
-		// MAX rule: parent qty should reflect the larger child (4), not the sum (6) or the first (2)
-		expect(composite?.displayQty).toBe("4");
+		// The shopping list buys the larger quantity (4), not the sum (6) or the first (2).
+		expect(out).toMatch(/SHOPPING LIST\n {2}eggs +4\n/);
+		expect(out).toMatch(/• eggs\n {4}↳ egg yolks +2\n {4}↳ egg whites +4\n/);
 	});
 
 	it("computes nutrition and missingIngredients only when a database is analyzed", async () => {
@@ -101,52 +84,60 @@ describe("buildViewModel", () => {
 		const path = await tmp(
 			"## Prep\n[Mix] Add @flour{200g} and @unknown-thing{10g}.\n",
 		);
-		const vm = await buildViewModel(path, { db });
-		expect(vm.nutrition).not.toBeNull();
-		expect(vm.missingIngredients).toContain("unknown-thing");
+		const viewed = await viewRecipe(path, { db });
+		expect(viewed.text).toContain("NUTRITION");
+		expect(viewed.missingIngredients).toContain("unknown-thing");
 	});
 
-	it("returns null nutrition and an empty missingIngredients list without a database", async () => {
-		const path = await tmp("## Prep\n[Mix] Add @flour{200g}.\n");
-		const vm = await buildViewModel(path, {});
-		expect(vm.nutrition).toBeNull();
-		expect(vm.missingIngredients).toEqual([]);
-	});
-
-	it("reports total/prep/cook times when the recipe declares them", async () => {
-		const path = await tmp(
-			"## Prep ~{10min}\n[Mix] Add @flour{200g}. ~_{5min}\n",
+	it("has no nutrition and no missing ingredients without a database", async () => {
+		const viewed = await viewRecipe(
+			await tmp("## Prep\n[Mix] Add @flour{200g}.\n"),
 		);
-		const vm = await buildViewModel(path, {});
-		expect(vm.times).not.toBeNull();
+		expect(viewed.text).not.toContain("NUTRITION");
+		expect(viewed.missingIngredients).toEqual([]);
+	});
+
+	it("reports the times of the recipe in the header", async () => {
+		const viewed = await viewRecipe(
+			await tmp("## Prep ~{10min}\n[Mix] Add @flour{200g}. ~_{5min}\n"),
+		);
+		expect(viewed.text).toContain("Total Time: ");
+		expect(viewed.totalMinutes).toBeGreaterThan(0);
 	});
 
 	it("scales quantities when a scaleFactor is provided", async () => {
-		const path = await tmp("## Prep\n[Mix] Add @flour{200g}.\n");
-		const vm = await buildViewModel(path, { scaleFactor: 2 });
-		expect(vm.sections[0]?.ingredients[0]?.displayQty).toBe("400 g");
+		const out = await text("## Prep\n[Mix] Add @flour{200g}.\n", {
+			scaleFactor: 2,
+		});
+		expect(out).toMatch(/• flour +400 g/);
 	});
 
 	it("keeps each timer's own unit in the step text", async () => {
-		const path = await tmp(
+		const out = await text(
 			"## T\n\nA ~{20s} B ~{20 s} C ~{90s} D ~{2min} E ~{1h}\n",
 		);
-		const vm = await buildViewModel(path, {});
-		const text = vm.sections[0]?.steps[0]?.text ?? "";
-		expect(text).toContain("~20s");
-		expect(text).toContain("~90s");
-		expect(text).toContain("~2min");
-		expect(text).toContain("~1h");
-		expect(text).not.toContain("~20min");
-		expect(text).not.toContain("~1min");
+		expect(out).toContain("20 s");
+		expect(out).toContain("90 s");
+		expect(out).toContain("2 min");
+		expect(out).toContain("1 h");
+		expect(out).not.toContain("20 min");
+		expect(out).not.toContain("1 min");
 	});
 
-	it("exposes the resting time as `rest`", async () => {
-		const path = await tmp(
+	it("shows the resting time as the idle time", async () => {
+		const out = await text(
 			"## T\n\nMix @flour{200g}. ~_{30min}\n\nBake it ~{10min}.\n",
 		);
-		const vm = await buildViewModel(path, {});
-		expect(vm.times?.rest).toBeGreaterThan(0);
-		expect(vm.times).not.toHaveProperty("idle");
+		expect(out).toMatch(/Idle Time: [1-9]/);
+	});
+
+	it("colors the parts of the recipe through the style it is given", async () => {
+		const out = await text("## T\n\n[Mix] Add @flour{200g} in a #bowl{}.\n", {
+			textStyle: {
+				ingredient: (s) => `<i>${s}</i>`,
+				cookware: (s) => `<c>${s}</c>`,
+			},
+		});
+		expect(out).toContain("Add <i>flour</i> (200 g) in a <c>bowl</c>.");
 	});
 });

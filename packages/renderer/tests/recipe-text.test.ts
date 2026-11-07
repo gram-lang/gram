@@ -43,8 +43,11 @@ portions: 2
 Squeeze the @juice{150ml}<@lemon{1}(cut in half) over the bread.
 `;
 
-const recipe = (source = SOURCE): RenderableCompilationResult =>
-	analyze(compile(getAST(source)), database).result;
+const recipe = (
+	source = SOURCE,
+	extra: Record<string, IngredientData> = {},
+): RenderableCompilationResult =>
+	analyze(compile(getAST(source)), { ...database, ...extra }).result;
 
 const text = (
 	settings: Partial<ViewSettings> = {},
@@ -66,6 +69,13 @@ describe("recipe view, text format", () => {
 		// Every line of the box is as wide as the box.
 		const box = lines.slice(0, lines.findIndex((l) => l.startsWith("└")) + 1);
 		for (const line of box) expect(line.length).toBe(78);
+	});
+
+	it("draws a plain box for a recipe with no title", () => {
+		const out = text({}, {}, recipe("## A\n\nMix @flour{1g}.\n"));
+		const top = out.split("\n")[0] ?? "";
+		expect(top).toMatch(/^┌─+┐$/);
+		expect(top.length).toBe(78);
 	});
 
 	it("draws the box and the rules at the width the surface gives", () => {
@@ -101,6 +111,23 @@ describe("recipe view, text format", () => {
 		expect(hidden).not.toContain("Use a strong flour.");
 		expect(hidden).not.toContain("NOTES");
 		expect(hidden).not.toContain("[1]");
+	});
+
+	it("says so under the nutrition when a mass was estimated", () => {
+		const estimated = recipe(
+			"---\ntitle: Porridge\n---\n\n## A\n\nAdd @oats{1 cup}.\n",
+			{
+				oats: {
+					name: "Oats",
+					physical: { density: 0.4 },
+					nutrition: { calories: 389, protein: 17, carbs: 66, fat: 7 },
+				},
+			},
+		);
+		expect(text({}, {}, estimated)).toContain("\n  * estimated values");
+		expect(text({}, { lang: "fr" }, estimated)).toContain("* valeurs estimées");
+		const exact = recipe("---\ntitle: T\n---\n\n## A\n\nAdd @flour{100g}.\n");
+		expect(text({}, {}, exact)).not.toContain("estimated values");
 	});
 
 	it("leaves the quantities out of the steps on request, never out of the lists", () => {

@@ -6,29 +6,28 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
-import { buildViewModel } from "../services/viewer";
-import { outputRecipe } from "../ui/viewer";
+import { viewRecipe } from "../services/viewer";
+import { outputPaged } from "../ui/pager";
+import { terminalTextStyle } from "../ui/text-style";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
 import {
+	RECIPE_VIEW_SETTINGS,
 	readRecipeSettingArgs,
 	readViewSettingArgs,
 	recipeSettingArgs,
+	STEP_QTY_ALIAS_ARG,
 	viewSettingArgs,
-	type ViewSettingKey,
 } from "../services/setting-args";
 import { ExitCode, exitOnError } from "../errors";
 
-/**
- * The view settings `gram view` shows today. Comments and the quantities in
- * the steps come when it renders through the renderer (views plan, phase 4).
- */
-const VIEW_COMMAND_SETTINGS: readonly ViewSettingKey[] = [
-	"miseEnPlace",
-	"rests",
-	"nutritionBasis",
-	"bakersMathOnly",
-];
+/** The notice under the recipe when some ingredients have no nutrition data. */
+function missingNutritionNotice(missing: string[]): string {
+	if (missing.length === 0) return "";
+	return `\n${chalk.yellow(
+		`⚠ ${missing.length} ingredient${missing.length !== 1 ? "s" : ""} missing nutrition data — run \`gram db enrich\``,
+	)}\n`;
+}
 
 export default defineCommand({
 	meta: {
@@ -60,7 +59,8 @@ export default defineCommand({
 			type: "boolean",
 			description: "Disable automatic pager for long recipes",
 		},
-		...viewSettingArgs(VIEW_COMMAND_SETTINGS),
+		...viewSettingArgs(RECIPE_VIEW_SETTINGS),
+		...STEP_QTY_ALIAS_ARG,
 		...recipeSettingArgs(),
 		"bakers-reference": {
 			type: "string",
@@ -92,30 +92,31 @@ export default defineCommand({
 		const bakersReference =
 			(args["bakers-reference"] as string) ||
 			(args["bakers-math"] ? "" : undefined);
-		const settings = readViewSettingArgs(args, VIEW_COMMAND_SETTINGS);
+		const settings = readViewSettingArgs(args, RECIPE_VIEW_SETTINGS);
 		const recipe = readRecipeSettingArgs(args);
 		const stock = resolveStockFromConfig(args.stock, config);
 
-		let model;
+		// The colors follow chalk's detection (a terminal, NO_COLOR, FORCE_COLOR):
+		// a pager is only started on a terminal, where they are already on.
+		let viewed;
 		try {
-			model = await buildViewModel(file, {
+			viewed = await viewRecipe(file, {
 				db,
 				scaleFactor,
 				bakersReference,
 				recipe,
-				bakersMathOnly: settings.bakersMathOnly,
-				nutritionBasis: settings.nutritionBasis,
-				miseEnPlace: settings.miseEnPlace,
-				rests: settings.rests,
+				settings,
 				lang: config.language,
 				paths: config.paths,
 				stock,
+				width: Math.min(process.stdout.columns || 70, 78),
+				textStyle: terminalTextStyle,
 			});
 		} catch (err) {
 			exitOnError(err);
 		}
 
-		reportUnusedStock("gram view", "viewed", stock, [model]);
+		reportUnusedStock("gram view", "viewed", stock, [viewed]);
 
 		if (scaleFactor !== 1) {
 			const factorStr =
@@ -123,11 +124,15 @@ export default defineCommand({
 					? `×${scaleFactor}`
 					: `×${scaleFactor.toFixed(2)}`;
 			console.log(chalk.dim(`  Scaled ${factorStr}\n`));
-			const warnings = getScaleWarnings(scaleFactor, model.times?.total ?? 0);
-			for (const w of warnings) log.warn(w);
+			for (const w of getScaleWarnings(scaleFactor, viewed.totalMinutes)) {
+				log.warn(w);
+			}
 		}
 
-		await outputRecipe(model, args["no-pager"] ?? false);
+		await outputPaged(
+			viewed.text + missingNutritionNotice(viewed.missingIngredients),
+			args["no-pager"] ?? false,
+		);
 		process.exit(ExitCode.Ok);
 	},
 });

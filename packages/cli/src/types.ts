@@ -1,11 +1,10 @@
 import type {
 	IngredientData,
 	Macros,
-	NutritionMetrics,
 	AnalyzedCompilationResult,
 } from "@gram-lang/analyzer";
 import type { CategoryKey } from "@gram-lang/i18n";
-import type { NutritionBasis, RecipeSettings } from "@gram-lang/renderer";
+import type { RecipeSettings } from "@gram-lang/renderer";
 import { z } from "zod";
 
 export type DiagnosticLevel = "error" | "warning" | "info";
@@ -130,52 +129,6 @@ export interface ShopResult {
 	warnings: string[];
 	recipeCount: number;
 	usedStock: Set<string>;
-}
-
-// --- Phase 3 types ---
-
-export interface RecipeViewModel {
-	title: string;
-	/** From the recipe's `portions:` frontmatter — see buildRecipeViewModel. */
-	servings: number | null;
-	/** Recipe language, so the terminal view can localize nutrition labels. */
-	lang?: string;
-	/** Which nutrition basis the terminal view should print (`--nutrition`). */
-	nutritionBasis?: NutritionBasis;
-	times: {
-		active?: number;
-		prep?: number;
-		rest?: number;
-		total?: number;
-	} | null;
-	shoppingList: Array<{
-		name: string;
-		displayQty: string;
-		isEstimate: boolean;
-	}>;
-	sections: Array<{
-		title: string | null;
-		ingredients: Array<{
-			name: string;
-			displayQty: string;
-			isEstimate: boolean;
-			children?: Array<{ name: string; displayQty: string }>;
-		}>;
-		steps: Array<{
-			action?: string;
-			text: string;
-			timerMinutes?: number;
-			_tokens: any[];
-		}>;
-	}>;
-	nutrition: NutritionMetrics | null;
-	missingIngredients: string[];
-	/** The `--stock` entries a `@use` of the recipe matched. */
-	usedStock: Set<string>;
-	_registries: {
-		ingredients: Record<string, any>;
-		cookware: Record<string, any>;
-	};
 }
 
 export interface ImportResult {

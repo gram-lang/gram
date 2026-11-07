@@ -220,6 +220,8 @@ export const en = {
 		nutritionRawMassNotePartial:
 			"Based on the {mass} with nutrition data, before cooking",
 		incompleteData: "Incomplete data",
+		/** Under the nutrition of the text format when a mass was estimated from a density. */
+		nutritionEstimated: "estimated values",
 		// One entry per key in @gram-lang/analyzer's NUTRIENTS table; the
 		// renderer test asserts the two stay in step. A sub-macro's label is
 		// prefixed with `ofWhich` at display time rather than baked in here,

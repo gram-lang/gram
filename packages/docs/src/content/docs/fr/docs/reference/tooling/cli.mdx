@@ -104,7 +104,7 @@ gram build brioche.gram --scale 2 --output ./dist-double
 - Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`, `--include-modules`, ainsi que les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur.
 
 #### `gram view <fichier>`
-Affiche une recette directement dans le terminal, mise en forme dans un tableau ASCII soigné.
+Affiche une recette directement dans le terminal : un cadre avec le titre, les portions et les durées, puis la liste de courses, le matériel, chaque section (ses ingrédients, puis ses étapes numérotées), les notes et la nutrition. C'est le [format `text`](/fr/docs/reference/api/renderer/#tomarkdown--tohtml--toprinthtml--totext) de la vue recette, le même texte que `gram export --format text`, en couleurs et dans la langue de votre projet <Since v="1.4.0" />.
 ```bash
 gram view brioche.gram                      # Vue par défaut
 gram view brioche.gram --scale 2            # Proportions doublées
@@ -112,13 +112,15 @@ gram view brioche.gram --scale farine=300g  # Proportions ajustées pour farine 
 ```
 - Prend en charge la pagination automatique pour les recettes longues.
 - Affiche la synthèse nutritionnelle, les durées et la liste d'ingrédients à cocher.
-- Les minuteurs préservent l'unité déclarée dans la source (`~{1h}` s'affiche `~1h`, `~{20s}` s'affiche `~20s`) et les durées sont harmonisées pour une lecture instantanée (`1h 5m`, `25m 5s`).
+- Les minuteurs préservent l'unité déclarée dans la source (`~{1h}` s'affiche `1 h`, `~{20s}` s'affiche `20 s`) et les durées de l'en-tête sont harmonisées pour une lecture instantanée (`1h 5m`, `25m 5s`).
+- Les étapes sont numérotées dans chaque section, comme dans toutes les vues de la recette. Les quantités sont reprises dans le texte des étapes, à côté de chaque ingrédient (`farine (200 g)`) ; `--step-quantities hide` les retire.
 - Le temps d'attente passif apparaît dans l'en-tête de la recette, et les fractions courantes telles que `1/4 tsp` restent sous forme fractionnaire dans la liste de courses.
 - Le drapeau `--scale` ajuste l'intégralité des quantités d'ingrédients (liste de courses et rappels au sein des étapes).
-- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que les [réglages](#les-réglages-en-ligne-de-commande) (`--mise-en-place`, `--rests`, `--nutrition-basis`, `--bakers-math-only` et ceux de l'analyseur).
+- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande) : `--mise-en-place`, `--rests`, `--nutrition-basis`, `--bakers-math-only`, `--comments` et `--step-quantities` (ou `--no-step-qty`) <Since v="1.4.0" />, et ceux de l'analyseur.
 - `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (d'abord nommé `--nutrition`, toujours accepté) choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon pour l'intégralité de la recette). `per-100g` calcule les valeurs pour 100 g de préparation brute assemblée — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> définit l'ordonnancement de la mise en place : immédiatement avant chaque section (`per-section`, par défaut), au tout début de la recette (`upfront`) ou à l'ouverture de chaque journée de travail (`per-day`). Les durées totale et passive de l'en-tête reflètent cet ordonnancement, tandis que les temps actif et de préparation restent constants. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> définit la résolution des durées variables pour les minuteurs passifs (`~_{12-24h}`) : durée minimale (`shortest`, par défaut), médiane (`balanced`) ou maximale (`longest`). Les durées exactes et les minuteurs actifs ne sont pas affectés. Ajuste les mêmes durées d'en-tête que `--mise-en-place`.
+- `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette (`// comme ceci`) : les notes isolées sur leur ligne, et celles en fin de ligne, regroupées sous la recette en notes numérotées.
 - La vue Recette ne montre aucun ordonnancement : elle se lit pareil à toute heure. Pour savoir quand venir et quoi sortir, voir `gram plan` plus bas.
 
 #### `gram import <source>`
