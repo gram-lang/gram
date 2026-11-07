@@ -38,7 +38,11 @@ describe("the views on the command line", () => {
 
 describe("formats", () => {
 	it("offers each view the formats it has, in the command's words", () => {
-		expect(cliFormatsOf(recipe, EXPORT_FORMATS)).toEqual(["md", "html"]);
+		expect(cliFormatsOf(recipe, EXPORT_FORMATS)).toEqual([
+			"md",
+			"html",
+			"text",
+		]);
 		expect(cliFormatsOf(runSheet, EXPORT_FORMATS)).toEqual([
 			"md",
 			"html",
@@ -58,11 +62,17 @@ describe("formats", () => {
 	});
 
 	it("refuses a format the view does not have, and says what it has", () => {
-		expect(() => resolveCliFormat(recipe, "text", EXPORT_FORMATS)).toThrow(
-			'The recipe view has no "text" format. Expected one of: md, html.',
+		// Every view has every format today: a view without text stands in.
+		const noText = {
+			...recipe,
+			id: "notes",
+			formats: ["html", "markdown", "print"],
+		} as const;
+		expect(() => resolveCliFormat(noText, "text", EXPORT_FORMATS)).toThrow(
+			'The notes view has no "text" format. Expected one of: md, html.',
 		);
 		expect(() => resolveCliFormat(recipe, "pdf", EXPORT_FORMATS)).toThrow(
-			'Unknown --format value "pdf". Expected one of: md, html.',
+			'Unknown --format value "pdf". Expected one of: md, html, text.',
 		);
 	});
 

@@ -236,13 +236,13 @@ export const htmlBackend: RenderBackend = {
 			const mass = Math.round(metrics.totalMass);
 			let msg = `${mass}g`;
 			if (metrics.massStatus === "estimated") {
-				msg = `~${mass}g (Estimated)`;
+				msg = `~${mass}g${t.renderer.estimatedSuffix}`;
 			}
 			if (metrics.massStatus === "incomplete") {
-				msg = `>${mass}g (Incomplete)`;
+				msg = `>${mass}g (${t.renderer.incomplete})`;
 			}
 			html += `  <div class="${metaSecondaryItemClass}">\n`;
-			html += `    <span class="label">Total Mass</span>\n`;
+			html += `    <span class="label">${t.renderer.totalMass}</span>\n`;
 			html += `    <span class="value">${msg}</span>\n`;
 			html += `  </div>\n`;
 		}
@@ -304,7 +304,7 @@ export const htmlBackend: RenderBackend = {
 				html += `    <li>${formatElement(item, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
 			} else if (isCompositeItem(item)) {
 				html += `    <li class="list-item-group">\n`;
-				html += `      ${formatElement(item, "html", { ...context, formatMode: "shopping-list" })} <strong>(Composite)</strong>:\n`;
+				html += `      ${formatElement(item, "html", { ...context, formatMode: "shopping-list" })} <strong>(${t.renderer.composite})</strong>${t.renderer.colon.trimEnd()}\n`;
 				html += `      <ul>\n`;
 				item.usage.forEach((child: any) => {
 					html += `        <li>${formatElement(child, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
@@ -520,7 +520,7 @@ export const htmlBackend: RenderBackend = {
 		const renderId = context._renderId || "note";
 		let html = "";
 		html += `<div class="recipe-notes">\n`;
-		html += `  <h3>Notes</h3>\n`;
+		html += `  <h3>${t.renderer.notes}</h3>\n`;
 		html += `  <ol>\n`;
 		context._inlineComments.forEach((note, idx) => {
 			const index = idx + 1;

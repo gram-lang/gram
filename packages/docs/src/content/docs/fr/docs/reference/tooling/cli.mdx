@@ -293,23 +293,24 @@ gram print brioche.gram --no-open         # Génération seule et affichage du c
 - `--view <recipe|run-sheet>` <Since v="1.4.0" /> sélectionne la vue à imprimer : la recette (par défaut) ou son [plan de marche](/fr/docs/how-to/plan-a-meal/) (mis en page à raison d'une journée par page avec des cases à cocher). Pour le plan de marche, les options de planification (`--serve`, `--tz`, `--available` et `--now`) s'utilisent comme avec `gram plan` ; en l'absence de `--serve`, le déroulement est exprimé en jours relatifs avant le service (`J-2`, `J-1`, `Jour J`). Ces options sont réservées à `--view run-sheet`.
 
 #### `gram export <fichier>`
-Exporte une recette vers Markdown ou vers un document HTML prêt pour l'impression.
+Exporte une recette vers Markdown, vers un document HTML prêt pour l'impression ou en texte brut.
 ```bash
 gram export brioche.gram --format md                   # Génère brioche.md à côté de la source
 gram export brioche.gram --format html -o ~/print.html # Destination explicite
 gram export brioche.gram --format html --scale 2       # Export avec proportions doublées
+gram export brioche.gram --format text                 # Génère brioche.txt
 ```
 - `--format md` — Markdown standard structuré avec liste de courses, inventaire du matériel et étapes numérotées.
 - `--format html` — Document HTML autonome formaté pour l'impression A4 avec styles CSS intégrés et icônes vectorielles SVG Lucide (sans dépendances externes d'icônes). Les polices typographiques Courier Prime et Inter sont appelées depuis Google Fonts via une directive `@import` CSS, nécessitant un accès réseau lors de l'ouverture initiale.
-- Chemin de destination par défaut : même répertoire que le fichier source, l'extension `.gram` étant remplacée par `.md` ou `.html`.
-- `--step-quantities hide` <Since v="1.4.0" /> (ou `--no-step-qty`) omet les quantités d'ingrédients dans le texte des étapes, dans les deux formats (Markdown et HTML). Les listes d'ingrédients de chaque section les affichent systématiquement.
-- `--format text` <Since v="1.4.0" /> — texte brut, pour une vue qui le propose : le plan de marche, tel que `gram plan` l'affiche. Chaque vue ne propose que les formats qu'elle sait produire ; si vous en demandez un autre, la commande vous indique ceux qui sont disponibles.
+- Chemin de destination par défaut : même répertoire que le fichier source, l'extension `.gram` étant remplacée par `.md`, `.html` ou `.txt`.
+- `--step-quantities hide` <Since v="1.4.0" /> (ou `--no-step-qty`) omet les quantités d'ingrédients dans le texte des étapes, quel que soit le format. Les listes d'ingrédients de chaque section les affichent systématiquement.
+- `--format text` <Since v="1.4.0" /> — texte brut : la recette (cadre de titre avec portions et durées, liste de courses, matériel, ingrédients et étapes numérotées de chaque section, notes, nutrition) ou le plan de marche, tel que `gram plan` l'affiche. Chaque vue ne propose que les formats qu'elle sait produire ; si vous en demandez un autre, la commande vous indique ceux qui sont disponibles.
 - Options : `--format md|html|text`, `--output <chemin>`, `--scale <facteur|réf>`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
 - `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (d'abord nommé `--nutrition`, toujours accepté) sélectionne la base nutritionnelle (par défaut `auto` : par portion si `portions:` est déclaré, sinon pour la recette entière).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> ajuste l'ordonnancement de la mise en place (par défaut `per-section`), recalculant la durée totale et le temps d'attente passif dans l'en-tête exporté. En HTML, le mode `per-section` insère également un libellé « Mise en place » au-dessus des ingrédients de chaque section. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> définit la résolution des durées variables pour les minuteurs passifs (`~_{12-24h}`).
 - `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette (`// comme ceci`), dans la recette comme dans le plan de marche.
-- `--view <recipe|run-sheet>` <Since v="1.4.0" /> sélectionne la vue à exporter : la recette (par défaut) ou son [plan de marche](/fr/docs/how-to/plan-a-meal/), en Markdown, en document HTML prêt pour l'impression ou, pour le plan de marche, en texte brut. Pour le plan de marche, les options de planification (`--serve`, `--tz`, `--available`, `--now`) fonctionnent comme avec `gram plan` ; sans heure de service, le plan de marche est structuré en jours relatifs. Le fichier généré prend alors par défaut le nom `<recette>.run-sheet.md` (ou `.html`, `.txt`).
+- `--view <recipe|run-sheet>` <Since v="1.4.0" /> sélectionne la vue à exporter : la recette (par défaut) ou son [plan de marche](/fr/docs/how-to/plan-a-meal/), en Markdown, en document HTML prêt pour l'impression ou en texte brut. Pour le plan de marche, les options de planification (`--serve`, `--tz`, `--available`, `--now`) fonctionnent comme avec `gram plan` ; sans heure de service, le plan de marche est structuré en jours relatifs. Le fichier généré prend alors par défaut le nom `<recette>.run-sheet.md` (ou `.html`, `.txt`).
 
 #### `gram plan <fichier>` <Since v="1.4.0" />
 Génère le planning opérationnel d'une recette : organisation des journées, passages en cuisine, matériel et ingrédients à sortir, et tâches à réaliser. Avec `--serve`, le rétroplanning est calculé à rebours depuis l'heure du repas en fonction de vos disponibilités. En l'absence d'heure de service, le planning est exprimé en jours relatifs (`J-2`, `J-1`, `Jour J`) et indique l'heure de dégustation la plus précoce possible en démarrant immédiatement.

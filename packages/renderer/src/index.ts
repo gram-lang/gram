@@ -80,7 +80,7 @@ export type {
 	NutrientRow,
 	ResolvedBasis,
 } from "./shared/nutrition";
-export { formatElement } from "./shared/element";
+export { type ElementFormat, formatElement } from "./shared/element";
 export {
 	DEFAULT_ICONS,
 	HTML_ICONS,
@@ -91,6 +91,7 @@ export { toMarkdown } from "./views/recipe/markdown";
 export type { CommentsMode } from "./types";
 export { toHTML } from "./views/recipe/html";
 export { toPrintHTML } from "./views/recipe/print";
+export { DEFAULT_TEXT_WIDTH, toText } from "./views/recipe/text";
 export { describeRunSheet } from "./views/run-sheet/model";
 export { runSheetToHTML } from "./views/run-sheet/html";
 export { runSheetToMarkdown } from "./views/run-sheet/markdown";

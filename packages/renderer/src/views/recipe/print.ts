@@ -106,7 +106,7 @@ export const printBackend: RenderBackend = {
 		for (const group of renderGroups) {
 			const item = group[0];
 			if (isAlternativeGroup(item)) {
-				body += `  <li>${item.options.map((o: any) => formatElement(o, "html", { ...context, formatMode: "shopping-list" })).join(" <em>or</em> ")}</li>\n`;
+				body += `  <li>${item.options.map((o: any) => formatElement(o, "html", { ...context, formatMode: "shopping-list" })).join(` <em>${t.renderer.or}</em> `)}</li>\n`;
 			} else if (isCompositeItem(item)) {
 				body += `  <li>${formatElement(item, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
 				for (const u of item.usage ?? []) {
@@ -164,7 +164,7 @@ export const printBackend: RenderBackend = {
 			? { ...context, hideIngredientQty: true }
 			: context;
 
-		let body = `<div class="instructions">\n<h2>Instructions</h2>\n`;
+		let body = `<div class="instructions">\n<h2>${getDictionary(options.lang).renderer.instructions}</h2>\n`;
 		for (const sec of data.sections) {
 			body += `<section>\n`;
 			if (sec.title) {
@@ -228,7 +228,7 @@ export const printBackend: RenderBackend = {
 		}
 		const t = getDictionary(options.lang);
 		const renderId = context._renderId || "note";
-		let body = `<div class="notes">\n<h2>Notes</h2>\n<ol>\n`;
+		let body = `<div class="notes">\n<h2>${t.renderer.notes}</h2>\n<ol>\n`;
 		context._inlineComments.forEach((note, idx) => {
 			const index = idx + 1;
 			body += `  <li id="${renderId}-${index}">${escapeHtml(note)} <a href="#ref-${renderId}-${index}" class="note-return" title="${escapeHtml(t.renderer.returnToStep)}">↩</a></li>\n`;
@@ -273,7 +273,7 @@ export const printBackend: RenderBackend = {
 		return body;
 	},
 
-	assembleDocument(sections: RenderSections, data) {
+	assembleDocument(sections: RenderSections, data, _context, options) {
 		const body =
 			sections.title +
 			sections.meta +
@@ -285,7 +285,7 @@ export const printBackend: RenderBackend = {
 
 		const titleTag = data.title
 			? `<title>${escapeHtml(data.title)}</title>`
-			: "<title>Recipe</title>";
+			: `<title>${escapeHtml(getDictionary(options.lang).renderer.outputs.recipe ?? "Recipe")}</title>`;
 		return `<!DOCTYPE html>
 <html lang="${escapeHtml(String(data.meta?.language ?? "en"))}">
 <head>

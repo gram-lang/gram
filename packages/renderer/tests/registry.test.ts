@@ -141,7 +141,9 @@ describe("render", () => {
 	});
 
 	it("refuses a format the view does not offer, and an unknown view", () => {
-		expect(() => render("recipe", input, "text")).toThrow(RangeError);
+		// Every view offers every format today: an unknown one stands in.
+		// @ts-expect-error: not a format
+		expect(() => render("recipe", input, "pdf")).toThrow(RangeError);
 		// @ts-expect-error: not a view of the registry
 		expect(() => render("gantt", input, "html")).toThrow(RangeError);
 	});

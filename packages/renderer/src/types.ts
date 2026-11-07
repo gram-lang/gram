@@ -130,7 +130,34 @@ export type { MiseEnPlaceMode, RestChoice };
  */
 export type CommentsMode = "show" | "hide";
 
+/**
+ * How the `text` format sets parts of the recipe apart, for a surface that can
+ * (a terminal's colors, for instance). Each entry wraps a piece of text and
+ * returns it, and must not change its visible width: the renderer measures the
+ * text before styling it. Every entry left out keeps the text as it is, so the
+ * renderer never needs to know about a terminal.
+ */
+export interface TextStyle {
+	/** The title of the recipe. */
+	title?: (text: string) => string;
+	/** The heading of a part: the shopping list, a section, the nutrition. */
+	heading?: (text: string) => string;
+	/** What is secondary: rules, step numbers, quantities of a composite, notes. */
+	dim?: (text: string) => string;
+	ingredient?: (text: string) => string;
+	/** An intermediate made in an earlier section (`&dough`). */
+	reference?: (text: string) => string;
+	cookware?: (text: string) => string;
+	timer?: (text: string) => string;
+	/** The action of a step (`[Mix]`). */
+	action?: (text: string) => string;
+}
+
 export interface RendererOptions {
+	/** `text` format only: how to set parts apart (colors). Plain by default. */
+	textStyle?: TextStyle;
+	/** `text` format only: the width of the rules and of the title box. Default 78. */
+	width?: number;
 	icons?: RendererIcons;
 	classes?: RendererClasses;
 	formatFraction?: (value: number) => string;
@@ -200,6 +227,13 @@ export interface RenderContext {
 	formatDuration?: (minutes: number) => string;
 	/** Set to true when formatting step tokens to suppress quantity display. */
 	hideIngredientQty?: boolean;
+	/** `text` format only: how to set parts apart (see `TextStyle`). */
+	textStyle?: TextStyle;
+	/**
+	 * `text` format only: in a list (shopping list, ingredients of a section),
+	 * the width the name is padded to, so the quantities line up in a column.
+	 */
+	textColumn?: number;
 
 	// Passed down from RendererOptions
 	bakersMathOnly?: boolean;

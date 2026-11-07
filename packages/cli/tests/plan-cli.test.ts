@@ -565,12 +565,13 @@ describe("the run sheet with the recipe, in export and print", () => {
 		expect(text).not.toContain("# ");
 	});
 
-	it("refuses a format the view does not have, and says which it has", () => {
-		const { code, err, out } = gram("export", "bread.gram", "--format", "text");
-		expect(code).toBe(1);
-		expect(`${out}${err}`).toContain(
-			'The recipe view has no "text" format. Expected one of: md, html.',
-		);
+	it("gram export writes the recipe as plain text, next to the recipe file", async () => {
+		const { code } = gram("export", "bread.gram", "--format", "text");
+		expect(code).toBe(0);
+		const text = await readFile(join(dir, "bread.txt"), "utf-8");
+		expect(text).toStartWith("┌─ Country bread ");
+		expect(text).not.toContain("<");
+		expect(text).not.toContain("# ");
 	});
 
 	it("refuses the plan flags with the recipe, and an unknown view", () => {

@@ -7,9 +7,9 @@ import Since from '../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../components/Term.astro';
 
-Handles rendering of a `CompilationResult` (or `AnalyzedCompilationResult`) to Markdown, HTML, or a standalone print-ready HTML document. If you are building a custom frontend UI in a component framework (React, Vue, Svelte, etc.), you will typically consume the JSON object directly rather than using this package. See the [Building a custom UI](/docs/how-to/build-custom-ui) guide.
+Handles rendering of a `CompilationResult` (or `AnalyzedCompilationResult`) to Markdown, HTML, a standalone print-ready HTML document, or plain text. If you are building a custom frontend UI in a component framework (React, Vue, Svelte, etc.), you will typically consume the JSON object directly rather than using this package. See the [Building a custom UI](/docs/how-to/build-custom-ui) guide.
 
-## `toMarkdown` / `toHTML` / `toPrintHTML`
+## `toMarkdown` / `toHTML` / `toPrintHTML` / `toText`
 
 ```typescript
 type RenderableCompilationResult = CompilationResult | AnalyzedCompilationResult;
@@ -17,6 +17,7 @@ type RenderableCompilationResult = CompilationResult | AnalyzedCompilationResult
 function toMarkdown(data: RenderableCompilationResult, options?: RendererOptions): string
 function toHTML(data: RenderableCompilationResult, options?: RendererOptions): string
 function toPrintHTML(data: RenderableCompilationResult, options?: RendererOptions): string
+function toText(data: RenderableCompilationResult, options?: RendererOptions): string
 ```
 
 ```typescript
@@ -29,7 +30,20 @@ const html = toHTML(compiled, { lang: 'en' });
 
 `toPrintHTML` produces a complete, standalone HTML document (with inline `<style>`, A4 `@page` rules, and no external dependencies), suitable for PDF export or paper printing. `toHTML` produces an HTML fragment intended to be embedded in an existing page layout.
 
-All three formatters use the same underlying traversal (`RenderBackend`). This guarantees that nutrition summaries, footnotes, gross purchasing mass badges, and unit warning indicators appear consistently whether targeting Markdown, HTML, or print.
+`toText` <Since v="1.4.0" /> writes the recipe as plain text, for a terminal or a plain file: a box with the title, the servings and the times, then the shopping list, the cookware, each section (its ingredients, then its numbered steps), the notes and the nutrition. Nothing is escaped and there is no markup; the words come from `@gram-lang/i18n`. It is the `text` format of the recipe view (`render("recipe", input, "text")`), what `gram view` shows and `gram export --format text` writes. Colors are up to the surface, through `textStyle`:
+
+```typescript
+import chalk from 'chalk';
+import { toText } from '@gram-lang/renderer';
+
+const text = toText(compiled, {
+  lang: 'en',
+  width: process.stdout.columns,
+  textStyle: { title: chalk.bold, ingredient: chalk.yellow, dim: chalk.dim },
+});
+```
+
+All four formatters use the same underlying traversal (`RenderBackend`). This guarantees that nutrition summaries, footnotes, gross purchasing mass badges, and unit warning indicators appear consistently whether targeting Markdown, HTML, print, or plain text.
 
 ### `RendererOptions`
 
@@ -49,6 +63,8 @@ All three formatters use the same underlying traversal (`RenderBackend`). This g
 | `interactiveNutrition` | `boolean` | HTML only: emits all available nutrition bases under a pure CSS interactive selector. Requires the renderer stylesheet; ignored if `nutritionBasis` locks a specific basis. |
 | `lang` | `string` | BCP-47 language tag (e.g. `'en'`, `'fr'`) for UI string localization via `@gram-lang/i18n`. |
 | `renderId` | `string` | Prefix for footnote anchor IDs — prevents ID collisions when rendering multiple recipes on one page. |
+| `textStyle` | `TextStyle` | <Since v="1.4.0" /> Plain text only: how to set parts apart, one function per part (`title`, `heading`, `dim`, `ingredient`, `reference`, `cookware`, `timer`, `action`), each taking a piece of text and returning it styled, without changing its visible width (terminal colors, for instance). A part left out stays plain, so the renderer never depends on a terminal library. |
+| `width` | `number` | <Since v="1.4.0" /> Plain text only: the width of the title box and of the section rules (default `78`, `DEFAULT_TEXT_WIDTH`). |
 
 ## Settings <Since v="1.4.0" />
 

@@ -59,6 +59,28 @@ export const en = {
 			print: "Print",
 		} as Record<string, string>,
 		shoppingList: "Shopping List",
+		/** The ingredients a section uses, above its steps. */
+		ingredients: "Ingredients",
+		instructions: "Instructions",
+		/** The comments at the end of a line, gathered under the recipe. */
+		notes: "Notes",
+		/** Between the options of an alternative (`@butter|oil`). */
+		or: "or",
+		/** The head of the metadata block of the Markdown recipe. */
+		metadata: "Metadata",
+		/** Marks a composite ingredient (`@yolk<@egg`) in a list. */
+		composite: "Composite",
+		/** The label of the total mass in the recipe's header. */
+		totalMass: "Total Mass",
+		incomplete: "Incomplete",
+		/** After a timer that is a passive wait, and the short mark of an alternative. */
+		passive: "passive",
+		alt: "alt",
+		unknownIngredient: "[Unknown Ingredient]",
+		unknownReference: "[Unknown Reference]",
+		/** The portions of the recipe (`portions:`), and once it is scaled. */
+		servings: "{count} servings",
+		servingsScaled: "{count} servings (×{factor})",
 		cookware: "Cookware",
 		equipment: "Equipment",
 		nutrition: "Nutrition",
@@ -97,8 +119,6 @@ export const en = {
 		runSheetMulti: "Only the first of {count} recipes is planned.",
 		runSheetTitle: "Run sheet",
 		runSheetFor: "For {date} at {time}",
-		runSheetServings: "{count} servings",
-		runSheetScaled: "{count} servings (×{factor})",
 		runSheetDays: "{n} day",
 		runSheetDaysMany: "{n} days",
 		runSheetVisits: "{n} visit to the kitchen",
