@@ -11,6 +11,8 @@ import type {
 	PrepDelta,
 	ModuleDelta,
 } from "@gram-lang/analyzer";
+import { formatDuration } from "@gram-lang/renderer";
+import { formatDurationDelta } from "./durations";
 
 function fmtQty(qty?: number, unit?: string | null): string {
 	if (qty === undefined) return "?";
@@ -19,16 +21,6 @@ function fmtQty(qty?: number, unit?: string | null): string {
 			? Math.round(qty)
 			: parseFloat(qty.toFixed(2));
 	return unit ? `${rounded}${unit}` : String(rounded);
-}
-
-function fmtMinutes(m: number): string {
-	if (m === 0) return "0 min";
-	const h = Math.floor(Math.abs(m) / 60);
-	const min = Math.abs(m) % 60;
-	const sign = m < 0 ? "-" : "+";
-	if (h > 0 && min > 0) return `${sign}${h}h ${min} min`;
-	if (h > 0) return `${sign}${h}h`;
-	return `${sign}${min} min`;
 }
 
 function fmtMetaValue(v: unknown): string {
@@ -85,9 +77,9 @@ function renderPrep(d: PrepDelta): string {
 
 function renderTiming(d: TimingDelta): string {
 	const label = (TIMING_LABELS[d.field] ?? d.field).padEnd(18);
-	const from = chalk.dim(`${d.from} min`);
-	const to = chalk.yellow(`${d.to} min`);
-	const delta = fmtMinutes(d.to - d.from);
+	const from = chalk.dim(formatDuration(d.from));
+	const to = chalk.yellow(formatDuration(d.to));
+	const delta = formatDurationDelta(d.to - d.from);
 	return `  ${chalk.yellow("~")} ${label} ${from} → ${to} ${chalk.dim(`(${delta})`)}`;
 }
 

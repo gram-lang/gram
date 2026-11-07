@@ -1,13 +1,5 @@
 import { Box, Text, useInput } from "ink";
-
-function fmtDuration(ms: number): string {
-	const total = Math.round(ms / 60000);
-	const h = Math.floor(total / 60);
-	const m = total % 60;
-	if (h > 0 && m > 0) return `${h}h ${m} min`;
-	if (h > 0) return `${h}h`;
-	return `${m} min`;
-}
+import { formatElapsed } from "../durations";
 
 interface Props {
 	title: string | null;
@@ -37,7 +29,7 @@ export default function EndScreen({ title, elapsedMs, onQuit }: Props) {
 			{title && <Text bold>{title}</Text>}
 			<Text>
 				{" "}
-				Total time in the kitchen: <Text bold>{fmtDuration(elapsedMs)}</Text>
+				Total time in the kitchen: <Text bold>{formatElapsed(elapsedMs)}</Text>
 			</Text>
 			<Text> </Text>
 			<Text dimColor> [Q / Space] Quit</Text>
