@@ -42,14 +42,8 @@ const EXPOSED: Record<
 	// The recipe, printed or exported: every setting.
 	print: { command: print, view: ALL_VIEW, recipe: ALL_RECIPE },
 	export: { command: exportCommand, view: ALL_VIEW, recipe: ALL_RECIPE },
-	// The recipe in the terminal. `comments` and `stepQuantities` come when it
-	// renders through the renderer (views plan, phase 4): this is the one
-	// temporary exception.
-	view: {
-		command: view,
-		view: ["miseEnPlace", "rests", "nutritionBasis", "bakersMathOnly"],
-		recipe: ALL_RECIPE,
-	},
+	// The recipe in the terminal: the recipe view of the renderer, every setting.
+	view: { command: view, view: ALL_VIEW, recipe: ALL_RECIPE },
 	// The run sheet: no nutrition, no quantities in steps, no analysis.
 	plan: {
 		command: plan,

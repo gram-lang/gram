@@ -64,7 +64,7 @@ function toMinutes(text: string): number {
 }
 
 const viewTotal = (out: string) =>
-	toMinutes(/Total: ([^\s│]+(?: \d+m)?)/.exec(out)?.[1] ?? "");
+	toMinutes(/Total Time: ([^\s│]+(?: \d+m)?)/.exec(out)?.[1] ?? "");
 
 describe("gram view --mise-en-place", () => {
 	it("plans right before each section by default", () => {
@@ -93,7 +93,7 @@ describe("gram view --mise-en-place", () => {
 
 	it("keeps preparation and active time the same in all of them", () => {
 		const times = (out: string) =>
-			/Prep: [^·]+·\s+Active: [^·]+/.exec(out)?.[0].trim();
+			/Prep Time: [^·]+·\s+Active Time: [^·]+/.exec(out)?.[0].trim();
 		const a = gram("view", recipe, "--mise-en-place", "per-section").out;
 		const b = gram("view", recipe, "--mise-en-place", "upfront").out;
 		expect(times(a)).toBeDefined();

@@ -104,7 +104,7 @@ gram build brioche.gram --scale 2 --output ./dist-doubled
 - Options: `--output/-o <dir>`, `--pretty`, `--scale <factor>`, `--db <path>`, `--skip-db`, `--include-modules`, and the analyzer's [settings flags](#settings-flags).
 
 #### `gram view <file>`
-Displays a recipe directly in the terminal, neatly formatted in an ASCII box.
+Displays a recipe directly in the terminal: a box with the title, the servings and the times, then the shopping list, the cookware, each section (its ingredients, then its numbered steps), the notes and the nutrition. It is the [`text` format](/docs/reference/api/renderer/#tomarkdown--tohtml--toprinthtml--totext) of the recipe view, the same text as `gram export --format text`, in colors, in the language of your project <Since v="1.4.0" />.
 ```bash
 gram view brioche.gram                      # Default view
 gram view brioche.gram --scale 2            # Scaled to double quantities
@@ -112,13 +112,15 @@ gram view brioche.gram --scale flour=300g   # Scaled to flour = 300g
 ```
 - Supports automatic paging for long recipes.
 - Displays calculated nutrition, timings, and ingredient checklists.
-- Timers preserve the unit declared in the recipe (`~{1h}` displays as `~1h`, `~{20s}` as `~20s`), and durations are formatted for quick readability (`1h 5m`, `25m 5s`).
+- Timers preserve the unit declared in the recipe (`~{1h}` displays as `1 h`, `~{20s}` as `20 s`), and the durations of the header are formatted for quick readability (`1h 5m`, `25m 5s`).
+- Steps are numbered in each section, as in every view of the recipe. Quantities are repeated in the text of the steps, next to each ingredient (`flour (200 g)`); `--step-quantities hide` leaves them out.
 - Passive waiting time appears in the recipe header, and common fractions such as `1/4 tsp` remain fractions in the shopping list.
 - Passing `--scale` adjusts all ingredient quantities (both in the shopping list and in-step references).
-- Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, and the [settings flags](#settings-flags) (`--mise-en-place`, `--rests`, `--nutrition-basis`, `--bakers-math-only`, and analyzer flags).
+- Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, and every [settings flag](#settings-flags): `--mise-en-place`, `--rests`, `--nutrition-basis`, `--bakers-math-only`, `--comments` and `--step-quantities` (or `--no-step-qty`) <Since v="1.4.0" />, and the analyzer flags.
 - `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (first named `--nutrition`, still accepted) selects the displayed nutrition basis (default `auto`: per portion when the recipe declares `portions:`, otherwise for the entire recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> sets when mise en place is scheduled: immediately before each section (`per-section`, default), upfront at the start of the recipe (`upfront`), or at the start of each working day (`per-day`). The total and idle times in the header adjust accordingly, while active and preparation times remain constant. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> sets the resolution for range-based passive timers (`~_{12-24h}`): shortest duration (`shortest`, default), midpoint (`balanced`), or longest duration (`longest`). Exact durations and active timers are unaffected. Adjusts the same computed times as `--mise-en-place`.
+- `--comments <show|hide>` <Since v="1.4.0" /> shows (default) or hides recipe comments (`// like this`): notes on their own line, and comments at the end of a line, gathered under the recipe as numbered notes.
 - The recipe view shows no schedule: it reads the same at any time. For when to come and what to take out, see `gram plan` below.
 
 #### `gram import <source>`

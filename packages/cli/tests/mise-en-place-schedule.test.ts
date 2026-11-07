@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { compile, scheduleFor } from "@gram-lang/kitchen";
+import { formatDuration } from "@gram-lang/renderer";
 import { getAST } from "@gram-lang/parser";
 import { passiveTimers } from "../src/core/schedule";
 import { exportRecipe } from "../src/services/exporter";
 import { readViewSettingArgs } from "../src/services/setting-args";
-import { buildViewModel } from "../src/services/viewer";
+import { viewRecipe } from "../src/services/viewer";
 import { prepareRecipeData } from "../src/ui/cook/prepare";
 import { cleanupTmpFile, writeTmpFile } from "./helpers";
 
@@ -172,43 +173,54 @@ describe("view, export and print follow --mise-en-place", () => {
 		const { perSection, upfront } = schedulesOf(compile(getAST(TART)));
 		expect(perSection.totalTime).not.toBe(upfront.totalTime);
 
-		const per = await buildViewModel(path, {});
-		const up = await buildViewModel(path, { miseEnPlace: "upfront" });
-		expect(per.times?.total).toBe(perSection.totalTime);
-		expect(per.times?.rest).toBe(perSection.idleTime);
-		expect(up.times?.total).toBe(upfront.totalTime);
-		expect(up.times?.rest).toBe(upfront.idleTime);
+		const per = await viewRecipe(path);
+		const up = await viewRecipe(path, { settings: { miseEnPlace: "upfront" } });
+		expect(per.totalMinutes).toBe(perSection.totalTime);
+		expect(up.totalMinutes).toBe(upfront.totalTime);
+		expect(per.text).toContain(
+			`Total Time: ${formatDuration(perSection.totalTime)}`,
+		);
+		expect(per.text).toContain(
+			`Idle Time: ${formatDuration(perSection.idleTime)}`,
+		);
+		expect(up.text).toContain(
+			`Total Time: ${formatDuration(upfront.totalTime)}`,
+		);
+		expect(up.text).toContain(`Idle Time: ${formatDuration(upfront.idleTime)}`);
 	});
 
 	it("defaults to preparing right before each section", async () => {
 		const path = await tmp(TART);
-		const model = await buildViewModel(path, {});
-		expect(model.times?.total).toBe(
+		const viewed = await viewRecipe(path);
+		expect(viewed.totalMinutes).toBe(
 			schedulesOf(compile(getAST(TART))).perSection.totalTime,
 		);
 	});
 
 	it("keeps active and preparation time the same in both", async () => {
 		const path = await tmp(TART);
-		const per = await buildViewModel(path, {});
-		const up = await buildViewModel(path, { miseEnPlace: "upfront" });
-		expect(up.times?.active).toBe(per.times?.active);
-		expect(up.times?.prep).toBe(per.times?.prep);
+		const times = (text: string) =>
+			/Prep Time: [^·]+·\s+Active Time: [^·│]+/.exec(text)?.[0].trim();
+		const per = await viewRecipe(path);
+		const up = await viewRecipe(path, { settings: { miseEnPlace: "upfront" } });
+		expect(times(per.text)).toBeDefined();
+		expect(times(up.text)).toBe(times(per.text));
 	});
 
-	it("shows a step's background timer length in the view", async () => {
+	it("shows a step's background timer as written in the view", async () => {
 		const path = await tmp(REST);
-		const model = await buildViewModel(path, {});
-		const rest = model.sections[0]!.steps.find((s) => s.action === "Rest");
-		expect(rest?.timerMinutes).toBe(45);
+		const { text } = await viewRecipe(path);
+		expect(text).toContain("[Rest] Let it rest 45 min.");
 	});
 
-	it("shows a ranged rest as long as --rests says in the view", async () => {
+	it("follows --rests in the times of the view, and writes a ranged rest as the recipe does", async () => {
 		const path = await tmp(RANGED_REST);
-		const shortest = await buildViewModel(path, {});
-		const longest = await buildViewModel(path, { rests: "longest" });
-		expect(shortest.sections[0]!.steps[1]?.timerMinutes).toBe(12 * 60);
-		expect(longest.sections[0]!.steps[1]?.timerMinutes).toBe(24 * 60);
+		const shortest = await viewRecipe(path);
+		const longest = await viewRecipe(path, { settings: { rests: "longest" } });
+		// What the recipe says stays what it says; the planning follows `rests`.
+		expect(shortest.text).toContain("12-24 h");
+		expect(longest.text).toContain("12-24 h");
+		expect(longest.totalMinutes - shortest.totalMinutes).toBe(12 * 60);
 	});
 
 	it("changes the exported Markdown total with the flag", async () => {

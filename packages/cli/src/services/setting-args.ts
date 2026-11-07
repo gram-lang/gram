@@ -191,6 +191,13 @@ export const EXPORT_VIEW_SETTINGS: readonly ViewSettingKey[] = (
 	views.some((view) => (view.honors as readonly string[]).includes(key)),
 );
 
+/** What the recipe view honors: `gram view`. Read from its view, not copied. */
+export const RECIPE_VIEW_SETTINGS: readonly ViewSettingKey[] = (
+	Object.keys(VIEW_SETTINGS) as ViewSettingKey[]
+).filter((key) =>
+	views.find((view) => view.id === "recipe")?.honors.includes(key as never),
+);
+
 /** What the run sheet honors: `gram plan`. Read from its view, not copied. */
 export const RUN_SHEET_SETTINGS: readonly ViewSettingKey[] = (
 	Object.keys(VIEW_SETTINGS) as ViewSettingKey[]

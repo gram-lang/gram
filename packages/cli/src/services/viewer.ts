@@ -1,377 +1,81 @@
 import { basename } from "node:path";
-import { runPipeline } from "../core/pipeline";
-import { fmtNumber } from "../core/format";
-import { isCoarseUnit } from "@gram-lang/i18n";
 import type { IngredientData } from "@gram-lang/analyzer";
 import {
-	formatTimer,
+	getView,
 	prepareViews,
-	toCommonFraction,
-	type NutritionBasis,
 	type RecipeSettings,
+	type TextStyle,
+	type ViewSettings,
 } from "@gram-lang/renderer";
-import type {
-	CompilationResult,
-	MiseEnPlaceMode,
-	RestChoice,
-} from "@gram-lang/kitchen";
-import type { RecipeViewModel } from "../types";
-import { passiveTimers } from "../core/schedule";
+import { runPipeline } from "../core/pipeline";
 
-function formatMass(grams: number): string {
-	if (grams >= 1000) return `${fmtNumber(grams / 1000)} kg`;
-	return `${fmtNumber(Math.round(grams), 0)} g`;
+export interface ViewOptions {
+	db?: Record<string, IngredientData> | null;
+	scaleFactor?: number;
+	bakersReference?: string;
+	/** What the analyzer computes. Default: everything, as the engine. */
+	recipe?: RecipeSettings;
+	/** What the view shows (`--comments`, `--mise-en-place`, ...). Default: the defaults. */
+	settings?: Partial<ViewSettings>;
+	lang?: string;
+	paths?: Record<string, string>;
+	stock?: Set<string>;
+	/** The width of the title box and the rules. Default: the renderer's. */
+	width?: number;
+	/** The colors of the terminal. Default: plain text. */
+	textStyle?: TextStyle;
 }
 
-function formatQty(item: any): string {
-	const qty = item.qty;
-	if (qty == null) return "";
-	const decimals = isCoarseUnit(item.unit) ? 1 : 2;
-	if (typeof qty === "number") {
-		const shown = toCommonFraction(qty) ?? fmtNumber(qty, decimals);
-		return item.unit ? `${shown} ${item.unit}` : shown;
-	}
-	if (typeof qty === "string") return item.unit ? `${qty} ${item.unit}` : qty;
-	if (typeof qty === "object") {
-		if (qty.value === "TextQuantity" || qty.type === "text")
-			return qty.value ?? "";
-		if (qty.text) return item.unit ? `${qty.text} ${item.unit}` : qty.text;
-		if (qty.value != null) {
-			const v =
-				typeof qty.value === "number"
-					? fmtNumber(qty.value, decimals)
-					: String(qty.value);
-			return item.unit ? `${v} ${item.unit}` : v;
-		}
-		if (qty.range) {
-			const min =
-				typeof qty.range.min === "number"
-					? fmtNumber(qty.range.min, decimals)
-					: qty.range.min;
-			const max =
-				typeof qty.range.max === "number"
-					? fmtNumber(qty.range.max, decimals)
-					: qty.range.max;
-			const r = `${min}–${max}`;
-			return item.unit ? `${r} ${item.unit}` : r;
-		}
-	}
-	return "";
+export interface ViewedRecipe {
+	/** The recipe in the renderer's `text` format. */
+	text: string;
+	/** The `stock` entries a `@use` of the recipe matched. */
+	usedStock: Set<string>;
+	/** The total time of the schedule the view followed, in minutes. */
+	totalMinutes: number;
+	/** The ingredients the database has no nutrition for (empty without a database). */
+	missingIngredients: string[];
 }
 
-function formatDisplayQty(
-	item: any,
-	opts: { bakersMathOnly?: boolean },
-): string {
-	if (item.normalizedMass != null) {
-		const massStr = formatMass(item.normalizedMass);
-		if (item.bakersPercentage !== undefined) {
-			return opts.bakersMathOnly
-				? `${item.bakersPercentage}%`
-				: `${item.bakersPercentage}% (${massStr})`;
-		}
-		return massStr;
-	}
-	return formatQty(item);
-}
-
-function tokenToText(item: any, registry: Record<string, any>): string {
-	if (typeof item === "string") return item;
-	if (!item) return "";
-	if (
-		item.id &&
-		(!item.type ||
-			item.type === "ingredient" ||
-			item.type === "cookware" ||
-			item.type === "reference")
-	) {
-		return item.alias ?? registry[item.id]?.name ?? item.name ?? item.id;
-	}
-	switch (item.type) {
-		case "text":
-			return item.value ?? "";
-		case "timer":
-			return item.quantity ? `~${formatTimer(item)}` : "";
-		case "temperature": {
-			const q = item.quantity;
-			if (!q) return item.text ?? "";
-			const val = q.text ?? (q.value != null ? String(q.value) : "");
-			return `${val}${item.unit ?? "°C"}`;
-		}
-		case "comment":
-		case "declaration":
-			return "";
-		default:
-			return item.value ?? item.name ?? "";
-	}
-}
-
-function isInlineToken(item: any): boolean {
-	if (typeof item === "string") return false;
-	if (!item) return false;
-	if (item.type === "comment" || item.type === "declaration") return false;
-	return true;
-}
-
-function stepToText(content: any[], registry: Record<string, any>): string {
-	const parts: string[] = [];
-	for (let i = 0; i < content.length; i++) {
-		const item = content[i];
-		const text = tokenToText(item, registry);
-		if (!text) continue;
-
-		if (isInlineToken(item) && parts.length > 0) {
-			const last = parts[parts.length - 1];
-			// Don't add space if preceded by apostrophe or whitespace
-			if (last && !/[\s']$/.test(last)) parts.push(" ");
-		}
-
-		parts.push(text);
-
-		if (isInlineToken(item)) {
-			const next = content[i + 1];
-			const nextText = next
-				? typeof next === "string"
-					? next
-					: tokenToText(next, registry)
-				: "";
-			if (nextText && !/^[\s.,!?:;)]/.test(nextText)) parts.push(" ");
-		}
-	}
-	return parts.join("").trim();
-}
-
-function getTimerMinutes(
-	compiled: CompilationResult,
-	section: number,
-	step: number,
-	rests?: RestChoice,
-): number | undefined {
-	return passiveTimers(compiled, section, step, rests)[0]?.duration;
-}
-
-export async function buildViewModel(
+/**
+ * A recipe file as the terminal shows it: the recipe view of the renderer in
+ * its `text` format, the same pipeline as `gram export`. What is not the
+ * recipe (the scale warnings, the missing nutrition notice) is the command's.
+ */
+export async function viewRecipe(
 	file: string,
-	opts: {
-		db?: Record<string, IngredientData> | null;
-		scaleFactor?: number;
-		bakersReference?: string;
-		/** What the analyzer computes. Default: everything, as the engine. */
-		recipe?: RecipeSettings;
-		bakersMathOnly?: boolean;
-		nutritionBasis?: NutritionBasis;
-		/** Which timeline the total and rest times follow. Default per section. */
-		miseEnPlace?: MiseEnPlaceMode;
-		/** How long a rest written as a range lasts. Default shortest. */
-		rests?: RestChoice;
-		lang?: string;
-		paths?: Record<string, string>;
-		stock?: Set<string>;
-	},
-): Promise<RecipeViewModel> {
+	options: ViewOptions = {},
+): Promise<ViewedRecipe> {
 	const { compiled, analyzed, usedStock } = await runPipeline(file, {
-		db: opts.db,
-		scaleFactor: opts.scaleFactor,
-		bakersReference: opts.bakersReference,
-		recipe: opts.recipe,
-		lang: opts.lang,
-		paths: opts.paths,
-		stock: opts.stock,
+		db: options.db,
+		scaleFactor: options.scaleFactor,
+		bakersReference: options.bakersReference,
+		recipe: options.recipe,
+		lang: options.lang,
+		paths: options.paths,
+		stock: options.stock,
 	});
 
-	const title =
-		(compiled.meta?.title as string | undefined) ??
-		compiled.title ??
-		basename(file, ".gram");
-	// `portions` is the canonical frontmatter key — this read `meta.servings`,
-	// a field the language doesn't have, and cast it to a number even though
-	// frontmatter values are always strings. It was therefore always null.
-	const rawPortions = compiled.meta?.portions;
-	const parsedPortions =
-		typeof rawPortions === "string" ? parseFloat(rawPortions) : Number.NaN;
-	const servings =
-		Number.isFinite(parsedPortions) && parsedPortions > 0
-			? parsedPortions
-			: null;
-
-	// Total and rest time follow the chosen timeline; active and preparation
-	// time are the same in all of them.
-	const m = compiled.metrics;
-	const { totalTime: total, idleTime: rest } = prepareViews(compiled, {
-		miseEnPlace: opts.miseEnPlace,
-		rests: opts.rests,
-	}).times;
-	const times =
-		m && (total || rest || m.activeTime || m.preparationTime)
-			? {
-					total: total || undefined,
-					rest: rest || undefined,
-					active: m.activeTime || undefined,
-					prep: m.preparationTime || undefined,
-				}
-			: null;
-
-	const registry = compiled.registry?.ingredients ?? {};
-	const cwRegistry = compiled.registry?.cookware ?? {};
-
-	const sourceSections: any[] = analyzed
-		? analyzed.result.sections
-		: compiled.sections;
-	// Shopping list
-	const shoppingList: RecipeViewModel["shoppingList"] = [];
-	if (analyzed) {
-		for (const item of analyzed.result.shopping_list as any[]) {
-			if (item.type === "alternative" || item.variable_entries) continue;
-			const name = item.name ?? item.id;
-			const displayQty = formatDisplayQty(item, opts);
-			if (displayQty) {
-				shoppingList.push({
-					name,
-					displayQty,
-					isEstimate: item.isEstimate ?? false,
-				});
-			}
-		}
-	} else {
-		for (const item of compiled.shopping_list as any[]) {
-			if (item.type === "alternative" || item.variable_entries) continue;
-			const displayQty = formatDisplayQty(item, opts);
-			if (displayQty) {
-				shoppingList.push({
-					name: item.name ?? item.id,
-					displayQty,
-					isEstimate: false,
-				});
-			}
-		}
-	}
-
-	// Sections
-	const sections: RecipeViewModel["sections"] = sourceSections.map(
-		(sec, secIdx) => {
-			const secIngs: any[] = sec.ingredients ?? [];
-
-			// Regular (non-composite) ingredients
-			const regularEntries: RecipeViewModel["sections"][0]["ingredients"] =
-				secIngs
-					.filter(
-						(ing: any) =>
-							!ing.composite && ing.type !== "alternative" && ing.qty != null,
-					)
-					.map((ing: any) => {
-						const name =
-							opts.db?.[ing.id]?.name ??
-							ing.alias ??
-							registry[ing.id]?.name ??
-							ing.name ??
-							ing.id;
-						return {
-							name,
-							displayQty: formatDisplayQty(ing, opts),
-							isEstimate: ing.isEstimate ?? false,
-						};
-					});
-
-			// Composite ingredients — group children by parent, apply MAX rule for parent qty
-			// composite.quantity can be a number OR a fraction/qty object — extract numeric value for MAX comparison
-			function compositeNumericValue(q: any): number {
-				if (q == null) return 0;
-				if (typeof q === "number") return q;
-				if (typeof q === "object" && q.value != null) return q.value;
-				return 0;
-			}
-			const parentMap = new Map<
-				string,
-				{
-					name: string;
-					maxQtyRaw: any;
-					unit?: string;
-					children: Array<{ name: string; displayQty: string }>;
-				}
-			>();
-			for (const ing of secIngs.filter((i: any) => i.composite)) {
-				const parentName: string = ing.composite.parent;
-				const childQtyRaw = ing.composite.quantity ?? null;
-				const childUnit: string | undefined = ing.composite.unit ?? undefined;
-				if (!parentMap.has(parentName)) {
-					parentMap.set(parentName, {
-						name: parentName,
-						maxQtyRaw: childQtyRaw,
-						unit: childUnit,
-						children: [],
-					});
-				}
-				const parent = parentMap.get(parentName)!;
-				if (
-					childQtyRaw != null &&
-					compositeNumericValue(childQtyRaw) >
-						compositeNumericValue(parent.maxQtyRaw)
-				) {
-					parent.maxQtyRaw = childQtyRaw;
-				}
-				const childName =
-					opts.db?.[ing.id]?.name ??
-					registry[ing.id]?.name ??
-					ing.name ??
-					ing.id;
-				const childDisplayQty = formatDisplayQty(
-					{
-						qty: childQtyRaw,
-						unit: childUnit,
-						normalizedMass: ing.normalizedMass,
-						bakersPercentage: ing.bakersPercentage,
-					},
-					opts,
-				);
-				parent.children.push({ name: childName, displayQty: childDisplayQty });
-			}
-			const compositeEntries: RecipeViewModel["sections"][0]["ingredients"] =
-				Array.from(parentMap.values()).map((p) => ({
-					name: p.name,
-					displayQty: formatDisplayQty(
-						{ qty: p.maxQtyRaw, unit: p.unit },
-						opts,
-					),
-					isEstimate: false,
-					children: p.children,
-				}));
-
-			const ingredients: RecipeViewModel["sections"][0]["ingredients"] = [
-				...regularEntries,
-				...compositeEntries,
-			];
-
-			const steps: RecipeViewModel["sections"][0]["steps"] = [];
-			for (const [stepIdx, step] of ((sec.steps ?? []) as any[]).entries()) {
-				if (step.type === "comment") continue;
-				const text = stepToText(step.content ?? [], registry);
-				if (!text) continue;
-				steps.push({
-					action: step.action ?? undefined,
-					text,
-					timerMinutes: getTimerMinutes(compiled, secIdx, stepIdx, opts.rests),
-					_tokens: step.content ?? [],
-				});
-			}
-
-			return { title: sec.title ?? null, ingredients, steps };
-		},
-	);
-
-	const nutrition = analyzed?.result.metrics?.nutrition ?? null;
-	const missingIngredients = analyzed?.missingIngredients ?? [];
+	const view = getView("recipe");
+	if (!view) throw new Error("The renderer has no recipe view.");
+	const analyzedOrCompiled = analyzed?.result ?? compiled;
+	// A recipe with no title is called by its file name.
+	const data = analyzedOrCompiled.title
+		? analyzedOrCompiled
+		: { ...analyzedOrCompiled, title: basename(file, ".gram") };
+	const input = prepareViews(data, options.settings, {
+		...(options.lang !== undefined && { lang: options.lang }),
+	});
+	const text = view.render(input, "text", {
+		...(options.lang !== undefined && { lang: options.lang }),
+		...(options.width !== undefined && { width: options.width }),
+		...(options.textStyle && { textStyle: options.textStyle }),
+	});
 
 	return {
-		title,
-		servings,
-		lang: opts.lang,
-		nutritionBasis: opts.nutritionBasis,
-		times,
-		shoppingList,
-		sections,
-		nutrition,
-		missingIngredients,
+		text: text ?? "",
 		usedStock,
-		_registries: { ingredients: registry, cookware: cwRegistry },
+		totalMinutes: input.times.totalTime,
+		missingIngredients: analyzed?.missingIngredients ?? [],
 	};
 }
