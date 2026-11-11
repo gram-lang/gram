@@ -104,7 +104,7 @@ export const HTML_ICONS: Record<keyof Required<RendererIcons>, string> = {
 export const MD_ICONS: Record<keyof Required<RendererIcons>, string> = {
 	hourglass: "⏳ ",
 	timer: "⏲️ ",
-	thermometer: "🔥",
+	thermometer: "🌡️ ",
 	caretRight: "👉",
 	arrowRight: "->&",
 	arrowUDownLeft: "",
