@@ -180,13 +180,9 @@ describe("view, export and print follow --mise-en-place", () => {
 		expect(per.text).toContain(
 			`Total Time: ${formatDuration(perSection.totalTime)}`,
 		);
-		expect(per.text).toContain(
-			`Idle Time: ${formatDuration(perSection.idleTime)}`,
-		);
 		expect(up.text).toContain(
 			`Total Time: ${formatDuration(upfront.totalTime)}`,
 		);
-		expect(up.text).toContain(`Idle Time: ${formatDuration(upfront.idleTime)}`);
 	});
 
 	it("defaults to preparing right before each section", async () => {

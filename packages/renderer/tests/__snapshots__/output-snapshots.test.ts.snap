@@ -8,15 +8,17 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
   <span class="timing-pill total" data-tooltip="Total Time: 45m">
     <svg class="gicon gicon-clock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></svg> <span class="timing-text">45m</span>
     <div class="timing-tooltip">
-      <div class="timing-tooltip-title">Total Time = Prep + Active + Idle</div>
+      <div class="timing-tooltip-title">Total time = prep + active + idle</div>
       <div class="timing-row">
-        <span class="timing-label">Batter</span>
-        <span class="timing-val">+ 6m</span>
+        <span class="timing-label">Prep Time</span>
+        <span class="timing-val">+ ~8m</span>
       </div>
       <div class="timing-row">
-        <span class="timing-label">Cooking</span>
-        <span class="timing-val">+ 2m</span>
+        <span class="timing-label">Active Time</span>
+        <span class="timing-val">+ 37m</span>
       </div>
+      <div class="timing-divider"></div>
+      <div class="timing-row"><span class="timing-label timing-detail-type">For the hour-by-hour plan, see the run sheet.</span></div>
     </div>
   </span>
   <span class="timing-pill" data-tooltip="Active Time: 37m">

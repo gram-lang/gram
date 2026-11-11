@@ -80,8 +80,8 @@ export const fr: GramLocale = {
 		idleTime: "Attente",
 		activeTime: "Actif",
 		prepTime: "Préparation",
-		totalTimeTooltip: "Temps Total = Préparation + Actif + Attente",
-		idleTimeTooltip: "Temps d'Attente = Temps Total - Préparation - Actif",
+		totalTimeTooltip: "Temps total = préparation + actif + attente",
+		totalTimeRunSheetHint: "Le déroulé heure par heure est dans le {view}.",
 		activeTimeCardTooltip:
 			"Temps Actif = Somme des temps de manipulation manuelle",
 		prepTimeTooltip:

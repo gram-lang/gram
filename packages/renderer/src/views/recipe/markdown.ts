@@ -63,13 +63,11 @@ export const markdownBackend: RenderBackend = {
 
 		let md = `> **${t.renderer.metadata}**\n`;
 		if (data.metrics) {
-			// Total and idle time follow the chosen schedule; the other two do not.
-			const { totalTime, idleTime } = timesIn(context);
+			// The total follows the chosen schedule; the other two do not. The
+			// wait is left out: the run sheet is where time is managed.
+			const { totalTime } = timesIn(context);
 			if (totalTime) {
 				md += `> - **${t.renderer.totalTime}**: ${formatDuration(totalTime)}\n`;
-			}
-			if (idleTime) {
-				md += `> - **${t.renderer.idleTime}**: ${formatDuration(idleTime)}\n`;
 			}
 			if (data.metrics.activeTime) {
 				md += `> - **${t.renderer.activeTime}**: ${formatDuration(data.metrics.activeTime)}\n`;

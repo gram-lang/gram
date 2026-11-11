@@ -124,11 +124,12 @@ describe("viewRecipe", () => {
 		expect(out).not.toContain("1 min");
 	});
 
-	it("shows the resting time as the idle time", async () => {
+	it("counts the resting time in the total, with no idle time of its own", async () => {
 		const out = await text(
 			"## T\n\nMix @flour{200g}. ~_{30min}\n\nBake it ~{10min}.\n",
 		);
-		expect(out).toMatch(/Idle Time: [1-9]/);
+		expect(out).toMatch(/Total Time: 3\dm/);
+		expect(out).not.toContain("Idle Time");
 	});
 
 	it("colors the parts of the recipe through the style it is given", async () => {

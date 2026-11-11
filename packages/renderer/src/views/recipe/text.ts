@@ -140,7 +140,7 @@ export const textBackend: RenderBackend = {
 
 		if (data.metrics) {
 			const formatDuration = context.formatDuration ?? defaultFormatDuration;
-			const { totalTime, idleTime } = timesIn(context);
+			const { totalTime } = timesIn(context);
 			const parts: string[] = [];
 			const part = (label: string, minutes: number, suffix = "") => {
 				if (minutes) {
@@ -149,7 +149,6 @@ export const textBackend: RenderBackend = {
 			};
 			part(t.prepTime, data.metrics.preparationTime ?? 0, ` ${t.est}`);
 			part(t.activeTime, data.metrics.activeTime ?? 0);
-			part(t.idleTime, idleTime);
 			part(t.totalTime, totalTime);
 			const inner = width - 5;
 			for (const line of packLine(parts, inner)) {

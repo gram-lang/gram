@@ -96,8 +96,9 @@ export const en = {
 		idleTime: "Idle Time",
 		activeTime: "Active Time",
 		prepTime: "Prep Time",
-		totalTimeTooltip: "Total Time = Prep + Active + Idle",
-		idleTimeTooltip: "Idle Time = Total Time - Prep - Active",
+		totalTimeTooltip: "Total time = prep + active + idle",
+		/** Under the total time's breakdown: where the hour-by-hour plan lives. */
+		totalTimeRunSheetHint: "For the hour-by-hour plan, see the {view}.",
 		activeTimeCardTooltip: "Active Time = Sum of manual work time",
 		prepTimeTooltip:
 			"Prep Time = Time to gather and prepare ingredients and cookware",

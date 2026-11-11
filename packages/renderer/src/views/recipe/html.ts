@@ -47,7 +47,7 @@ import {
 	round2,
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
-import { getDictionary } from "@gram-lang/i18n";
+import { fillTemplate, getDictionary } from "@gram-lang/i18n";
 import {
 	resolveContributingUsage,
 	type AnalyzedUsage,
@@ -685,9 +685,6 @@ export const htmlBackend: RenderBackend = {
 
 			const sectionTitle = (index: number) =>
 				data.sections[index]?.title || t.renderer.miseEnPlace;
-			const miseSummaryRows = (data.miseEnPlace ?? [])
-				.map((m) => timingRow(escapeHtml(sectionTitle(m.section)), m.duration))
-				.join("\n");
 			const miseDetailRows = (data.miseEnPlace ?? [])
 				.map((m) =>
 					[
@@ -747,24 +744,41 @@ export const htmlBackend: RenderBackend = {
 			html += `<div class="${timingsBarClass}">\n`;
 
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
+			// The total explains itself: its three parts, then where the
+			// hour-by-hour plan lives. The wait is not a pill of its own.
+			const prepTotal = metrics.preparationTime ?? 0;
+			const totalParts = [
+				prepTotal
+					? `      <div class="timing-row">
+        <span class="timing-label">${escapeHtml(t.renderer.prepTime)}</span>
+        <span class="timing-val">+ ~${formatDuration(prepTotal)}</span>
+      </div>`
+					: "",
+				metrics.activeTime
+					? timingRow(escapeHtml(t.renderer.activeTime), metrics.activeTime)
+					: "",
+				idleTime ? timingRow(escapeHtml(t.renderer.idleTime), idleTime) : "",
+			].filter(Boolean);
+			const runSheetName = t.renderer.outputs.runSheet?.toLocaleLowerCase(
+				options.lang || "en",
+			);
+			const totalRows = [
+				totalParts.join("\n"),
+				...(runSheetName
+					? [
+							`      <div class="timing-divider"></div>`,
+							`      <div class="timing-row"><span class="timing-label timing-detail-type">${escapeHtml(fillTemplate(t.renderer.totalTimeRunSheetHint, { view: runSheetName }))}</span></div>`,
+						]
+					: []),
+			].join("\n");
 			const totalTooltip = renderTooltipHTML(
-				t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
+				t.renderer.totalTimeTooltip,
 				undefined,
-				miseSummaryRows,
+				totalRows,
 			);
 			html += `  <span class="timing-pill total${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.totalTime)}: ${formatDuration(totalTime)}">\n`;
 			html += `    ${clockIcon} <span class="timing-text${metaValueClass}">${formatDuration(totalTime)}</span>${totalTooltip}\n`;
 			html += `  </span>\n`;
-
-			if (idleTime) {
-				const idleTooltip = renderTooltipHTML(
-					t.renderer.idleTimeTooltip ??
-						"Idle Time = Total Time - Prep - Active",
-				);
-				html += `  <span class="timing-pill${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.idleTime)}: ${formatDuration(idleTime)}">\n`;
-				html += `    ${options.icons?.hourglass ?? DEFAULT_ICONS.html.hourglass} <span class="timing-text${metaValueClass}">${formatDuration(idleTime)} ${escapeHtml(t.renderer.idleTime.toLowerCase())}</span>${idleTooltip}\n`;
-				html += `  </span>\n`;
-			}
 
 			const fireIcon = options.icons?.fire ?? DEFAULT_ICONS.html.fire;
 			// @remove-in: 2.0.0 [renderer-active-breakdown-tooltip]
