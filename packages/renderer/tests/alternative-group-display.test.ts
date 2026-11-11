@@ -4,11 +4,20 @@ import { compile } from "@gram-lang/kitchen";
 import { toHTML, toMarkdown } from "../src/index";
 
 function extractShoppingListBlock(html: string): string | undefined {
-	return html.match(/<details class="shopping-list">[\s\S]*?<\/details>/)?.[0];
+	return html.match(
+		/<details class="[^"]*shopping-list[^"]*"[^>]*>[\s\S]*?<\/details>/,
+	)?.[0];
 }
 
 function extractCookwareBlock(html: string): string | undefined {
-	return html.match(/<details class="cookware">[\s\S]*?<\/details>/)?.[0];
+	return (
+		html.match(
+			/<details class="[^"]*cookware[^"]*"[^>]*>[\s\S]*?<\/details>/,
+		)?.[0] ??
+		html.match(
+			/<div class="mep-group">\s*<h5 class="mep-group-title">(?:Matériel|Cookware)<\/h5>[\s\S]*?<\/div>/,
+		)?.[0]
+	);
 }
 
 function extractSectionIngredientsBlock(html: string): string | undefined {
@@ -35,7 +44,7 @@ describe("alternative group display", () => {
 	it("HTML shopping list joins options on one line, not a nested sub-list", () => {
 		const block = extractShoppingListBlock(toHTML(compiled));
 		expect(block).toContain(
-			'<li><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></li>',
+			'<span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span>',
 		);
 		expect(block).not.toContain("<ul>\n        <li>");
 	});
@@ -48,17 +57,28 @@ describe("alternative group display", () => {
 	it("HTML cookware list joins options on one line, not a nested sub-list", () => {
 		const block = extractCookwareBlock(toHTML(compiled));
 		expect(block).toContain(
-			'<li><span class="alt-group"><span class="cookware" data-name="pan">pan</span> <span class="keyword">or</span> <span class="cookware" data-name="skillet">skillet</span></span></li>',
+			'<span class="alt-group"><span class="cookware" data-name="pan">pan</span> <span class="keyword">or</span> <span class="cookware" data-name="skillet">skillet</span></span>',
 		);
 	});
 
-	it("a leaf (non-alternative) cookware item's quantity display is unaffected", () => {
-		const source2 = "## Prep\nUse #pan{2} to cook.\n";
+	it("a leaf (non-alternative) cookware item shows its count as ×N in the quantity column", () => {
+		const source2 = "## Prep\n\nUse #pan{2} to cook.\n";
 		const compiled2 = compile(getAST(source2));
 		const block = extractCookwareBlock(toHTML(compiled2));
 		expect(block).toContain(
-			'<span class="cookware" data-name="pan" data-tooltip="Quantity: 2">pan</span>',
+			'<span class="kit-name cookware" data-name="pan">pan</span></span><span class="kit-qty"><span class="kit-mass">×2</span></span>',
 		);
+		expect(block).not.toContain("data-tooltip");
+	});
+
+	it("a single piece of cookware shows no count", () => {
+		const block = extractCookwareBlock(
+			toHTML(compile(getAST("## Prep\n\nUse #pan{1} to cook.\n"))),
+		);
+		expect(block).toContain(
+			'<span class="kit-name cookware" data-name="pan">pan</span></span></span></label>',
+		);
+		expect(block).not.toContain("×");
 	});
 
 	it("Markdown section ingredients show the alternative group with each option's own preparation", () => {

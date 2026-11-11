@@ -36,8 +36,8 @@ const TOTAL = {
 };
 
 const totalOf = (html: string) =>
-	/Total Time<\/div>\s*<div class="meta-value">([^<]+)</.exec(
-		html.replace(/<svg[\s\S]*?<\/svg>/g, ""),
+	/timing-pill total[^>]*>[\s\S]*?<span class="timing-text[^"]*">([^<]+)</.exec(
+		html,
 	)?.[1];
 const titleOf = (html: string) => /<h1[^>]*>([^<]*)</.exec(html)?.[1];
 const summary = (html: string) => `${titleOf(html)}/${totalOf(html)}`;

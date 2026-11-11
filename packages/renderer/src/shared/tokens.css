@@ -1,0 +1,77 @@
+/*
+ * The design tokens of every view: fonts, the colors of the elements of a step,
+ * the grays, and the surfaces, borders and texts built on them. The only thing
+ * the views share on screen: a view's components live in its own stylesheet.
+ *
+ * Dark mode is the host's to switch on (a `.dark` class, VS Code's
+ * `body.vscode-dark`, or `data-theme="dark"`), and derives its surfaces from
+ * `--bg-dark-anchor`: a host feeds it its own background through `--vp-c-bg`.
+ */
+:root {
+	--gram-font-sans: system-ui, -apple-system, sans-serif;
+	--gram-font-mono:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+	/* The elements of a step */
+	--item-ingredient-text: #7c3aed;
+	--item-cookware-text: #2563eb;
+	--item-timer-text: #d97706;
+	--item-temp-text: #dc2626;
+	--item-ref-text: #059669;
+	--item-decl-text: #059669;
+	--item-qty-text: var(--color-text-strong);
+
+	/* Grays */
+	--gray-0: oklch(100% 0 0);
+	--gray-25: oklch(98.5% 0 0);
+	--gray-50: oklch(97% 0 0);
+	--gray-100: oklch(93% 0 0);
+	--gray-200: oklch(88% 0 0);
+	--gray-300: oklch(80% 0 0);
+	--gray-400: oklch(70% 0 0);
+	--gray-500: oklch(58% 0 0);
+	--gray-600: oklch(46% 0 0);
+	--gray-700: oklch(35% 0 0);
+	--gray-800: oklch(25% 0 0);
+	--gray-900: oklch(15% 0 0);
+	--gray-950: oklch(10% 0 0);
+	--gray-1000: oklch(0% 0 0);
+
+	--bg-dark-anchor: var(--vp-c-bg, #1a1a1a);
+
+	/* Surfaces, borders, texts */
+	--color-bg: var(--gray-0);
+	--color-bg-subtle: var(--gray-25);
+	--color-bg-muted: var(--gray-100);
+	--color-surface: var(--gray-25);
+	--color-surface-raised: var(--gray-0);
+	--color-border: var(--gray-200);
+	--color-border-strong: var(--gray-300);
+	--color-text-muted: var(--gray-500);
+	--color-text: var(--gray-700);
+	--color-text-strong: var(--gray-900);
+}
+
+.dark,
+body.vscode-dark,
+:root[class~="dark"],
+:root[data-theme="dark"] {
+	--item-ingredient-text: #c68aff;
+	--item-cookware-text: #60a5fa;
+	--item-timer-text: #fbbf24;
+	--item-temp-text: #f87171;
+	--item-ref-text: #34d399;
+	--item-decl-text: #34d399;
+	--item-qty-text: var(--color-text-strong);
+
+	--color-bg: var(--bg-dark-anchor);
+	--color-bg-subtle: oklch(from var(--bg-dark-anchor) calc(l - 0.03) c h);
+	--color-bg-muted: oklch(from var(--bg-dark-anchor) calc(l + 0.02) c h);
+	--color-surface: oklch(from var(--bg-dark-anchor) calc(l + 0.035) c h);
+	--color-surface-raised: oklch(from var(--bg-dark-anchor) calc(l + 0.06) c h);
+	--color-border: oklch(from var(--bg-dark-anchor) calc(l + 0.14) c h);
+	--color-border-strong: oklch(from var(--bg-dark-anchor) calc(l + 0.22) c h);
+	--color-text-muted: oklch(from var(--bg-dark-anchor) calc(l + 0.42) c h);
+	--color-text: oklch(from var(--bg-dark-anchor) calc(l + 0.6) c h);
+	--color-text-strong: oklch(100% 0 0);
+}

@@ -39,8 +39,8 @@ async function build() {
         console.warn('  Expected:', serverSrc);
     }
 
-    // Copy the shared renderer CSS
-    const cssSrc = path.join(__dirname, '..', 'renderer', 'gram.css');
+    // Copy the renderer's stylesheet of every view, written by its build
+    const cssSrc = path.join(__dirname, '..', 'renderer', 'dist', 'gram.css');
     const mediaDest = path.join(__dirname, 'media');
     if (!fs.existsSync(mediaDest)) {
         fs.mkdirSync(mediaDest, { recursive: true });

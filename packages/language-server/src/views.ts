@@ -144,12 +144,8 @@ export function renderOutputs(
 					}
 					continue;
 				}
-				// The VS Code panel ships the renderer's stylesheet, so the
-				// CSS-only nutrition basis toggle works there; quantities stay
-				// read-only.
-				const html = output.render(inputOf(), "html", {
-					interactiveNutrition: true,
-				});
+				// Quantities stay read-only in the VS Code panel.
+				const html = output.render(inputOf(), "html");
 				updates.push({ ...base, state: "ok", payload: html });
 			} else {
 				const artifact = artifactOf(state, output.stage);

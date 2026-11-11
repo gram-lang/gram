@@ -1,249 +1,879 @@
-/* ── Meta bar ── */
-.meta {
+/*
+ * The recipe on paper (`toPrintHTML`, the `print` format of the recipe view).
+ *
+ * The markup is the one of the screen (`html.ts`), as for the run sheet: this
+ * sheet sets it for a page, after the base of every printed view
+ * (`shared/print.css`). It follows `screen.css` block by block, in ink only:
+ * no color, no hover, nothing to click; what only a screen can do (tooltips,
+ * the copy button, the accordion's caret) is hidden. Every rule is scoped to
+ * the view's root, `<article class="gram-recipe">`.
+ */
+
+.gram-recipe {
+	font-family: var(--gram-font-sans);
+	font-size: 9.5pt;
+	line-height: 1.45;
+}
+
+.gram-recipe ul,
+.gram-recipe ol {
+	list-style: none;
+}
+
+/* What only a screen can do (the tooltips and the copy button are not even
+   written on paper). */
+.gram-recipe .note-return,
+.gram-recipe details > summary::after {
+	display: none !important;
+}
+
+.gram-recipe svg.gicon {
+	flex-shrink: 0;
+}
+
+/* ─── Header: title, description, byline, tags ─────────────────────────── */
+
+.gram-recipe .recipe-title {
+	font-family: inherit;
+	font-size: 20pt;
+	font-weight: 800;
+	line-height: 1.15;
+	margin: 0 0 3pt;
+	padding: 0;
+	border: none;
+}
+
+.gram-recipe .recipe-description {
+	font-size: 9.5pt;
+	color: var(--dark-grey);
+	margin: 0 0 6pt;
+}
+
+.gram-recipe .recipe-byline {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4pt 16pt;
-	font-family: "Inter", system-ui, sans-serif;
+	align-items: center;
+	gap: 3pt 6pt;
 	font-size: 8pt;
-	margin-bottom: 16pt;
-	padding: 4pt 0;
-	border-bottom: 1px solid var(--light-grey);
+	color: var(--grey);
+	margin-bottom: 8pt;
 }
-.meta-item {
-	display: flex;
-	align-items: baseline;
+
+.gram-recipe .byline-sep {
+	opacity: 0.5;
 }
-.meta-label {
+
+.gram-recipe .byline-source {
+	color: var(--black);
+	text-decoration: underline dotted;
+}
+
+.gram-recipe .byline-custom .label {
 	font-weight: 600;
-	text-transform: uppercase;
-	font-size: 7pt;
-	letter-spacing: 0.1em;
-	margin-right: 6pt;
-	color: var(--grey);
+	text-transform: capitalize;
 }
 
-/* ── Shopping list ── */
-.shopping-list ul {
-	columns: 2;
-	column-gap: 24pt;
-	list-style: none;
-	margin-top: 8pt;
-}
-.shopping-list li {
-	break-inside: avoid;
-	page-break-inside: avoid;
-	position: relative;
-	padding: 3pt 0 3pt 16pt;
-	font-size: 9.5pt;
-	border-bottom: 1px dotted var(--light-grey);
-}
-.shopping-list li::before {
-	content: "☐";
-	position: absolute;
-	left: 0;
-	top: 3.5pt;
-	font-size: 11pt;
-	font-family: "Inter", system-ui, sans-serif;
-	color: var(--grey);
-}
+/* ─── Timings bar: total, idle, active, prep ───────────────────────────── */
 
-/* ── Equipment ── */
-.cookware-list {
+.gram-recipe .recipe-timings-bar {
 	display: flex;
 	flex-wrap: wrap;
-	column-gap: 12pt;
-	row-gap: 6pt;
-	margin-top: 8pt;
-	font-size: 10pt;
-	font-style: italic;
-}
-.cookware-list .cw-item {
-	position: relative;
-}
-.cookware-list .cw-item:not(:last-child)::after {
-	content: "•";
-	position: absolute;
-	right: -8pt;
-	color: var(--light-grey);
-	font-style: normal;
+	align-items: center;
+	gap: 4pt 5pt;
+	margin-bottom: 8pt;
 }
 
-/* ── Instructions ── */
-.instructions section {
-	margin-bottom: 24pt;
-}
-
-/* ── Section-level mise en place ── */
-.section-ingredients {
-	border: 1px solid var(--black);
-	border-left: 4pt solid var(--black);
-	padding: 10pt 14pt;
-	margin-bottom: 16pt;
-	margin-top: 8pt;
-}
-.section-ingredients ul {
-	list-style: none;
-	display: flex;
-	flex-wrap: wrap;
-	column-gap: 16pt;
-	row-gap: 6pt;
-	font-size: 9.5pt;
-}
-.section-ingredients li {
+.gram-recipe .timing-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 3pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	padding: 1pt 5pt;
+	font-family: var(--gram-font-mono);
+	font-size: 8pt;
 	white-space: nowrap;
 }
-.section-ingredients li::before {
-	content: "— ";
-	color: var(--grey);
-	font-weight: bold;
+
+.gram-recipe .timing-pill.total {
+	border-color: var(--black);
+	font-weight: 700;
 }
 
-/* ── Steps ── */
-ol.steps {
-	margin: 0;
-	padding-left: 0;
-	list-style: none;
-	counter-reset: step-counter;
-}
-ol.steps li {
-	break-inside: avoid;
-	page-break-inside: avoid;
+/* ─── Hero bar: portions, yield, mass, energy ──────────────────────────── */
+
+.gram-recipe .recipe-hero-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4pt 10pt;
+	padding: 5pt 9pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
 	margin-bottom: 10pt;
-	font-size: 10pt;
-	position: relative;
-	padding-left: 24pt;
+	font-size: 8.5pt;
+	page-break-inside: avoid;
 }
-ol.steps li:not(.comment-step)::before {
-	content: counter(step-counter) ".";
-	counter-increment: step-counter;
-	position: absolute;
-	left: 0;
-	top: 0;
-	font-family: "Inter", system-ui, sans-serif;
-	font-weight: 700;
-	font-size: 9pt;
+
+.gram-recipe .hero-facts {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4pt 10pt;
+}
+
+/* A page is wide enough: the facts follow the portions behind a hairline. */
+.gram-recipe .hero-portions + .hero-facts {
+	padding-left: 10pt;
+	border-left: 0.75pt solid var(--light-grey);
+}
+
+.gram-recipe .hero-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 4pt;
+}
+
+.gram-recipe .hero-item svg {
+	color: var(--grey);
+}
+
+.gram-recipe .scale-val,
+.gram-recipe .portions-unit {
+	font-family: var(--gram-font-mono);
+	color: var(--grey);
+}
+
+.gram-recipe .scale-val strong {
 	color: var(--black);
 }
 
-.comment-step {
-	padding-left: 0 !important;
-	font-style: italic;
-	color: var(--dark-grey);
-	font-size: 9.5pt;
-	margin-top: -4pt;
-	margin-bottom: 10pt !important;
+.gram-recipe .scale-factor-badge {
+	font-family: var(--gram-font-mono);
+	font-size: 7.5pt;
+	font-weight: 600;
+	padding: 0 3pt;
+	border: 0.75pt dashed var(--grey);
+	border-radius: 2pt;
 }
 
-/* ── Nutrition ── */
-.nutrition {
-	margin-top: 24pt;
-	padding-top: 12pt;
-	border-top: 2px solid var(--black);
-	break-inside: avoid;
+.gram-recipe .hero-yield,
+.gram-recipe .hero-mass,
+.gram-recipe .hero-nutrition {
+	font-family: var(--gram-font-mono);
+	font-size: 8pt;
+}
+
+.gram-recipe .hero-mass,
+.gram-recipe .hero-nutrition {
+	color: var(--grey);
+	text-decoration: none;
+}
+
+.gram-recipe .hero-nutrition .nut-pill-value {
+	color: var(--black);
+	font-weight: 600;
+}
+
+/* ─── Note of the recipe (`notes:` of the front matter) ────────────────── */
+
+.gram-recipe .recipe-note {
+	display: flex;
+	align-items: flex-start;
+	gap: 6pt;
+	border-left: 2pt solid var(--black);
+	padding: 3pt 8pt;
+	font-size: 8.5pt;
+	margin-bottom: 10pt;
 	page-break-inside: avoid;
 }
-.nutrition h2 {
-	border-bottom: none;
-	margin: 0 0 12pt 0;
-	padding: 0;
-}
-.nut-grid {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12pt 24pt;
-}
-.nut-item {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-}
-.nut-item-nested strong {
-	font-size: 10pt;
-}
-.nut-item-nested small {
+
+.gram-recipe .recipe-note svg {
 	color: var(--grey);
-}
-.nut-basis-note {
-	font-family: "Inter", system-ui, sans-serif;
-	font-size: 7.5pt;
-	color: var(--grey);
-	margin: -6pt 0 10pt 0;
-}
-.nut-warnings {
-	font-family: "Inter", system-ui, sans-serif;
-	font-size: 8pt;
-	color: var(--dark-grey);
-	border-left: 2pt solid var(--black);
-	padding-left: 8pt;
-	margin-bottom: 10pt;
-}
-.nut-item strong {
-	font-size: 13pt;
-	font-family: "Inter", system-ui, sans-serif;
-	line-height: 1;
-	margin-bottom: 4pt;
-}
-.nut-item small {
-	font-size: 7pt;
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
-	color: var(--grey);
-	font-family: "Inter", system-ui, sans-serif;
+	margin-top: 2pt;
 }
 
-/* ── Mixed units / gross mass (shopping list) ── */
-.list-item-group ul {
+/* ─── Shopping list and cookware (the prep accordion, always open) ────── */
+
+.gram-recipe details.prep-accordion {
+	border: 0.75pt solid var(--black);
+	border-radius: 2pt;
+	margin-bottom: 14pt;
+}
+
+.gram-recipe details > summary {
+	display: block;
 	list-style: none;
+}
+
+.gram-recipe details > summary::-webkit-details-marker,
+.gram-recipe .prep-summary::marker {
+	display: none;
+}
+
+.gram-recipe .prep-summary {
+	padding: 4pt 9pt;
+	border-bottom: 0.75pt solid var(--black);
+	page-break-after: avoid;
+}
+
+.gram-recipe .prep-summary-title {
+	font-size: 10.5pt;
+	font-weight: 800;
+}
+
+.gram-recipe .prep-body {
+	padding: 6pt 9pt;
+}
+
+.gram-recipe .mep-group + .mep-group {
+	margin-top: 6pt;
+	padding-top: 6pt;
+	border-top: 0.5pt dotted var(--black);
+}
+
+.gram-recipe .mep-group-title {
+	margin: 0 0 3pt;
+	font-family: var(--gram-font-mono);
+	font-size: 7.5pt;
+	font-weight: 700;
+	text-transform: uppercase;
+	color: var(--grey);
+}
+
+/* ─── Kit list: the items of the shopping list and of a section ────────── */
+
+.gram-recipe .kit-list {
+	columns: 2;
+	column-gap: 18pt;
+}
+
+.gram-recipe .kit-list li {
+	break-inside: avoid;
+	page-break-inside: avoid;
+	margin-bottom: 2.5pt;
+	font-size: 9pt;
+}
+
+.gram-recipe .kit-list .sub-kit-list {
+	columns: auto;
 	margin-top: 2pt;
 	padding-left: 12pt;
 }
-.list-item-group ul li {
-	border-bottom: none;
-	padding-left: 12pt;
+
+.gram-recipe .kit-list label {
+	display: flex;
+	align-items: baseline;
+	gap: 6pt;
 }
-.mixed-units-badge {
-	display: inline-block;
-	font-family: "Inter", system-ui, sans-serif;
+
+/* A box to tick with a pen. */
+.gram-recipe .kit-list input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	flex-shrink: 0;
+	width: 8pt;
+	height: 8pt;
+	margin: 0;
+	border: 1pt solid var(--black);
+	border-radius: 1.5pt;
+	transform: translateY(0.5pt);
+}
+
+.gram-recipe .kit-list label > span {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: baseline;
+	column-gap: 4pt;
+	flex: 1;
+	min-width: 0;
+}
+
+.gram-recipe .kit-list li:not(.list-item-group) .kit-name-col {
+	display: contents;
+}
+
+.gram-recipe .kit-list li.list-item-group > label > span > .kit-name-col {
+	grid-column: 1;
+	grid-row: 1;
+	display: inline-flex;
+	align-items: baseline;
+	gap: 3pt;
+}
+
+.gram-recipe .kit-name,
+.gram-recipe .alt-group {
+	grid-column: 1;
+	grid-row: 1;
+	font-weight: 500;
+	overflow-wrap: break-word;
+}
+
+.gram-recipe .kit-name::first-letter,
+.gram-recipe .alt-group::first-letter,
+.gram-recipe .kit-usage-name::first-letter {
+	text-transform: uppercase;
+}
+
+.gram-recipe .kit-prep {
+	grid-column: 1 / -1;
+	grid-row: 2;
+	font-size: 7.5pt;
+	font-style: italic;
+	color: var(--grey);
+}
+
+/* The quantity, pushed to the right edge by a dot leader. */
+.gram-recipe .kit-qty {
+	grid-column: 2 / -1;
+	grid-row: 1;
+	display: flex;
+	align-items: baseline;
+	justify-content: flex-end;
+	gap: 4pt;
+	white-space: nowrap;
+	font-family: var(--gram-font-mono);
+	font-size: 8.5pt;
+	color: var(--grey);
+}
+
+.gram-recipe .kit-qty::before {
+	content: "";
+	flex: 1;
+	align-self: flex-end;
+	min-width: 8pt;
+	margin-bottom: 2pt;
+	border-bottom: 1pt dotted #aaa;
+}
+
+.gram-recipe .kit-mass {
+	font-weight: 700;
+	color: var(--black);
+}
+
+.gram-recipe .kit-orig {
+	font-size: 7pt;
+	font-weight: 400;
+}
+
+.gram-recipe .mixed-units-badge {
 	font-size: 6.5pt;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
 	color: var(--grey);
-	border: 1px solid var(--light-grey);
-	border-radius: 2px;
-	padding: 1pt 4pt;
-	margin-left: 4pt;
-	vertical-align: middle;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	padding: 0 3pt;
 }
-.gross-mass {
+
+/* A composite: the parts used, under the item you buy. */
+.gram-recipe .kit-usage-list {
+	margin: 1pt 0 0;
+	padding-left: 14pt;
+}
+
+.gram-recipe .kit-list li.kit-usage {
+	display: flex;
+	align-items: baseline;
+	gap: 3pt;
+	margin-bottom: 1pt;
 	font-size: 8pt;
+	color: var(--grey);
+}
+
+.gram-recipe .kit-usage-qty {
+	display: flex;
+	gap: 3pt;
+	margin-left: auto;
+	white-space: nowrap;
+	font-family: var(--gram-font-mono);
+	font-size: 7.5pt;
+}
+
+/* The ingredients of one section, above its steps. */
+.gram-recipe .section-ingredients {
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	padding: 5pt 9pt 3pt;
+	margin: 6pt 0 10pt;
+}
+
+/* ─── Sections: header, badges ─────────────────────────────────────────── */
+
+.gram-recipe .instructions section {
+	margin-bottom: 12pt;
+}
+
+.gram-recipe h3.section-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 5pt;
+	font-family: inherit;
+	font-size: 12pt;
+	font-weight: 800;
+	margin: 14pt 0 6pt;
+	padding-bottom: 2pt;
+	border-bottom: 1.5pt solid var(--black);
+	page-break-after: avoid;
+}
+
+.gram-recipe .section-meta-badge,
+.gram-recipe .section-declaration-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 3pt;
+	font-size: 7pt;
+	font-weight: 500;
+	line-height: 1.5;
+	padding: 0 4pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	color: var(--grey);
+}
+
+/* On screen, the meta badges are in mono, what a section declares in the
+   text's sans. */
+.gram-recipe .section-meta-badge {
+	font-family: var(--gram-font-mono);
+}
+
+.gram-recipe .section-meta-retroplanning {
+	border-color: var(--black);
+	color: var(--black);
+}
+
+.gram-recipe .section-meta-module,
+.gram-recipe .section-declaration-badge {
+	margin-left: auto;
+}
+
+.gram-recipe .section-declaration-badge {
+	font-weight: 700;
+	border-color: var(--black);
+	color: var(--black);
+}
+
+.gram-recipe .section-declaration-badge.has-module {
+	padding: 0;
+	gap: 0;
+}
+
+.gram-recipe .section-module-source,
+.gram-recipe .section-decl-target {
+	display: inline-flex;
+	align-items: center;
+	gap: 3pt;
+	padding: 0 4pt;
+}
+
+.gram-recipe .section-module-source {
+	font-weight: 500;
+	color: var(--grey);
+	border-right: 0.75pt solid var(--light-grey);
+}
+
+/* ─── Steps ────────────────────────────────────────────────────────────── */
+
+.gram-recipe ol.steps {
+	counter-reset: gram-step;
+	margin: 8pt 0 0;
+	padding: 0;
+}
+
+.gram-recipe .steps li {
+	position: relative;
+	counter-increment: gram-step;
+	padding: 0 0 0 20pt;
+	margin-bottom: 7pt;
+	line-height: 1.7;
+	break-inside: avoid;
+	page-break-inside: avoid;
+}
+
+/* The number, in a black circle. */
+.gram-recipe .steps li::before {
+	content: counter(gram-step);
+	position: absolute;
+	left: 0;
+	top: 1.5pt;
+	width: 13pt;
+	height: 13pt;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background: var(--black);
+	color: #fff;
+	font-family: var(--gram-font-mono);
+	font-size: 7pt;
+	font-weight: 700;
+	line-height: 1;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+/* A comment alone on its line: an aside, not a step, with no number. */
+.gram-recipe .steps li.step-comment {
+	counter-increment: none;
+	display: flex;
+	align-items: flex-start;
+	gap: 5pt;
+	margin: 6pt 0 9pt;
+	padding: 3pt 7pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 3pt;
+	font-size: 8.5pt;
+	line-height: 1.45;
+}
+
+.gram-recipe .steps li.step-comment::before {
+	display: none;
+}
+
+.gram-recipe .step-comment .comment-icon {
+	color: var(--grey);
+}
+
+/* What a step makes, on its own line under the step's text: "↳ dough". */
+.gram-recipe .step-result {
+	display: block;
+	width: fit-content;
+	margin-top: 3pt;
+	padding-top: 1pt;
+	border-top: 0.75pt dashed var(--light-grey);
+	font-size: 8pt;
+	font-weight: 600;
+	line-height: 1.5;
+	color: var(--grey);
+}
+
+.gram-recipe .step-result-item {
+	color: var(--black);
+}
+
+/* ─── The elements of a step ───────────────────────────────────────────── */
+/* In ink, like a cookbook: what goes in is bold, the tool a little lighter,
+   a temperature outlined, a timer filled. */
+
+.gram-recipe .action {
+	display: inline-block;
+	margin-right: 3pt;
+	padding: 0 3pt;
+	border: 0.75pt solid var(--black);
+	border-radius: 2pt;
+	background: #f2f2f2;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+	font-family: var(--gram-font-mono);
+	font-size: 7pt;
+	font-weight: 700;
+	letter-spacing: 0;
+	text-transform: uppercase;
+	line-height: 1.5;
+	vertical-align: 1pt;
+}
+
+.gram-recipe .steps .ingredient {
+	font-weight: 700;
+}
+
+.gram-recipe .steps .cookware {
+	font-weight: 600;
+}
+
+.gram-recipe .reference,
+.gram-recipe .declaration {
+	font-weight: 600;
+	font-style: normal;
+	font-size: inherit;
+	text-decoration: none;
+}
+
+.gram-recipe .steps .reference[data-ref-id] {
+	border-bottom: 0.75pt dotted var(--grey);
+}
+
+.gram-recipe .timer,
+.gram-recipe .temp {
+	display: inline-flex;
+	align-items: center;
+	gap: 2pt;
+	margin: 0 1pt;
+	padding: 0 2.5pt;
+	border: 1.25pt solid var(--black);
+	border-radius: 2pt;
+	font-family: var(--gram-font-mono);
+	font-size: 8pt;
+	font-weight: 700;
+	letter-spacing: 0;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+
+.gram-recipe .temp {
+	background: #fff;
+	color: var(--black);
+}
+
+.gram-recipe .timer {
+	background: var(--black);
+	color: #fff;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+.gram-recipe .quantity {
+	font-family: var(--gram-font-mono);
+	font-size: 0.85em;
+	font-weight: 600;
+	padding: 0 4pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 10pt;
+}
+
+.gram-recipe .step-quantity {
+	color: var(--grey);
+	white-space: nowrap;
+	font-size: 8pt;
+	font-weight: 500;
+}
+
+.gram-recipe .ingredient-alt-badge {
+	color: var(--grey);
+	font-size: 0.85em;
+}
+
+.gram-recipe .mass-badge,
+.gram-recipe .bakers-badge {
+	font-family: var(--gram-font-mono);
+	font-size: 0.85em;
+	padding: 0 3pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	color: var(--grey);
+}
+
+.gram-recipe .bakers-badge {
+	font-weight: 600;
+	color: var(--black);
+	border: 0.75pt dashed var(--grey);
+}
+
+.gram-recipe .gross-mass,
+.gram-recipe .unit {
+	color: var(--grey);
+	font-size: 0.85em;
+	margin-left: 1pt;
+}
+
+.gram-recipe .prep,
+.gram-recipe .composite-parent,
+.gram-recipe .optional {
 	color: var(--grey);
 	font-style: italic;
 }
 
-/* ── Footnotes ── */
-.notes {
-	margin-top: 24pt;
-	padding-top: 12pt;
-	border-top: 1px solid var(--light-grey);
-	break-inside: avoid;
+.gram-recipe .optional {
+	font-size: 0.85em;
+	margin-left: 0.25em;
+}
+
+/* ─── Footnotes: the comments at the end of a line, and their notes ────── */
+
+.gram-recipe .footnote-ref {
+	font-size: 0.75em;
+	line-height: 0;
+	vertical-align: super;
+	margin-left: 1pt;
+}
+
+.gram-recipe .footnote-ref a {
+	color: var(--grey);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.gram-recipe .recipe-notes {
+	margin-top: 18pt;
+	padding-top: 8pt;
+	border-top: 0.75pt solid var(--light-grey);
 	page-break-inside: avoid;
 }
-.notes h2 {
-	border-bottom: none;
-	margin: 0 0 10pt 0;
-	padding: 0;
+
+.gram-recipe .recipe-notes h3 {
+	display: block;
+	font-family: inherit;
+	font-size: 10.5pt;
+	font-weight: 700;
+	margin: 0 0 6pt;
+	border: none;
 }
-.notes ol {
+
+.gram-recipe .recipe-notes ol {
+	list-style: decimal;
 	padding-left: 16pt;
-	font-size: 9pt;
+	font-size: 8.5pt;
 	color: var(--dark-grey);
 }
-.notes li {
-	margin-bottom: 4pt;
+
+.gram-recipe .recipe-notes li {
+	margin-bottom: 3pt;
 }
-.footnote-ref a,
-.note-return {
-	color: inherit;
-	text-decoration: none;
+
+/* ─── Nutrition table ──────────────────────────────────────────────────── */
+/* A European label set like an American one: heavy rules between header,
+   energy and nutrients, the energy in large type. Always shown on paper. */
+
+.gram-recipe .nutrition-panel {
+	margin-top: 20pt;
+	max-width: 340pt;
+	padding: 6pt 9pt;
+	border: 0.75pt solid var(--black);
+	border-radius: 1.5pt;
+	page-break-inside: avoid;
+}
+
+.gram-recipe .nut-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 6pt;
+}
+
+.gram-recipe .nut-title {
+	display: block;
+	font-family: inherit;
+	font-size: 13pt;
+	font-weight: 800;
+	line-height: 1.15;
+	margin: 0;
+	border: none;
+}
+
+.gram-recipe .est-badge {
+	font-size: 6.5pt;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
 	font-weight: 700;
+	padding: 0.5pt 4pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	color: var(--grey);
+}
+
+.gram-recipe .nut-subtitle {
+	margin: 1pt 0 0;
+	font-size: 7.5pt;
+	color: var(--grey);
+}
+
+.gram-recipe .nut-warnings {
+	margin: 5pt 0 0;
+	padding-left: 6pt;
+	border-left: 2pt solid var(--black);
+	font-size: 8pt;
+	color: var(--dark-grey);
+}
+
+.gram-recipe .nut-table-scroll {
+	margin-top: 4pt;
+}
+
+.gram-recipe .nut-table {
+	width: 100%;
+	border-collapse: collapse;
+	border-top: 6pt solid var(--black);
+	border-bottom: 6pt solid var(--black);
+	font-size: 8.5pt;
+	font-variant-numeric: tabular-nums;
+}
+
+.gram-recipe .nut-table th,
+.gram-recipe .nut-table td {
+	padding: 2pt 0 2pt 9pt;
+	border-bottom: 0.5pt solid #bbb;
+	text-align: right;
+	white-space: nowrap;
+	vertical-align: top;
+}
+
+.gram-recipe .nut-table th:first-child {
+	padding-left: 0;
+	text-align: left;
+	white-space: normal;
+}
+
+.gram-recipe .nut-table thead th {
+	border-bottom: 1.5pt solid var(--black);
+	font-size: 7.5pt;
+	font-weight: 700;
+	vertical-align: bottom;
+}
+
+.gram-recipe .nut-table tbody th {
+	font-weight: 700;
+}
+
+.gram-recipe .nut-table tr.nut-energy > * {
+	padding-top: 3pt;
+	padding-bottom: 3pt;
+	border-bottom: 3.5pt solid var(--black);
+}
+
+.gram-recipe .nut-table tr.nut-energy th {
+	font-size: 1.05em;
+	font-weight: 800;
+}
+
+.gram-recipe .nut-kcal {
+	display: block;
+	font-size: 1.3em;
+	font-weight: 800;
+	line-height: 1.1;
+}
+
+.gram-recipe .nut-kj {
+	display: block;
+	font-size: 0.8em;
+	color: var(--grey);
+}
+
+.gram-recipe .nut-table tr.nut-energy .nut-ri {
+	font-size: 1.1em;
+	font-weight: 800;
+}
+
+.gram-recipe .nut-table tr.is-nested th {
+	padding-left: 12pt;
+	font-weight: 400;
+}
+
+.gram-recipe .nut-table tbody tr:last-child > * {
+	border-bottom: none;
+}
+
+.gram-recipe .nut-table .nut-col-ri,
+.gram-recipe .nut-table .nut-ri {
+	width: 4em;
+	font-weight: 700;
+}
+
+.gram-recipe .nut-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.gram-recipe .nut-footer {
+	margin-top: 4pt;
+	font-size: 7pt;
+	color: var(--grey);
+}
+
+.gram-recipe .nut-total {
+	font-weight: 700;
+	color: var(--black);
 }

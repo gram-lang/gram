@@ -555,13 +555,11 @@ function renderLegacyViews(uri: string, state: DocumentState): void {
 	}
 	if (state.compilation) {
 		try {
-			// The VS Code preview ships the renderer's stylesheet (mirrored in
-			// media/preview.css), so the CSS-only nutrition basis toggle works
-			// there — quantities stay read-only.
-			const html = toHTML(state.compilation, {
-				interactiveNutrition: true,
-				...viewSettingsToRendererOptions(settings),
-			});
+			// Quantities stay read-only in the VS Code preview.
+			const html = toHTML(
+				state.compilation,
+				viewSettingsToRendererOptions(settings),
+			);
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
 			console.error("HTML render error", e);

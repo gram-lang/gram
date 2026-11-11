@@ -9,7 +9,11 @@ import {
 	onUnmounted,
 	type Ref,
 } from "vue";
-import { JSON_TREE_CSS, type Format } from "@gram-lang/renderer";
+import {
+	JSON_TREE_CSS,
+	type Format,
+	attachTooltips,
+} from "@gram-lang/renderer";
 
 import { useI18n } from "./useI18n";
 import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
@@ -43,7 +47,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(e: "scale-update", factor: number): void;
+	(e: "open-scale"): void;
 	(e: "jump", start: number, end: number, uri?: string): void;
 	(e: "update:format", format: Format): void;
 	(e: "print"): void;
@@ -188,6 +192,24 @@ watch(
 );
 
 const previewContainer = ref<HTMLElement | null>(null);
+let detachTooltips: (() => void) | undefined;
+
+onMounted(() => {
+	if (previewContainer.value) {
+		detachTooltips = attachTooltips(previewContainer.value);
+	}
+});
+
+watch(previewContainer, (el) => {
+	detachTooltips?.();
+	if (el) {
+		detachTooltips = attachTooltips(el);
+	}
+});
+
+onUnmounted(() => {
+	detachTooltips?.();
+});
 
 // A new render replaces the HTML: the sections folded open stay open.
 watch(
@@ -222,50 +244,17 @@ watch(
 	{ flush: "pre" },
 );
 
-// biome-ignore lint/correctness/noUnusedVariables: handlePreviewChange is used in the template block below, which Biome's Vue support doesn't see.
-function handlePreviewChange(e: Event) {
-	const target = e.target as HTMLElement;
-	if (target.classList.contains("portions-input")) {
-		const input = target as HTMLInputElement;
-		const newVal = parseFloat(input.value);
-		const interactivePortions = target.closest(".interactive-portions");
-		const basePortions = parseFloat(
-			interactivePortions?.getAttribute("data-base-portions") || "1",
-		);
-		if (!Number.isNaN(newVal) && newVal > 0) {
-			emit("scale-update", newVal / basePortions);
-		}
-	}
-}
-
 // biome-ignore lint/correctness/noUnusedVariables: handlePreviewClick is used in the template block below, which Biome's Vue support doesn't see.
 function handlePreviewClick(e: MouseEvent) {
 	const target = e.target as HTMLElement;
 
-	const scaleBtn = target.closest(".scale-btn");
-	if (scaleBtn) {
-		e.preventDefault();
-		const action = scaleBtn.getAttribute("data-scale-action");
-		if (action === "set-factor") {
-			const val = parseFloat(scaleBtn.getAttribute("data-value") || "1");
-			emit("scale-update", val);
-		} else if (action === "inc-portions" || action === "dec-portions") {
-			const interactivePortions = target.closest(".interactive-portions");
-			const basePortions = parseFloat(
-				interactivePortions?.getAttribute("data-base-portions") || "1",
-			);
-			const inputEl = interactivePortions?.querySelector(
-				".portions-input",
-			) as HTMLInputElement | null;
-			const currentPortions = inputEl
-				? parseFloat(inputEl.value)
-				: basePortions;
-			const newPortions =
-				action === "inc-portions" ? currentPortions + 1 : currentPortions - 1;
-			if (newPortions > 0) {
-				emit("scale-update", newPortions / basePortions);
-			}
-		}
+	// The portions of the recipe view: the playground sets them in its
+	// "Portions & Scale" settings, which a click on them (or on the pencil
+	// the `can-edit-portions` class shows beside them) opens. The view
+	// itself shows them only, so an editor showing the same HTML loses
+	// nothing.
+	if (target.closest(".gram-recipe .hero-portions")) {
+		emit("open-scale");
 		return;
 	}
 
@@ -402,8 +391,7 @@ function handlePreviewClick(e: MouseEvent) {
           v-else
           ref="previewContainer"
           @click="handlePreviewClick"
-          @change="handlePreviewChange"
-          class="output-preview gram-preview vp-doc show-macros"
+          class="output-preview gram-preview vp-doc show-macros can-edit-portions"
           v-html="content"
         ></div>
       </template>

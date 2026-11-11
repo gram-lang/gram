@@ -90,6 +90,7 @@ export {
 export { toMarkdown } from "./views/recipe/markdown";
 export type { CommentsMode } from "./types";
 export { toHTML } from "./views/recipe/html";
+export { attachTooltips, TOOLTIP_SCRIPT } from "./shared/tooltip";
 export { toPrintHTML } from "./views/recipe/print";
 export { DEFAULT_TEXT_WIDTH, toText } from "./views/recipe/text";
 export { describeRunSheet } from "./views/run-sheet/model";

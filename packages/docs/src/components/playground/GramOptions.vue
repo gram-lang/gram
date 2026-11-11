@@ -23,6 +23,9 @@ const props = defineProps<{
 	shoppingList?: ShoppingItem[];
 	availableImports?: { uri: string; specifier: string; binding: string }[];
 	stockedUris?: Set<string>;
+	/** The portions of the recipe now, and as written: `null` when it declares none. */
+	portions?: number | null;
+	basePortions?: number | null;
 	scaleFactorString?: string;
 	scaleTargetId: string | null;
 	scaleTargetQty: number | null;
@@ -100,6 +103,8 @@ function toggleSection(sec: string) {
     <ScaleSection
       :open="openSections.scale"
       :shopping-list="props.shoppingList"
+      :portions="props.portions ?? null"
+      :base-portions="props.basePortions ?? null"
       :scale-factor-string="props.scaleFactorString"
       :scale-target-id="props.scaleTargetId"
       :scale-target-qty="props.scaleTargetQty"

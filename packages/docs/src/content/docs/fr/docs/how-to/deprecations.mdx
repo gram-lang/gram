@@ -18,6 +18,7 @@ Cette page répertorie l'ensemble des éléments dépréciés dans Gram, organis
 | Rendu d'un diagramme de Gantt, commande VS Code ou notifications du serveur de langage | Voir [Remplacement du diagramme de Gantt et de ses composants](#remplacement-du-diagramme-de-gantt-et-de-ses-composants). |
 | Développement d'un client d'éditeur pour le serveur de langage | Voir [Notification d'aperçu du serveur de langage](#notification-daperçu-du-serveur-de-langage). |
 | Intégration programmatique de `@gram-lang/kitchen` ou `@gram-lang/analyzer` | Consultez [Champs du JSON compilé](#champs-du-json-compilé), [`calculatePreparationTime`](#la-fonction-calculatepreparationtime) et [Compatibilité avec les versions antérieures](#compatibilité-avec-les-versions-antérieures). |
+| Rendu de la recette HTML avec les options de `toHTML()` (`@gram-lang/renderer`) | Consultez [L'option `interactiveNutrition`](#loption-interactivenutrition) et [L'option `interactiveScaling`](#loption-interactivescaling). |
 
 Pour vérifier l'état de votre code applicatif, reportez-vous à la section [Identifier les usages dépréciés dans votre code](#identifier-les-usages-dépréciés-dans-votre-code).
 
@@ -199,6 +200,40 @@ Le playground présente désormais les vues du moteur de rendu sous forme d'ongl
 | `playground.views.preview`, `runSheet`, `ast`, `json`, `jsonTree` | `renderer.outputs[id]`, avec les identifiants de sortie `recipe`, `runSheet`, `ast`, `json` et `json-tree` |
 | `playground.views.markdown` | `renderer.formats.markdown` (le Markdown est un format de vue, pas une vue) |
 | `playground.viewLabel` | `playground.output.views` (les onglets) et `playground.output.inspect` (le menu des inspecteurs) |
+
+### L'option `interactiveNutrition`
+
+<Since v="1.4.0" type="deprecated" />
+
+**Déprécié :** l'option `interactiveNutrition` de `toHTML()` (`@gram-lang/renderer`). **Remplacement :** aucun, il suffit de la retirer.
+
+La recette HTML présente désormais sa nutrition sous forme de tableau, toutes les bases côte à côte (par portion, pour 100 g) et la recette entière en dessous : il n'y a plus de sélecteur de base à activer. L'option reste acceptée, sans effet, jusqu'à la 2.0.0. Pour n'afficher qu'une base, utilisez `nutritionBasis`.
+
+### L'option `interactiveScaling`
+
+<Since v="1.4.0" type="deprecated" />
+
+**Déprécié :** l'option `interactiveScaling` de `toHTML()` (`@gram-lang/renderer`), ainsi que les textes `decreasePortions`, `increasePortions` et `editPortions` de `@gram-lang/i18n` qui l'accompagnent. **Remplacement :** mettre la recette à l'échelle avant de l'afficher.
+
+L'option dessine un sélecteur de portions (− 4 +) dans l'en-tête de la recette HTML. Comme la vue n'embarque aucun script, ses boutons ne marchent que si la page qui l'accueille s'en charge : dans un fichier exporté ou l'aperçu d'un éditeur, ils ne feraient rien. La vue se contente désormais de montrer les portions, et le facteur d'une recette mise à l'échelle (`6 portions ×1,5`) ; les régler revient à la surface, comme pour tous les autres réglages.
+
+Avant :
+
+```typescript
+const html = toHTML(recipe, { interactiveScaling: true });
+// ...puis écouter les boutons data-scale-action du sélecteur
+```
+
+Après :
+
+```typescript
+import { compile, applyScale } from '@gram-lang/kitchen';
+
+const recipe = applyScale(compile(ast), 6 / 4); // de 4 à 6 portions
+const html = toHTML(recipe); // affiche « 6 portions ×1,5 »
+```
+
+L'option continue de fonctionner jusqu'à la 2.0.0. Dans le playground, les portions se règlent dans les réglages **Portions & échelle**, qu'un clic sur les portions de la recette ouvre directement.
 
 ### Compatibilité avec les versions antérieures
 

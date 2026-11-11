@@ -169,3 +169,18 @@ export function unitKey(
 			return same;
 	}
 }
+
+/**
+ * The overall scale, as the percentage field writes it ("150", "37.5"), that
+ * turns the recipe's own portions into `portions`. `null` for a count that is
+ * not a positive number, or a recipe that declares no portions.
+ */
+export function factorForPortions(
+	portions: number,
+	base: number | null | undefined,
+): string | null {
+	if (!base || base <= 0 || !Number.isFinite(portions) || portions <= 0) {
+		return null;
+	}
+	return ((portions / base) * 100).toFixed(2).replace(/\.?0+$/, "");
+}

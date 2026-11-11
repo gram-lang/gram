@@ -13,6 +13,7 @@
 - The JSON tree folds with the keyboard too
 - A run sheet with nothing to schedule now says so instead of staying blank
 - The "Schedule & Service" settings now say what they change: mostly the run sheet, and in the recipe only the total and idle times, with a link that opens the run sheet
+- The "Portions & Scale" settings have a Portions field: type how many portions you want and every quantity follows. A click on the portions of the recipe opens these settings, which replace the small stepper the recipe used to show
 
 **Deprecated**
 

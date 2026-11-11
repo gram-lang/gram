@@ -159,7 +159,7 @@ export const VIEW_SETTINGS: Descriptors<ViewSettings> = {
 		"view",
 		NUTRITION_BASES,
 		"auto",
-		"Which nutrition basis is shown: per portion when the recipe declares portions, otherwise the whole recipe; or always the whole recipe, per portion, per 100 g.",
+		"Which nutrition basis is shown: per 100 g and per portion side by side, the whole recipe under them; or only the whole recipe, per portion, per 100 g.",
 	),
 	bakersMathOnly: flag(
 		"bakersMathOnly",
@@ -246,7 +246,7 @@ export const DEFAULT_RECIPE_SETTINGS: Readonly<RecipeSettings> = Object.freeze(
 /**
  * The renderer options that carry `settings`. `nutritionBasis: "auto"` is left
  * out: the renderer reads a missing basis as `auto` anyway, and only a basis
- * actually pinned replaces the reader's toggle of an interactive view.
+ * actually pinned narrows the nutrition table to that one column.
  */
 export function viewSettingsToRendererOptions(
 	settings: ViewSettings,

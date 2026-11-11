@@ -16,20 +16,6 @@ pre-commit:
           exit 1;
         }
 
-    vscode-webview-sync:
-      glob:
-        - "packages/renderer/src/**"
-        - "packages/renderer/gram.css"
-        - "packages/vscode-extension/src/**"
-        - "packages/vscode-extension/build.cjs"
-      run: |
-        bunx turbo run build --filter=gram-lang
-        git diff --exit-code packages/vscode-extension/media/preview.css packages/vscode-extension/media/json-tree.css || {
-          echo "packages/renderer or packages/vscode-extension changed but the committed build artifacts (media/preview.css, media/json-tree.css) weren't regenerated/staged.";
-          echo "Run 'bunx turbo run build --filter=gram-lang' and 'git add packages/vscode-extension/media/', then commit again.";
-          exit 1;
-        }
-
     changeset-reminder:
       glob: "packages/{analyzer,cli,format,i18n,kitchen,language-server,parser,renderer}/src/**"
       run: |

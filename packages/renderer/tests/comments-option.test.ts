@@ -59,6 +59,20 @@ describe("the comments option, in the recipe views", () => {
 		toHTML(compiled, { comments: "hide" });
 		expect(JSON.stringify(compiled.sections)).toBe(before);
 	});
+
+	it("leaves a blank line between the last footnote comment and ## Nutrition in markdown", () => {
+		const withNutrition = {
+			...compiled,
+			metrics: {
+				...compiled.metrics,
+				nutrition: {
+					total: { calories: 100, protein: 2, carbs: 20, fat: 1 },
+				},
+			},
+		} as any;
+		const md = toMarkdown(withNutrition);
+		expect(md).toMatch(/\[\^note-\d+\]:[^\n]+\n\n## Nutrition/);
+	});
 });
 
 describe("the comments option, in the run sheet", () => {

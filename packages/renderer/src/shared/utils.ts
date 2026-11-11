@@ -248,6 +248,35 @@ export function groupMultiUnitEntries<
 // step's `content` array — @gram-lang/kitchen's processText() never wraps
 // text in a `{ type: 'text' }` object (that shape only exists for Timer/
 // Temperature *quantities*, a different part of the tree).
+/**
+ * Drops all the whitespace written before a comment (`fouetter. // note`):
+ * that space belongs to the syntax, not the sentence, and browsers always
+ * allow a line break after a space — even before a word joiner — so a
+ * footnote mark after it could start a line on its own.
+ *
+ * The whitespace can be spread over several text tokens: once a view has
+ * taken a declaration out of the step (`fouetter. ->&pâte // note` leaves
+ * `". "`, `" "`, comment), so this walks back from each comment through the
+ * text tokens until it meets real content (a word, or an element). It only
+ * ever removes whitespace, so it holds for any language and any content.
+ * Call it on the tokens the view will actually join, after any filtering.
+ */
+export function trimBeforeComments(tokens: StepToken[]): StepToken[] {
+	const out = [...tokens];
+	for (let i = 0; i < out.length; i++) {
+		const token = out[i];
+		if (typeof token !== "object" || token?.type !== "comment") continue;
+		for (let j = i - 1; j >= 0; j--) {
+			const prev = out[j];
+			if (typeof prev !== "string") break;
+			const trimmed = prev.replace(/\s+$/u, "");
+			out[j] = trimmed;
+			if (trimmed !== "") break;
+		}
+	}
+	return out;
+}
+
 function leadingChar(token: StepToken): string {
 	return typeof token === "string" ? token.charAt(0) : "";
 }
@@ -263,18 +292,94 @@ export function joinStepTokens(
 	tokens: StepToken[],
 	renderToken: (token: StepToken) => string,
 	isSpaceable: (token: StepToken) => boolean,
+	glue?: (html: string) => string,
 ): string {
-	return tokens
-		.map((token, i) => {
-			let str = renderToken(token);
-			if (isSpaceable(token)) {
-				const next = tokens[i + 1];
-				if (next !== undefined) {
-					const nextChar = leadingChar(next);
-					if (nextChar && !/^[.,!?:;)\s]/.test(nextChar)) str += " ";
-				}
+	const parts = tokens.map((token, i) => {
+		let str = renderToken(token);
+		if (isSpaceable(token)) {
+			const next = tokens[i + 1];
+			if (next !== undefined) {
+				const nextChar = leadingChar(next);
+				if (nextChar && !/^[.,!?:;)\s]/.test(nextChar)) str += " ";
 			}
-			return str;
-		})
-		.join("");
+		}
+		return str;
+	});
+	if (!glue) return parts.join("");
+	return glueElements(
+		parts
+			.map((str, i) => ({ str, element: typeof tokens[i] !== "string" }))
+			.filter((p) => p.str !== ""),
+		glue,
+	);
+}
+
+/** The run of characters that sticks to its neighbour: up to the first space. */
+const LEADING_RUN = /^\S*/u;
+const TRAILING_RUN = /\S*$/u;
+
+/**
+ * An element of a step drawn as a box (a timer, a temperature: an inline
+ * block for the browser) lets a line break right after or before it, even
+ * against punctuation: the full stop of "for at least [30 min]." could start
+ * a line on its own, and so could the "(" before "[30 min])". A word joiner
+ * (U+2060) does not prevent it next to a box; `white-space: nowrap` does. So
+ * each element written against a neighbour with no space between them is
+ * wrapped, with what touches it (the punctuation, a footnote mark), by
+ * `glue`: an element whose class sets it nowrap while its children wrap as
+ * usual (`.gram-nobr`), so a long ingredient still breaks inside itself.
+ */
+function glueElements(
+	items: { str: string; element: boolean }[],
+	glue: (html: string) => string,
+): string {
+	// Whether nothing may break between item `i` and the next one.
+	const glued = (i: number): boolean => {
+		const a = items[i];
+		const b = items[i + 1];
+		if (!a || !b || !(a.element || b.element)) return false;
+		return !/\s$/u.test(a.str) && !/^\s/u.test(b.str);
+	};
+
+	let out = "";
+	let run = "";
+	items.forEach((item, i) => {
+		const withPrev = i > 0 && glued(i - 1);
+		const withNext = glued(i);
+		if (item.element) {
+			if (!withPrev && !withNext) {
+				out += item.str;
+				return;
+			}
+			run += item.str;
+			if (!withNext) {
+				out += glue(run);
+				run = "";
+			}
+			return;
+		}
+		let text = item.str;
+		if (withPrev) {
+			const head = text.match(LEADING_RUN)?.[0] ?? "";
+			run += head;
+			text = text.slice(head.length);
+			// A word between two elements, touching both: one run.
+			if (text === "" && withNext) return;
+			out += glue(run);
+			run = "";
+		}
+		if (withNext) {
+			const tail = text.match(TRAILING_RUN)?.[0] ?? "";
+			out += text.slice(0, text.length - tail.length);
+			run = tail;
+		} else {
+			out += text;
+		}
+	});
+	return out + run;
+}
+
+/** The `glue` of the HTML views: see `glueElements`. */
+export function nobr(html: string): string {
+	return `<span class="gram-nobr">${html}</span>`;
 }

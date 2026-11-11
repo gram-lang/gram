@@ -4,7 +4,7 @@ import { compile } from "@gram-lang/kitchen";
 import { analyze, NUTRIENTS } from "@gram-lang/analyzer";
 import type { IngredientData } from "@gram-lang/analyzer";
 import { getDictionary } from "@gram-lang/i18n";
-import { toHTML, toMarkdown, toPrintHTML } from "../src/index";
+import { toHTML, toMarkdown, toPrintHTML, toText } from "../src/index";
 import type { NutritionBasis } from "../src/types";
 
 const database: Record<string, IngredientData> = {
@@ -31,18 +31,39 @@ const portioned = analyzed("portions: 4\n");
 const unportioned = analyzed("");
 
 describe("nutritionBasis", () => {
-	it("defaults to per portion when the recipe declares one", () => {
-		// 728 kcal over 4 portions.
-		expect(toMarkdown(portioned)).toContain("182");
-		expect(toMarkdown(portioned)).toContain("Per portion");
+	it("shows per 100 g then per portion by default, in every format, as the HTML table does", () => {
+		// 364 kcal per 100 g; 728 kcal over 4 portions.
+		for (const out of [toMarkdown(portioned), toText(portioned)]) {
+			expect(out).toContain("Per 100 g");
+			expect(out.indexOf("Per 100 g")).toBeLessThan(out.indexOf("Per portion"));
+			expect(out).toContain("364 kcal");
+			expect(out).toContain("182 kcal");
+			expect(out).toContain("%RI*");
+			expect(out).toContain("Whole recipe: 3046 kJ / 728 kcal");
+		}
+		expect(toMarkdown(portioned)).toContain(
+			"| **Energy** | 1523 kJ / 364 kcal | 761 kJ / 182 kcal | 9% |",
+		);
 	});
 
-	it("defaults to the whole recipe otherwise, not to per-100 g", () => {
-		// Per-100 g is available here, but switching unportioned recipes onto it
-		// by default would silently change every existing output.
-		const md = toMarkdown(unportioned);
-		expect(md).toContain("Whole recipe");
-		expect(md).toContain("728");
+	it("shows per 100 g and the whole recipe under it when there are no portions", () => {
+		for (const out of [toMarkdown(unportioned), toText(unportioned)]) {
+			expect(out).toContain("Per 100 g");
+			expect(out).not.toContain("Per portion");
+			expect(out).not.toContain("%RI");
+			expect(out).toContain("Whole recipe: 3046 kJ / 728 kcal");
+		}
+	});
+
+	it("renders the pinned basis alone, in every format", () => {
+		for (const out of [
+			toMarkdown(portioned, { nutritionBasis: "perPortion" }),
+			toText(portioned, { nutritionBasis: "perPortion" }),
+		]) {
+			expect(out).toContain("Per portion");
+			expect(out).not.toContain("Per 100 g");
+			expect(out).toContain("Whole recipe: 3046 kJ / 728 kcal");
+		}
 	});
 
 	it("renders the basis the caller asks for, in every static backend", () => {
@@ -89,46 +110,74 @@ describe("nutritionBasis", () => {
 	});
 });
 
-describe("interactive HTML basis switch", () => {
-	const html = toHTML(portioned, { interactiveNutrition: true });
+describe("HTML nutrition table", () => {
+	const html = toHTML(portioned);
+	const head = (out: string) =>
+		out.slice(out.indexOf("<thead>"), out.indexOf("</thead>"));
+	const pillOf = (out: string) => {
+		const from = out.slice(out.indexOf('class="hero-item hero-nutrition"'));
+		return from.slice(0, from.indexOf("</a>"));
+	};
 
-	it("emits every basis with a radio control and no script", () => {
-		for (const key of ["perPortion", "per100g", "total"]) {
-			expect(html).toContain(`data-basis="${key}"`);
-		}
-		expect(html).toContain('type="radio"');
+	it("shows per 100 g then per portion, side by side, without a switch or a script", () => {
+		const h = head(html);
+		expect(h.indexOf("Per 100 g")).toBeGreaterThan(-1);
+		expect(h.indexOf("Per 100 g")).toBeLessThan(h.indexOf("Per portion"));
+		expect(html).not.toContain('type="radio"');
 		expect(html).not.toContain("<script");
 	});
 
-	it("pre-selects the basis a static render would have shown", () => {
-		const perPortionRadio = html.slice(
-			html.indexOf('id="nut-basis-recipe-perPortion"'),
+	it("starts with the energy in kcal and kJ, and puts the whole recipe under the table", () => {
+		// Flour is 364 kcal per 100 g; 728 kcal over 4 portions.
+		expect(html).toContain(
+			'<tr class="nut-energy"><th scope="row">Energy</th><td><span class="nut-kcal">364 kcal</span><span class="nut-kj">1523 kJ</span></td><td><span class="nut-kcal">182 kcal</span><span class="nut-kj">761 kJ</span></td><td class="nut-ri">9%</td></tr>',
 		);
-		expect(perPortionRadio.slice(0, 200)).toContain("checked");
-		expect(html).not.toContain('data-basis="per100g" checked');
+		expect(head(html)).not.toContain("Whole recipe");
+		expect(html).toContain("Whole recipe: 3046 kJ / 728 kcal");
 	});
 
-	it("scopes the radio group to renderId so two recipes can share a page", () => {
-		const a = toHTML(portioned, { interactiveNutrition: true, renderId: "a" });
-		expect(a).toContain('name="nut-basis-a"');
+	it("adds the share of the reference intake of a portion", () => {
+		// 50 g of flour per portion: 0.5 g of fat, 0.7% of 70 g → 1%.
+		expect(head(html)).toContain("%RI");
+		expect(html).toMatch(
+			/<th scope="row">Fat<\/th><td>1 g<\/td><td>0\.5 g<\/td><td class="nut-ri">1%<\/td>/,
+		);
+		expect(head(toHTML(unportioned))).not.toContain("%RI");
 	});
 
-	it("tags the default grid so a panel without a checked radio still shows data", () => {
-		// Two panels on one page without distinct renderIds share a radio group,
-		// so the browser keeps only the last `checked`. The CSS falls back to
-		// [data-default] — without the tag the other panel renders empty.
-		expect(html).toContain('data-basis="perPortion" data-default');
-		expect((html.match(/data-default/g) ?? []).length).toBe(1);
+	it("shows salt, not sodium", () => {
+		expect(html).toContain('<th scope="row">Salt</th>');
+		expect(html).not.toContain(">Sodium<");
 	});
 
-	it("renders a single basis when the caller pins one", () => {
-		const pinned = toHTML(portioned, {
-			interactiveNutrition: true,
-			nutritionBasis: "total",
-		});
-		expect(pinned).not.toContain('type="radio"');
-		expect(pinned).toContain('data-basis="total"');
-		expect(pinned).not.toContain('data-basis="per100g"');
+	it("renders the pinned basis alone", () => {
+		const pinned = toHTML(portioned, { nutritionBasis: "total" });
+		expect(head(pinned)).toContain("Whole recipe");
+		expect(head(pinned)).not.toContain("Per portion");
+		expect(head(pinned)).not.toContain("%RI");
+		expect(pillOf(pinned)).toContain("728 kcal");
+	});
+
+	it("links the hero bar's pill to the table", () => {
+		const a = toHTML(portioned, { renderId: "a" });
+		expect(a).toContain('id="a-nutrition"');
+		expect(a).toContain('href="#a-nutrition"');
+		expect(pillOf(a)).toContain("182 kcal");
+		expect(pillOf(a)).toContain("per portion");
+		expect(pillOf(a)).not.toContain("data-tooltip-html");
+	});
+
+	it("shows the pill per 100 g, not for the whole recipe, when there are no portions", () => {
+		expect(pillOf(toHTML(unportioned))).toContain("364 kcal");
+		expect(pillOf(toHTML(unportioned))).toContain("per 100 g");
+	});
+
+	it("shows no pill when there is nothing to total", () => {
+		const unknown = analyze(
+			compile(getAST("## S\n\nAdd @salt{5g}.\n")),
+			{},
+		).result;
+		expect(toHTML(unknown)).not.toContain("hero-nutrition");
 	});
 });
 
@@ -148,20 +197,10 @@ describe("nutrient rows", () => {
 		expect(toMarkdown(unportioned)).toContain("of which saturates");
 	});
 
-	it("nests sub-macros inside their parent's card in HTML", () => {
-		// A card grid reads badly flat: "of which saturates" in a cell the size
-		// of Protein looks like a nutrient in its own right.
-		const html = toHTML(portioned);
-		const fatCard = html.slice(
-			html.indexOf(">Fat<"),
-			html.indexOf(">Carbohydrates<"),
+	it("nests sub-macros under their parent in the HTML table", () => {
+		expect(toHTML(portioned)).toContain(
+			'<tr class="is-nested"><th scope="row">of which saturates</th>',
 		);
-		expect(fatCard).toContain("nut-item-children");
-		expect(fatCard).toContain("of which saturates");
-		// One card per top-level nutrient, children not counted.
-		const cards = (html.match(/class="nut-item"/g) ?? []).length;
-		// calories, fat, carbs, protein, sodium — sat_fat and sugar are folded in.
-		expect(cards).toBe(5);
 	});
 
 	it("promotes a sub-macro whose parent is absent rather than dropping it", () => {

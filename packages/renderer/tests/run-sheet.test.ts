@@ -101,7 +101,7 @@ describe("the model of the run sheet", () => {
 
 	it("opens with the title, when it is served for how many, and the totals", () => {
 		expect(model.title).toBe("Run sheet — Country bread");
-		expect(model.subtitle).toBe("For Sunday, October 11 at 13:00 · 4 servings");
+		expect(model.subtitle).toBe("For Sunday, October 11 at 13:00 · 4 portions");
 		expect(model.summary).toBe(
 			"2 days · 2 visits to the kitchen · 55m of work in all",
 		);
@@ -208,7 +208,7 @@ describe("a plan of several days", () => {
 			runSheet(entremets.schedule, { title: "Entremets" }),
 			entremets,
 		);
-		expect(relative.subtitle).toBe("6 servings");
+		expect(relative.subtitle).toBe("6 portions");
 		expect(relative.schedule.map((r) => r.day).filter(Boolean)).toEqual([
 			"D-2",
 			"D-1",
@@ -288,7 +288,7 @@ describe("runSheetToText", () => {
 	it("starts with the schedule of the days", () => {
 		const lines = text.split("\n");
 		expect(lines[0]).toBe("Run sheet — Country bread");
-		expect(lines[1]).toBe("For Sunday, October 11 at 13:00 · 4 servings");
+		expect(lines[1]).toBe("For Sunday, October 11 at 13:00 · 4 portions");
 		expect(text).toMatch(/SAT 10\s+▮ 21:40 – 22:00\s+Dough/);
 		expect(text).toMatch(/★ 13:00\s+Serve/);
 	});
@@ -315,7 +315,7 @@ describe("runSheetToText", () => {
 	it("speaks French, dates included", () => {
 		const fr = runSheetToText(sheet, compiled, { lang: "fr" });
 		expect(fr).toContain("Plan de marche — Country bread");
-		expect(fr).toContain("Pour le dimanche 11 octobre à 13:00 · 4 parts");
+		expect(fr).toContain("Pour le dimanche 11 octobre à 13:00 · 4 portions");
 		expect(fr).toContain("SAMEDI 10 OCTOBRE");
 		expect(
 			runSheetToText(planIn(compiled, "perDay"), compiled, { lang: "fr" }),
@@ -442,7 +442,7 @@ describe("runSheetToHTML", () => {
 			'<span class="day-heading">Saturday, October 10</span>',
 		);
 		expect(html).toContain(
-			'<input type="checkbox"><span>flour <span class="kit-qty">500 g</span></span>',
+			'<input type="checkbox"><span><span class="kit-name">flour</span><span class="kit-qty">500 g</span></span>',
 		);
 		expect(html).toContain('<li class="schedule-group">');
 		expect(html).toContain('class="box-123 box-step-3 run-sheet-leaving"');
@@ -984,13 +984,13 @@ describe("the weight and the cookware of the mise en place", () => {
 		const sheet = planIn(c, "perDay");
 		const html = runSheetToHTML(sheet, c);
 		expect(html).toContain(
-			'<li class="kit-cookware has-qty"><label><input type="checkbox"><span>tray <span class="kit-detail">(large)</span> <span class="kit-qty">×3</span></span></label></li>',
+			'<li class="kit-cookware has-qty"><label><input type="checkbox"><span><span class="kit-name">tray <span class="kit-detail">(large)</span></span><span class="kit-qty">×3</span></span></label></li>',
 		);
 		expect(runSheetToText(sheet, c)).toContain("[ ] tray ×3 (large)");
 		// A tool with nothing to add stays a name alone.
 		const bare = compile(getAST("## A\n\nHeat the #pan{}.\n"));
 		expect(runSheetToHTML(planOf(bare), bare)).toContain(
-			'<li class="kit-cookware"><label><input type="checkbox"><span>pan</span></label></li>',
+			'<li class="kit-cookware"><label><input type="checkbox"><span><span class="kit-name">pan</span></span></label></li>',
 		);
 	});
 });

@@ -165,13 +165,13 @@
             "per100g"
           ],
           "enumDescriptions": [
-            "The reader picks the basis in the preview, starting per portion when the recipe declares portions, otherwise on the whole recipe.",
+            "Per 100 g and per portion side by side, with the whole recipe under them.",
             "Always the whole recipe.",
             "Always per portion (the whole recipe when the recipe declares no portions).",
             "Always per 100 g."
           ],
           "default": "auto",
-          "description": "Which nutrition basis the preview shows. With auto, the preview lets you switch between them; any other value pins one."
+          "description": "Which nutrition basis the preview shows. With auto, per 100 g and per portion side by side; any other value pins one."
         },
         "gram.bakersMathOnly": {
           "type": "boolean",

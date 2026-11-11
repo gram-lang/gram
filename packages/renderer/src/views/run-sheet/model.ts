@@ -5,7 +5,7 @@ import type {
 	RunSheet,
 } from "@gram-lang/scheduler";
 import { workingDayLabel } from "../../shared/mise-en-place";
-import { servingsLabel } from "../../shared/servings";
+import { portionsLabel } from "../../shared/portions";
 import { formatDuration } from "../../shared/utils";
 import type { CommentsMode, RenderableCompilationResult } from "../../types";
 import { longDate, shortDay } from "./dates";
@@ -130,7 +130,7 @@ export interface RunSheetModel {
 	title: string;
 	/** Where the mise en place goes: the run sheet is laid out accordingly. */
 	miseEnPlace: MiseEnPlaceMode;
-	/** "For Saturday, October 17 at 20:00 · 6 servings" */
+	/** "For Saturday, October 17 at 20:00 · 6 portions" */
 	subtitle: string;
 	/** "3 days · 4 visits to the kitchen · 1h 40m of work in all" */
 	summary: string;
@@ -238,7 +238,7 @@ function describeSummary(pass: VisitPass) {
 					time: sheet.serveAt.slice(11, 16),
 				})
 			: undefined,
-		servingsLabel(data, lang),
+		portionsLabel(data, lang),
 	]
 		.filter(Boolean)
 		.join(" · ");

@@ -1,0 +1,805 @@
+/*
+ * The run sheet on screen (`runSheetToHTML`, the `html` format of the run
+ * sheet view): the days at a glance, then a block per day and per visit to the
+ * kitchen.
+ *
+ * Every rule is scoped to the view's root, `<section class="gram-run-sheet">`:
+ * nothing here reaches another view, and nothing of another view reaches here.
+ * The tokens (colors, fonts) come from `shared/tokens.css`; the print layout is
+ * `print.css`, next to this file.
+ *
+ * A worksheet: plain boxes with small corners (the three numbers are the only
+ * circles), and the text color for contrast rather than hues, so the sheet
+ * reads the same on screen and on paper, light or dark.
+ */
+
+@scope (.gram-run-sheet) {
+	:scope {
+		max-width: 51rem;
+	}
+
+	ul,
+	ol {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	h4 {
+		margin: 0;
+		font-family: var(--gram-font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	/* ─── Header ───────────────────────────────────────────────────────────── */
+
+	.run-sheet-header h2 {
+		margin: 0 0 0.35rem;
+		font-size: 1.85rem;
+		font-weight: 800;
+		line-height: 1.15;
+		text-wrap: balance;
+		color: var(--color-text);
+	}
+
+	.run-sheet-subtitle {
+		margin: 0 0 0.85rem;
+		font-size: 0.95rem;
+		color: var(--color-text-muted);
+	}
+
+	.run-sheet-summary {
+		margin: 0 0 1.25rem;
+		padding: 0.45rem 0.75rem;
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		background: var(--color-bg-subtle);
+		font-family: var(--gram-font-mono);
+		font-size: 0.82rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	/* ─── The days at a glance ─────────────────────────────────────────────── */
+
+	.run-sheet-schedule {
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+	}
+
+	.schedule-group {
+		display: grid;
+		grid-template-columns: 6rem minmax(0, 1fr);
+		margin: 0;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.schedule-group:first-child {
+		border-top: 0;
+	}
+
+	.schedule-day {
+		padding: 0.85rem;
+		border-right: 1px solid var(--color-border);
+		background: var(--color-bg-subtle);
+		font-family: var(--gram-font-mono);
+		font-size: 1.05rem;
+		font-weight: 800;
+		line-height: 1.2;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.schedule-day small {
+		display: block;
+		margin-top: 0.15rem;
+		font-size: 0.75rem;
+		font-weight: 400;
+		text-transform: none;
+		color: var(--color-text-muted);
+	}
+
+	.schedule-rows {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		padding: 0.4rem 0.85rem;
+	}
+
+	.schedule-row {
+		display: grid;
+		grid-template-columns: 8.5rem minmax(0, 1fr);
+		column-gap: 0.75rem;
+		align-items: baseline;
+		padding: 0.35rem 0;
+		border-bottom: 1px dotted var(--color-border);
+		font-size: 0.88rem;
+	}
+
+	.schedule-row:last-child {
+		border-bottom: 0;
+	}
+
+	.schedule-time {
+		font-family: var(--gram-font-mono);
+		font-size: 0.82rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		color: var(--color-text-muted);
+	}
+
+	/* A visit to the kitchen: a square before its time, its text in bold. */
+	.schedule-visit .schedule-time::before {
+		content: "■";
+		display: inline-block;
+		margin-right: 0.5em;
+		font-size: 0.75em;
+		color: var(--color-text);
+	}
+
+	.schedule-visit .schedule-text {
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	/* What goes on without the cook, between two visits. */
+	.schedule-thread {
+		font-style: italic;
+		color: var(--color-text-muted);
+	}
+
+	.schedule-line {
+		display: inline-block;
+		min-height: 1.2em;
+		margin-left: 0.3em;
+		border-left: 2px dotted var(--color-text-muted);
+	}
+
+	/* Serving: a star, in capitals. */
+	.schedule-serve .schedule-time::before {
+		content: "★";
+		margin-right: 0.4em;
+		font-size: 0.85em;
+		color: var(--color-text);
+	}
+
+	.schedule-serve .schedule-text {
+		font-family: var(--gram-font-mono);
+		font-weight: 800;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.run-sheet-legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.2rem 1.25rem;
+		margin: 0.65rem 0 0;
+		padding: 0 0.25rem;
+		font-family: var(--gram-font-mono);
+		font-size: 0.72rem;
+		color: var(--color-text-muted);
+	}
+
+	.legend-cook::before {
+		content: "■";
+		margin-right: 0.45em;
+		font-size: 0.8em;
+		color: var(--color-text);
+	}
+
+	.legend-thread::before {
+		content: "┊";
+		margin-right: 0.45em;
+		font-weight: bold;
+		color: var(--color-text-muted);
+	}
+
+	/* ─── One day: its visits, each with what to take out, do, leave going ─── */
+
+	.run-sheet-day {
+		margin-top: 2.5rem;
+		background: var(--color-bg);
+		break-inside: avoid;
+	}
+
+	.run-sheet-day h3 {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 0.5rem 1rem;
+		margin: 0 0 1.5rem;
+		padding-bottom: 0.6rem;
+		border-bottom: 2px solid var(--color-text);
+		font-size: 1.25rem;
+		font-weight: 600;
+	}
+
+	.day-heading {
+		font-size: 1.35rem;
+		font-weight: 800;
+		color: var(--color-text);
+	}
+
+	.run-sheet-day .day-slot {
+		text-transform: none;
+		font-family: var(--gram-font-mono);
+		font-size: 0.82rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--color-text-muted);
+	}
+
+	.run-sheet-notice {
+		margin: 0 0 1rem;
+		font-size: 0.88rem;
+		font-weight: 600;
+	}
+
+	.run-sheet-notice::before {
+		content: "⚠ ";
+	}
+
+	.run-sheet-visit {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.run-sheet-visit + .run-sheet-visit {
+		margin-top: 1.5rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.run-sheet-visit-slot {
+		margin: 0;
+		font-family: var(--gram-font-mono);
+		font-size: 0.78rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.run-sheet-margin {
+		margin: 0;
+		font-size: 0.88rem;
+		color: var(--color-text-muted);
+	}
+
+	/* ─── The three boxes of a visit and their numbered titles ─────────────── */
+
+	.box-123,
+	.section-station-card {
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		background: var(--color-bg);
+	}
+
+	.box-123 {
+		padding: 0.85rem 1rem;
+	}
+
+	.step-123-title,
+	.step-123-sub-title {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0 0 0.75rem;
+		font-family: var(--gram-font-mono);
+		font-weight: 800;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.step-123-title {
+		font-size: 0.82rem;
+	}
+
+	.step-123-sub-title {
+		margin-bottom: 1rem;
+		font-size: 0.75rem;
+	}
+
+	.badge-num,
+	.badge-num-sm {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		border-radius: 50%;
+		background: var(--color-text);
+		color: var(--color-bg);
+		font-weight: 800;
+	}
+
+	.badge-num {
+		width: 1.35rem;
+		height: 1.35rem;
+		font-size: 0.75rem;
+	}
+
+	.badge-num-sm {
+		width: 1.15rem;
+		height: 1.15rem;
+		font-size: 0.68rem;
+	}
+
+	/* ─── What to take out ─────────────────────────────────────────────────── */
+
+	.kit-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.kit-group + .kit-group {
+		padding-top: 0.85rem;
+		border-top: 1px dotted var(--color-border);
+	}
+
+	.kit-section-title,
+	.mep-sub-title {
+		font-family: var(--gram-font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.kit-section-title {
+		margin: 0;
+	}
+
+	.mep-sub-title {
+		margin: 0 0 0.4rem;
+	}
+
+	.mep-group:not(:last-child) {
+		margin-bottom: 12px;
+	}
+
+	.mep-group + .mep-group {
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px dotted var(--color-border);
+	}
+
+	/*
+	 * As many columns as the width holds, each at least 300px wide (the recipe
+	 * view's rule): two on a wide sheet, one in a narrow pane, whatever the
+	 * viewport, since the list measures its own box, not the window.
+	 */
+	.kit-list {
+		columns: 300px;
+		column-gap: 2.25rem;
+	}
+
+	.kit-list + .kit-list.kit-tools {
+		margin-top: 0.65rem;
+		padding-top: 0.85rem;
+		border-top: 1px dotted var(--color-border);
+	}
+
+	.kit-list li {
+		display: block;
+		break-inside: avoid;
+		min-width: 0;
+		margin: 0 0 0.35rem;
+		font-size: 0.88rem;
+	}
+
+	.kit-list label {
+		display: flex;
+		align-items: baseline;
+		gap: 0.65rem;
+		width: 100%;
+		min-width: 0;
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.kit-list input[type="checkbox"] {
+		appearance: none;
+		-webkit-appearance: none;
+		position: relative;
+		flex-shrink: 0;
+		width: 12px;
+		height: 12px;
+		margin: 0;
+		border: 1.5px solid var(--color-text);
+		border-radius: 3px;
+		background: transparent;
+		cursor: pointer;
+		transform: translateY(1px);
+	}
+
+	.kit-list input[type="checkbox"]:checked {
+		background: var(--color-text);
+	}
+
+	.kit-list input[type="checkbox"]:checked::after {
+		content: "";
+		position: absolute;
+		top: 1px;
+		left: 3px;
+		width: 3px;
+		height: 6px;
+		border: solid var(--color-bg);
+		border-width: 0 1.5px 1.5px 0;
+		transform: rotate(45deg);
+	}
+
+	/* The name, then the quantity at the right edge; the note on a line of its own. */
+	.kit-list label > span {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: baseline;
+		column-gap: 0.5rem;
+		flex: 1;
+		min-width: 0;
+		color: var(--color-text);
+	}
+
+	.kit-list input[type="checkbox"]:checked ~ span {
+		text-decoration: line-through;
+		color: var(--color-text-muted);
+	}
+
+	/* A long name wraps rather than pushing the quantity out of its column. */
+	.kit-name {
+		grid-column: 1;
+		grid-row: 1;
+		min-width: 0;
+		overflow-wrap: break-word;
+	}
+
+	/* The quantity, pushed to the right edge by a dot leader. */
+	.kit-qty {
+		grid-column: 2 / -1;
+		grid-row: 1;
+		display: flex;
+		align-items: baseline;
+		justify-content: flex-end;
+		gap: 0.5rem;
+		white-space: nowrap;
+		font-family: var(--gram-font-mono);
+		font-size: 0.82rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		color: var(--color-text-muted);
+	}
+
+	/* The preparation, or "in stock": under the name, as in the recipe view. */
+	.kit-note {
+		grid-column: 1 / -1;
+		grid-row: 2;
+		margin-top: 1px;
+		font-size: 0.76rem;
+		font-style: italic;
+		color: var(--color-text-muted);
+		overflow-wrap: break-word;
+	}
+
+	/* Dot leaders from the name to the quantity, and to the edge for a tool with no count. */
+	.kit-qty::before,
+	.kit-tools li:not(.has-qty) label > span::after {
+		content: "";
+		flex: 1;
+		align-self: flex-end;
+		min-width: 0.75rem;
+		margin-bottom: 0.3em;
+		border-bottom: 2px dotted var(--color-border);
+	}
+
+	.kit-tools li:not(.has-qty) label > span::after {
+		grid-column: 2 / -1;
+		grid-row: 1;
+	}
+
+	/* The weight is what the mise en place is weighed on: the quantity as written is smaller, before it. */
+	.kit-mass {
+		font-weight: 700;
+		color: var(--color-text-strong);
+	}
+
+	.kit-orig {
+		font-size: 0.72rem;
+		font-weight: 400;
+	}
+
+	/* The size of a tool, small, right after its name. */
+	.kit-detail {
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	/* ─── One station per section: its title and start, its mise en place and steps ─── */
+
+	.section-station-card,
+	.section-exec-card {
+		overflow: hidden;
+	}
+
+	.section-exec-card {
+		border-radius: 3px;
+	}
+
+	.section-exec-card + .section-exec-card {
+		margin-top: 0.65rem;
+	}
+
+	.station-header,
+	.section-exec-header {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.85rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.sec-title {
+		font-size: 1rem;
+		font-weight: 800;
+		color: var(--color-text);
+	}
+
+	.sec-cont {
+		font-weight: 600;
+		text-transform: none;
+		color: var(--color-text-muted);
+	}
+
+	.sec-origin {
+		margin-left: 0.6rem;
+		font-family: var(--gram-font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.sec-time-pill {
+		padding: 0.2rem 0.55rem;
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		background: var(--color-bg);
+		font-family: var(--gram-font-mono);
+		font-size: 0.78rem;
+		color: var(--color-text);
+	}
+
+	.station-sub-block {
+		padding: 0.75rem 0.85rem;
+	}
+
+	.station-sub-block + .station-sub-block {
+		border-top: 1px dotted var(--color-border);
+	}
+
+	/* ─── The steps: numbered as in the recipe, no check boxes ─────────────── */
+
+	.exec-steps-list {
+		margin: 0;
+		padding: 0 0 0 1.4rem;
+		list-style: decimal;
+	}
+
+	.section-exec-card > .exec-steps-list {
+		padding: 0.75rem 1rem 0.75rem 2.25rem;
+	}
+
+	.exec-steps-list li {
+		margin: 0 0 0.65rem;
+		font-size: 0.88rem;
+		line-height: 1.5;
+		color: var(--color-text);
+	}
+
+	.exec-steps-list li:last-child {
+		margin-bottom: 0;
+	}
+
+	/* A comment is an aside, never a step: small, muted and italic, with no number
+     and no box. One alone on a line sits under the step it belongs to, in line
+     with its text; one at the end of a line stays in the sentence. */
+	.exec-steps-list li.step-comment {
+		display: block;
+		margin: -0.4rem 0 0.65rem;
+		font-size: 0.78rem;
+		font-style: italic;
+		color: var(--color-text-muted);
+	}
+
+	.step-content .inline-comment {
+		font-size: 0.82em;
+		font-style: italic;
+		color: var(--color-text-muted);
+	}
+
+	.step-action-badge {
+		display: inline-block;
+		margin-right: 0.25rem;
+		padding: 0.1rem 0.4rem;
+		border: 1px solid var(--color-border-strong);
+		border-radius: 3px;
+		background: var(--color-bg-subtle);
+		font-family: var(--gram-font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		vertical-align: 1px;
+		color: var(--color-text);
+	}
+
+	.step-content .ingredient,
+	.step-content .cookware,
+	.step-content .reference {
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	/* A temperature is outlined, a timer is filled: told apart without color. */
+	.step-content .temp,
+	.step-content .timer {
+		display: inline-block;
+		margin: 0 0.1rem;
+		padding: 0 0.3rem;
+		border: 1.5px solid var(--color-text);
+		border-radius: 3px;
+		font-family: var(--gram-font-mono);
+		font-size: 0.8rem;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.step-content .temp {
+		background: var(--color-bg);
+		color: var(--color-text);
+	}
+
+	.step-content .timer {
+		background: var(--color-text);
+		color: var(--color-bg);
+	}
+
+	/* ─── What goes on without the cook, then when to come back ────────────── */
+
+	.run-sheet-leaving {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		padding: 0.85rem 1.15rem;
+		border: 1.5px dashed var(--color-text);
+		background: var(--color-bg);
+	}
+
+	.run-sheet-leaving ul {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		margin-left: 0.3rem;
+		padding-left: 0.9rem;
+		border-left: 2px dotted var(--color-text-muted);
+	}
+
+	.run-sheet-leaving li {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		margin: 0;
+		font-size: 0.88rem;
+		color: var(--color-text);
+	}
+
+	/* The name, a dot leader, then the length of the wait. */
+	.run-sheet-leaving li::after {
+		content: "";
+		order: 1;
+		flex: 1;
+		align-self: flex-end;
+		min-width: 0.75rem;
+		margin-bottom: 0.3em;
+		border-bottom: 2px dotted var(--color-border-strong);
+	}
+
+	.wait-name {
+		order: 0;
+	}
+
+	.wait-until {
+		font-size: 0.78rem;
+		font-style: italic;
+		color: var(--color-text-muted);
+	}
+
+	.wait-length {
+		order: 2;
+		padding: 0.12rem 0.38rem;
+		border-radius: 2px;
+		background: var(--color-text);
+		white-space: nowrap;
+		font-family: var(--gram-font-mono);
+		font-size: 0.74rem;
+		font-weight: 600;
+		color: var(--color-bg);
+	}
+
+	.leaving-next {
+		margin: 0.75rem 0 0;
+		padding: 0.7rem 1.15rem;
+		border-radius: 3px;
+		background: var(--color-text);
+		font-family: var(--gram-font-mono);
+		font-size: 0.82rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--color-bg);
+	}
+
+	/* ─── Problems of the plan ─────────────────────────────────────────────── */
+
+	.run-sheet-problems {
+		margin: 0 0 1.25rem;
+		padding: 0.75rem 1rem;
+		border: 1px dashed var(--color-border);
+		border-radius: 3px;
+		background: var(--color-bg-subtle);
+	}
+
+	.run-sheet-problems h3 {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0 0 0.5rem;
+		font-family: var(--gram-font-mono);
+		font-size: 0.85rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.run-sheet-problems .problem-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		font-size: 1.15rem;
+		line-height: 1;
+		color: var(--color-text);
+	}
+
+	.run-sheet-problems ul {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		margin: 0;
+		padding: 0;
+	}
+
+	.run-sheet-problems li {
+		margin-left: 1.25rem;
+		list-style: disc;
+		font-size: 0.9rem;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+
+	/* ─── Narrow screens ───────────────────────────────────────────────────── */
+
+	@media (max-width: 640px) {
+		.schedule-group {
+			grid-template-columns: 4.5rem minmax(0, 1fr);
+		}
+
+		.schedule-row {
+			grid-template-columns: 6.5rem minmax(0, 1fr);
+		}
+	}
+}

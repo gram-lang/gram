@@ -1,0 +1,34 @@
+/*
+ * `.gram-preview` is the class a surface (the editor's panel, the playground)
+ * puts on the element that holds the HTML of a view, whichever view it is: the
+ * type the views inherit. No view is styled through it: each view styles its
+ * own root (`.gram-recipe`, `.gram-run-sheet`).
+ */
+.gram-preview {
+	font-family: var(--gram-font-sans);
+	line-height: 1.6;
+	color: var(--vscode-editor-foreground, inherit);
+	font-size: 15px;
+}
+
+/*
+ * A step element and what touches it (its punctuation, a footnote mark),
+ * which no line break may separate (`nobr()` of `shared/utils.ts`). Only the
+ * joins are unbreakable: inside the element, the text wraps as usual.
+ */
+.gram-nobr {
+	white-space: nowrap;
+}
+:where(.gram-nobr > *) {
+	white-space: normal;
+}
+
+/* The icons of `shared/icons.ts`, in any view: the size of the text around them. */
+.gram-preview svg.gicon,
+.gram-preview .gicon,
+svg.gicon {
+	display: inline-block;
+	vertical-align: -0.125em;
+	width: 1em;
+	height: 1em;
+}

@@ -32,7 +32,7 @@
   "scripts": {
     "postinstall": "bun run build && lefthook install",
     "build": "turbo run build",
-    "dev": "turbo run dev --filter=@gram-lang/docs",
+    "dev": "turbo run dev --filter=@gram-lang/docs...",
     "dev:watch": "turbo watch build",
     "lint": "biome check --diagnostic-level=error .",
     "lint:fix": "biome check --write --diagnostic-level=error .",

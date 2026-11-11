@@ -1,6 +1,7 @@
 import { getDictionary } from "@gram-lang/i18n";
 import type { StepToken } from "@gram-lang/kitchen";
 import { formatElement } from "../../shared/element";
+import { stripTooltips } from "../../shared/tooltip-card";
 import { showsComments } from "../../shared/comments";
 import type {
 	CommentsMode,
@@ -13,6 +14,7 @@ import {
 	formatDecimalToFraction,
 	getQty,
 	joinStepTokens,
+	nobr,
 	round1,
 } from "../../shared/utils";
 
@@ -468,9 +470,8 @@ export function sectionSteps(
 				? ` *(${escapeMarkdownHtml(aside(c))})*`
 				: formatElement(c, "md", context);
 		// No tooltips either: a printed sheet cannot show them, and a screen has no use for them here.
-		const html = joinStepTokens(tokens, renderHtml, spaceable).replace(
-			/ data-tooltip="[^"]*"/g,
-			"",
+		const html = stripTooltips(
+			joinStepTokens(tokens, renderHtml, spaceable, nobr),
 		);
 		const md = joinStepTokens(tokens, renderMd, spaceable);
 		out.push({

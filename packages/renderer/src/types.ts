@@ -74,10 +74,19 @@ export interface RendererIcons {
 	minus?: string;
 	plus?: string;
 	package?: string;
+	copy?: string;
+	check?: string;
+	/** The nutrition pill of the hero bar. */
+	chartPie?: string;
+	/** The portions of the hero bar. */
+	users?: string;
 }
 
 export interface RendererClasses {
 	recipeTitle?: string;
+	recipeDescription?: string;
+	recipeHeroBar?: string;
+	recipeTimingsBar?: string;
 	recipeMeta?: string;
 	recipeTimingsGrid?: string;
 	timingCard?: string;
@@ -183,6 +192,13 @@ export interface RendererOptions {
 	 */
 	rests?: RestChoice;
 	bakersMathOnly?: boolean;
+	/**
+	 * @deprecated Since 1.4.0, will be removed in 2.0.0. (Ref: renderer-interactive-scaling)
+	 * Shows a portions stepper in the hero bar of the HTML recipe, which works
+	 * only where the host page wires its buttons. Scale the recipe before
+	 * rendering it instead (`applyScale()` of `@gram-lang/kitchen`, or the surface's
+	 * own controls): the view shows the portions and the factor by itself.
+	 */
 	interactiveScaling?: boolean;
 	/**
 	 * Which nutrition basis to display. The analyzer computes all of them;
@@ -192,16 +208,10 @@ export interface RendererOptions {
 	 */
 	nutritionBasis?: NutritionBasis;
 	/**
-	 * HTML only: emit every available basis behind a reader-facing toggle
-	 * instead of a single one. The toggle is radio inputs plus sibling
-	 * selectors — no JavaScript — but it does need the renderer's stylesheet,
-	 * so it stays opt-in rather than being the default for every embedder.
+	 * No longer has any effect: the HTML recipe shows its nutrition as a
+	 * table, every basis side by side, so there is no basis switch to turn on.
 	 *
-	 * Deliberately separate from `interactiveScaling`, which is about editing
-	 * quantities: a surface can want one without the other, and the VS Code
-	 * preview wants exactly this one.
-	 *
-	 * Ignored when `nutritionBasis` pins a specific basis.
+	 * @deprecated Since 1.4.0, will be removed in 2.0.0. (Ref: renderer-interactive-nutrition)
 	 */
 	interactiveNutrition?: boolean;
 	/** Locale code (e.g. 'en', 'fr') for translating UI strings */
@@ -237,8 +247,15 @@ export interface RenderContext {
 
 	// Passed down from RendererOptions
 	bakersMathOnly?: boolean;
+	// @remove-in: 2.0.0 [renderer-interactive-scaling]
 	interactiveScaling?: boolean;
 	lang?: string;
+	/**
+	 * The recipe is printed (`toPrintHTML`, which writes the markup of the
+	 * screen): what only a screen can use, a rich tooltip or the copy button,
+	 * is left out.
+	 */
+	paper?: boolean;
 
 	/** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
 	formatMode?: "inline" | "mise-en-place" | "shopping-list";

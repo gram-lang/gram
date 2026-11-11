@@ -66,7 +66,7 @@ Ce paramètre s'applique instantanément à tous les fichiers ouverts (toute val
 | Réglage | Valeurs | Effet |
 |---|---|---|
 | `gram.stepQuantities` | `show` (par défaut), `hide` | Détermine si la quantité de chaque ingrédient est rappelée dans le texte des étapes, immédiatement après son nom, avec sa masse en grammes lorsque celle-ci est standardisée : `farine (250 ml, ~148 g)`. Les listes d'ingrédients de chaque section l'affichent systématiquement. |
-| `gram.nutritionBasis` | `auto` (par défaut), `total`, `perPortion`, `per100g` | Référentiel de calcul du panneau nutritionnel. En mode `auto`, l'aperçu permet d'alterner entre les bases (en privilégiant l'affichage par portion si déclaré) ; toute autre valeur verrouille le panneau sur la base choisie. |
+| `gram.nutritionBasis` | `auto` (par défaut), `total`, `perPortion`, `per100g` | Référentiel de calcul du panneau nutritionnel. En mode `auto`, l'aperçu montre toutes les bases côte à côte (pour 100 g, par portion) ; toute autre valeur limite le tableau à la base choisie. |
 | `gram.bakersMathOnly` | `false` (par défaut), `true` | Affiche uniquement les pourcentages du boulanger, en masquant les masses absolues. |
 
 Les réglages de l'analyseur déterminent les calculs effectués à partir de la base d'ingrédients. Tous sont activés par défaut, conformément au comportement du moteur. Modifier l'un d'eux relance immédiatement l'analyse de chaque recette ouverte et actualise ses diagnostics.

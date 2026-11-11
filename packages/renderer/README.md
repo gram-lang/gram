@@ -106,7 +106,7 @@ const document = toHTML(recipe, { runSheet: sheet });
 *   `src/formatters/markdown.ts`: Orchestrates Markdown generation for full recipes.
 *   `src/formatters/html.ts`: Orchestrates HTML generation for full recipes using classes and icons injection.
 *   `src/formatters/print.ts`: Orchestrates self-contained, print-optimized HTML generation (`toPrintHTML`).
-*   `gram.css`: Stylesheet of the recipe and the run sheet.
+*   `gram.css` (`@gram-lang/renderer/gram.css`, built into `dist/`): Stylesheet of every view on screen, joined from `src/shared/tokens.css` and each view's `screen.css`, each scoped to the view's root (`.gram-recipe`, `.gram-run-sheet`).
 *   `gantt.css`: Stylesheet of the deprecated Gantt chart.
 
 ---

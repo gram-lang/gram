@@ -46,6 +46,67 @@ describe("composite parent display in section/mise-en-place ingredient lists", (
 		expect(md).not.toContain("**jus** (citron) (2 cl)\n  ");
 	});
 
+	it("HTML shopping list: one checkbox on the parent, its parts as sub-lines", () => {
+		const html = toHTML(compiled);
+		expect(html).toContain(
+			'<li class="kit-ingredient kit-composite"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name">citron</span></span><span class="kit-qty"><span class="kit-mass">0.5</span></span></span></label>',
+		);
+		expect(html).toContain(
+			'<li class="kit-usage"><span class="kit-usage-branch" aria-hidden="true">↳</span><span class="kit-usage-name">jus</span><span class="kit-usage-qty"><span class="kit-mass">2 cl</span></span></li>',
+		);
+		expect(html).not.toContain("composite-badge");
+		const usageList = html.match(
+			/<ul class="kit-usage-list">[\s\S]*?<\/ul>/,
+		)?.[0];
+		expect(usageList).toBeDefined();
+		expect(usageList).not.toContain("<input");
+	});
+
+	it("HTML shopping list: a part used whole is labelled in the reader's language, never 'Direct Use'", () => {
+		const direct = compile(
+			getAST(
+				"## Prep\n\n[Squeeze] the @jus{2cl}<@citron{1}.\n\n[Slice] the @citron{2} into wedges.\n",
+			),
+		);
+		const en = toHTML(direct);
+		expect(en).toContain('<span class="kit-usage-name">Direct use</span>');
+		expect(en).not.toContain("Direct Use");
+		const fr = toHTML(direct, { lang: "fr" });
+		expect(fr).toContain(
+			'<span class="kit-usage-name">Utilisation directe</span>',
+		);
+		// Parent count: 1 lemon for the juice + 2 used whole.
+		expect(en).toContain(
+			'<span class="kit-name">citron</span></span><span class="kit-qty"><span class="kit-mass">3</span>',
+		);
+	});
+
+	it("HTML shopping list: a part with no quantity unit still shows its count", () => {
+		const yolks = compile(
+			getAST("## Prep\n\nSeparate @yolks{2}<@eggs{2} from the whites.\n"),
+		);
+		expect(toHTML(yolks)).toContain(
+			'<span class="kit-usage-name">yolks</span><span class="kit-usage-qty"><span class="kit-mass">2</span></span>',
+		);
+	});
+
+	it("HTML shopping list: names of parts are escaped", () => {
+		const html = toHTML({
+			...compiled,
+			shopping_list: [
+				{
+					type: "composite",
+					id: "citron",
+					name: "citron",
+					qty: 1,
+					usage: [{ id: "a&b", alias: "<b>jus</b>", qty: 1 }],
+				},
+			],
+		} as any);
+		expect(html).toContain("&lt;b&gt;jus&lt;/b&gt;");
+		expect(html).not.toContain("<b>jus</b>");
+	});
+
 	it("inline step text still shows just the child name, with no parent suffix", () => {
 		const md = toMarkdown(compiled);
 		expect(md).toContain("the **jus** (2 cl) into the bowl.");
@@ -89,7 +150,7 @@ describe("composite parent preparation display in section/mise-en-place ingredie
 	it("the shopping list shows no trace of the parent's preparation", () => {
 		const md = toMarkdown(compiledWithParentPrep);
 		const shoppingListBlock = md.match(
-			/## 🛒 Shopping List\n([\s\S]*?)\n## /,
+			/## Shopping List\n([\s\S]*?)\n## /,
 		)?.[1];
 		expect(shoppingListBlock).toContain("**citron** (1/2) **(Composite)**:");
 		expect(shoppingListBlock).not.toContain("coupé en deux");

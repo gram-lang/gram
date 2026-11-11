@@ -19,7 +19,10 @@ describe("relative-quantity ingredient rendering (formula, not is_partial)", () 
 		const html = toHTML(compiled);
 
 		expect(html).not.toContain("formula-qty");
-		expect(html).toContain('data-tooltip="60% of flour"');
+		expect(html).toContain('<span class="step-quantity">(60% of flour)</span>');
+		expect(toHTML(compiled, { hideStepQty: true })).toContain(
+			'data-tooltip="Quantity: 60% of flour"',
+		);
 	});
 
 	it("renders the formula as plain quantity text in Markdown", () => {

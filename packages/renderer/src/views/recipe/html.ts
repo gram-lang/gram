@@ -13,18 +13,33 @@ import {
 	isAlternativeGroup,
 	isCompositeItem,
 	joinStepTokens,
+	nobr,
 	groupMultiUnitEntries,
 	round1,
+	getQty,
+	trimBeforeComments,
 } from "../../shared/utils";
 import {
 	availableBases,
 	getMetrics,
 	hasNutritionToShow,
-	nutritionGroups,
+	kcalToKj,
+	nutritionColumns,
+	nutritionRows,
+	referenceIntakePercent,
 	resolveNutritionBasis,
+	type NutrientRow,
+	wholeRecipeBelow,
+	type ResolvedBasis,
 } from "../../shared/nutrition";
 import { describeMiseEnPlaceItem } from "../../shared/mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "../../shared/element";
+import { RESET_SCALE_ICON } from "../../shared/icons";
+import {
+	formatScaleFactor,
+	portionsLabel,
+	portionsUnit,
+} from "../../shared/portions";
 import { moduleLabel } from "./module-label";
 import {
 	aggregateSectionIngredients,
@@ -33,6 +48,487 @@ import {
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
+import {
+	resolveContributingUsage,
+	type AnalyzedUsage,
+	type MassMetrics,
+	type NutritionMetrics,
+} from "@gram-lang/analyzer";
+
+type Dictionary = ReturnType<typeof getDictionary>;
+
+/**
+ * An entry of the shopping list, the cookware or a step's result, as the kit
+ * lines read it: the compiled usage, shopping item or composite, with the
+ * analyzer's masses when it ran.
+ */
+type KitItem = {
+	id?: string;
+	name?: string;
+	alias?: string;
+	type?: string;
+	unit?: string;
+	quantity?: unknown;
+	qty?: unknown;
+	preparation?: string;
+	note?: string;
+	parent?: string;
+	parentPreparation?: string;
+	normalizedMass?: number;
+	purchasingMass?: number;
+	isEstimate?: boolean;
+	bakersPercentage?: number;
+	multiUnit?: boolean;
+	options?: KitItem[];
+	usage?: KitItem[];
+	[key: string]: unknown;
+};
+
+/**
+ * The quantity column of a kit line: the written quantity when it differs
+ * from the standardized mass, the mass itself (or the written quantity when
+ * there is no mass), then the baker's percentage and the gross mass.
+ * `showBareCount` also shows a quantity with neither mass nor unit (2 egg
+ * yolks), which a plain line leaves out; `withBadges: false` drops the
+ * baker's percentage and the gross mass.
+ */
+function kitQtyHtml(
+	item: KitItem,
+	qty: unknown,
+	t: Dictionary,
+	{
+		isCookware = false,
+		showBareCount = false,
+		withBadges = true,
+	}: {
+		isCookware?: boolean;
+		showBareCount?: boolean;
+		withBadges?: boolean;
+	} = {},
+): string {
+	let html = "";
+	const unitStr = item.unit ? ` ${escapeHtml(item.unit)}` : "";
+	if (qty && item.normalizedMass && round1(item.normalizedMass) !== qty) {
+		html += `<span class="kit-orig">${escapeHtml(String(qty))}${unitStr}</span>`;
+	}
+	if (item.normalizedMass) {
+		const isEst = item.isEstimate ? "~" : "";
+		html += `<span class="kit-mass">${isEst}${round1(item.normalizedMass)} g</span>`;
+	} else if (qty && !isCookware && (item.unit || showBareCount)) {
+		html += `<span class="kit-mass">${escapeHtml(String(qty))}${unitStr}</span>`;
+	}
+	if (!withBadges) return html;
+	if (item.bakersPercentage !== undefined) {
+		html += ` <span class="bakers-badge">${round1(item.bakersPercentage)}%</span>`;
+	}
+	if (item.purchasingMass && item.purchasingMass !== item.normalizedMass) {
+		const gross = round1(item.purchasingMass);
+		html += ` <span class="gross-mass" data-tooltip="${escapeHtml(t.renderer.purchasingWeight)}">(${gross}g ${escapeHtml(t.renderer.gross)})</span>`;
+	}
+	return html;
+}
+
+function renderKitItem(
+	item: KitItem,
+	context: RenderContext,
+	options: RendererOptions,
+): string {
+	const t = getDictionary(options.lang);
+	const regIng = item.id ? context.registry?.ingredients?.[item.id] : undefined;
+	const regCw = item.id ? context.registry?.cookware?.[item.id] : undefined;
+	const isCookware = item.type === "cookware";
+	const isRef = item.type === "reference";
+	const name =
+		item.alias ||
+		item.name ||
+		(isCookware ? regCw?.name : regIng?.name) ||
+		item.id ||
+		t.renderer.unknownIngredient;
+	const prep = item.preparation || item.note;
+	const kindClass = isCookware
+		? "kit-cookware"
+		: isRef
+			? "kit-reference"
+			: "kit-ingredient";
+
+	let parentHtml = "";
+	let parentDataAttr = "";
+	if (item.parent) {
+		const parentText = item.parentPreparation
+			? `${item.parent}, ${item.parentPreparation}`
+			: item.parent;
+		const parentClass =
+			options.classes?.compositeParentText || "composite-parent";
+		parentHtml = ` <span class="${parentClass}">(${escapeHtml(parentText)})</span>`;
+		parentDataAttr = ` data-parent="${escapeHtml(item.parent)}"`;
+		if (item.parentPreparation) {
+			parentDataAttr += ` data-parent-preparation="${escapeHtml(item.parentPreparation)}"`;
+		}
+	}
+
+	const q = getQty(item);
+	const itemQty = q
+		? typeof q.value === "number"
+			? q.value
+			: q.text || item.quantity
+		: item.quantity;
+
+	// A piece of cookware shows how many you need as "×2", like the run sheet,
+	// and nothing for one: needing a pan already means having one.
+	const qtyContent = isCookware
+		? itemQty && String(itemQty) !== "1"
+			? `<span class="kit-mass">×${escapeHtml(String(itemQty))}</span>`
+			: ""
+		: kitQtyHtml(item, itemQty, t);
+
+	const itemTypeClass = isCookware
+		? "cookware"
+		: isRef
+			? "reference"
+			: "ingredient";
+	const refAttr =
+		isRef && (item.id || item.name)
+			? ` data-ref-id="${escapeHtml(item.id || item.name)}"`
+			: "";
+
+	let html = `        <li class="${kindClass}"><label><input type="checkbox"><span>`;
+	html += `<span class="kit-name-col">`;
+	html += `<span class="kit-name ${itemTypeClass}" data-name="${escapeHtml(item.name || item.id)}"${refAttr}${parentDataAttr}>${escapeHtml(name)}${parentHtml}</span>`;
+	if (prep) {
+		html += `<span class="kit-prep">${escapeHtml(prep)}</span>`;
+	}
+	html += `</span>`;
+	if (qtyContent) {
+		html += `<span class="kit-qty">${qtyContent}</span>`;
+	}
+	html += `</span></label></li>\n`;
+	return html;
+}
+
+function renderKitAlternativeItem(
+	item: KitItem,
+	context: RenderContext,
+	options: RendererOptions,
+	forceCookware = false,
+	showPrep = true,
+): string {
+	const t = getDictionary(options.lang);
+	const isCookware = forceCookware || item.type === "cookware";
+	const kindClass = isCookware ? "kit-cookware" : "kit-ingredient";
+	const optClass = isCookware ? "cookware" : "ingredient";
+
+	const opts = item.options || [];
+	const optionsCols = opts
+		.map((opt) => {
+			const regOpt = opt.id
+				? context.registry?.ingredients?.[opt.id]
+				: undefined;
+			const regCw = opt.id ? context.registry?.cookware?.[opt.id] : undefined;
+			const rawName =
+				opt.alias ||
+				opt.name ||
+				(isCookware ? regCw?.name : regOpt?.name) ||
+				opt.id ||
+				"";
+			const optName = rawName.replace(/-/g, " ");
+			const optPrep = opt.preparation || opt.note;
+			const q = getQty(opt);
+			const optQty = q
+				? q.text ||
+					(typeof q.value === "number"
+						? String(q.value)
+						: typeof opt.quantity === "number"
+							? String(opt.quantity)
+							: "")
+				: "";
+			let s = `<span class="${optClass}" data-name="${escapeHtml(optName)}">${escapeHtml(optName)}`;
+			if (optQty) {
+				s += ` <span class="quantity">${escapeHtml(String(optQty))}</span>`;
+			}
+			if (optPrep && showPrep) {
+				s += ` <span class="prep">&mdash; ${escapeHtml(optPrep)}</span>`;
+			}
+			s += `</span>`;
+			return s;
+		})
+		.join(` <span class="keyword">${escapeHtml(t.renderer.or)}</span> `);
+
+	let qtyContent = "";
+	const first = opts[0];
+	if (first) {
+		const q = getQty(first);
+		const firstQty = q ? (q.value ?? first.quantity) : first.quantity;
+		qtyContent = kitQtyHtml(first, firstQty, t, {
+			isCookware,
+			withBadges: false,
+		});
+	}
+
+	let html = `        <li class="${kindClass}"><label><input type="checkbox"><span>`;
+	html += `<span class="kit-name-col"><span class="alt-group">${optionsCols}</span></span>`;
+	if (qtyContent) {
+		html += `<span class="kit-qty">${qtyContent}</span>`;
+	}
+	html += `</span></label></li>\n`;
+	return html;
+}
+
+/**
+ * A part of a composite (the yolks of the eggs): an informative sub-line
+ * under the item you buy, with no checkbox of its own — you buy eggs, not
+ * yolks.
+ */
+function renderKitUsageItem(
+	child: KitItem,
+	parent: KitItem,
+	context: RenderContext,
+	t: Dictionary,
+): string {
+	// The compiler records using the parent itself whole as an entry of the
+	// parent's own id (with an English "Direct Use" alias, never shown).
+	// A stopgap until the compiled JSON marks direct use itself (planned with
+	// the composites rework of 1.5).
+	const isDirect = child.id === parent.id;
+	const name = isDirect
+		? t.renderer.directUse
+		: child.alias ||
+			child.name ||
+			(child.id && context.registry?.ingredients?.[child.id]?.name) ||
+			child.id;
+	const q = getQty(child);
+	const childQty = q
+		? typeof q.value === "number"
+			? q.value
+			: q.text || child.quantity
+		: child.quantity;
+	const qtyContent = kitQtyHtml(child, childQty, t, { showBareCount: true });
+
+	let html = `            <li class="kit-usage">`;
+	html += `<span class="kit-usage-branch" aria-hidden="true">↳</span>`;
+	html += `<span class="kit-usage-name">${escapeHtml(String(name))}</span>`;
+	if (qtyContent) {
+		html += `<span class="kit-usage-qty">${qtyContent}</span>`;
+	}
+	html += `</li>\n`;
+	return html;
+}
+
+/**
+ * A composite: one line, with one checkbox, for the item you buy (eggs),
+ * followed by the parts the recipe uses (yolks, whites) as sub-lines.
+ *
+ * The parent shows its count only. Its `normalizedMass` is, for now, the sum
+ * of its parts' masses (102 g of yolks), not the mass of what you buy (six
+ * eggs): showing it here would be wrong. Each part shows its own mass.
+ */
+function renderKitCompositeItem(
+	item: KitItem,
+	context: RenderContext,
+	options: RendererOptions,
+): string {
+	const t = getDictionary(options.lang);
+	const unitStr = item.unit ? ` ${escapeHtml(item.unit)}` : "";
+	const qtyContent =
+		typeof item.qty === "number" && item.qty
+			? `<span class="kit-mass">${escapeHtml(String(round1(item.qty)))}${unitStr}</span>`
+			: "";
+
+	// No `list-item-group` here: the parent row lays out like any other line
+	// (dot leader included), and the copy button copies it as one line.
+	let html = `        <li class="kit-ingredient kit-composite"><label><input type="checkbox"><span>`;
+	html += `<span class="kit-name-col"><span class="kit-name">${escapeHtml(item.name || item.id)}</span></span>`;
+	if (qtyContent) {
+		html += `<span class="kit-qty">${qtyContent}</span>`;
+	}
+	html += `</span></label>\n`;
+	const usage = item.usage || [];
+	if (usage.length > 0) {
+		html += `          <ul class="kit-usage-list">\n`;
+		usage.forEach((child) => {
+			html += renderKitUsageItem(child, item, context, t);
+		});
+		html += `          </ul>\n`;
+	}
+	html += `        </li>\n`;
+	return html;
+}
+
+/**
+ * The line under a step naming what it makes (`->&dough` → "↳ dough"). Each
+ * name keeps its `data-declares`, so hovering a later reference to it still
+ * finds this step.
+ */
+function renderStepResult(
+	declItems: KitItem[],
+	context: RenderContext,
+	options: RendererOptions,
+): string {
+	const icon =
+		options.icons?.arrowElbowDownRight ??
+		DEFAULT_ICONS.html.arrowElbowDownRight;
+	const declClass = options.classes?.declaration || "declaration";
+	const names = declItems
+		.map((item) => {
+			const name =
+				(item.id && context.registry?.ingredients?.[item.id]?.name) ||
+				item.name ||
+				"";
+			const id = item.id || item.name;
+			const attr = id ? ` data-declares="${escapeHtml(id)}"` : "";
+			return `<span class="${declClass} step-result-item"${attr}>${escapeHtml(name)}</span>`;
+		})
+		.join(", ");
+	return `<span class="step-result">${icon} ${names}</span>`;
+}
+
+/**
+ * A mass as the hero bar and the section badges show it: "850g" when every
+ * mass is known, "~850g" when some come from an average value of the
+ * database, ">850g" when some are missing (the real mass is higher).
+ */
+function massLabel(metrics: Partial<MassMetrics>) {
+	const mass = Math.round(metrics.totalMass ?? 0);
+	if (metrics.massStatus === "incomplete") return `>${mass}g`;
+	if (metrics.massStatus === "estimated") return `~${mass}g`;
+	return `${mass}g`;
+}
+
+/**
+ * The tooltip of a mass: what it measures, then why it is estimated or
+ * incomplete. The ingredients converted with an average value of the
+ * database come with how and how much; those with no mass at all, with what
+ * to write to get one. Both can show together: the status keeps only the
+ * worst ("incomplete"), the reader gets both.
+ *
+ * What counts is what the analyzer counts (`resolveContributingUsage`: no
+ * optional ingredient, the first option of an alternative), so the lines add
+ * up to the figure. Rich HTML in a `.timing-tooltip`, which the floating
+ * tooltip script shows on hover (or CSS, without it).
+ */
+function massTooltipHtml(
+	title: string,
+	metrics: Partial<MassMetrics>,
+	ingredients: AnalyzedUsage[],
+	context: RenderContext,
+	t: Dictionary,
+): string {
+	if (context.paper) return "";
+	const estimated = new Map<string, { mass: number; methods: Set<string> }>();
+	for (const item of ingredients) {
+		const target = resolveContributingUsage(item);
+		if (!target?.isEstimate || !target.normalizedMass) continue;
+		const name = String(
+			target.alias ||
+				target.name ||
+				context.registry?.ingredients?.[target.id]?.name ||
+				target.id,
+		);
+		const entry = estimated.get(name) ?? { mass: 0, methods: new Set() };
+		entry.mass += target.normalizedMass;
+		if (target.conversionMethod === "density") {
+			entry.methods.add(t.renderer.massMethodDensity);
+		} else if (target.conversionMethod === "unit_weight") {
+			entry.methods.add(t.renderer.massMethodUnitWeight);
+		}
+		estimated.set(name, entry);
+	}
+	// The analyzer lists an ingredient with no name of its own by its id
+	// ("olives-vertes"): the registry has the name to show.
+	const missing = [
+		...new Set(
+			(metrics.missingMassIngredients ?? []).map(
+				(n) => context.registry?.ingredients?.[n]?.name || n,
+			),
+		),
+	];
+
+	const heading = (label: string, detail: string) =>
+		`      <div class="timing-row"><span class="timing-label"><strong>${escapeHtml(label)}</strong> <span class="timing-detail-type">${escapeHtml(detail)}</span></span></div>`;
+	const row = (name: string, detail: string, value: string) =>
+		`      <div class="timing-row"><span class="timing-label">${escapeHtml(name)}${detail ? ` <span class="timing-detail-type">(${escapeHtml(detail)})</span>` : ""}</span><span class="timing-val">${escapeHtml(value)}</span></div>`;
+
+	let html = `\n    <div class="timing-tooltip">`;
+	html += `\n      <div class="timing-tooltip-title">${escapeHtml(title)}</div>`;
+	if (estimated.size > 0) {
+		html += `\n      <div class="timing-divider"></div>`;
+		html += `\n${heading(t.renderer.massEstimated, t.renderer.massEstimatedDetail)}`;
+		for (const [name, { mass, methods }] of estimated) {
+			html += `\n${row(name, [...methods].join(", "), `~${round1(mass)} g`)}`;
+		}
+	}
+	if (missing.length > 0) {
+		html += `\n      <div class="timing-divider"></div>`;
+		html += `\n${heading(t.renderer.massIncomplete, t.renderer.massIncompleteDetail)}`;
+		for (const name of missing) {
+			html += `\n${row(name, "", "?")}`;
+		}
+		html += `\n      <div class="timing-row"><span class="timing-label timing-detail-type">${escapeHtml(t.renderer.massIncompleteHint)}</span></div>`;
+	}
+	html += `\n    </div>`;
+	return html;
+}
+
+function renderKitMixedUnitsItem(
+	group: KitItem[],
+	context: RenderContext,
+	options: RendererOptions,
+): string {
+	const t = getDictionary(options.lang);
+	const first = group[0];
+	if (!first) return "";
+	const name = first.name || first.id || "";
+	let html = `        <li class="kit-ingredient list-item-group"><label><input type="checkbox"><span>`;
+	html += `<span class="kit-name-col"><span class="kit-name">${escapeHtml(name)}</span> <span class="mixed-units-badge" data-tooltip="${escapeHtml(t.renderer.mixedUnitsTooltip)}">⚠️ ${escapeHtml(t.renderer.mixedUnits)}</span></span>`;
+	html += `</span></label>`;
+	html += `          <ul class="kit-list sub-kit-list">\n`;
+	group.forEach((entry) => {
+		html += renderKitItem(entry, context, options);
+	});
+	html += `          </ul>\n`;
+	html += `        </li>\n`;
+	return html;
+}
+
+/** The anchor of the nutrition table, which the hero bar's pill links to. */
+function nutritionAnchor(options: RendererOptions): string {
+	return `${options.renderId ?? "recipe"}-nutrition`;
+}
+
+/** Whether the nutrition has figures to show, not only warnings. */
+function hasNutritionValues(nut: NutritionMetrics): boolean {
+	return (nut.total?.calories ?? 0) > 0;
+}
+
+/**
+ * The basis of the hero bar's pill: per portion, else per 100 g (a figure a
+ * reader can compare, as on a package, where the whole recipe would only say
+ * how big it is), else the whole recipe. Pinned by `nutritionBasis`.
+ */
+function pillBasis(
+	nut: NutritionMetrics,
+	options: RendererOptions,
+): ResolvedBasis {
+	if (options.nutritionBasis && options.nutritionBasis !== "auto") {
+		return resolveNutritionBasis(nut, options.nutritionBasis, options.lang);
+	}
+	const bases = availableBases(nut, options.lang);
+	return (
+		bases.find((b) => b.key === "perPortion") ??
+		bases.find((b) => b.key === "per100g") ??
+		(bases[bases.length - 1] as ResolvedBasis)
+	);
+}
+
+/** A nutrient's value with its unit: "22.1 g", "520 kcal". */
+function nutrientValue(row: Pick<NutrientRow, "value" | "unit">): string {
+	const value = row.unit === "kcal" ? Math.round(row.value) : row.value;
+	return `${value} ${row.unit}`;
+}
+
+/** A basis label inside a sentence: "per portion", "pour 100 g". */
+function inlineBasisLabel(basis: ResolvedBasis, lang?: string): string {
+	return basis.label.toLocaleLowerCase(lang || "en");
+}
 
 export const htmlBackend: RenderBackend = {
 	buildContext(data, options) {
@@ -56,37 +552,107 @@ export const htmlBackend: RenderBackend = {
 		if (!data.title) return "";
 		const titleClass = options.classes?.recipeTitle
 			? ` class="${options.classes.recipeTitle}"`
-			: "";
-		return `<h1${titleClass}>${escapeHtml(data.title)}</h1>\n\n`;
+			: ' class="recipe-title"';
+		let html = `<h1${titleClass}>${escapeHtml(data.title)}</h1>\n`;
+		const desc = data.meta?.description;
+		if (desc) {
+			const descStr = Array.isArray(desc) ? desc.join(" ") : String(desc);
+			const descClass = options.classes?.recipeDescription
+				? ` class="${options.classes.recipeDescription}"`
+				: ' class="recipe-description"';
+			html += `<p${descClass}>${escapeHtml(descStr)}</p>\n`;
+		}
+		html += "\n";
+		return html;
 	},
 
 	renderMeta(data, context, options) {
 		const t = getDictionary(options.lang);
 		const formatDuration = options.formatDuration || defaultFormatDuration;
-		// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
-		// result's `metrics` never carries mass/nutrition fields at all.
 		const metrics = data.metrics as RenderableMetrics;
 
 		let html = "";
+		const meta = data.meta || {};
 
-		// RendererOptions.classes.recipeMeta/metaItem/metaIcon/metaContent are still
-		// accepted for backwards compatibility but apply to nothing below — this
-		// markup was restructured around timing cards without updating them.
-		const metaLabelClass = options.classes?.metaLabel || "meta-label";
-		const metaValueClass = options.classes?.metaValue || "meta-value";
-		const metaEstClass = options.classes?.metaEst || "est";
+		// 1. Byline (Auteur, Date, Source cliquable, Catégorie, Tags, Métadonnées libres)
+		const bylineParts: string[] = [];
 
-		const timingsGridClass =
-			options.classes?.recipeTimingsGrid || "recipe-timings-grid";
-		const timingCardClass = options.classes?.timingCard || "timing-card";
+		if (meta.author) {
+			const authorStr = Array.isArray(meta.author)
+				? meta.author.join(", ")
+				: String(meta.author);
+			bylineParts.push(
+				`<span class="byline-author">${escapeHtml(authorStr)}</span>`,
+			);
+		}
+		if (meta.date) {
+			bylineParts.push(
+				`<span class="byline-date">${escapeHtml(String(meta.date))}</span>`,
+			);
+		}
+		if (meta.source) {
+			const src = String(meta.source);
+			if (src.startsWith("http")) {
+				const displayUrl = src
+					.replace(/^https?:\/\/(www\.)?/, "")
+					.replace(/\/.*$/, "");
+				bylineParts.push(
+					`<a class="byline-source" href="${escapeHtml(src)}" target="_blank" rel="noopener">${escapeHtml(displayUrl)}</a>`,
+				);
+			} else {
+				bylineParts.push(
+					`<span class="byline-source">${escapeHtml(src)}</span>`,
+				);
+			}
+		}
+		if (meta.category) {
+			bylineParts.push(
+				`<span class="byline-category">${escapeHtml(String(meta.category))}</span>`,
+			);
+		}
+		if (Array.isArray(meta.tags) && meta.tags.length > 0) {
+			bylineParts.push(
+				`<span class="recipe-tags">${meta.tags.map((tag: string) => `<span class="gram-tag">${escapeHtml(tag)}</span>`).join(", ")}</span>`,
+			);
+		}
 
-		html += `<div class="${timingsGridClass}">\n`;
+		// Métadonnées personnalisées du frontmatter
+		const knownKeys = new Set([
+			"title",
+			"description",
+			"author",
+			"date",
+			"source",
+			"category",
+			"tags",
+			"portions",
+			"servings",
+			"makes",
+			"yield",
+			"yields",
+			"notes",
+			"densities",
+		]);
+		for (const [k, v] of Object.entries(meta)) {
+			if (
+				!knownKeys.has(k) &&
+				!k.startsWith("_") &&
+				v !== undefined &&
+				v !== null &&
+				v !== ""
+			) {
+				bylineParts.push(
+					`<span class="byline-custom"><span class="label">${escapeHtml(k)}:</span> <span class="value">${escapeHtml(String(v))}</span></span>`,
+				);
+			}
+		}
+
+		if (bylineParts.length > 0) {
+			html += `<div class="recipe-byline">${bylineParts.join('<span class="byline-sep">•</span>')}</div>\n`;
+		}
+
+		// 3. Barre des durées (Timings)
 		if (metrics) {
-			// Prefixes used by kitchen's active-time TimeBreakdownItem labels
-			// (schedule/rebase.ts) — kept as named constants and sliced by their own
-			// `.length` so a label check can never silently drift out of sync with
-			// the slice that strips it. Only the active time still shows such a
-			// breakdown: the mise en place is rendered from `miseEnPlace`.
 			const SECTION_ACTIVE_PREFIX = "section_active:";
 			const TIMER_NAMED_PREFIX = "timer_named:";
 
@@ -96,10 +662,6 @@ export const htmlBackend: RenderBackend = {
 					.map((b) => {
 						let label = b.label;
 						if (label.startsWith(SECTION_ACTIVE_PREFIX)) {
-							// The section title and timer name here come straight from
-							// recipe source text (`## <title>`, `~<name>{...}`) — must be
-							// escaped, or a recipe author can inject HTML into the
-							// playground/VS Code preview.
 							label = `${escapeHtml(label.slice(SECTION_ACTIVE_PREFIX.length))} <span class="timing-detail-type">(${t.renderer.breakdownActive})</span>`;
 						} else if (label.startsWith(TIMER_NAMED_PREFIX)) {
 							label = `${t.renderer.breakdownTimer} "${escapeHtml(label.slice(TIMER_NAMED_PREFIX.length))}"`;
@@ -121,8 +683,6 @@ export const htmlBackend: RenderBackend = {
         <span class="timing-val">+ ${formatDuration(duration)}</span>
       </div>`;
 
-			// Mise en place rows come from the structured `miseEnPlace` field —
-			// names from the registry, titles escaped — never from parsed labels.
 			const sectionTitle = (index: number) =>
 				data.sections[index]?.title || t.renderer.miseEnPlace;
 			const miseSummaryRows = (data.miseEnPlace ?? [])
@@ -158,6 +718,7 @@ export const htmlBackend: RenderBackend = {
 				breakdown?: TimeBreakdownItem[],
 				rowsHtml?: string,
 			) => {
+				if (context.paper) return "";
 				if (!base && !breakdown?.length && !rowsHtml) return "";
 
 				let htmlStr = `\n    <div class="timing-tooltip">`;
@@ -173,9 +734,17 @@ export const htmlBackend: RenderBackend = {
 				return htmlStr;
 			};
 
-			// Total and idle time depend on the chosen schedule; preparation and
-			// active time are the same in all of them.
 			const { totalTime, idleTime } = timesIn(context);
+			const timingCardClass = options.classes?.timingCard
+				? ` ${options.classes.timingCard}`
+				: "";
+			const metaValueClass = options.classes?.metaValue
+				? ` ${options.classes.metaValue}`
+				: "";
+
+			const timingsBarClass =
+				options.classes?.recipeTimingsBar || "recipe-timings-bar";
+			html += `<div class="${timingsBarClass}">\n`;
 
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
 			const totalTooltip = renderTooltipHTML(
@@ -183,20 +752,18 @@ export const htmlBackend: RenderBackend = {
 				undefined,
 				miseSummaryRows,
 			);
-			html += ` <div class="${timingCardClass}">\n`;
-			html += `   <div class="${metaLabelClass}">${clockIcon} ${t.renderer.totalTime}</div>\n`;
-			html += `   <div class="${metaValueClass}">${formatDuration(totalTime)}</div>${totalTooltip}\n`;
-			html += ` </div>\n`;
+			html += `  <span class="timing-pill total${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.totalTime)}: ${formatDuration(totalTime)}">\n`;
+			html += `    ${clockIcon} <span class="timing-text${metaValueClass}">${formatDuration(totalTime)}</span>${totalTooltip}\n`;
+			html += `  </span>\n`;
 
 			if (idleTime) {
 				const idleTooltip = renderTooltipHTML(
 					t.renderer.idleTimeTooltip ??
 						"Idle Time = Total Time - Prep - Active",
 				);
-				html += ` <div class="${timingCardClass}">\n`;
-				html += `   <div class="${metaLabelClass}">${options.icons?.hourglass ?? DEFAULT_ICONS.html.hourglass} ${t.renderer.idleTime}</div>\n`;
-				html += `   <div class="${metaValueClass}">${formatDuration(idleTime)}</div>${idleTooltip}\n`;
-				html += ` </div>\n`;
+				html += `  <span class="timing-pill${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.idleTime)}: ${formatDuration(idleTime)}">\n`;
+				html += `    ${options.icons?.hourglass ?? DEFAULT_ICONS.html.hourglass} <span class="timing-text${metaValueClass}">${formatDuration(idleTime)} ${escapeHtml(t.renderer.idleTime.toLowerCase())}</span>${idleTooltip}\n`;
+				html += `  </span>\n`;
 			}
 
 			const fireIcon = options.icons?.fire ?? DEFAULT_ICONS.html.fire;
@@ -205,163 +772,274 @@ export const htmlBackend: RenderBackend = {
 				t.renderer.activeTimeCardTooltip ?? t.renderer.activeTime,
 				metrics.activeBreakdown,
 			);
-			html += ` <div class="${timingCardClass}">\n`;
-			html += `   <div class="${metaLabelClass}">${fireIcon} ${t.renderer.activeTime}</div>\n`;
-			html += `   <div class="${metaValueClass}">${formatDuration(metrics.activeTime)}</div>${activeTooltip}\n`;
-			html += ` </div>\n`;
+			html += `  <span class="timing-pill${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.activeTime)}: ${formatDuration(metrics.activeTime)}">\n`;
+			html += `    ${fireIcon} <span class="timing-text${metaValueClass}">${formatDuration(metrics.activeTime)} ${escapeHtml(t.renderer.activeTime.toLowerCase())}</span>${activeTooltip}\n`;
+			html += `  </span>\n`;
 
 			const knifeIcon = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
+			// The prep time is estimated from the mise en place, not written in the
+			// recipe: "~", as for an estimated mass, and said in the tooltip.
 			const prepTooltip = renderTooltipHTML(
-				t.renderer.prepTimeTooltip ?? t.renderer.prepTime,
+				`${t.renderer.prepTimeTooltip ?? t.renderer.prepTime}${t.renderer.estimatedSuffix}`,
 				undefined,
 				miseDetailRows,
 			);
-			html += ` <div class="${timingCardClass}">\n`;
-			html += `   <div class="${metaLabelClass}">${knifeIcon} ${t.renderer.prepTime}</div>\n`;
-			html += `   <div class="${metaValueClass}">${formatDuration(metrics.preparationTime)} <span class="${metaEstClass}">${t.renderer.est}</span></div>${prepTooltip}\n`;
-			html += ` </div>\n`;
-		}
-		html += `</div>\n`;
+			const metaEstClass = options.classes?.metaEst || "est";
+			const prepDuration = formatDuration(metrics.preparationTime);
+			html += `  <span class="timing-pill${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.prepTime)}: ~${prepDuration}">\n`;
+			html += `    ${knifeIcon} <span class="timing-text${metaValueClass}"><span class="${metaEstClass}">~</span>${prepDuration} ${escapeHtml(t.renderer.prepTime.toLowerCase())}</span>${prepTooltip}\n`;
+			html += `  </span>\n`;
 
-		const recipeMetaSecondaryClass =
-			options.classes?.recipeMetaSecondary || "recipe-meta-secondary";
-		const metadataGridClass = options.classes?.metadataGrid || "metadata-grid";
-		const metaSecondaryItemClass =
-			options.classes?.metaSecondaryItem || "meta-secondary-item";
-
-		html += `<div class="${recipeMetaSecondaryClass}">\n`;
-		html += `<div class="${metadataGridClass}">\n`;
-
-		if (metrics?.totalMass) {
-			const mass = Math.round(metrics.totalMass);
-			let msg = `${mass}g`;
-			if (metrics.massStatus === "estimated") {
-				msg = `~${mass}g${t.renderer.estimatedSuffix}`;
-			}
-			if (metrics.massStatus === "incomplete") {
-				msg = `>${mass}g (${t.renderer.incomplete})`;
-			}
-			html += `  <div class="${metaSecondaryItemClass}">\n`;
-			html += `    <span class="label">${t.renderer.totalMass}</span>\n`;
-			html += `    <span class="value">${msg}</span>\n`;
-			html += `  </div>\n`;
+			html += `</div>\n`;
 		}
 
-		if (data.meta) {
-			for (const [k, v] of Object.entries(data.meta)) {
-				if (k !== "title") {
-					html += `  <div class="${metaSecondaryItemClass}">\n`;
-					html += `    <span class="label">${escapeHtml(k)}</span>\n`;
-					if (k === "portions" && options.interactiveScaling) {
-						const numericV = typeof v === "number" ? v : parseFloat(String(v));
-						const basePortions =
-							typeof data.scaleFactor === "number" &&
-							data.scaleFactor !== 0 &&
-							!Number.isNaN(numericV)
-								? round2(numericV / data.scaleFactor)
-								: v;
-						html += `    <span class="value interactive-portions" data-base-portions="${escapeHtml(String(basePortions))}">\n`;
-						html += `      <button class="scale-btn minus" data-scale-action="dec-portions" title="${escapeHtml(t.renderer.decreasePortions)}">${options.icons?.minus ?? DEFAULT_ICONS.html.minus}</button>\n`;
-						html += `      <input type="number" class="scale-input-inline portions-input" value="${escapeHtml(String(v))}" min="0.1" step="any" title="${escapeHtml(t.renderer.editPortions)}" />\n`;
-						html += `      <button class="scale-btn plus" data-scale-action="inc-portions" title="${escapeHtml(t.renderer.increasePortions)}">${options.icons?.plus ?? DEFAULT_ICONS.html.plus}</button>\n`;
-						html += `      <span class="scale-multipliers">\n`;
-						html += `        <button class="scale-btn factor reset" data-scale-action="set-factor" data-value="1" title="${escapeHtml(t.renderer.originalRecipe)}">${escapeHtml(t.renderer.reset)}</button>\n`;
-						html += `      </span>\n`;
-						html += `    </span>\n`;
-					} else if (!k.startsWith("_")) {
-						html += `    <span class="value">${escapeHtml(String(v))}</span>\n`;
-					}
-					html += `  </div>\n`;
+		// 2. Hero Bar : Portions, Rendement, Masse nette totale
+		let heroItemsHtml = "";
+
+		// Portions: the number and its word, then, once the recipe is scaled,
+		// the factor (and, interactive, a way back to the original). Nothing
+		// of the scale shows on a recipe that is not scaled.
+		const portionsVal = meta.portions ?? meta.servings;
+		if (portionsVal !== undefined) {
+			const numericV =
+				typeof portionsVal === "number"
+					? portionsVal
+					: Number.parseFloat(String(portionsVal));
+			const factor = data.scaleFactor;
+			const isScaled =
+				typeof factor === "number" && factor > 0 && Math.abs(factor - 1) > 1e-6;
+			const unitHtml = escapeHtml(portionsUnit(portionsVal, options.lang));
+			const usersIcon = options.icons?.users ?? DEFAULT_ICONS.html.users;
+			const factorBadge = isScaled
+				? `    <span class="scale-factor-badge" data-tooltip="${escapeHtml(t.renderer.scaledRecipe)}">${escapeHtml(formatScaleFactor(factor, options.lang))}</span>\n`
+				: "";
+
+			heroItemsHtml += `  <div class="hero-item hero-portions">\n`;
+			heroItemsHtml += `    ${usersIcon}\n`;
+			// @remove-in: 2.0.0 [renderer-interactive-scaling]
+			if (options.interactiveScaling) {
+				const basePortions =
+					isScaled && !Number.isNaN(numericV)
+						? round2(numericV / factor)
+						: portionsVal;
+				// Under one portion, "−" would only reach a fraction of one.
+				const minusDisabled =
+					!Number.isNaN(numericV) && numericV <= 1 ? " disabled" : "";
+				const decLabel = escapeHtml(t.renderer.decreasePortions);
+				const incLabel = escapeHtml(t.renderer.increasePortions);
+				const editLabel = escapeHtml(t.renderer.editPortions);
+				heroItemsHtml += `    <span class="scale-control interactive-portions" data-base-portions="${escapeHtml(String(basePortions))}">\n`;
+				heroItemsHtml += `      <button type="button" class="scale-btn minus" data-scale-action="dec-portions" aria-label="${decLabel}" title="${decLabel}"${minusDisabled}>${options.icons?.minus ?? DEFAULT_ICONS.html.minus}</button>\n`;
+				heroItemsHtml += `      <input type="number" class="scale-input-inline portions-input" value="${escapeHtml(String(portionsVal))}" min="0.1" step="any" inputmode="decimal" aria-label="${editLabel}" title="${editLabel}" />\n`;
+				heroItemsHtml += `      <button type="button" class="scale-btn plus" data-scale-action="inc-portions" aria-label="${incLabel}" title="${incLabel}">${options.icons?.plus ?? DEFAULT_ICONS.html.plus}</button>\n`;
+				heroItemsHtml += `    </span>\n`;
+				heroItemsHtml += `    <span class="portions-unit">${unitHtml}</span>\n`;
+				heroItemsHtml += factorBadge;
+				if (isScaled) {
+					const resetLabel = escapeHtml(
+						`${t.renderer.originalRecipe} (${basePortions} ${portionsUnit(basePortions, options.lang)})`,
+					);
+					heroItemsHtml += `    <button type="button" class="scale-btn reset" data-scale-action="set-factor" data-value="1" aria-label="${resetLabel}" title="${resetLabel}">${RESET_SCALE_ICON}</button>\n`;
+				}
+			} else {
+				heroItemsHtml += `    <span class="scale-val"><strong>${escapeHtml(String(portionsVal))}</strong> ${unitHtml}</span>\n`;
+				heroItemsHtml += factorBadge;
+				// A way to change the portions, for a surface that can (the
+				// playground's settings): hidden by `screen.css` unless the
+				// surface puts a `can-edit-portions` class around the view,
+				// so an editor or an exported page shows no dead button.
+				if (!context.paper) {
+					const changeLabel = escapeHtml(t.renderer.changePortions);
+					const pencilIcon =
+						options.icons?.pencilSimple ?? DEFAULT_ICONS.html.pencilSimple;
+					heroItemsHtml += `    <button type="button" class="edit-portions-btn" data-gram-action="edit-portions" aria-label="${changeLabel}" title="${changeLabel}">${pencilIcon}</button>\n`;
 				}
 			}
+			heroItemsHtml += `  </div>\n`;
 		}
 
-		html += `</div>\n`;
-		html += `</div>\n\n`;
+		// What the recipe makes, weighs and brings, apart from the portions: a
+		// group that goes to the next line as one when the bar is too narrow,
+		// rather than one item at a time.
+		let factsHtml = "";
 
+		// Rendement (makes / yield)
+		const makesVal = meta.makes ?? meta.yield ?? meta.yields;
+		if (makesVal) {
+			const packageIcon = options.icons?.package ?? DEFAULT_ICONS.html.package;
+			factsHtml += `    <div class="hero-item hero-yield">\n`;
+			factsHtml += `      ${packageIcon} <span>${escapeHtml(String(makesVal))}</span>\n`;
+			factsHtml += `    </div>\n`;
+		}
+
+		// Total mass: the figure only, why it is estimated or incomplete in
+		// its tooltip.
+		if (metrics?.totalMass) {
+			const scalesIcon = options.icons?.scales ?? DEFAULT_ICONS.html.scales;
+			const tooltip = massTooltipHtml(
+				t.renderer.massTitle,
+				metrics,
+				data.sections.flatMap((sec: any) => sec.ingredients ?? []),
+				context,
+				t,
+			);
+			factsHtml += `    <div class="hero-item hero-mass has-rich-tooltip">\n`;
+			factsHtml += `      ${scalesIcon} <span class="mass-value">${escapeHtml(massLabel(metrics))}</span>${tooltip}\n`;
+			factsHtml += `    </div>\n`;
+		}
+
+		// Nutrition: the energy of one basis, a link to the table at the bottom
+		// of the recipe. Shown with the table (`show-macros`), never without it.
+		const nut = metrics?.nutrition;
+		if (nut && hasNutritionValues(nut)) {
+			const basis = pillBasis(nut, options);
+			const pieIcon = options.icons?.chartPie ?? DEFAULT_ICONS.html.chartPie;
+			const kcal = Math.round(basis.values.calories ?? 0);
+			factsHtml += `    <a class="hero-item hero-nutrition" href="#${escapeHtml(nutritionAnchor(options))}">\n`;
+			factsHtml += `      ${pieIcon} <span class="nut-pill-value">${kcal} kcal</span> <span class="nut-pill-basis">${escapeHtml(inlineBasisLabel(basis, options.lang))}</span>\n`;
+			factsHtml += `    </a>\n`;
+		}
+
+		if (factsHtml) {
+			heroItemsHtml += `  <div class="hero-facts">\n${factsHtml}  </div>\n`;
+		}
+
+		if (heroItemsHtml.length > 0) {
+			const heroBarClass = options.classes?.recipeHeroBar || "recipe-hero-bar";
+			html += `<div class="${heroBarClass}">\n${heroItemsHtml}</div>\n`;
+		}
+
+		// 4. Note globale de recette (`notes:` du frontmatter)
+		if (meta.notes) {
+			const infoIcon = options.icons?.info ?? DEFAULT_ICONS.html.info;
+			html += `<div class="recipe-note">\n`;
+			html += `  ${infoIcon}\n`;
+			html += `  <div>${escapeHtml(String(meta.notes))}</div>\n`;
+			html += `</div>\n`;
+		}
+
+		html += `\n`;
 		return html;
 	},
 
 	renderShoppingList(data, context, options) {
-		if (!data.shopping_list || data.shopping_list.length === 0) return "";
+		const shoppingItems = (data.shopping_list ?? []) as KitItem[];
+		const cookwareItems = (data.cookware ?? []) as KitItem[];
+
+		if (shoppingItems.length === 0 && cookwareItems.length === 0) return "";
 		const t = getDictionary(options.lang);
 
 		let html = "";
 		const shoppingListClass = options.classes?.shoppingList || "shopping-list";
-		html += `<details class="${shoppingListClass}">\n`;
-		html += `  <summary><h2>${t.renderer.shoppingList}</h2></summary>\n`;
-		html += `  <ul>\n`;
+		const hasBoth = shoppingItems.length > 0 && cookwareItems.length > 0;
+		const title = hasBoth
+			? `${escapeHtml(t.renderer.shoppingList)} &amp; ${escapeHtml(t.renderer.cookware)}`
+			: shoppingItems.length > 0
+				? escapeHtml(t.renderer.shoppingList)
+				: escapeHtml(t.renderer.cookware);
 
-		const shoppingItems: any[] = data.shopping_list;
-		const renderGroups = groupMultiUnitEntries(shoppingItems);
+		const copyIcon = options.icons?.copy ?? DEFAULT_ICONS.html.copy;
+		const checkIcon = options.icons?.check ?? DEFAULT_ICONS.html.check;
+		// Nothing to copy from paper.
+		const copyBtnHtml = context.paper
+			? ""
+			: `<button type="button" class="copy-shopping-btn" aria-label="${escapeHtml(t.renderer.copyShoppingList)}" data-copied-text="${escapeHtml(t.renderer.copied)}"><span class="copy-icon">${copyIcon}</span><span class="check-icon" style="display:none">${checkIcon}</span> <span class="copy-label">${escapeHtml(t.renderer.copyShoppingList)}</span></button>`;
 
-		renderGroups.forEach((group) => {
-			const item = group[0];
-			if (isAlternativeGroup(item)) {
-				// strategies.alternative already joins every option ("egg or egg
-				// substitute") on one line — reuse it instead of hand-rolling the
-				// same join as a nested sub-list.
-				html += `    <li>${formatElement(item, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
-			} else if (isCompositeItem(item)) {
-				html += `    <li class="list-item-group">\n`;
-				html += `      ${formatElement(item, "html", { ...context, formatMode: "shopping-list" })} <strong>(${t.renderer.composite})</strong>${t.renderer.colon.trimEnd()}\n`;
-				html += `      <ul>\n`;
-				item.usage.forEach((child: any) => {
-					html += `        <li>${formatElement(child, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
-				});
-				html += `      </ul>\n`;
-				html += `    </li>\n`;
-			} else if (item.display) {
-				html += `    <li>${escapeHtml(item.display)}</li>\n`;
-			} else if (group.length > 1) {
-				html += `    <li class="list-item-group">\n`;
-				html += `      <strong>${escapeHtml(item.name || item.id)}</strong> <span class="mixed-units-badge" data-tooltip="${escapeHtml(t.renderer.mixedUnitsTooltip)}">⚠️ ${escapeHtml(t.renderer.mixedUnits)}</span>:\n`;
-				html += `      <ul>\n`;
-				group.forEach((entry: any) => {
-					html += `        <li>${formatElement(entry, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
-				});
-				html += `      </ul>\n`;
-				html += `    </li>\n`;
-			} else {
-				let extraHtml = "";
-				if (
-					item.purchasingMass &&
-					item.purchasingMass !== item.normalizedMass
-				) {
-					const gross = round1(item.purchasingMass);
-					extraHtml = ` <span class="gross-mass" data-tooltip="${escapeHtml(t.renderer.purchasingWeight)}">${gross}g ${escapeHtml(t.renderer.gross)}</span>`;
-				}
-				html += `    <li>${formatElement(item, "html", { ...context, formatMode: "shopping-list" })}${extraHtml}</li>\n`;
+		html += `<details class="prep-accordion ${shoppingListClass}" open>\n`;
+		html += `  <summary class="prep-summary">\n`;
+		html += `    <span class="prep-summary-title">${title}</span>\n`;
+		if (!hasBoth && copyBtnHtml) {
+			html += `    ${copyBtnHtml}\n`;
+		}
+		html += `  </summary>\n`;
+		html += `  <div class="prep-body">\n`;
+
+		if (shoppingItems.length > 0) {
+			html += `    <div class="mep-group">\n`;
+			if (hasBoth) {
+				html += `      <div class="mep-group-header">\n`;
+				html += `        <h5 class="mep-group-title">${escapeHtml(t.renderer.shoppingList)}</h5>\n`;
+				if (copyBtnHtml) html += `        ${copyBtnHtml}\n`;
+				html += `      </div>\n`;
 			}
-		});
-		html += `  </ul>\n`;
+			html += `      <ul class="kit-list">\n`;
+			const groups = groupMultiUnitEntries(shoppingItems);
+			groups.forEach((group) => {
+				const item = group[0];
+				if (!item) return;
+				if (isAlternativeGroup(item)) {
+					html += renderKitAlternativeItem(
+						item,
+						context,
+						options,
+						false,
+						false,
+					);
+				} else if (isCompositeItem(item)) {
+					html += renderKitCompositeItem(item, context, options);
+				} else if (group.length > 1) {
+					html += renderKitMixedUnitsItem(group, context, options);
+				} else {
+					html += renderKitItem(item, context, options);
+				}
+			});
+			html += `      </ul>\n`;
+			html += `    </div>\n`;
+		}
+
+		if (hasBoth && cookwareItems.length > 0) {
+			html += `    <div class="mep-group">\n`;
+			html += `      <h5 class="mep-group-title">${escapeHtml(t.renderer.cookware)}</h5>\n`;
+			html += `      <ul class="kit-list">\n`;
+			cookwareItems.forEach((cw) => {
+				const cwItem = { ...cw, type: "cookware" };
+				if (isAlternativeGroup(cw)) {
+					html += renderKitAlternativeItem(
+						cwItem,
+						context,
+						options,
+						true,
+						false,
+					);
+				} else {
+					html += renderKitItem(cwItem, context, options);
+				}
+			});
+			html += `      </ul>\n`;
+			html += `    </div>\n`;
+		}
+
+		html += `  </div>\n`;
 		html += `</details>\n\n`;
 		return html;
 	},
 
 	renderCookware(data, context, options) {
+		// When shopping list is already present, cookware was rendered together inside it
+		if (data.shopping_list && data.shopping_list.length > 0) return "";
 		if (!data.cookware || data.cookware.length === 0) return "";
 		const t = getDictionary(options.lang);
 
 		let html = "";
 		const cookwareListClass = options.classes?.cookwareList || "cookware";
-		html += `<details class="${cookwareListClass}">\n`;
-		html += `  <summary><h2>${t.renderer.cookware}</h2></summary>\n`;
-		html += `  <ul>\n`;
+		html += `<details class="prep-accordion ${cookwareListClass}" open>\n`;
+		html += `  <summary class="prep-summary">\n`;
+		html += `    <span class="prep-summary-title">${escapeHtml(t.renderer.cookware)}</span>\n`;
+		html += `  </summary>\n`;
+		html += `  <div class="prep-body">\n`;
+		html += `    <div class="mep-group">\n`;
+		html += `      <ul class="kit-list">\n`;
 		data.cookware.forEach((cw: any) => {
-			// formatElement dispatches on cw.type, so a plain cookware item and
-			// an alternative group both go through the same call. The context
-			// here never sets formatMode (leaf cookware has always rendered its
-			// quantity as a tooltip, not a visible span — unchanged on purpose),
-			// but strategies.alternative's default "inline" mode only shows the
-			// first option with an "(alt)" badge — force non-inline just for a
-			// group so every option joins on one line ("pan or skillet") instead.
-			const cwContext = isAlternativeGroup(cw)
-				? { ...context, formatMode: "shopping-list" as const }
-				: context;
-			html += `    <li>${formatElement(cw, "html", cwContext)}</li>\n`;
+			const cwItem = { ...cw, type: "cookware" };
+			if (isAlternativeGroup(cw)) {
+				html += renderKitAlternativeItem(cwItem, context, options, true, false);
+			} else {
+				html += renderKitItem(cwItem, context, options);
+			}
 		});
-		html += `  </ul>\n`;
+		html += `      </ul>\n`;
+		html += `    </div>\n`;
+		html += `  </div>\n`;
 		html += `</details>\n\n`;
 		return html;
 	},
@@ -392,21 +1070,15 @@ export const htmlBackend: RenderBackend = {
 
 				// Section Mass
 				if (sec.metrics && sec.metrics.totalMass > 0) {
-					const mass = Math.round(sec.metrics.totalMass);
-					let msg = `${mass}g`;
-					let title = t.renderer.sectionStandardizedMass;
-					if (sec.metrics.massStatus === "estimated") {
-						msg = `~${mass}g`;
-						title += t.renderer.estimatedSuffix;
-					} else if (sec.metrics.massStatus === "incomplete") {
-						msg = `>${mass}g`;
-						const missingStr =
-							sec.metrics.missingMassIngredients?.join(", ") ||
-							t.renderer.someIngredients;
-						title += `${t.renderer.missingMass}${missingStr})`;
-					}
 					const sIcon = options.icons?.scales ?? DEFAULT_ICONS.html.scales;
-					titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${escapeHtml(title)}">${sIcon} ${msg}</small>`;
+					const tooltip = massTooltipHtml(
+						t.renderer.massSectionTitle,
+						sec.metrics,
+						sec.ingredients ?? [],
+						context,
+						t,
+					);
+					titleHtml += ` <small class="section-meta-badge section-meta-mass has-rich-tooltip">${sIcon} ${escapeHtml(massLabel(sec.metrics))}${tooltip}</small>`;
 				}
 
 				const declLabel = sec.intermediate_preparation
@@ -415,16 +1087,30 @@ export const htmlBackend: RenderBackend = {
 							sec.intermediate_preparation,
 						)
 					: "";
+				const declId = sec.intermediate_preparation
+					? (context.registry?.ingredients?.[sec.intermediate_preparation]
+							?.id ??
+						Object.keys(context.registry?.ingredients ?? {}).find(
+							(id) =>
+								id === sec.intermediate_preparation ||
+								context.registry?.ingredients?.[id]?.name ===
+									sec.intermediate_preparation ||
+								id === sec.intermediate_preparation.replace(/\$/g, "-"),
+						) ??
+						sec.intermediate_preparation.replace(/\$/g, "-"))
+					: "";
+				const declAttr = declId ? ` data-declares="${escapeHtml(declId)}"` : "";
+
 				if (sec.intermediate_preparation && sec.module) {
 					const arrowIcon =
 						options.icons?.arrowRight ?? DEFAULT_ICONS.html.arrowRight;
 					const packageIcon =
 						options.icons?.package ?? DEFAULT_ICONS.html.package;
-					titleHtml += ` <span class="section-declaration-badge has-module" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}"><span class="section-module-source">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</span><span class="section-decl-target">${arrowIcon} ${escapeHtml(declLabel)}</span></span>`;
+					titleHtml += ` <span class="section-declaration-badge has-module"${declAttr} data-tooltip="${escapeHtml(t.renderer.intermediateResult)}"><span class="section-module-source">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</span><span class="section-decl-target">${arrowIcon} ${escapeHtml(declLabel)}</span></span>`;
 				} else if (sec.intermediate_preparation) {
 					const arrowIcon =
 						options.icons?.arrowRight ?? DEFAULT_ICONS.html.arrowRight;
-					titleHtml += ` <span class="section-declaration-badge" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(declLabel)}</span>`;
+					titleHtml += ` <span class="section-declaration-badge"${declAttr} data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(declLabel)}</span>`;
 				} else if (sec.module) {
 					const packageIcon =
 						options.icons?.package ?? DEFAULT_ICONS.html.package;
@@ -434,7 +1120,7 @@ export const htmlBackend: RenderBackend = {
 				const sHeaderClass = options.classes?.sectionHeader
 					? ` ${options.classes.sectionHeader}`
 					: "";
-				html += `    <h3 class="section-header${sHeaderClass}">${titleHtml}</h3>\n`;
+				html += `    <h3 class="section-header${sHeaderClass}"${declAttr}>${titleHtml}</h3>\n`;
 			}
 
 			// Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
@@ -446,9 +1132,13 @@ export const htmlBackend: RenderBackend = {
 				const sIngredientsClass =
 					options.classes?.sectionIngredients || "section-ingredients";
 				html += `    <div class="${sIngredientsClass}">\n`;
-				html += `      <ul>\n`;
+				html += `      <ul class="kit-list">\n`;
 				sectionItems.forEach((item: any) => {
-					html += `        <li>${formatElement(item, "html", { ...context, formatMode: "mise-en-place" })}</li>\n`;
+					if (isAlternativeGroup(item)) {
+						html += renderKitAlternativeItem(item, context, options);
+					} else {
+						html += renderKitItem(item, context, options);
+					}
 				});
 				html += `      </ul>\n`;
 				html += `    </div>\n`;
@@ -474,7 +1164,19 @@ export const htmlBackend: RenderBackend = {
 				const stepItemClass = options.classes?.stepItem
 					? ` class="${options.classes.stepItem}"`
 					: "";
-				html += `      <li value="${stepCounter}"${stepItemClass}>\n`;
+
+				const declItems = step.content.filter(
+					(c: any) => c.type === "declaration",
+				);
+				const declIds = declItems
+					.map((c: any) => c.id || c.name)
+					.filter(Boolean);
+				const stepDeclAttr =
+					declIds.length > 0
+						? ` data-declares="${escapeHtml(declIds.join(" "))}"`
+						: "";
+
+				html += `      <li value="${stepCounter}"${stepDeclAttr}${stepItemClass}>\n`;
 				if (step.action) {
 					const stepActionClass = options.classes?.stepAction
 						? ` class="${options.classes.stepAction}"`
@@ -482,27 +1184,23 @@ export const htmlBackend: RenderBackend = {
 					html += `        <span${stepActionClass}>${escapeHtml(step.action)}</span> `;
 				}
 
-				// Declarations always render after every inline token, regardless of
-				// their original position in the step (html.ts-specific choice — the
+				// What a step makes (`->&dough`) is not part of its sentence: it is
+				// the step's result, written on a line of its own under the text,
+				// whatever its position in the source (html.ts-specific choice — the
 				// other formatters render declarations inline, in source order).
 				const inlineItems = step.content.filter(
 					(c: any) => c.type !== "declaration",
 				);
-				const declItems = step.content.filter(
-					(c: any) => c.type === "declaration",
+				const stepContent = joinStepTokens(
+					trimBeforeComments(inlineItems),
+					(c) => formatElement(c, "html", stepContext),
+					(c) => typeof c !== "string" && c.type !== "comment",
+					nobr,
 				);
-				const renderGroup = (arr: any[]) =>
-					joinStepTokens(
-						arr,
-						(c) => formatElement(c, "html", stepContext),
-						(c) =>
-							typeof c !== "string" &&
-							c.type !== "comment" &&
-							c.type !== "declaration",
-					);
-
-				const stepContent = renderGroup(inlineItems) + renderGroup(declItems);
 				html += `        ${stepContent}\n`;
+				if (declItems.length > 0) {
+					html += `        ${renderStepResult(declItems, context, options)}\n`;
+				}
 				html += `      </li>\n`;
 			});
 			html += `    </ol>\n`;
@@ -525,8 +1223,8 @@ export const htmlBackend: RenderBackend = {
 		context._inlineComments.forEach((note, idx) => {
 			const index = idx + 1;
 			html += `    <li id="${renderId}-${index}">\n`;
-			html += `      ${escapeHtml(note)}\n`;
-			html += `      <a href="#ref-${renderId}-${index}" class="note-return" title="${escapeHtml(t.renderer.returnToStep)}">↩</a>\n`;
+			// The non-breaking space keeps ↩ on the line of the note's last word.
+			html += `      ${escapeHtml(note)}&nbsp;<a href="#ref-${renderId}-${index}" class="note-return" title="${escapeHtml(t.renderer.returnToStep)}">↩</a>\n`;
 			html += `    </li>\n`;
 		});
 		html += `  </ol>\n`;
@@ -539,83 +1237,122 @@ export const htmlBackend: RenderBackend = {
 		const nut = getMetrics(data)?.nutrition;
 		if (!hasNutritionToShow(nut) || !nut) return "";
 
-		// Interactive output emits every basis the recipe has and lets the reader
-		// switch; static output renders the one `nutritionBasis` selects. The
-		// switch is radio inputs plus sibling selectors — no JavaScript, which
-		// matters because this HTML is also written to a standalone file by
-		// `gram export` where no script would ever run.
-		const bases =
-			options.interactiveNutrition && !options.nutritionBasis
-				? availableBases(nut, options.lang)
-				: [resolveNutritionBasis(nut, options.nutritionBasis, options.lang)];
-
-		const group = `nut-basis-${options.renderId ?? "recipe"}`;
-		// The pre-selected basis is the one a static render would have shown, so
-		// the panel opens on the same figures whether or not the toggle is there.
-		const defaultKey = resolveNutritionBasis(nut, "auto", options.lang).key;
+		// A European label set like an American one: the columns of the first
+		// (per 100 g, per portion, the share of the reference intake of a
+		// portion, kJ and kcal), the rhythm of the second (a strong title,
+		// heavy rules between header, energy and nutrients, the energy in
+		// large type). Every basis side by side, so no switch is needed (and
+		// none was possible without a script in the standalone file of
+		// `gram export`).
+		const columns = nutritionColumns(nut, options.nutritionBasis, options.lang);
+		const riBasis = columns.find((c) => c.key === "perPortion");
+		const rowsByColumn = columns.map((c) =>
+			nutritionRows(c.values, options.lang),
+		);
+		const riRows = riBasis ? nutritionRows(riBasis.values, options.lang) : [];
+		const kcalOf = (basis: ResolvedBasis) =>
+			Math.round(basis.values.calories ?? 0);
+		const riCell = (key: string) => {
+			if (!riBasis) return "";
+			const row = riRows.find((r) => r.key === key);
+			const pct = row ? referenceIntakePercent(key, row.value) : undefined;
+			return `<td class="nut-ri">${pct === undefined ? "" : `${pct}%`}</td>`;
+		};
 
 		let html = "";
-		html += `<div class="nutrition-panel">\n`;
-		html += `  <div class="nut-header">${escapeHtml(t.renderer.nutrition)} <span class="est-badge" data-tooltip="${escapeHtml(t.renderer.coverageTooltip)}: ${Math.round(nut.coverage * 100)}%">${escapeHtml(t.renderer.estimateTooltip)}</span></div>\n`;
+		html += `<section class="nutrition-panel" id="${escapeHtml(nutritionAnchor(options))}">\n`;
+		html += `  <div class="nut-header"><h3 class="nut-title">${escapeHtml(t.renderer.nutritionTableTitle)}</h3> <span class="est-badge" data-tooltip="${escapeHtml(t.renderer.coverageTooltip)}: ${Math.round(nut.coverage * 100)}%">${escapeHtml(t.renderer.estimateTooltip)}</span></div>\n`;
 
-		// The radios must precede every grid they control: the CSS matches them
-		// as earlier siblings (`:checked ~ .nut-grid[data-basis=…]`).
-		if (bases.length > 1) {
-			bases.forEach((basis) => {
-				const id = `${group}-${basis.key}`;
-				const checked = basis.key === defaultKey ? " checked" : "";
-				html += `  <input type="radio" class="nut-basis-radio" name="${escapeHtml(group)}" id="${escapeHtml(id)}" data-basis="${basis.key}"${checked} />\n`;
-			});
-			html += `  <div class="nut-basis-switch">\n`;
-			bases.forEach((basis) => {
-				const id = `${group}-${basis.key}`;
-				html += `    <label for="${escapeHtml(id)}">${escapeHtml(basis.label)}</label>\n`;
-			});
-			html += `  </div>\n`;
-		} else if (bases[0]) {
-			html += `  <div class="nut-basis-single">${escapeHtml(bases[0].label)}</div>\n`;
+		// What the figures rest on: the portions, the raw mass.
+		const subtitle = [
+			riBasis ? portionsLabel(data, options.lang) : undefined,
+			columns.find((c) => c.note)?.note,
+		].filter(Boolean);
+		if (subtitle.length > 0 && hasNutritionValues(nut)) {
+			html += `  <p class="nut-subtitle">${escapeHtml(subtitle.join(" · "))}</p>\n`;
 		}
 
-		for (const basis of bases) {
-			// `data-default` marks the grid to fall back to when no radio in this
-			// panel is checked — which happens when two panels share a page and
-			// therefore a radio group. Without it the panel would render empty.
-			const isDefault =
-				bases.length > 1 && basis.key === defaultKey ? " data-default" : "";
-			html += `  <div class="nut-grid" data-basis="${basis.key}"${isDefault}>\n`;
-			// Sub-macros live inside their parent's card: "of which saturates" in
-			// a cell of its own, the same size as Protein, reads as a nutrient in
-			// its own right rather than a part of the fat next to it.
-			for (const group of nutritionGroups(basis.values, options.lang)) {
-				html += `    <div class="nut-item"><span class="label">${escapeHtml(group.label)}</span> <strong>${group.value} ${group.unit}</strong>`;
-				if (group.children.length > 0) {
-					html += `\n      <ul class="nut-item-children">\n`;
-					for (const child of group.children) {
-						html += `        <li><span class="label">${escapeHtml(child.label)}</span> <span class="value">${child.value} ${child.unit}</span></li>\n`;
-					}
-					html += `      </ul>\n    `;
-				}
-				html += `</div>\n`;
+		for (const w of nut.warnings ?? []) {
+			html += `  <p class="nut-warnings"><strong>${escapeHtml(t.renderer.incompleteData)}:</strong> ${escapeHtml(w.message)}</p>\n`;
+		}
+
+		if (!hasNutritionValues(nut)) {
+			html += `</section>\n`;
+			return html;
+		}
+
+		// The table scrolls inside its frame when the view is too narrow for
+		// it, rather than pushing the page wider.
+		html += `  <div class="nut-table-scroll">\n`;
+		html += `  <table class="nut-table">\n`;
+		html += `    <thead><tr><th scope="col" class="nut-col-name"><span class="nut-sr">${escapeHtml(t.renderer.nutritionNutrient)}</span></th>`;
+		for (const c of columns) {
+			html += `<th scope="col">${escapeHtml(c.label)}</th>`;
+		}
+		if (riBasis) {
+			html += `<th scope="col" class="nut-col-ri">${escapeHtml(t.renderer.nutritionReferenceIntake)}*</th>`;
+		}
+		html += `</tr></thead>\n`;
+		html += `    <tbody>\n`;
+
+		// The energy: kcal in large type over kJ, in every column.
+		html += `      <tr class="nut-energy"><th scope="row">${escapeHtml(t.renderer.nutrients.calories)}</th>`;
+		for (const c of columns) {
+			const kcal = kcalOf(c);
+			html += `<td><span class="nut-kcal">${kcal} kcal</span><span class="nut-kj">${kcalToKj(kcal)} kJ</span></td>`;
+		}
+		html += riCell("calories");
+		html += `</tr>\n`;
+
+		for (const row of rowsByColumn[0] ?? []) {
+			if (row.key === "calories") continue;
+			const cls = row.nested ? ' class="is-nested"' : "";
+			html += `      <tr${cls}><th scope="row">${escapeHtml(row.label)}</th>`;
+			for (const rows of rowsByColumn) {
+				const cell = rows.find((r) => r.key === row.key);
+				html += `<td>${cell ? escapeHtml(nutrientValue(cell)) : ""}</td>`;
 			}
-			if (basis.note) {
-				html += `    <p class="nut-basis-note">${escapeHtml(basis.note)}</p>\n`;
-			}
+			html += riCell(row.key);
+			html += `</tr>\n`;
+		}
+		html += `    </tbody>\n`;
+		html += `  </table>\n`;
+		html += `  </div>\n`;
+
+		// Under the table: the whole recipe when it is not a column, then the
+		// reference intake.
+		const notes: string[] = [];
+		const total = wholeRecipeBelow(nut, columns, options.lang);
+		if (total) {
+			notes.push(
+				`<span class="nut-total">${escapeHtml(t.renderer.nutritionWholeRecipeTotal.replace("{kcal}", `${kcalToKj(kcalOf(total))} kJ / ${kcalOf(total)} kcal`))}</span>`,
+			);
+		}
+		if (riBasis) {
+			notes.push(`* ${escapeHtml(t.renderer.nutritionReferenceIntakeNote)}`);
+		}
+		if (notes.length > 0) {
+			html += `  <div class="nut-footer">\n`;
+			for (const note of notes) html += `    <p>${note}</p>\n`;
 			html += `  </div>\n`;
 		}
 
-		html += `</div>\n`;
+		html += `</section>\n`;
 		return html;
 	},
 
 	assembleDocument(sections: RenderSections) {
+		// The root every rule of `screen.css` is scoped to.
 		return (
+			'<article class="gram-recipe">\n' +
 			sections.title +
 			sections.meta +
 			sections.shoppingList +
 			sections.cookware +
 			sections.instructions +
 			sections.footnotes +
-			sections.nutrition
+			sections.nutrition +
+			"</article>\n"
 		);
 	},
 };

@@ -16,7 +16,7 @@ The `@gram-lang/renderer` package consumes this complete JSON object and formats
 The renderer supports five primary export targets:
 
 ### 1. Markdown (`toMarkdown`)
-Generates standardized GitHub Flavored Markdown (GFM) containing a formatted shopping list, equipment inventory, numbered instructions, footnotes (`[^1]`), gross purchasing mass badges, and an optional nutritional panel (`## 🥗 Nutrition`). This format integrates cleanly with static site generators (Astro, VitePress, Hugo) and personal knowledge management tools (Obsidian).
+Generates standardized GitHub Flavored Markdown (GFM) containing a formatted shopping list, equipment inventory, numbered instructions, footnotes (`[^1]`), gross purchasing mass badges, and an optional nutritional panel (`## Nutrition`). This format integrates cleanly with static site generators (Astro, VitePress, Hugo) and personal knowledge management tools (Obsidian).
 
 ### 2. Semantic HTML (`toHTML`)
 Produces clean, semantic HTML markup. The HTML formatter employs an **inversion of control** architecture, allowing you to inject custom CSS classes (e.g. Tailwind CSS) and SVG icon sets to match your host application's design system.
@@ -105,7 +105,7 @@ The `RendererOptions` interface also provides `bakersReference`/`bakersMathOnly`
   While tag injection is prevented, `toMarkdown` does not evaluate URL protocols (e.g. `javascript:` links). When rendering untrusted third-party recipes, apply a dedicated HTML sanitizer (`DOMPurify` or `rehype-sanitize`) on the final markup.
   :::
 - **Duration formatting**: Converts raw minute integers into natural duration strings (`90` → `1h 30m`).
-- **Bundled CSS**: The package distributes `gram.css` (light/dark tokens for all components, the run sheet included) and, until 2.0.0, `gantt.css` for the deprecated Gantt chart. Print documents embed these rules directly in the document `<head>`, requiring no external asset fetching.
+- **Bundled CSS**: The package distributes `@gram-lang/renderer/gram.css`: the light and dark tokens shared by every view, then the styles of each view, scoped to its root element (`<article class="gram-recipe">`, `<section class="gram-run-sheet">`) so that no rule of one view reaches another. Until 2.0.0 it also ships `gantt.css` for the deprecated Gantt chart. Print documents embed these rules directly in the document `<head>`, requiring no external asset fetching.
 
 ## Direct JSON consumption
 

@@ -1,0 +1,170 @@
+/*
+ * The floating tooltip of `attachTooltips` (`shared/tooltip.ts`). It is
+ * appended to <body>, outside any view, so it cannot be scoped to one.
+ */
+.gram-tooltip-fixed {
+	position: fixed;
+	z-index: 999999;
+	pointer-events: none;
+	opacity: 0;
+	visibility: hidden;
+	transition:
+		opacity 0.15s ease,
+		visibility 0.15s ease;
+	background: var(--color-surface-raised, #24292e);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	border: 1px solid var(--color-border, #444);
+	color: var(--color-text-strong, #fff);
+	padding: 6px 12px;
+	border-radius: 3px;
+	font-size: 13px;
+	font-weight: 500;
+	font-family: var(--gram-font-sans);
+	white-space: pre-wrap;
+	width: max-content;
+	max-width: 320px;
+	line-height: 1.4;
+	box-shadow: 0 4px 16px
+		color-mix(in srgb, var(--gray-1000, #000) 25%, transparent);
+	display: flex;
+	flex-direction: column;
+}
+
+.gram-tooltip-fixed.visible {
+	opacity: 1;
+	visibility: visible;
+}
+
+/* A timing breakdown, copied from a timing pill of the recipe. */
+.gram-tooltip-fixed .timing-tooltip-title {
+	font-weight: 700;
+	color: var(--color-text-strong);
+	margin-bottom: 4px;
+	text-align: center;
+}
+
+.gram-tooltip-fixed .timing-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 16px;
+	font-size: 0.82rem;
+	color: var(--color-text-muted);
+}
+
+.gram-tooltip-fixed .timing-label {
+	text-align: left;
+}
+
+.gram-tooltip-fixed .timing-detail-type {
+	color: var(--color-text-muted);
+	font-size: 0.9em;
+	font-style: italic;
+	font-weight: 400;
+}
+
+.gram-tooltip-fixed .timing-val {
+	text-align: right;
+	font-family: var(--gram-font-mono);
+	font-weight: 600;
+	color: var(--color-text-strong);
+}
+
+.gram-tooltip-fixed .timing-divider {
+	height: 1px;
+	background-color: var(--color-border);
+	margin: 3px 0;
+}
+
+/*
+ * The card of an element of a step (`data-tooltip-html`, `tooltip-card.ts`):
+ * the name and its badges, then label / value rows, values aligned right.
+ */
+.gram-tooltip-fixed:has(.gram-tip) {
+	padding: 8px 12px;
+}
+
+.gram-tooltip-fixed .gram-tip {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 140px;
+	white-space: normal;
+	text-align: left;
+}
+
+.gram-tooltip-fixed .gram-tip-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.gram-tooltip-fixed .gram-tip-title {
+	font-weight: 700;
+	color: var(--color-text-strong);
+}
+
+.gram-tooltip-fixed .gram-tip-badge {
+	flex-shrink: 0;
+	padding: 0 6px;
+	border: 1px solid var(--color-border);
+	border-radius: 3px;
+	font-size: 10px;
+	font-weight: 600;
+	line-height: 1.6;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--color-text-muted);
+}
+
+.gram-tooltip-fixed .gram-tip-subtitle {
+	margin-top: -4px;
+	font-size: 11px;
+	color: var(--color-text-muted);
+}
+
+.gram-tooltip-fixed .gram-tip-rows {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: baseline;
+	gap: 3px 16px;
+	margin: 0;
+	padding-top: 6px;
+	border-top: 1px solid var(--color-border);
+	font-size: 12px;
+}
+
+.gram-tooltip-fixed .gram-tip-rows dt {
+	margin: 0;
+	font-weight: 400;
+	color: var(--color-text-muted);
+}
+
+.gram-tooltip-fixed .gram-tip-rows dd {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	margin: 0;
+	text-align: right;
+}
+
+.gram-tooltip-fixed .gram-tip-value {
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--color-text-strong);
+}
+
+.gram-tooltip-fixed .gram-tip-detail {
+	font-size: 11px;
+	font-style: italic;
+	font-weight: 400;
+	color: var(--color-text-muted);
+}
+
+/* Once the script runs, the CSS-only tooltips of the views step aside. */
+body.gram-has-js-tooltips [data-tooltip]::before,
+body.gram-has-js-tooltips [data-tooltip]::after {
+	display: none !important;
+}

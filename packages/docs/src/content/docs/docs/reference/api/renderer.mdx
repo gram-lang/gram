@@ -30,7 +30,7 @@ const html = toHTML(compiled, { lang: 'en' });
 
 `toPrintHTML` produces a complete, standalone HTML document (with inline `<style>`, A4 `@page` rules, and no external dependencies), suitable for PDF export or paper printing. `toHTML` produces an HTML fragment intended to be embedded in an existing page layout.
 
-`toText` <Since v="1.4.0" /> writes the recipe as plain text, for a terminal or a plain file: a box with the title, the servings and the times, then the shopping list, the cookware, each section (its ingredients, then its numbered steps), the notes and the nutrition. Nothing is escaped and there is no markup; the words come from `@gram-lang/i18n`. It is the `text` format of the recipe view (`render("recipe", input, "text")`), what `gram view` shows and `gram export --format text` writes. Colors are up to the surface, through `textStyle`:
+`toText` <Since v="1.4.0" /> writes the recipe as plain text, for a terminal or a plain file: a box with the title, the portions and the times, then the shopping list, the cookware, each section (its ingredients, then its numbered steps), the notes and the nutrition. Nothing is escaped and there is no markup; the words come from `@gram-lang/i18n`. It is the `text` format of the recipe view (`render("recipe", input, "text")`), what `gram view` shows and `gram export --format text` writes. Colors are up to the surface, through `textStyle`:
 
 ```typescript
 import chalk from 'chalk';
@@ -58,9 +58,9 @@ All four formatters use the same underlying traversal (`RenderBackend`). This gu
 | `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Controls resolution for passive timers defined as ranges (`~_{12-24h}`): minimum duration (`'shortest'`, default), midpoint (`'balanced'`), or maximum duration (`'longest'`). Exact passive timers and active timers are unaffected. Governs the same computed times as `miseEnPlace`. |
 | `comments` | `'show' \| 'hide'` | <Since v="1.4.0" /> Shows (`'show'`, default) or leaves out (`'hide'`) the comments of the recipe (`// like this`): both standalone notes on their own line and inline comments at the end of a line (rendered as footnotes in recipe views). Applies uniformly across all views, including the run sheet. |
 | `bakersMathOnly` | `boolean` | Shows only baker's percentages, hiding absolute ingredient quantities. |
-| `interactiveScaling` | `boolean` | Emits interactive scaling controls for yield and ingredient adjustments (HTML only). |
-| `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Selects the nutrition calculation basis. `'auto'` (default) uses per-portion if portions are declared, otherwise whole recipe. |
-| `interactiveNutrition` | `boolean` | HTML only: emits all available nutrition bases under a pure CSS interactive selector. Requires the renderer stylesheet; ignored if `nutritionBasis` locks a specific basis. |
+| `interactiveScaling` | `boolean` | <Since type="deprecated" v="1.4.0" /> Draws a portions stepper in the hero bar of the HTML recipe, whose buttons work only if the page around it handles them. Scale the recipe before rendering it instead: the view shows the scaled portions and the factor (`×1.5`) by itself. Removed in 2.0.0. |
+| `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Selects the nutrition calculation basis. `'auto'` (default) shows per 100 g and per portion side by side (per portion only when portions are declared), with the whole recipe under them, in the HTML, Markdown and text formats alike. |
+| `interactiveNutrition` | `boolean` | <Since type="deprecated" v="1.4.0" /> No longer has any effect: the HTML recipe shows every nutrition basis side by side in a table. Removed in 2.0.0. |
 | `lang` | `string` | BCP-47 language tag (e.g. `'en'`, `'fr'`) for UI string localization via `@gram-lang/i18n`. |
 | `renderId` | `string` | Prefix for footnote anchor IDs — prevents ID collisions when rendering multiple recipes on one page. |
 | `textStyle` | `TextStyle` | <Since v="1.4.0" /> Plain text only: how to set parts apart, one function per part (`title`, `heading`, `dim`, `ingredient`, `reference`, `cookware`, `timer`, `action`), each taking a piece of text and returning it styled, without changing its visible width (terminal colors, for instance). A part left out stays plain, so the renderer never depends on a terminal library. |
@@ -93,7 +93,7 @@ const html = toHTML(analyzed.result, viewSettingsToRendererOptions(view));
 | `SETTINGS` | Both view and recipe settings combined in a single list. |
 | `parseViewSettings(raw)`, `parseRecipeSettings(raw)` | Parse settings from an arbitrary object, falling back to defaults for any missing or unknown key. |
 | `DEFAULT_VIEW_SETTINGS`, `DEFAULT_RECIPE_SETTINGS` | Default values for all view and recipe settings. |
-| `viewSettingsToRendererOptions(settings)` | Converts view settings into `RendererOptions`. An automatic nutrition basis is omitted so interactive previews retain their toggle. |
+| `viewSettingsToRendererOptions(settings)` | Converts view settings into `RendererOptions`. An automatic nutrition basis is omitted, so the nutrition table keeps every basis side by side. |
 | `recipeSettingsToAnalyzerOptions(settings)` | Converts recipe settings into analyzer options (`enableBakersMath`, ...). |
 
 Each descriptor exposes its `key`, `kind` (`"view"` or `"recipe"`), `type` (`"choice"` with its `values`, or `"flag"`), `default`, `description`, and validation/parsing methods (`accepts(raw)`, `parse(raw)`).
@@ -205,7 +205,7 @@ The run sheet for a recipe without an explicit target serving time is obtained v
 
 | Field | Description |
 |---|---|
-| `title`, `subtitle`, `summary` | "Run sheet — Entremets", "For Saturday, October 17 at 20:00 · 6 servings", "3 days · 3 visits to the kitchen · 45m of work in all". |
+| `title`, `subtitle`, `summary` | "Run sheet — Entremets", "For Saturday, October 17 at 20:00 · 6 portions", "3 days · 3 visits to the kitchen · 45m of work in all". |
 | `problems` | Contextual diagnostics reported when scheduling constraints could not be met (one descriptive sentence per problem). |
 | `schedule[]` | Multi-day schedule summary: one entry per active kitchen visit (`kind: 'visit'`), background thread (`'thread'`), and the final service (`'serve'`), containing `day`, `time`, and `text`. |
 | `days[]` | Per-day details: header (`heading`), time slot (`slot`), adjusted wait notices (`notices`), and visits (`visits[]`), each with `slot`, anticipation margin (`margin`), required items (`kit[]`, groups of lines, filled in `perDay` and `upfront` modes), the sections to cook (`program[]`: a section, its `steps[]` as the recipe numbers them with their action, HTML, Markdown and text, the time it starts (`startTime`, with a serving time), a `continued` flag when it goes on from an earlier visit, its source file (`origin`) when imported, a reference such as `steps 1 to 3`, and in `perSection` mode its own `kit[]` for mise en place), and unattended background tasks (`leaving[]`). |

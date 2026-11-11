@@ -187,3 +187,27 @@ deprecations:
     replacement: "Explicit token kind/discriminant on StepToken and public usage references"
     files:
       - "packages/kitchen/src/types.ts"
+
+  - id: renderer-interactive-scaling
+    layer: api
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The interactiveScaling option of the renderer draws a portions stepper in the HTML recipe that works only where the host page wires its buttons; the recipe view shows the portions and the scale factor and leaves setting them to the surface. Its strings (decreasePortions, increasePortions, editPortions) go with it"
+    replacement: "Scale the recipe before rendering it (applyScale() of @gram-lang/kitchen, or the surface's own controls, such as the playground's Portions & Scale settings): the view shows the scaled portions and the factor (×1.5) by itself"
+    files:
+      - "packages/renderer/src/types.ts"
+      - "packages/renderer/src/shared/icons.ts"
+      - "packages/renderer/src/views/recipe/html.ts"
+      - "packages/i18n/src/locales/en.ts"
+      - "packages/i18n/src/locales/fr.ts"
+
+  - id: renderer-interactive-nutrition
+    layer: api
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The interactiveNutrition option of the renderer no longer has any effect: the HTML recipe shows every nutrition basis side by side in a table"
+    replacement: "None: remove the option (nutritionBasis still shows a single basis)"
+    files:
+      - "packages/renderer/src/types.ts"

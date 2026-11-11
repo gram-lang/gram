@@ -7,6 +7,11 @@
       "outputs": ["dist/**"],
       "outputLogs": "errors-only"
     },
+    "gram-lang#build": {
+      "dependsOn": ["^build", "prebuild"],
+      "outputs": ["dist/**", "media/preview.css", "media/json-tree.css"],
+      "outputLogs": "errors-only"
+    },
     "prebuild": {
       "outputs": ["src/grammar-content.ts"],
       "outputLogs": "errors-only"
@@ -26,6 +31,7 @@
       "outputLogs": "errors-only"
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },

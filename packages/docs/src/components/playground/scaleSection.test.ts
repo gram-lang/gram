@@ -7,6 +7,7 @@ import {
 	knownUnits,
 	matchingUnits,
 	parseScaleQuantity,
+	factorForPortions,
 	scaleBadgeTitle,
 	targetChange,
 	unitKey,
@@ -206,5 +207,20 @@ describe("the keys in the unit list", () => {
 			highlighted: 1,
 			preventDefault: false,
 		});
+	});
+});
+
+describe("factorForPortions", () => {
+	it("turns a count of portions into the overall scale", () => {
+		expect(factorForPortions(6, 4)).toBe("150");
+		expect(factorForPortions(3, 8)).toBe("37.5");
+		expect(factorForPortions(4, 4)).toBe("100");
+		expect(factorForPortions(1, 3)).toBe("33.33");
+	});
+
+	it("gives nothing for a count that is no count, or a recipe with no portions", () => {
+		expect(factorForPortions(0, 4)).toBeNull();
+		expect(factorForPortions(Number.NaN, 4)).toBeNull();
+		expect(factorForPortions(6, null)).toBeNull();
 	});
 });

@@ -1,12 +1,12 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`renderer output snapshots toHTML output is stable 1`] = `
-"<h1>Crêpes</h1>
+"<article class="gram-recipe">
+<h1 class="recipe-title">Crêpes</h1>
 
-<div class="recipe-timings-grid">
- <div class="timing-card">
-   <div class="meta-label"><svg class="gicon gicon-clock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></svg> Total Time</div>
-   <div class="meta-value">45m</div>
+<div class="recipe-timings-bar">
+  <span class="timing-pill total" data-tooltip="Total Time: 45m">
+    <svg class="gicon gicon-clock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></svg> <span class="timing-text">45m</span>
     <div class="timing-tooltip">
       <div class="timing-tooltip-title">Total Time = Prep + Active + Idle</div>
       <div class="timing-row">
@@ -18,10 +18,9 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
         <span class="timing-val">+ 2m</span>
       </div>
     </div>
- </div>
- <div class="timing-card">
-   <div class="meta-label"><svg class="gicon gicon-fire" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M183.89,153.34a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68ZM216,144a88,88,0,0,1-176,0c0-27.92,11-56.47,32.66-84.85a8,8,0,0,1,11.93-.89l24.12,23.41,22-60.41a8,8,0,0,1,12.63-3.41C165.21,36,216,84.55,216,144Zm-16,0c0-46.09-35.79-85.92-58.21-106.33L119.52,98.74a8,8,0,0,1-13.09,3L80.06,76.16C64.09,99.21,56,122,56,144a72,72,0,0,0,144,0Z"/></svg> Active Time</div>
-   <div class="meta-value">37m</div>
+  </span>
+  <span class="timing-pill" data-tooltip="Active Time: 37m">
+    <svg class="gicon gicon-fire" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M183.89,153.34a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68ZM216,144a88,88,0,0,1-176,0c0-27.92,11-56.47,32.66-84.85a8,8,0,0,1,11.93-.89l24.12,23.41,22-60.41a8,8,0,0,1,12.63-3.41C165.21,36,216,84.55,216,144Zm-16,0c0-46.09-35.79-85.92-58.21-106.33L119.52,98.74a8,8,0,0,1-13.09,3L80.06,76.16C64.09,99.21,56,122,56,144a72,72,0,0,0,144,0Z"/></svg> <span class="timing-text">37m active time</span>
     <div class="timing-tooltip">
       <div class="timing-tooltip-title">Active Time = Sum of manual work time</div>
       <div class="timing-row">
@@ -33,12 +32,11 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
         <span class="timing-val">+ 3m</span>
       </div>
     </div>
- </div>
- <div class="timing-card">
-   <div class="meta-label"><svg class="gicon gicon-knife" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M231.87,32.13a27.84,27.84,0,0,0-39.32,0L18.34,206.4a8,8,0,0,0,3.86,13.45A160.67,160.67,0,0,0,58.4,224c32.95,0,65.92-10.2,96.95-30.23,31.76-20.5,50.19-43.82,51-44.81a8,8,0,0,0-.64-10.59L185.32,118l46.55-46.56A27.85,27.85,0,0,0,231.87,32.13ZM189.1,144.44a220.41,220.41,0,0,1-42.86,36.16c-34.43,22.1-69.94,30.92-105.77,26.3L146,101.33Zm31.46-84.3L174,106.7,157.32,90l46.55-46.56a11.8,11.8,0,0,1,16.69,16.69Z"/></svg> Prep Time</div>
-   <div class="meta-value">8m <span class="est">(est.)</span></div>
+  </span>
+  <span class="timing-pill" data-tooltip="Prep Time: ~8m">
+    <svg class="gicon gicon-knife" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M231.87,32.13a27.84,27.84,0,0,0-39.32,0L18.34,206.4a8,8,0,0,0,3.86,13.45A160.67,160.67,0,0,0,58.4,224c32.95,0,65.92-10.2,96.95-30.23,31.76-20.5,50.19-43.82,51-44.81a8,8,0,0,0-.64-10.59L185.32,118l46.55-46.56A27.85,27.85,0,0,0,231.87,32.13ZM189.1,144.44a220.41,220.41,0,0,1-42.86,36.16c-34.43,22.1-69.94,30.92-105.77,26.3L146,101.33Zm31.46-84.3L174,106.7,157.32,90l46.55-46.56a11.8,11.8,0,0,1,16.69,16.69Z"/></svg> <span class="timing-text"><span class="est">~</span>8m prep time</span>
     <div class="timing-tooltip">
-      <div class="timing-tooltip-title">Prep Time = Time to gather and prepare ingredients and cookware</div>
+      <div class="timing-tooltip-title">Prep Time = Time to gather and prepare ingredients and cookware (Estimated)</div>
       <div class="timing-row">
         <span class="timing-label"><strong>Batter</strong></span>
         <span class="timing-val">+ 6m</span>
@@ -65,80 +63,89 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
         <span class="timing-val">+ 1m</span>
       </div>
     </div>
- </div>
+  </span>
 </div>
-<div class="recipe-meta-secondary">
-<div class="metadata-grid">
-  <div class="meta-secondary-item">
-    <span class="label">portions</span>
-    <span class="value">4</span>
+<div class="recipe-hero-bar">
+  <div class="hero-item hero-portions">
+    <svg class="gicon gicon-users" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z"/></svg>
+    <span class="scale-val"><strong>4</strong> portions</span>
+    <button type="button" class="edit-portions-btn" data-gram-action="edit-portions" aria-label="Change the portions" title="Change the portions"><svg class="gicon gicon-pencil-simple" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"/></svg></button>
   </div>
 </div>
-</div>
 
-<details class="shopping-list">
-  <summary><h2>Shopping List</h2></summary>
-  <ul>
-    <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
-    <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
-    <li><span class="ingredient" data-name="salt">salt</span></li>
-    <li><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></li>
-  </ul>
-</details>
-
-<details class="cookware">
-  <summary><h2>Cookware</h2></summary>
-  <ul>
-    <li><span class="cookware" data-name="large bowl">large bowl</span></li>
-    <li><span class="cookware" data-name="pan">pan</span></li>
-  </ul>
+<details class="prep-accordion shopping-list" open>
+  <summary class="prep-summary">
+    <span class="prep-summary-title">Shopping List &amp; Cookware</span>
+  </summary>
+  <div class="prep-body">
+    <div class="mep-group">
+      <div class="mep-group-header">
+        <h5 class="mep-group-title">Shopping List</h5>
+        <button type="button" class="copy-shopping-btn" aria-label="Copy list" data-copied-text="Copied!"><span class="copy-icon"><svg class="gicon gicon-copy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></svg></span><span class="check-icon" style="display:none"><svg class="gicon gicon-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></svg></span> <span class="copy-label">Copy list</span></button>
+      </div>
+      <ul class="kit-list">
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="flour">flour</span></span><span class="kit-qty"><span class="kit-mass">200 g</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="sugar">sugar</span></span><span class="kit-qty"><span class="kit-mass">1 tbsp</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="salt">salt</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></span></span></label></li>
+      </ul>
+    </div>
+    <div class="mep-group">
+      <h5 class="mep-group-title">Cookware</h5>
+      <ul class="kit-list">
+        <li class="kit-cookware"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name cookware" data-name="large-bowl">large bowl</span></span></span></label></li>
+        <li class="kit-cookware"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name cookware" data-name="pan">pan</span></span></span></label></li>
+      </ul>
+    </div>
+  </div>
 </details>
 
 <div class="instructions">
   <section>
-    <h3 class="section-header">Batter <span class="section-declaration-badge" data-tooltip="Intermediate result for this section"><svg class="gicon gicon-arrow-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg> batter</span></h3>
+    <h3 class="section-header" data-declares="batter">Batter <span class="section-declaration-badge" data-declares="batter" data-tooltip="Intermediate result for this section"><svg class="gicon gicon-arrow-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg> batter</span></h3>
     <div class="section-ingredients">
-      <ul>
-        <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
-        <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
-        <li><span class="ingredient" data-name="salt">salt</span></li>
-        <li><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></li>
+      <ul class="kit-list">
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="flour">flour</span></span><span class="kit-qty"><span class="kit-mass">200 g</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="sugar">sugar</span></span><span class="kit-qty"><span class="kit-mass">1 tbsp</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="salt">salt</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></span></span></label></li>
       </ul>
     </div>
     <ol class="steps">
       <li value="1">
-        In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour <span class="step-quantity">(200 g)</span></span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar <span class="step-quantity">(1 tbsp)</span></span> and a pinch of <span class="ingredient" data-name="salt">salt</span>.
+        In a <span class="gram-nobr"><span class="cookware" data-name="large bowl">large bowl</span>,</span> mix <span class="gram-nobr"><span class="ingredient" data-name="flour">flour <span class="step-quantity">(200 g)</span></span>,</span> <span class="ingredient" data-name="sugar">sugar <span class="step-quantity">(1 tbsp)</span></span> and a pinch of <span class="gram-nobr"><span class="ingredient" data-name="salt">salt</span>.</span>
       </li>
       <li value="2">
-        Add <span class="ingredient" data-name="egg" data-tooltip="2">egg <span class="step-quantity">(2)</span></span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
-egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">2 min</span></span>.
+        Add <span class="ingredient" data-name="egg">egg <span class="step-quantity">(2)</span></span> <span class="ingredient-alt-badge" data-tooltip="Alternatives
+egg substitute: 2" data-tooltip-html="&lt;div class=&quot;gram-tip&quot;&gt;&lt;div class=&quot;gram-tip-head&quot;&gt;&lt;span class=&quot;gram-tip-title&quot;&gt;Alternatives&lt;/span&gt;&lt;/div&gt;&lt;dl class=&quot;gram-tip-rows&quot;&gt;&lt;dt&gt;egg substitute&lt;/dt&gt;&lt;dd&gt;&lt;span class=&quot;gram-tip-value&quot;&gt;2&lt;/span&gt;&lt;/dd&gt;&lt;/dl&gt;&lt;/div&gt;">(alt)</span> and whisk for <span class="gram-nobr"><span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">2 min</span></span>.</span>
       </li>
       <li class="step-comment">
         <span class="comment-icon"><svg class="gicon gicon-info" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"/></svg></span>
         <span class="comment-text">Rest the batter before cooking</span>
       </li>
       <li value="3">
-        Let rest at <span class="temp" data-semantic="fridge"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">30 min</span></span>.
+        Let rest at <span class="temp" data-semantic="fridge"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> fridge</span> for <span class="gram-nobr"><span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">30 min</span></span>.</span>
       </li>
     </ol>
   </section>
   <section>
     <h3 class="section-header">Cooking</h3>
     <div class="section-ingredients">
-      <ul>
-        <li><span class="reference"><svg class="gicon gicon-caret-circle-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm29.66-93.66a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32L140.69,128,106.34,93.66a8,8,0,0,1,11.32-11.32Z"/></svg> batter</span></li>
+      <ul class="kit-list">
+        <li class="kit-reference"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name reference" data-name="batter" data-ref-id="batter">batter</span></span></span></label></li>
       </ul>
     </div>
     <ol class="steps">
       <li value="1">
-        Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> medium heat</span>.
+        Heat a <span class="cookware" data-name="pan">pan</span> on <span class="gram-nobr"><span class="temp" data-semantic="medium heat"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> medium heat</span>.</span>
       </li>
       <li value="2">
-        Pour <span class="reference" data-tooltip="Intermediate Ingredient"><svg class="gicon gicon-caret-circle-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm29.66-93.66a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32L140.69,128,106.34,93.66a8,8,0,0,1,11.32-11.32Z"/></svg> batter</span> and cook for active <span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">1 min</span></span>.
+        Pour <span class="reference" data-ref-id="batter" data-tooltip="Intermediate ingredient" data-tooltip-html="&lt;div class=&quot;gram-tip&quot;&gt;&lt;div class=&quot;gram-tip-head&quot;&gt;&lt;span class=&quot;gram-tip-title&quot;&gt;batter&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;gram-tip-subtitle&quot;&gt;Intermediate ingredient&lt;/div&gt;&lt;/div&gt;"><svg class="gicon gicon-caret-circle-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm29.66-93.66a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32L140.69,128,106.34,93.66a8,8,0,0,1,11.32-11.32Z"/></svg> batter</span> and cook for active <span class="gram-nobr"><span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">1 min</span></span>.</span>
       </li>
     </ol>
   </section>
 </div>
+</article>
 "
 `;
 
@@ -151,19 +158,19 @@ exports[`renderer output snapshots toMarkdown output is stable 1`] = `
 > - **Prep Time**: 8m (est.)
 > - portions: 4
 
-## 🛒 Shopping List
+## Shopping List
 
 - **flour** (200 g)
 - **sugar** (1 tbsp)
 - **salt**
 - **egg** (2) or **egg substitute** (2)
 
-## 🍳 Cookware
+## Cookware
 
 - *large bowl*
 - *pan*
 
-## 👨‍🍳 Instructions
+## Instructions
 
 ### Batter
 
@@ -206,6 +213,12 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
 @import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
+	/* The fonts of the screen, exactly (\`tokens.css\`): a view printed like its
+	   screen version takes them. \`print-tokens.test.ts\` keeps them equal. */
+	--gram-font-sans: system-ui, -apple-system, sans-serif;
+	--gram-font-mono:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
 	--black: #000000;
 	--dark-grey: #333333;
 	--grey: #666666;
@@ -241,6 +254,15 @@ svg.gicon,
 	height: 1em;
 	vertical-align: -0.125em;
 	display: inline-block;
+}
+
+/* A step element and what touches it, never split by a line break
+   (\`nobr()\` of \`shared/utils.ts\`, as in \`base.css\`). */
+.gram-nobr {
+	white-space: nowrap;
+}
+:where(.gram-nobr > *) {
+	white-space: normal;
 }
 
 /* ── Title ── */
@@ -362,324 +384,980 @@ h3 {
 		min-height: 297mm;
 	}
 }
-/* ── Meta bar ── */
-.meta {
+/*
+ * The recipe on paper (\`toPrintHTML\`, the \`print\` format of the recipe view).
+ *
+ * The markup is the one of the screen (\`html.ts\`), as for the run sheet: this
+ * sheet sets it for a page, after the base of every printed view
+ * (\`shared/print.css\`). It follows \`screen.css\` block by block, in ink only:
+ * no color, no hover, nothing to click; what only a screen can do (tooltips,
+ * the copy button, the accordion's caret) is hidden. Every rule is scoped to
+ * the view's root, \`<article class="gram-recipe">\`.
+ */
+
+.gram-recipe {
+	font-family: var(--gram-font-sans);
+	font-size: 9.5pt;
+	line-height: 1.45;
+}
+
+.gram-recipe ul,
+.gram-recipe ol {
+	list-style: none;
+}
+
+/* What only a screen can do (the tooltips and the copy button are not even
+   written on paper). */
+.gram-recipe .note-return,
+.gram-recipe details > summary::after {
+	display: none !important;
+}
+
+.gram-recipe svg.gicon {
+	flex-shrink: 0;
+}
+
+/* ─── Header: title, description, byline, tags ─────────────────────────── */
+
+.gram-recipe .recipe-title {
+	font-family: inherit;
+	font-size: 20pt;
+	font-weight: 800;
+	line-height: 1.15;
+	margin: 0 0 3pt;
+	padding: 0;
+	border: none;
+}
+
+.gram-recipe .recipe-description {
+	font-size: 9.5pt;
+	color: var(--dark-grey);
+	margin: 0 0 6pt;
+}
+
+.gram-recipe .recipe-byline {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4pt 16pt;
-	font-family: "Inter", system-ui, sans-serif;
+	align-items: center;
+	gap: 3pt 6pt;
 	font-size: 8pt;
-	margin-bottom: 16pt;
-	padding: 4pt 0;
-	border-bottom: 1px solid var(--light-grey);
+	color: var(--grey);
+	margin-bottom: 8pt;
 }
-.meta-item {
-	display: flex;
-	align-items: baseline;
+
+.gram-recipe .byline-sep {
+	opacity: 0.5;
 }
-.meta-label {
+
+.gram-recipe .byline-source {
+	color: var(--black);
+	text-decoration: underline dotted;
+}
+
+.gram-recipe .byline-custom .label {
 	font-weight: 600;
-	text-transform: uppercase;
-	font-size: 7pt;
-	letter-spacing: 0.1em;
-	margin-right: 6pt;
-	color: var(--grey);
+	text-transform: capitalize;
 }
 
-/* ── Shopping list ── */
-.shopping-list ul {
-	columns: 2;
-	column-gap: 24pt;
-	list-style: none;
-	margin-top: 8pt;
-}
-.shopping-list li {
-	break-inside: avoid;
-	page-break-inside: avoid;
-	position: relative;
-	padding: 3pt 0 3pt 16pt;
-	font-size: 9.5pt;
-	border-bottom: 1px dotted var(--light-grey);
-}
-.shopping-list li::before {
-	content: "☐";
-	position: absolute;
-	left: 0;
-	top: 3.5pt;
-	font-size: 11pt;
-	font-family: "Inter", system-ui, sans-serif;
-	color: var(--grey);
-}
+/* ─── Timings bar: total, idle, active, prep ───────────────────────────── */
 
-/* ── Equipment ── */
-.cookware-list {
+.gram-recipe .recipe-timings-bar {
 	display: flex;
 	flex-wrap: wrap;
-	column-gap: 12pt;
-	row-gap: 6pt;
-	margin-top: 8pt;
-	font-size: 10pt;
-	font-style: italic;
-}
-.cookware-list .cw-item {
-	position: relative;
-}
-.cookware-list .cw-item:not(:last-child)::after {
-	content: "•";
-	position: absolute;
-	right: -8pt;
-	color: var(--light-grey);
-	font-style: normal;
+	align-items: center;
+	gap: 4pt 5pt;
+	margin-bottom: 8pt;
 }
 
-/* ── Instructions ── */
-.instructions section {
-	margin-bottom: 24pt;
-}
-
-/* ── Section-level mise en place ── */
-.section-ingredients {
-	border: 1px solid var(--black);
-	border-left: 4pt solid var(--black);
-	padding: 10pt 14pt;
-	margin-bottom: 16pt;
-	margin-top: 8pt;
-}
-.section-ingredients ul {
-	list-style: none;
-	display: flex;
-	flex-wrap: wrap;
-	column-gap: 16pt;
-	row-gap: 6pt;
-	font-size: 9.5pt;
-}
-.section-ingredients li {
+.gram-recipe .timing-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 3pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	padding: 1pt 5pt;
+	font-family: var(--gram-font-mono);
+	font-size: 8pt;
 	white-space: nowrap;
 }
-.section-ingredients li::before {
-	content: "— ";
-	color: var(--grey);
-	font-weight: bold;
+
+.gram-recipe .timing-pill.total {
+	border-color: var(--black);
+	font-weight: 700;
 }
 
-/* ── Steps ── */
-ol.steps {
-	margin: 0;
-	padding-left: 0;
-	list-style: none;
-	counter-reset: step-counter;
-}
-ol.steps li {
-	break-inside: avoid;
-	page-break-inside: avoid;
+/* ─── Hero bar: portions, yield, mass, energy ──────────────────────────── */
+
+.gram-recipe .recipe-hero-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4pt 10pt;
+	padding: 5pt 9pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
 	margin-bottom: 10pt;
-	font-size: 10pt;
-	position: relative;
-	padding-left: 24pt;
+	font-size: 8.5pt;
+	page-break-inside: avoid;
 }
-ol.steps li:not(.comment-step)::before {
-	content: counter(step-counter) ".";
-	counter-increment: step-counter;
-	position: absolute;
-	left: 0;
-	top: 0;
-	font-family: "Inter", system-ui, sans-serif;
-	font-weight: 700;
-	font-size: 9pt;
+
+.gram-recipe .hero-facts {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4pt 10pt;
+}
+
+/* A page is wide enough: the facts follow the portions behind a hairline. */
+.gram-recipe .hero-portions + .hero-facts {
+	padding-left: 10pt;
+	border-left: 0.75pt solid var(--light-grey);
+}
+
+.gram-recipe .hero-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 4pt;
+}
+
+.gram-recipe .hero-item svg {
+	color: var(--grey);
+}
+
+.gram-recipe .scale-val,
+.gram-recipe .portions-unit {
+	font-family: var(--gram-font-mono);
+	color: var(--grey);
+}
+
+.gram-recipe .scale-val strong {
 	color: var(--black);
 }
 
-.comment-step {
-	padding-left: 0 !important;
-	font-style: italic;
-	color: var(--dark-grey);
-	font-size: 9.5pt;
-	margin-top: -4pt;
-	margin-bottom: 10pt !important;
+.gram-recipe .scale-factor-badge {
+	font-family: var(--gram-font-mono);
+	font-size: 7.5pt;
+	font-weight: 600;
+	padding: 0 3pt;
+	border: 0.75pt dashed var(--grey);
+	border-radius: 2pt;
 }
 
-/* ── Nutrition ── */
-.nutrition {
-	margin-top: 24pt;
-	padding-top: 12pt;
-	border-top: 2px solid var(--black);
-	break-inside: avoid;
+.gram-recipe .hero-yield,
+.gram-recipe .hero-mass,
+.gram-recipe .hero-nutrition {
+	font-family: var(--gram-font-mono);
+	font-size: 8pt;
+}
+
+.gram-recipe .hero-mass,
+.gram-recipe .hero-nutrition {
+	color: var(--grey);
+	text-decoration: none;
+}
+
+.gram-recipe .hero-nutrition .nut-pill-value {
+	color: var(--black);
+	font-weight: 600;
+}
+
+/* ─── Note of the recipe (\`notes:\` of the front matter) ────────────────── */
+
+.gram-recipe .recipe-note {
+	display: flex;
+	align-items: flex-start;
+	gap: 6pt;
+	border-left: 2pt solid var(--black);
+	padding: 3pt 8pt;
+	font-size: 8.5pt;
+	margin-bottom: 10pt;
 	page-break-inside: avoid;
 }
-.nutrition h2 {
-	border-bottom: none;
-	margin: 0 0 12pt 0;
-	padding: 0;
-}
-.nut-grid {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12pt 24pt;
-}
-.nut-item {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-}
-.nut-item-nested strong {
-	font-size: 10pt;
-}
-.nut-item-nested small {
+
+.gram-recipe .recipe-note svg {
 	color: var(--grey);
-}
-.nut-basis-note {
-	font-family: "Inter", system-ui, sans-serif;
-	font-size: 7.5pt;
-	color: var(--grey);
-	margin: -6pt 0 10pt 0;
-}
-.nut-warnings {
-	font-family: "Inter", system-ui, sans-serif;
-	font-size: 8pt;
-	color: var(--dark-grey);
-	border-left: 2pt solid var(--black);
-	padding-left: 8pt;
-	margin-bottom: 10pt;
-}
-.nut-item strong {
-	font-size: 13pt;
-	font-family: "Inter", system-ui, sans-serif;
-	line-height: 1;
-	margin-bottom: 4pt;
-}
-.nut-item small {
-	font-size: 7pt;
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
-	color: var(--grey);
-	font-family: "Inter", system-ui, sans-serif;
+	margin-top: 2pt;
 }
 
-/* ── Mixed units / gross mass (shopping list) ── */
-.list-item-group ul {
+/* ─── Shopping list and cookware (the prep accordion, always open) ────── */
+
+.gram-recipe details.prep-accordion {
+	border: 0.75pt solid var(--black);
+	border-radius: 2pt;
+	margin-bottom: 14pt;
+}
+
+.gram-recipe details > summary {
+	display: block;
 	list-style: none;
+}
+
+.gram-recipe details > summary::-webkit-details-marker,
+.gram-recipe .prep-summary::marker {
+	display: none;
+}
+
+.gram-recipe .prep-summary {
+	padding: 4pt 9pt;
+	border-bottom: 0.75pt solid var(--black);
+	page-break-after: avoid;
+}
+
+.gram-recipe .prep-summary-title {
+	font-size: 10.5pt;
+	font-weight: 800;
+}
+
+.gram-recipe .prep-body {
+	padding: 6pt 9pt;
+}
+
+.gram-recipe .mep-group + .mep-group {
+	margin-top: 6pt;
+	padding-top: 6pt;
+	border-top: 0.5pt dotted var(--black);
+}
+
+.gram-recipe .mep-group-title {
+	margin: 0 0 3pt;
+	font-family: var(--gram-font-mono);
+	font-size: 7.5pt;
+	font-weight: 700;
+	text-transform: uppercase;
+	color: var(--grey);
+}
+
+/* ─── Kit list: the items of the shopping list and of a section ────────── */
+
+.gram-recipe .kit-list {
+	columns: 2;
+	column-gap: 18pt;
+}
+
+.gram-recipe .kit-list li {
+	break-inside: avoid;
+	page-break-inside: avoid;
+	margin-bottom: 2.5pt;
+	font-size: 9pt;
+}
+
+.gram-recipe .kit-list .sub-kit-list {
+	columns: auto;
 	margin-top: 2pt;
 	padding-left: 12pt;
 }
-.list-item-group ul li {
-	border-bottom: none;
-	padding-left: 12pt;
+
+.gram-recipe .kit-list label {
+	display: flex;
+	align-items: baseline;
+	gap: 6pt;
 }
-.mixed-units-badge {
-	display: inline-block;
-	font-family: "Inter", system-ui, sans-serif;
+
+/* A box to tick with a pen. */
+.gram-recipe .kit-list input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	flex-shrink: 0;
+	width: 8pt;
+	height: 8pt;
+	margin: 0;
+	border: 1pt solid var(--black);
+	border-radius: 1.5pt;
+	transform: translateY(0.5pt);
+}
+
+.gram-recipe .kit-list label > span {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: baseline;
+	column-gap: 4pt;
+	flex: 1;
+	min-width: 0;
+}
+
+.gram-recipe .kit-list li:not(.list-item-group) .kit-name-col {
+	display: contents;
+}
+
+.gram-recipe .kit-list li.list-item-group > label > span > .kit-name-col {
+	grid-column: 1;
+	grid-row: 1;
+	display: inline-flex;
+	align-items: baseline;
+	gap: 3pt;
+}
+
+.gram-recipe .kit-name,
+.gram-recipe .alt-group {
+	grid-column: 1;
+	grid-row: 1;
+	font-weight: 500;
+	overflow-wrap: break-word;
+}
+
+.gram-recipe .kit-name::first-letter,
+.gram-recipe .alt-group::first-letter,
+.gram-recipe .kit-usage-name::first-letter {
+	text-transform: uppercase;
+}
+
+.gram-recipe .kit-prep {
+	grid-column: 1 / -1;
+	grid-row: 2;
+	font-size: 7.5pt;
+	font-style: italic;
+	color: var(--grey);
+}
+
+/* The quantity, pushed to the right edge by a dot leader. */
+.gram-recipe .kit-qty {
+	grid-column: 2 / -1;
+	grid-row: 1;
+	display: flex;
+	align-items: baseline;
+	justify-content: flex-end;
+	gap: 4pt;
+	white-space: nowrap;
+	font-family: var(--gram-font-mono);
+	font-size: 8.5pt;
+	color: var(--grey);
+}
+
+.gram-recipe .kit-qty::before {
+	content: "";
+	flex: 1;
+	align-self: flex-end;
+	min-width: 8pt;
+	margin-bottom: 2pt;
+	border-bottom: 1pt dotted #aaa;
+}
+
+.gram-recipe .kit-mass {
+	font-weight: 700;
+	color: var(--black);
+}
+
+.gram-recipe .kit-orig {
+	font-size: 7pt;
+	font-weight: 400;
+}
+
+.gram-recipe .mixed-units-badge {
 	font-size: 6.5pt;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
 	color: var(--grey);
-	border: 1px solid var(--light-grey);
-	border-radius: 2px;
-	padding: 1pt 4pt;
-	margin-left: 4pt;
-	vertical-align: middle;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	padding: 0 3pt;
 }
-.gross-mass {
+
+/* A composite: the parts used, under the item you buy. */
+.gram-recipe .kit-usage-list {
+	margin: 1pt 0 0;
+	padding-left: 14pt;
+}
+
+.gram-recipe .kit-list li.kit-usage {
+	display: flex;
+	align-items: baseline;
+	gap: 3pt;
+	margin-bottom: 1pt;
 	font-size: 8pt;
+	color: var(--grey);
+}
+
+.gram-recipe .kit-usage-qty {
+	display: flex;
+	gap: 3pt;
+	margin-left: auto;
+	white-space: nowrap;
+	font-family: var(--gram-font-mono);
+	font-size: 7.5pt;
+}
+
+/* The ingredients of one section, above its steps. */
+.gram-recipe .section-ingredients {
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	padding: 5pt 9pt 3pt;
+	margin: 6pt 0 10pt;
+}
+
+/* ─── Sections: header, badges ─────────────────────────────────────────── */
+
+.gram-recipe .instructions section {
+	margin-bottom: 12pt;
+}
+
+.gram-recipe h3.section-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 5pt;
+	font-family: inherit;
+	font-size: 12pt;
+	font-weight: 800;
+	margin: 14pt 0 6pt;
+	padding-bottom: 2pt;
+	border-bottom: 1.5pt solid var(--black);
+	page-break-after: avoid;
+}
+
+.gram-recipe .section-meta-badge,
+.gram-recipe .section-declaration-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 3pt;
+	font-size: 7pt;
+	font-weight: 500;
+	line-height: 1.5;
+	padding: 0 4pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	color: var(--grey);
+}
+
+/* On screen, the meta badges are in mono, what a section declares in the
+   text's sans. */
+.gram-recipe .section-meta-badge {
+	font-family: var(--gram-font-mono);
+}
+
+.gram-recipe .section-meta-retroplanning {
+	border-color: var(--black);
+	color: var(--black);
+}
+
+.gram-recipe .section-meta-module,
+.gram-recipe .section-declaration-badge {
+	margin-left: auto;
+}
+
+.gram-recipe .section-declaration-badge {
+	font-weight: 700;
+	border-color: var(--black);
+	color: var(--black);
+}
+
+.gram-recipe .section-declaration-badge.has-module {
+	padding: 0;
+	gap: 0;
+}
+
+.gram-recipe .section-module-source,
+.gram-recipe .section-decl-target {
+	display: inline-flex;
+	align-items: center;
+	gap: 3pt;
+	padding: 0 4pt;
+}
+
+.gram-recipe .section-module-source {
+	font-weight: 500;
+	color: var(--grey);
+	border-right: 0.75pt solid var(--light-grey);
+}
+
+/* ─── Steps ────────────────────────────────────────────────────────────── */
+
+.gram-recipe ol.steps {
+	counter-reset: gram-step;
+	margin: 8pt 0 0;
+	padding: 0;
+}
+
+.gram-recipe .steps li {
+	position: relative;
+	counter-increment: gram-step;
+	padding: 0 0 0 20pt;
+	margin-bottom: 7pt;
+	line-height: 1.7;
+	break-inside: avoid;
+	page-break-inside: avoid;
+}
+
+/* The number, in a black circle. */
+.gram-recipe .steps li::before {
+	content: counter(gram-step);
+	position: absolute;
+	left: 0;
+	top: 1.5pt;
+	width: 13pt;
+	height: 13pt;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background: var(--black);
+	color: #fff;
+	font-family: var(--gram-font-mono);
+	font-size: 7pt;
+	font-weight: 700;
+	line-height: 1;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+/* A comment alone on its line: an aside, not a step, with no number. */
+.gram-recipe .steps li.step-comment {
+	counter-increment: none;
+	display: flex;
+	align-items: flex-start;
+	gap: 5pt;
+	margin: 6pt 0 9pt;
+	padding: 3pt 7pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 3pt;
+	font-size: 8.5pt;
+	line-height: 1.45;
+}
+
+.gram-recipe .steps li.step-comment::before {
+	display: none;
+}
+
+.gram-recipe .step-comment .comment-icon {
+	color: var(--grey);
+}
+
+/* What a step makes, on its own line under the step's text: "↳ dough". */
+.gram-recipe .step-result {
+	display: block;
+	width: fit-content;
+	margin-top: 3pt;
+	padding-top: 1pt;
+	border-top: 0.75pt dashed var(--light-grey);
+	font-size: 8pt;
+	font-weight: 600;
+	line-height: 1.5;
+	color: var(--grey);
+}
+
+.gram-recipe .step-result-item {
+	color: var(--black);
+}
+
+/* ─── The elements of a step ───────────────────────────────────────────── */
+/* In ink, like a cookbook: what goes in is bold, the tool a little lighter,
+   a temperature outlined, a timer filled. */
+
+.gram-recipe .action {
+	display: inline-block;
+	margin-right: 3pt;
+	padding: 0 3pt;
+	border: 0.75pt solid var(--black);
+	border-radius: 2pt;
+	background: #f2f2f2;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+	font-family: var(--gram-font-mono);
+	font-size: 7pt;
+	font-weight: 700;
+	letter-spacing: 0;
+	text-transform: uppercase;
+	line-height: 1.5;
+	vertical-align: 1pt;
+}
+
+.gram-recipe .steps .ingredient {
+	font-weight: 700;
+}
+
+.gram-recipe .steps .cookware {
+	font-weight: 600;
+}
+
+.gram-recipe .reference,
+.gram-recipe .declaration {
+	font-weight: 600;
+	font-style: normal;
+	font-size: inherit;
+	text-decoration: none;
+}
+
+.gram-recipe .steps .reference[data-ref-id] {
+	border-bottom: 0.75pt dotted var(--grey);
+}
+
+.gram-recipe .timer,
+.gram-recipe .temp {
+	display: inline-flex;
+	align-items: center;
+	gap: 2pt;
+	margin: 0 1pt;
+	padding: 0 2.5pt;
+	border: 1.25pt solid var(--black);
+	border-radius: 2pt;
+	font-family: var(--gram-font-mono);
+	font-size: 8pt;
+	font-weight: 700;
+	letter-spacing: 0;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+
+.gram-recipe .temp {
+	background: #fff;
+	color: var(--black);
+}
+
+.gram-recipe .timer {
+	background: var(--black);
+	color: #fff;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+.gram-recipe .quantity {
+	font-family: var(--gram-font-mono);
+	font-size: 0.85em;
+	font-weight: 600;
+	padding: 0 4pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 10pt;
+}
+
+.gram-recipe .step-quantity {
+	color: var(--grey);
+	white-space: nowrap;
+	font-size: 8pt;
+	font-weight: 500;
+}
+
+.gram-recipe .ingredient-alt-badge {
+	color: var(--grey);
+	font-size: 0.85em;
+}
+
+.gram-recipe .mass-badge,
+.gram-recipe .bakers-badge {
+	font-family: var(--gram-font-mono);
+	font-size: 0.85em;
+	padding: 0 3pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	color: var(--grey);
+}
+
+.gram-recipe .bakers-badge {
+	font-weight: 600;
+	color: var(--black);
+	border: 0.75pt dashed var(--grey);
+}
+
+.gram-recipe .gross-mass,
+.gram-recipe .unit {
+	color: var(--grey);
+	font-size: 0.85em;
+	margin-left: 1pt;
+}
+
+.gram-recipe .prep,
+.gram-recipe .composite-parent,
+.gram-recipe .optional {
 	color: var(--grey);
 	font-style: italic;
 }
 
-/* ── Footnotes ── */
-.notes {
-	margin-top: 24pt;
-	padding-top: 12pt;
-	border-top: 1px solid var(--light-grey);
-	break-inside: avoid;
+.gram-recipe .optional {
+	font-size: 0.85em;
+	margin-left: 0.25em;
+}
+
+/* ─── Footnotes: the comments at the end of a line, and their notes ────── */
+
+.gram-recipe .footnote-ref {
+	font-size: 0.75em;
+	line-height: 0;
+	vertical-align: super;
+	margin-left: 1pt;
+}
+
+.gram-recipe .footnote-ref a {
+	color: var(--grey);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.gram-recipe .recipe-notes {
+	margin-top: 18pt;
+	padding-top: 8pt;
+	border-top: 0.75pt solid var(--light-grey);
 	page-break-inside: avoid;
 }
-.notes h2 {
-	border-bottom: none;
-	margin: 0 0 10pt 0;
-	padding: 0;
+
+.gram-recipe .recipe-notes h3 {
+	display: block;
+	font-family: inherit;
+	font-size: 10.5pt;
+	font-weight: 700;
+	margin: 0 0 6pt;
+	border: none;
 }
-.notes ol {
+
+.gram-recipe .recipe-notes ol {
+	list-style: decimal;
 	padding-left: 16pt;
-	font-size: 9pt;
+	font-size: 8.5pt;
 	color: var(--dark-grey);
 }
-.notes li {
-	margin-bottom: 4pt;
+
+.gram-recipe .recipe-notes li {
+	margin-bottom: 3pt;
 }
-.footnote-ref a,
-.note-return {
-	color: inherit;
-	text-decoration: none;
+
+/* ─── Nutrition table ──────────────────────────────────────────────────── */
+/* A European label set like an American one: heavy rules between header,
+   energy and nutrients, the energy in large type. Always shown on paper. */
+
+.gram-recipe .nutrition-panel {
+	margin-top: 20pt;
+	max-width: 340pt;
+	padding: 6pt 9pt;
+	border: 0.75pt solid var(--black);
+	border-radius: 1.5pt;
+	page-break-inside: avoid;
+}
+
+.gram-recipe .nut-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 6pt;
+}
+
+.gram-recipe .nut-title {
+	display: block;
+	font-family: inherit;
+	font-size: 13pt;
+	font-weight: 800;
+	line-height: 1.15;
+	margin: 0;
+	border: none;
+}
+
+.gram-recipe .est-badge {
+	font-size: 6.5pt;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
 	font-weight: 700;
+	padding: 0.5pt 4pt;
+	border: 0.75pt solid var(--light-grey);
+	border-radius: 2pt;
+	color: var(--grey);
+}
+
+.gram-recipe .nut-subtitle {
+	margin: 1pt 0 0;
+	font-size: 7.5pt;
+	color: var(--grey);
+}
+
+.gram-recipe .nut-warnings {
+	margin: 5pt 0 0;
+	padding-left: 6pt;
+	border-left: 2pt solid var(--black);
+	font-size: 8pt;
+	color: var(--dark-grey);
+}
+
+.gram-recipe .nut-table-scroll {
+	margin-top: 4pt;
+}
+
+.gram-recipe .nut-table {
+	width: 100%;
+	border-collapse: collapse;
+	border-top: 6pt solid var(--black);
+	border-bottom: 6pt solid var(--black);
+	font-size: 8.5pt;
+	font-variant-numeric: tabular-nums;
+}
+
+.gram-recipe .nut-table th,
+.gram-recipe .nut-table td {
+	padding: 2pt 0 2pt 9pt;
+	border-bottom: 0.5pt solid #bbb;
+	text-align: right;
+	white-space: nowrap;
+	vertical-align: top;
+}
+
+.gram-recipe .nut-table th:first-child {
+	padding-left: 0;
+	text-align: left;
+	white-space: normal;
+}
+
+.gram-recipe .nut-table thead th {
+	border-bottom: 1.5pt solid var(--black);
+	font-size: 7.5pt;
+	font-weight: 700;
+	vertical-align: bottom;
+}
+
+.gram-recipe .nut-table tbody th {
+	font-weight: 700;
+}
+
+.gram-recipe .nut-table tr.nut-energy > * {
+	padding-top: 3pt;
+	padding-bottom: 3pt;
+	border-bottom: 3.5pt solid var(--black);
+}
+
+.gram-recipe .nut-table tr.nut-energy th {
+	font-size: 1.05em;
+	font-weight: 800;
+}
+
+.gram-recipe .nut-kcal {
+	display: block;
+	font-size: 1.3em;
+	font-weight: 800;
+	line-height: 1.1;
+}
+
+.gram-recipe .nut-kj {
+	display: block;
+	font-size: 0.8em;
+	color: var(--grey);
+}
+
+.gram-recipe .nut-table tr.nut-energy .nut-ri {
+	font-size: 1.1em;
+	font-weight: 800;
+}
+
+.gram-recipe .nut-table tr.is-nested th {
+	padding-left: 12pt;
+	font-weight: 400;
+}
+
+.gram-recipe .nut-table tbody tr:last-child > * {
+	border-bottom: none;
+}
+
+.gram-recipe .nut-table .nut-col-ri,
+.gram-recipe .nut-table .nut-ri {
+	width: 4em;
+	font-weight: 700;
+}
+
+.gram-recipe .nut-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.gram-recipe .nut-footer {
+	margin-top: 4pt;
+	font-size: 7pt;
+	color: var(--grey);
+}
+
+.gram-recipe .nut-total {
+	font-weight: 700;
+	color: var(--black);
 }
 </style>
 </head>
 <body>
-<h1>Crêpes</h1>
-<div class="meta">
-  <span class="meta-item"><span class="meta-label">Total Time</span>45m</span>
-  <span class="meta-item"><span class="meta-label">Active Time</span>37m</span>
-  <span class="meta-item"><span class="meta-label">Prep Time</span>8m <em style="opacity:0.55;font-size:0.85em">(est.)</em></span>
-  <span class="meta-item"><span class="meta-label">Portions</span>4</span>
+<article class="gram-recipe">
+<h1 class="recipe-title">Crêpes</h1>
+
+<div class="recipe-timings-bar">
+  <span class="timing-pill total">
+    <svg class="gicon gicon-clock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></svg> <span class="timing-text">45m</span>
+  </span>
+  <span class="timing-pill">
+    <svg class="gicon gicon-fire" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M183.89,153.34a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68ZM216,144a88,88,0,0,1-176,0c0-27.92,11-56.47,32.66-84.85a8,8,0,0,1,11.93-.89l24.12,23.41,22-60.41a8,8,0,0,1,12.63-3.41C165.21,36,216,84.55,216,144Zm-16,0c0-46.09-35.79-85.92-58.21-106.33L119.52,98.74a8,8,0,0,1-13.09,3L80.06,76.16C64.09,99.21,56,122,56,144a72,72,0,0,0,144,0Z"/></svg> <span class="timing-text">37m active time</span>
+  </span>
+  <span class="timing-pill">
+    <svg class="gicon gicon-knife" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M231.87,32.13a27.84,27.84,0,0,0-39.32,0L18.34,206.4a8,8,0,0,0,3.86,13.45A160.67,160.67,0,0,0,58.4,224c32.95,0,65.92-10.2,96.95-30.23,31.76-20.5,50.19-43.82,51-44.81a8,8,0,0,0-.64-10.59L185.32,118l46.55-46.56A27.85,27.85,0,0,0,231.87,32.13ZM189.1,144.44a220.41,220.41,0,0,1-42.86,36.16c-34.43,22.1-69.94,30.92-105.77,26.3L146,101.33Zm31.46-84.3L174,106.7,157.32,90l46.55-46.56a11.8,11.8,0,0,1,16.69,16.69Z"/></svg> <span class="timing-text"><span class="est">~</span>8m prep time</span>
+  </span>
+</div>
+<div class="recipe-hero-bar">
+  <div class="hero-item hero-portions">
+    <svg class="gicon gicon-users" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z"/></svg>
+    <span class="scale-val"><strong>4</strong> portions</span>
+  </div>
 </div>
 
-<div class="shopping-list">
-<h2>Shopping List</h2>
-<ul>
-  <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
-  <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
-  <li><span class="ingredient" data-name="salt">salt</span></li>
-  <li><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <em>or</em> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></li>
-</ul>
-</div>
-
-<div>
-<h2>Equipment</h2>
-<div class="cookware-list">
-  <span class="cw-item"><span class="cookware" data-name="large bowl">large bowl</span></span>
-  <span class="cw-item"><span class="cookware" data-name="pan">pan</span></span>
-</div>
-</div>
+<details class="prep-accordion shopping-list" open>
+  <summary class="prep-summary">
+    <span class="prep-summary-title">Shopping List &amp; Cookware</span>
+  </summary>
+  <div class="prep-body">
+    <div class="mep-group">
+      <div class="mep-group-header">
+        <h5 class="mep-group-title">Shopping List</h5>
+      </div>
+      <ul class="kit-list">
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="flour">flour</span></span><span class="kit-qty"><span class="kit-mass">200 g</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="sugar">sugar</span></span><span class="kit-qty"><span class="kit-mass">1 tbsp</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="salt">salt</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></span></span></label></li>
+      </ul>
+    </div>
+    <div class="mep-group">
+      <h5 class="mep-group-title">Cookware</h5>
+      <ul class="kit-list">
+        <li class="kit-cookware"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name cookware" data-name="large-bowl">large bowl</span></span></span></label></li>
+        <li class="kit-cookware"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name cookware" data-name="pan">pan</span></span></span></label></li>
+      </ul>
+    </div>
+  </div>
+</details>
 
 <div class="instructions">
-<h2>Instructions</h2>
-<section>
-  <h3>Batter</h3>
-  <div class="section-ingredients"><ul>
-    <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
-    <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
-    <li><span class="ingredient" data-name="salt">salt</span></li>
-    <li><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></li>
-  </ul></div>
-  <ol class="steps">
-    <li value="1">
-      In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour <span class="step-quantity">(200 g)</span></span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar <span class="step-quantity">(1 tbsp)</span></span> and a pinch of <span class="ingredient" data-name="salt">salt</span>.
-    </li>
-    <li value="2">
-      Add <span class="ingredient" data-name="egg" data-tooltip="2">egg <span class="step-quantity">(2)</span></span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
-egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">2 min</span></span>.
-    </li>
-    <li class="comment-step"><em>Rest the batter before cooking</em></li>
-    <li value="3">
-      Let rest at <span class="temp" data-semantic="fridge"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">30 min</span></span>.
-    </li>
-  </ol>
-</section>
-<section>
-  <h3>Cooking</h3>
-  <div class="section-ingredients"><ul>
-    <li><span class="reference">→ batter</span></li>
-  </ul></div>
-  <ol class="steps">
-    <li value="1">
-      Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> medium heat</span>.
-    </li>
-    <li value="2">
-      Pour <span class="reference" data-tooltip="Intermediate Ingredient">→ batter</span> and cook for active <span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">1 min</span></span>.
-    </li>
-  </ol>
-</section>
+  <section>
+    <h3 class="section-header" data-declares="batter">Batter <span class="section-declaration-badge" data-declares="batter"><svg class="gicon gicon-arrow-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg> batter</span></h3>
+    <div class="section-ingredients">
+      <ul class="kit-list">
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="flour">flour</span></span><span class="kit-qty"><span class="kit-mass">200 g</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="sugar">sugar</span></span><span class="kit-qty"><span class="kit-mass">1 tbsp</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name ingredient" data-name="salt">salt</span></span></span></label></li>
+        <li class="kit-ingredient"><label><input type="checkbox"><span><span class="kit-name-col"><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></span></span></label></li>
+      </ul>
+    </div>
+    <ol class="steps">
+      <li value="1">
+        In a <span class="gram-nobr"><span class="cookware" data-name="large bowl">large bowl</span>,</span> mix <span class="gram-nobr"><span class="ingredient" data-name="flour">flour <span class="step-quantity">(200 g)</span></span>,</span> <span class="ingredient" data-name="sugar">sugar <span class="step-quantity">(1 tbsp)</span></span> and a pinch of <span class="gram-nobr"><span class="ingredient" data-name="salt">salt</span>.</span>
+      </li>
+      <li value="2">
+        Add <span class="ingredient" data-name="egg">egg <span class="step-quantity">(2)</span></span> <span class="ingredient-alt-badge">(alt)</span> and whisk for <span class="gram-nobr"><span class="timer" data-value="2" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">2 min</span></span>.</span>
+      </li>
+      <li class="step-comment">
+        <span class="comment-icon"><svg class="gicon gicon-info" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"/></svg></span>
+        <span class="comment-text">Rest the batter before cooking</span>
+      </li>
+      <li value="3">
+        Let rest at <span class="temp" data-semantic="fridge"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> fridge</span> for <span class="gram-nobr"><span class="timer" data-value="30" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">30 min</span></span>.</span>
+      </li>
+    </ol>
+  </section>
+  <section>
+    <h3 class="section-header">Cooking</h3>
+    <div class="section-ingredients">
+      <ul class="kit-list">
+        <li class="kit-reference"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name reference" data-name="batter" data-ref-id="batter">batter</span></span></span></label></li>
+      </ul>
+    </div>
+    <ol class="steps">
+      <li value="1">
+        Heat a <span class="cookware" data-name="pan">pan</span> on <span class="gram-nobr"><span class="temp" data-semantic="medium heat"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> medium heat</span>.</span>
+      </li>
+      <li value="2">
+        Pour <span class="reference" data-ref-id="batter"><svg class="gicon gicon-caret-circle-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm29.66-93.66a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32L140.69,128,106.34,93.66a8,8,0,0,1,11.32-11.32Z"/></svg> batter</span> and cook for active <span class="gram-nobr"><span class="timer" data-value="1" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">1 min</span></span>.</span>
+      </li>
+    </ol>
+  </section>
 </div>
-
+</article>
 </body>
 </html>"
 `;

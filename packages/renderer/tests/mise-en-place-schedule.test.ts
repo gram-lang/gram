@@ -64,8 +64,8 @@ describe("HTML — perSection (default)", () => {
 
 	it("reads total and idle time from the per-section schedule", () => {
 		const { totalTime, idleTime } = schedulesOf(compiled).perSection;
-		expect(html).toContain(`<div class="meta-value">${fmt(totalTime)}</div>`);
-		expect(html).toContain(`<div class="meta-value">${fmt(idleTime)}</div>`);
+		expect(html).toContain(fmt(totalTime));
+		expect(html).toContain(fmt(idleTime));
 	});
 
 	it("is the default", () => {
@@ -83,8 +83,8 @@ describe("HTML — upfront", () => {
 
 	it("reads total and idle time from the upfront schedule", () => {
 		const { totalTime, idleTime } = schedulesOf(compiled).upfront;
-		expect(html).toContain(`<div class="meta-value">${fmt(totalTime)}</div>`);
-		expect(html).toContain(`<div class="meta-value">${fmt(idleTime)}</div>`);
+		expect(html).toContain(fmt(totalTime));
+		expect(html).toContain(fmt(idleTime));
 	});
 });
 

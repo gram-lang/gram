@@ -10,6 +10,7 @@ import {
 import { getDictionary, normalizeUnit } from "@gram-lang/i18n";
 
 import { DEFAULT_ICONS } from "./icons";
+import { type TooltipRow, tooltipCardAttrs } from "./tooltip-card";
 
 export { DEFAULT_ICONS };
 
@@ -43,6 +44,104 @@ function textRow(
 	if (context.textColumn === undefined) return `${styledName} (${detail})`;
 	const gap = " ".repeat(Math.max(1, context.textColumn - name.length + 1));
 	return `${styledName}${gap}${detail}`;
+}
+
+/** How an estimated mass was obtained, in the reader's words. */
+function massMethodLabel(
+	conversionMethod: string,
+	t: ReturnType<typeof getDictionary>,
+): string | undefined {
+	if (conversionMethod === "density") return t.renderer.massMethodDensity;
+	if (conversionMethod === "unit_weight")
+		return t.renderer.massMethodUnitWeight;
+	return undefined;
+}
+
+/** A quantity as written: "2 tbsp", "1/2 tsp", "6". Empty without one. */
+function writtenQty(item: any): string {
+	const qty = getQty(item);
+	if (!qty) return "";
+	const value = qty.text || formatDecimalToFraction(qty.value, item.unit);
+	return `${value}${item.unit ? ` ${item.unit}` : ""}`;
+}
+
+/**
+ * The tooltip of an ingredient in a step. What the text of the step already
+ * says is not repeated: the quantity and its mass only when the step hides
+ * them (`hideIngredientQty`), except an estimated mass, whose "~" the
+ * tooltip explains (converted with an average density...).
+ */
+function ingredientTooltip(
+	item: any,
+	context: RenderContext,
+	f: {
+		name: string;
+		originalQtyStr: string;
+		normalizedMass: number | null;
+		isEstimate: boolean;
+		conversionMethod: string;
+		massAddsInfo: boolean;
+		prep: string;
+		isOptional: boolean;
+	},
+): string {
+	const t = getDictionary(context.lang);
+	const hidden = !!context.hideIngredientQty;
+	const rows: TooltipRow[] = [];
+
+	if (hidden) {
+		if (item.bakersPercentage !== undefined) {
+			rows.push({
+				label: t.renderer.tooltipBakers,
+				value: `${item.bakersPercentage}%`,
+			});
+			const absolute =
+				f.originalQtyStr ||
+				(f.normalizedMass !== null ? `${f.normalizedMass} g` : "");
+			if (!context.bakersMathOnly && absolute) {
+				rows.push({ label: t.renderer.quantity, value: absolute });
+			}
+		} else if (f.originalQtyStr) {
+			rows.push({ label: t.renderer.quantity, value: f.originalQtyStr });
+		}
+	}
+
+	if (f.massAddsInfo && f.normalizedMass !== null && (hidden || f.isEstimate)) {
+		rows.push({
+			label: t.renderer.tooltipMass,
+			value: `${f.isEstimate ? "~" : ""}${f.normalizedMass} g`,
+			detail: f.isEstimate ? massMethodLabel(f.conversionMethod, t) : undefined,
+		});
+	}
+
+	if (f.prep) {
+		rows.push({ label: t.renderer.tooltipPreparation, value: f.prep });
+	}
+
+	// A part of a composite (the yolks of the eggs): what it is taken from.
+	const composite = item.composite;
+	if (composite?.parent) {
+		const parentName =
+			context.registry?.ingredients?.[composite.parent]?.name ||
+			composite.parent;
+		const parentQty =
+			composite.quantity !== undefined && composite.quantity !== null
+				? `${composite.quantity}${composite.unit ? ` ${composite.unit}` : ""} `
+				: "";
+		rows.push({
+			label: t.renderer.tooltipTakenFrom,
+			value: `${parentQty}${parentName}`,
+		});
+	}
+
+	return tooltipCardAttrs(
+		{
+			title: f.name,
+			rows,
+			badges: f.isOptional ? [t.renderer.optional] : [],
+		},
+		t.renderer.colon,
+	);
 }
 
 const strategies: Record<
@@ -174,29 +273,20 @@ const strategies: Record<
 			const mode = context.formatMode || "inline";
 
 			if (mode === "inline") {
-				const tooltipLines = [];
-				if (plainQty) tooltipLines.push(`${plainQty}`);
-
-				if (
-					item.bakersPercentage === undefined &&
-					normalizedMass !== null &&
-					conversionMethod !== "relative"
-				) {
-					let massDisplay = `${normalizedMass}g`;
-					if (isEstimate) massDisplay = `~${massDisplay}`;
-					tooltipLines.push(`(${t.renderer.standardized}: ${massDisplay})`);
-				}
-
-				if (prep) tooltipLines.push(`— ${prep}`);
-				if (isOptional) tooltipLines.push(`(${t.renderer.optional})`);
-
 				let html = `<span class="${className}" data-name="${escapeHtml(baseName)}"${parentDataAttr}`;
-				if (tooltipLines.length > 0) {
-					html += ` data-tooltip="${escapeHtml(tooltipLines.join("\n"))}"`;
-				}
+				html += ingredientTooltip(item, context, {
+					name,
+					originalQtyStr,
+					normalizedMass,
+					isEstimate,
+					conversionMethod,
+					massAddsInfo,
+					prep,
+					isOptional: !!isOptional,
+				});
 				html += `>${escapeHtml(name)}${parentSuffixHtml}`;
 				// Written in the text of the step, as in Markdown, so it is there
-				// on paper too; the tooltip keeps the details (standardized mass).
+				// on paper too; the tooltip keeps the details.
 				if (!context.hideIngredientQty && textQty) {
 					const qtyClass = context.classes?.stepQuantity || "step-quantity";
 					html += ` <span class="${qtyClass}">(${escapeHtml(textQty)})</span>`;
@@ -300,8 +390,17 @@ const strategies: Record<
 
 			if (mode === "inline") {
 				let html = `<span class="${className}" data-name="${escapeHtml(baseName)}"`;
-				if (qtyVal !== null)
-					html += ` data-tooltip="${escapeHtml(t.renderer.quantity)}: ${escapeHtml(String(qtyVal))}"`;
+				// "×2", as in the list of cookware, and nothing for one: needing
+				// a pan already means having one.
+				if (qtyVal !== null && String(qtyVal) !== "1") {
+					html += tooltipCardAttrs(
+						{
+							title: name,
+							rows: [{ label: t.renderer.quantity, value: `×${qtyVal}` }],
+						},
+						t.renderer.colon,
+					);
+				}
 				html += `>${escapeHtml(name)}</span>`;
 				return html;
 			} else {
@@ -410,22 +509,27 @@ const strategies: Record<
 				context.icons?.caretRight ?? DEFAULT_ICONS.html.caretRight;
 			const className = context.classes?.reference || "reference";
 			const mode = context.formatMode || "inline";
+			const refId = item.id || item.name;
+			const refAttr = refId ? ` data-ref-id="${escapeHtml(refId)}"` : "";
 
 			if (mode === "inline") {
-				let tooltipText = t.renderer.intermediateIngredient;
-				if (qty) {
-					const parts = [];
-					const baseQty =
-						qty.text || formatDecimalToFraction(qty.value, item.unit);
-					parts.push(baseQty + (item.unit ? ` ${item.unit}` : ""));
-					if (item.variable_entries && item.variable_entries.length > 0) {
-						parts.push(...item.variable_entries);
-					}
-					tooltipText += `\n${t.renderer.quantity}: ${parts.join(" + ")}`;
-				}
-				return `<span class="${className}" data-tooltip="${escapeHtml(tooltipText)}">${caretIcon} ${escapeHtml(name)}</span>`;
+				const qtyParts = qty
+					? [writtenQty(item), ...(item.variable_entries ?? [])]
+					: [];
+				const tip = tooltipCardAttrs(
+					{
+						title: name,
+						subtitle: t.renderer.intermediateIngredient,
+						rows:
+							qtyParts.length > 0
+								? [{ label: t.renderer.quantity, value: qtyParts.join(" + ") }]
+								: [],
+					},
+					t.renderer.colon,
+				);
+				return `<span class="${className}"${refAttr}${tip}>${caretIcon} ${escapeHtml(name)}</span>`;
 			} else {
-				let html = `<span class="${className}">${caretIcon} ${escapeHtml(name)}`;
+				let html = `<span class="${className}"${refAttr}>${caretIcon} ${escapeHtml(name)}`;
 				if (qty) {
 					const parts = [];
 					const baseQty =
@@ -483,10 +587,13 @@ const strategies: Record<
 			"";
 		if (format === "html") {
 			const arrowIcon =
-				context.icons?.arrowElbowDownRight ??
-				DEFAULT_ICONS.html.arrowElbowDownRight;
-			const className = `${context.classes?.declaration || "declaration"} declaration-block`;
-			return `<span class="${className}">${arrowIcon} ${escapeHtml(name)}</span>`;
+				context.icons?.arrowRight ?? DEFAULT_ICONS.html.arrowRight;
+			const className = `${context.classes?.declaration || "declaration"} declaration-badge declaration-block`;
+			const declId = item.id || item.name;
+			const declAttr = declId ? ` data-declares="${escapeHtml(declId)}"` : "";
+			// The word joiner (U+2060) keeps the badge on the line of the word
+			// before it: a line can't start with a lone "→ dough".
+			return `&#8288;<span class="${className}"${declAttr}>${arrowIcon} ${escapeHtml(name)}</span>`;
 		} else if (format === "text") {
 			return `→ ${styled(context, "reference", name)}`;
 		} else {
@@ -507,7 +614,9 @@ const strategies: Record<
 			const renderId = context._renderId || "note";
 			if (format === "text") return styled(context, "dim", `[${index}]`);
 			if (format === "html") {
-				return `<sup class="footnote-ref"><a href="#${renderId}-${index}" id="ref-${renderId}-${index}">[${index}]</a></sup>`;
+				// The word joiner (U+2060) keeps "[1]" on the line of the word
+				// it annotates, even after a space: a line never starts with it.
+				return `&#8288;<sup class="footnote-ref"><a href="#${renderId}-${index}" id="ref-${renderId}-${index}">[${index}]</a></sup>`;
 			}
 			// GFM-style footnote reference; the definition itself is emitted at the
 			// bottom of the document by the backend's renderFootnotes hook, once
@@ -537,12 +646,28 @@ const strategies: Record<
 					type: firstOpt.type || (isCookware ? "cookware" : "ingredient"),
 				};
 
-				const altNames = item.options
-					.slice(1)
-					.map((opt: any) => opt.name || opt.display || opt.id);
+				// One row per other option, with its own quantity and preparation:
+				// a substitute is rarely used in the same amount.
+				const altRows: TooltipRow[] = item.options.slice(1).map((opt: any) => ({
+					label: String(
+						opt.alias ||
+							opt.name ||
+							opt.display ||
+							registry.ingredients?.[opt.id]?.name ||
+							cookwareList[opt.id]?.name ||
+							opt.id ||
+							"",
+					),
+					value: writtenQty(opt),
+					detail: opt.preparation || undefined,
+				}));
 
 				let html = formatElement(resolvedOpt, format, context);
-				html += ` <span class="ingredient-alt-badge" data-tooltip="${escapeHtml(t.renderer.alternatives)}:\n${escapeHtml(altNames.join("\n"))}">(${escapeHtml(t.renderer.alt)})</span>`;
+				const tip = tooltipCardAttrs(
+					{ title: t.renderer.alternatives, titleInText: true, rows: altRows },
+					t.renderer.colon,
+				);
+				html += ` <span class="ingredient-alt-badge"${tip}>(${escapeHtml(t.renderer.alt)})</span>`;
 				return html;
 			} else {
 				const separator = ` <span class="keyword">${escapeHtml(t.renderer.or)}</span> `;

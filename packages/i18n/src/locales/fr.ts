@@ -61,14 +61,18 @@ export const fr: GramLocale = {
 		or: "ou",
 		metadata: "Métadonnées",
 		composite: "Composite",
+		directUse: "Utilisation directe",
 		totalMass: "Masse totale",
 		incomplete: "Incomplet",
 		passive: "passif",
 		alt: "alt.",
 		unknownIngredient: "[Ingrédient inconnu]",
 		unknownReference: "[Référence inconnue]",
-		servings: "{count} parts",
-		servingsScaled: "{count} parts (×{factor})",
+		servings: "{count} portions",
+		servingsScaled: "{count} portions (×{factor})",
+		portionsUnit: { one: "portion", other: "portions" },
+		scaledRecipe: "Recette mise à l'échelle",
+		changePortions: "Modifier les portions",
 		cookware: "Matériel",
 		equipment: "Équipement",
 		nutrition: "Nutrition",
@@ -180,7 +184,14 @@ export const fr: GramLocale = {
 		standardizedMass: "Masse standardisée",
 		quantity: "Quantité",
 		intermediateIngredient: "Ingrédient intermédiaire",
+		// Les lignes de la bulle d'un ingrédient dans une étape.
+		tooltipMass: "Masse",
+		tooltipPreparation: "Préparation",
+		tooltipBakers: "% boulanger",
+		tooltipTakenFrom: "Prélevé sur",
 		alternatives: "Alternatives",
+		// The deprecated portions stepper of the HTML recipe (`interactiveScaling`).
+		// @remove-in: 2.0.0 [renderer-interactive-scaling]
 		decreasePortions: "Diminuer les portions",
 		editPortions: "Modifier directement les portions",
 		increasePortions: "Augmenter les portions",
@@ -188,6 +199,9 @@ export const fr: GramLocale = {
 		mixedUnitsTooltip:
 			"Impossible de fusionner en un seul total — ajoutez une densité à la base de données pour les convertir",
 		mixedUnits: "Unités mixtes",
+		copyShoppingList: "Copier la liste",
+		copied: "Copié !",
+		toggleStepDone: "Marquer l'étape comme terminée",
 		purchasingWeight: "Poids d'achat (incluant déchets/épluchures)",
 		gross: "brut",
 		intermediateResult: "Résultat intermédiaire pour cette section",
@@ -195,6 +209,17 @@ export const fr: GramLocale = {
 		estimatedSuffix: " (Estimé)",
 		missingMass: " (Manquant : ",
 		someIngredients: "certains ingrédients",
+		// La bulle d'une masse (le total de la barre, le badge d'une section).
+		massTitle: "Masse des ingrédients, avant cuisson",
+		massSectionTitle: "Masse des ingrédients de cette section, avant cuisson",
+		massEstimated: "Estimée",
+		massEstimatedDetail: "convertis avec une valeur moyenne",
+		massIncomplete: "Incomplète",
+		massIncompleteDetail: "masse inconnue",
+		massMethodDensity: "densité moyenne",
+		massMethodUnitWeight: "poids moyen à l'unité",
+		massIncompleteHint:
+			"Indique leur poids en grammes, ou une densité ou un poids à l'unité dans densities: ou la base d'ingrédients",
 		nutritionWholeRecipe: "Recette entière",
 		nutritionPerPortion: "Par portion",
 		nutritionPer100g: "Pour 100 g",
@@ -202,9 +227,18 @@ export const fr: GramLocale = {
 		nutritionRawMassNotePartial: "Sur les {mass} renseignés, avant cuisson",
 		incompleteData: "Données incomplètes",
 		nutritionEstimated: "valeurs estimées",
+		// The nutrition table of the HTML recipe: salt is shown in place of
+		// sodium, and the reference intakes are the EU ones.
+		nutritionSalt: "Sel",
+		nutritionTableTitle: "Valeurs nutritionnelles",
+		nutritionReferenceIntake: "%AR",
+		nutritionReferenceIntakeNote:
+			"Apport de référence pour un adulte type (8 400 kJ / 2 000 kcal)",
+		nutritionNutrient: "Nutriment",
+		nutritionWholeRecipeTotal: "Recette entière : {kcal}",
 		ofWhich: "dont",
 		nutrients: {
-			calories: "Calories",
+			calories: "Énergie",
 			fat: "Matières grasses",
 			sat_fat: "acides gras saturés",
 			mono_fat: "acides gras mono-insaturés",
@@ -308,6 +342,7 @@ export const fr: GramLocale = {
 		},
 		options: {
 			scaleTitle: "Modifier les quantités",
+			scalePortions: "Portions",
 			scaleGlobal: "Au global",
 			scaleByIngredient: "Par ingrédient",
 			selectIngredient: "Sélectionner un ingrédient...",
@@ -325,7 +360,7 @@ export const fr: GramLocale = {
 			stepQuantitiesDesc:
 				"Écrit la quantité de chaque ingrédient dans le texte des étapes, juste après son nom.",
 			nutritionBasis: "Base nutritionnelle",
-			nutritionBasisAuto: "Automatique (au choix dans l'aperçu)",
+			nutritionBasisAuto: "Automatique (toutes les bases côte à côte)",
 			rejectedSlots: "Créneaux non retenus :",
 			forceReference: "Forcer la référence :",
 			autoDetect: "Auto (détecte @*)",
@@ -351,6 +386,8 @@ export const fr: GramLocale = {
 				"Définit le fuseau horaire utilisé pour afficher les heures exactes sur le plan de marche et gérer correctement les passages de journée.",
 			availability:
 				"Vos horaires de disponibilité en cuisine. Le plan de marche s'organise pour que vous n'ayez rien à faire en dehors de cette plage (la nuit par exemple).",
+			scalePortions:
+				"Indique le nombre de portions voulu : toutes les quantités suivent. C'est l'échelle globale, comptée en portions.",
 			scaleGlobal:
 				"Ajuste les quantités de tous les ingrédients et le nombre de portions selon le pourcentage indiqué (ex. 200 % pour doubler, 50 % pour diviser par deux).",
 			scaleByIngredient:
@@ -362,7 +399,7 @@ export const fr: GramLocale = {
 			stepQuantities:
 				"Rappelle chaque quantité dans l'étape qui l'utilise, avec son poids en grammes si les masses sont standardisées. Décochez pour des étapes plus courtes : les quantités restent dans les listes d'ingrédients.",
 			nutritionBasis:
-				"La base du panneau nutritionnel, quand la nutrition est estimée. En automatique, vous choisissez dans l'aperçu ; par défaut par portion si la recette en déclare.",
+				"La base du panneau nutritionnel, quand la nutrition est estimée. En automatique, pour 100 g et par portion côte à côte, la recette entière en dessous, dans tous les formats de la recette.",
 			bakersMathOnly:
 				"Masque les poids en grammes pour n'afficher que les pourcentages relatifs, transformant la recette en une formule de proportions pure.",
 			bakersReference:

@@ -54,8 +54,8 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 	it("all three backends emit shopping list before instructions, in a fixed order", () => {
 		for (const render of [toHTML, toMarkdown, toPrintHTML] as const) {
 			const out = render(compiled);
-			const shoppingIdx = out.search(/shopping|🛒/i);
-			const instructionsIdx = out.search(/instructions|👨‍🍳/i);
+			const shoppingIdx = out.search(/shopping/i);
+			const instructionsIdx = out.search(/instructions/i);
 			expect(shoppingIdx).toBeGreaterThanOrEqual(0);
 			expect(instructionsIdx).toBeGreaterThan(shoppingIdx);
 		}
@@ -89,13 +89,13 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 		expect(hidden).toContain("(200 g)");
 	});
 
-	it("html/print: write the quantity in the step text, as Markdown does, and keep the tooltip", () => {
+	it("html/print: write the quantity in the step text, as Markdown does, without redundant tooltip", () => {
 		const c = compile(
 			getAST("## Section\n\nMix @flour{200g} with @water{100ml}.\n"),
 		);
 		for (const out of [toHTML(c), toPrintHTML(c)]) {
 			expect(out).toContain('<span class="step-quantity">(200 g)</span>');
-			expect(out).toContain('data-tooltip="200 g"');
+			expect(out).not.toContain("Quantity: 200 g");
 		}
 	});
 
@@ -150,13 +150,14 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 		const c = compile(
 			getAST("## Section\n\nMix @flour{200g} with @water{100ml}.\n"),
 		);
-		for (const out of [
-			toHTML(c, { hideStepQty: true }),
-			toPrintHTML(c, { hideStepQty: true }),
-		]) {
+		const html = toHTML(c, { hideStepQty: true });
+		const print = toPrintHTML(c, { hideStepQty: true });
+		for (const out of [html, print]) {
 			expect(out).not.toContain('class="step-quantity"');
-			expect(out).toContain('data-tooltip="200 g"');
 		}
+		expect(html).toContain('data-tooltip="Quantity: 200 g"');
+		// Paper cannot show a tooltip: the printed recipe carries none.
+		expect(print).not.toContain("data-tooltip");
 	});
 
 	// Phase 12: the 4 content-completeness gaps identified in Phase 11 (see
@@ -181,7 +182,7 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 		it("all three backends render nutrition data", () => {
 			expect(toHTML(analyzed)).toContain("nutrition-panel");
 			expect(toPrintHTML(analyzed)).toContain("nutrition");
-			expect(toMarkdown(analyzed)).toContain("Calories");
+			expect(toMarkdown(analyzed)).toContain("Energy");
 		});
 
 		it("all three backends accumulate footnotes instead of rendering comments inline", () => {
@@ -190,7 +191,7 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 			);
 			expect(toHTML(c)).toContain("recipe-notes");
 			expect(toMarkdown(c)).toContain("[^note-1]: a helpful note");
-			expect(toPrintHTML(c)).toContain('class="notes"');
+			expect(toPrintHTML(c)).toContain("recipe-notes");
 		});
 
 		it("all three backends show the gross-mass note when purchasing mass differs from net mass", () => {

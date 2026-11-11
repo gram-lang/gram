@@ -18,9 +18,14 @@ import {
 import {
 	getMetrics,
 	hasNutritionToShow,
+	kcalToKj,
+	nutritionColumns,
 	nutritionRows,
-	resolveNutritionBasis,
+	referenceIntakePercent,
+	wholeRecipeBelow,
+	type ResolvedBasis,
 } from "../../shared/nutrition";
+import { portionsLabel } from "../../shared/portions";
 import { formatElement } from "../../shared/element";
 import { moduleLabel } from "./module-label";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
@@ -86,7 +91,7 @@ export const markdownBackend: RenderBackend = {
 	renderShoppingList(data, context, options) {
 		if (!data.shopping_list || data.shopping_list.length === 0) return "";
 		const t = getDictionary(options.lang);
-		let md = `## 🛒 ${t.renderer.shoppingList}\n\n`;
+		let md = `## ${t.renderer.shoppingList}\n\n`;
 
 		const shoppingItems: any[] = data.shopping_list;
 		const renderGroups = groupMultiUnitEntries(shoppingItems);
@@ -110,7 +115,7 @@ export const markdownBackend: RenderBackend = {
 			} else if (item.display) {
 				md += `- ${escapeMarkdownHtml(item.display)}\n`;
 			} else if (group.length > 1) {
-				md += `- **${item.name || item.id}** ⚠️ *${t.renderer.mixedUnits}*:\n`;
+				md += `- **${item.name || item.id}** *${t.renderer.mixedUnits}*:\n`;
 				group.forEach((entry) => {
 					md += `  - ${formatElement(entry, "md", { ...context, formatMode: "shopping-list" })}\n`;
 				});
@@ -133,7 +138,7 @@ export const markdownBackend: RenderBackend = {
 	renderCookware(data, context) {
 		if (!data.cookware || data.cookware.length === 0) return "";
 		const t = getDictionary(context.lang);
-		let md = `## 🍳 ${t.renderer.cookware}\n\n`;
+		let md = `## ${t.renderer.cookware}\n\n`;
 		data.cookware.forEach((cw: any) => {
 			// formatElement dispatches on cw.type, so this already handles both a
 			// plain cookware item and an alternative group ("pan or skillet",
@@ -153,7 +158,7 @@ export const markdownBackend: RenderBackend = {
 			: context;
 
 		const t = getDictionary(options.lang);
-		let md = `## 👨‍🍳 ${t.renderer.instructions}\n\n`;
+		let md = `## ${t.renderer.instructions}\n\n`;
 		data.sections.forEach((sec: any) => {
 			if (sec.title) {
 				md += `### ${escapeMarkdownHtml(sec.title)}`;
@@ -217,6 +222,7 @@ export const markdownBackend: RenderBackend = {
 			const index = idx + 1;
 			md += `[^${renderId}-${index}]: ${escapeMarkdownHtml(note)}\n`;
 		});
+		md += "\n";
 		return md;
 	},
 
@@ -225,25 +231,81 @@ export const markdownBackend: RenderBackend = {
 		const nut = getMetrics(data)?.nutrition;
 		if (!hasNutritionToShow(nut) || !nut) return "";
 
-		const basis = resolveNutritionBasis(
-			nut,
-			options.nutritionBasis,
-			options.lang,
+		// The table of the HTML view, in Markdown: the same columns (per
+		// 100 g, per portion, the share of the reference intake of a portion),
+		// the energy in kcal and kJ, the whole recipe under the table.
+		const columns = nutritionColumns(nut, options.nutritionBasis, options.lang);
+		const riBasis = columns.find((c) => c.key === "perPortion");
+		const rowsByColumn = columns.map((c) =>
+			nutritionRows(c.values, options.lang),
 		);
+		const riRows = riBasis ? nutritionRows(riBasis.values, options.lang) : [];
+		const kcalOf = (basis: ResolvedBasis) =>
+			Math.round(basis.values.calories ?? 0);
+		const energy = (kcal: number) => `${kcalToKj(kcal)} kJ / ${kcal} kcal`;
+		const riCell = (key: string) => {
+			if (!riBasis) return [];
+			const row = riRows.find((r) => r.key === key);
+			const pct = row ? referenceIntakePercent(key, row.value) : undefined;
+			return [pct === undefined ? "" : `${pct}%`];
+		};
+		const tableRow = (cells: string[]) => `| ${cells.join(" | ")} |\n`;
+		const hasValues = (nut.total?.calories ?? 0) > 0;
 
-		let md = `## 🥗 ${t.renderer.nutrition} (${basis.label})\n\n`;
-		if (basis.note) md += `_${escapeMarkdownHtml(basis.note)}_\n\n`;
+		let md = `## ${t.renderer.nutritionTableTitle}\n\n`;
+		const subtitle = [
+			riBasis ? portionsLabel(data, options.lang) : undefined,
+			columns.find((c) => c.note)?.note,
+		].filter(Boolean);
+		if (subtitle.length > 0 && hasValues) {
+			md += `_${escapeMarkdownHtml(subtitle.join(" · "))}_\n\n`;
+		}
 		if (nut.warnings && nut.warnings.length > 0) {
 			nut.warnings.forEach((w) => {
 				md += `> **${t.renderer.incompleteData}:** ${escapeMarkdownHtml(w.message)}\n`;
 			});
 			md += "\n";
 		}
-		for (const row of nutritionRows(basis.values, options.lang)) {
-			const indent = row.nested ? "  " : "";
-			md += `${indent}- **${escapeMarkdownHtml(row.label)}**: ${row.value} ${row.unit}\n`;
+		if (!hasValues) return md;
+
+		md += tableRow([
+			"",
+			...columns.map((c) => escapeMarkdownHtml(c.label)),
+			...(riBasis ? [`${t.renderer.nutritionReferenceIntake}*`] : []),
+		]);
+		md += tableRow([
+			"---",
+			...columns.map(() => "---:"),
+			...(riBasis ? ["---:"] : []),
+		]);
+		md += tableRow([
+			`**${escapeMarkdownHtml(t.renderer.nutrients.calories)}**`,
+			...columns.map((c) => energy(kcalOf(c))),
+			...riCell("calories"),
+		]);
+		for (const row of rowsByColumn[0] ?? []) {
+			if (row.key === "calories") continue;
+			// A nested row (of which saturates) is indented with non-breaking
+			// spaces, which a Markdown table keeps.
+			const indent = row.nested ? "&nbsp;&nbsp;&nbsp;&nbsp;" : "";
+			md += tableRow([
+				`${indent}${escapeMarkdownHtml(row.label)}`,
+				...rowsByColumn.map((rows) => {
+					const cell = rows.find((r) => r.key === row.key);
+					return cell ? `${cell.value} ${cell.unit}` : "";
+				}),
+				...riCell(row.key),
+			]);
 		}
 		md += "\n";
+
+		const total = wholeRecipeBelow(nut, columns, options.lang);
+		if (total) {
+			md += `${escapeMarkdownHtml(t.renderer.nutritionWholeRecipeTotal.replace("{kcal}", `${kcalToKj(kcalOf(total))} kJ / ${kcalOf(total)} kcal`))}\n\n`;
+		}
+		if (riBasis) {
+			md += `\\* ${escapeMarkdownHtml(t.renderer.nutritionReferenceIntakeNote)}\n\n`;
+		}
 		return md;
 	},
 

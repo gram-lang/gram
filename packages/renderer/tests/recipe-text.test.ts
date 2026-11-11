@@ -60,10 +60,10 @@ const text = (
 };
 
 describe("recipe view, text format", () => {
-	it("opens on a box with the title, the servings and the times", () => {
+	it("opens on a box with the title, the portions and the times", () => {
 		const lines = text().split("\n");
 		expect(lines[0]).toStartWith("┌─ Country bread ");
-		expect(lines[0]).toEndWith(" 2 servings ─┐");
+		expect(lines[0]).toEndWith(" 2 portions ─┐");
 		expect(lines.slice(1, 3).join("\n")).toContain("Total Time: ");
 		expect(lines.find((l) => l.startsWith("└"))).toBe(`└${"─".repeat(76)}┘`);
 		// Every line of the box is as wide as the box.
@@ -149,11 +149,11 @@ describe("recipe view, text format", () => {
 
 	it("speaks the reader's language", () => {
 		const out = text({}, { lang: "fr" });
-		expect(out).toContain(" 2 parts ─┐");
+		expect(out).toContain(" 2 portions ─┐");
 		expect(out).toContain("LISTE DE COURSES");
 		expect(out).toContain("MATÉRIEL");
 		expect(out).toContain("Temps Total : ");
-		expect(out).toContain("NUTRITION (PAR PORTION)");
+		expect(out).toContain("VALEURS NUTRITIONNELLES");
 	});
 
 	it("sets parts apart with the surface's style, and is plain without one", () => {

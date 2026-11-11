@@ -753,10 +753,8 @@ function renderCurrentOutput(result: any, composedAst: unknown): string | null {
 	);
 }
 
-/** What the playground can do: scale and switch the nutrition basis from the preview. */
+/** What the surface tells the views: its language. */
 const SURFACE = () => ({
-	interactiveScaling: true,
-	interactiveNutrition: true,
 	lang: currentLang.value,
 });
 
@@ -864,12 +862,24 @@ watch(
 	{ deep: true },
 );
 
-// biome-ignore lint/correctness/noUnusedVariables: handleScaleUpdate is used in the <template> block below, which Biome's Vue support doesn't see.
-function handleScaleUpdate(factor: number) {
-	scaleFactorString.value = (factor * 100).toFixed(2).replace(/\.00$/, "");
-	scaleTargetId.value = null;
-	scaleTargetQty.value = null;
-}
+/**
+ * The portions of the recipe as written and as shown now, for the
+ * "Portions & Scale" settings: the compiled recipe carries the scaled
+ * portions and the factor that scaled them.
+ */
+// biome-ignore lint/correctness/noUnusedVariables: portionsNow is used in the <template> block below, which Biome's Vue support doesn't see.
+const portionsNow = computed<number | null>(() => {
+	const raw = jsonData.value?.meta?.portions;
+	const n = typeof raw === "number" ? raw : Number.parseFloat(String(raw));
+	return Number.isFinite(n) && n > 0 ? n : null;
+});
+// biome-ignore lint/correctness/noUnusedVariables: basePortions is used in the <template> block below, which Biome's Vue support doesn't see.
+const basePortions = computed<number | null>(() => {
+	const now = portionsNow.value;
+	if (now === null) return null;
+	const factor = jsonData.value?.scaleFactor;
+	return typeof factor === "number" && factor > 0 ? now / factor : now;
+});
 
 // biome-ignore lint/correctness/noUnusedVariables: handleScaleApply is used in the <template> block below, which Biome's Vue support doesn't see.
 function handleScaleApply() {
@@ -1201,7 +1211,7 @@ onUnmounted(() => {
                   @print="printCurrentView"
                   @update:format="(value: Format) => (format = value)"
                   :blocking-diagnostics="blockingDiagnostics"
-                  @scale-update="handleScaleUpdate"
+                  @open-scale="openStudio('scale')"
                   @jump="handleJump"
                 >
                 </GramOutput>
@@ -1232,6 +1242,8 @@ onUnmounted(() => {
             :shopping-list="jsonData?.shopping_list || []"
             :available-imports="availableImports"
             :stocked-uris="stockedUris"
+            :portions="portionsNow"
+            :base-portions="basePortions"
             v-model:scale-factor-string="scaleFactorString"
             v-model:scale-target-id="scaleTargetId"
             v-model:scale-target-qty="scaleTargetQty"

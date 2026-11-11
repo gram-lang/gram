@@ -29,14 +29,20 @@ function kitListsHtml(
 		let list = `          <ul class="kit-list kit-tools">\n`;
 		for (const l of tools) {
 			// The size follows the name, small; the count sits at the end of the line.
-			list += `            <li class="kit-cookware${l.quantity ? " has-qty" : ""}"><label><input type="checkbox"><span>${e(l.name)}${l.note ? ` <span class="kit-detail">(${e(l.note)})</span>` : ""}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}</span>` : ""}</span></label></li>\n`;
+			list += `            <li class="kit-cookware${l.quantity ? " has-qty" : ""}"><label><input type="checkbox"><span><span class="kit-name">${e(l.name)}${l.note ? ` <span class="kit-detail">(${e(l.note)})</span>` : ""}</span>${l.quantity ? `<span class="kit-qty">${e(l.quantity)}</span>` : ""}</span></label></li>\n`;
 		}
 		html += group("tools", titles.tools, `${list}          </ul>\n`);
 	}
 	if (things.length > 0) {
 		let list = `          <ul class="kit-list">\n`;
 		for (const l of things) {
-			list += `            <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${l.mass ? `<span class="kit-orig">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}</span><span class="kit-mass">${e(l.mass)}</span>` : `${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}`}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
+			// The name, the quantity at the end of the line, the note under both.
+			const written = `${e(l.quantity ?? "")}${l.detail ? ` (${e(l.detail)})` : ""}`;
+			const qty = l.quantity
+				? `<span class="kit-qty">${l.mass ? `<span class="kit-orig">${written}</span><span class="kit-mass">${e(l.mass)}</span>` : written}</span>`
+				: "";
+			const note = l.note ? `<span class="kit-note">${e(l.note)}</span>` : "";
+			list += `            <li class="kit-${l.kind}"><label><input type="checkbox"><span><span class="kit-name">${e(l.name)}</span>${qty}${note}</span></label></li>\n`;
 		}
 		html += group("ingredients", titles.things, `${list}          </ul>\n`);
 	}

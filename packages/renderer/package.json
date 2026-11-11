@@ -4,14 +4,23 @@
   "description": "Universal Markdown and HTML AST renderer for the Gram recipe language.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./gram.css": "./dist/gram.css",
+    "./gantt.css": "./gantt.css",
+    "./package.json": "./package.json"
+  },
   "sideEffects": false,
   "files": [
     "dist",
-    "gram.css",
     "gantt.css"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --loader .css=text --tsconfig ../../tsconfig.build.json",
+    "build": "tsup src/index.ts --format esm --dts --loader .css=text --tsconfig ../../tsconfig.build.json && node scripts/build-css.mjs",
+    "dev": "tsup src/index.ts --format esm --dts --loader .css=text --tsconfig ../../tsconfig.build.json --watch --onSuccess \"node scripts/build-css.mjs --watch\"",
     "typecheck": "tsc --noEmit",
     "test": "bun test --only-failures",
     "prepublishOnly": "npm run build"

@@ -79,6 +79,33 @@ const infoIcon = /* @__PURE__ */ svgIcon(
 	"info",
 	"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z",
 );
+const copyIcon = /* @__PURE__ */ svgIcon(
+	"copy",
+	"M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z",
+);
+const checkIcon = /* @__PURE__ */ svgIcon(
+	"check",
+	"M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z",
+);
+
+const chartPieIcon = /* @__PURE__ */ svgIcon(
+	"chart-pie",
+	"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm71.87,53.27L136,114.14V40.37A88,88,0,0,1,199.87,77.27ZM120,40.37v83l-71.89,41.5A88,88,0,0,1,120,40.37ZM128,216a88,88,0,0,1-71.87-37.27L207.89,91.12A88,88,0,0,1,128,216Z",
+);
+
+const usersIcon = /* @__PURE__ */ svgIcon(
+	"users",
+	"M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z",
+);
+/**
+ * Back to the original recipe, in the deprecated portions stepper only: not a
+ * key of `RendererIcons`, so it never becomes part of the public icon set.
+ */
+// @remove-in: 2.0.0 [renderer-interactive-scaling]
+export const RESET_SCALE_ICON = /* @__PURE__ */ svgIcon(
+	"arrow-counter-clockwise",
+	"M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z",
+);
 
 export const HTML_ICONS: Record<keyof Required<RendererIcons>, string> = {
 	hourglass: hourglassIcon,
@@ -99,6 +126,10 @@ export const HTML_ICONS: Record<keyof Required<RendererIcons>, string> = {
 	scales: scalesIcon,
 	package: packageIcon,
 	info: infoIcon,
+	copy: copyIcon,
+	check: checkIcon,
+	chartPie: chartPieIcon,
+	users: usersIcon,
 };
 
 export const MD_ICONS: Record<keyof Required<RendererIcons>, string> = {
@@ -120,6 +151,10 @@ export const MD_ICONS: Record<keyof Required<RendererIcons>, string> = {
 	scales: "⚖️ ",
 	package: "📦 ",
 	info: "ℹ️ ",
+	copy: "📋 ",
+	check: "✓",
+	chartPie: "📊 ",
+	users: "👥 ",
 };
 
 export const PRINT_ICONS: Record<keyof Required<RendererIcons>, string> = {
@@ -141,6 +176,10 @@ export const PRINT_ICONS: Record<keyof Required<RendererIcons>, string> = {
 	info: "ℹ",
 	minus: "-",
 	plus: "+",
+	copy: "",
+	check: "✓",
+	chartPie: "◔",
+	users: "",
 };
 
 export const DEFAULT_ICONS = {

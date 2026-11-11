@@ -1,20 +1,36 @@
+/* The fonts of the screen (`--gram-font-*`, declared by the print base). */
+.gram-run-sheet {
+	font-family: var(--gram-font-sans);
+}
+.gram-run-sheet h4,
+.gram-run-sheet .run-sheet-visit-slot,
+.gram-run-sheet .schedule-serve .schedule-text {
+	font-family: var(--gram-font-mono);
+}
 .gram-run-sheet .run-sheet-header {
 	border-top: 2pt solid #000;
 	page-break-after: avoid;
 	padding-top: 8pt;
 }
+/* The title of the screen, not the capitals of the print base's `h2`. */
 .gram-run-sheet h2 {
+	font-family: inherit;
 	font-size: 18pt;
 	font-weight: 800;
+	line-height: 1.15;
+	text-transform: none;
+	letter-spacing: normal;
 	margin-top: 0;
 	margin-bottom: 4pt;
+	padding-bottom: 0;
+	border-bottom: none;
 }
 .gram-run-sheet .run-sheet-subtitle {
 	color: var(--grey);
 	margin-bottom: 6pt;
 }
 .gram-run-sheet .run-sheet-summary {
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -49,7 +65,7 @@
 	border-top: 0;
 }
 .gram-run-sheet .schedule-day {
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-weight: 800;
 	text-transform: uppercase;
 	padding: 4pt 6pt;
@@ -75,7 +91,7 @@
 	border-bottom: 0;
 }
 .gram-run-sheet .schedule-time {
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;
 	font-weight: 600;
 }
@@ -104,7 +120,7 @@
 	text-transform: uppercase;
 }
 .gram-run-sheet .run-sheet-legend {
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 7.5pt;
 	color: var(--grey);
 }
@@ -126,13 +142,12 @@
 .gram-run-sheet .run-sheet-day .day-slot {
 	float: right;
 	text-transform: none;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;
 	font-weight: 700;
 	color: var(--grey);
 }
 .gram-run-sheet .run-sheet-visit h4 {
-	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 7.5pt;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -184,7 +199,7 @@
 	align-items: center;
 	gap: 5pt;
 	margin: 0 0 5pt;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;
 	font-weight: 800;
 	text-transform: uppercase;
@@ -226,17 +241,19 @@
 }
 .gram-run-sheet .sec-cont,
 .gram-run-sheet .sec-origin {
-	font-family: ui-monospace, Menlo, Consolas, monospace;
 	font-size: 7.5pt;
 	font-weight: 400;
 	text-transform: none;
 	color: var(--grey);
 }
+.gram-run-sheet .sec-origin {
+	font-family: var(--gram-font-mono);
+}
 .gram-run-sheet .sec-time-pill {
 	border: 0.75pt solid #000;
 	border-radius: 2pt;
 	padding: 0 4pt;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;
 }
 .gram-run-sheet .station-sub-block {
@@ -252,7 +269,7 @@
 }
 .gram-run-sheet .mep-sub-title {
 	margin: 0 0 2pt;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 7.5pt;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -260,13 +277,33 @@
 }
 .gram-run-sheet .kit-list li {
 	margin-bottom: 2pt;
+	break-inside: avoid;
 	page-break-inside: avoid;
 }
+.gram-run-sheet .kit-list label {
+	display: flex;
+	align-items: baseline;
+}
 .gram-run-sheet .kit-list label > span {
-	display: inline-flex;
-	justify-content: space-between;
-	width: calc(100% - 14pt);
-	gap: 6pt;
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: baseline;
+	column-gap: 4pt;
+	flex: 1;
+	min-width: 0;
+}
+.gram-run-sheet .kit-name {
+	grid-column: 1;
+	grid-row: 1;
+	min-width: 0;
+	overflow-wrap: break-word;
+}
+.gram-run-sheet .kit-note {
+	grid-column: 1 / -1;
+	grid-row: 2;
+	font-size: 7.5pt;
+	font-style: italic;
+	color: var(--grey);
 }
 .gram-run-sheet .kit-list input[type="checkbox"] {
 	appearance: none;
@@ -306,7 +343,7 @@
 	background: #f2f2f2;
 	-webkit-print-color-adjust: exact;
 	print-color-adjust: exact;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 7.5pt;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -322,7 +359,7 @@
 	padding: 0 2.5pt;
 	border: 1.25pt solid #000;
 	border-radius: 2pt;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;
 	font-weight: 700;
 	white-space: nowrap;
@@ -343,15 +380,14 @@
 }
 .gram-run-sheet .kit-section-title {
 	margin: 0 0 3pt;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 7.5pt;
 	font-weight: 700;
 	text-transform: uppercase;
 	color: var(--grey);
 }
 .gram-run-sheet .kit-list {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
+	columns: 2;
 	column-gap: 16pt;
 }
 .gram-run-sheet .kit-list + .kit-list.kit-tools {
@@ -360,8 +396,7 @@
 	border-top: 0.5pt dotted #000;
 }
 .gram-run-sheet .kit-qty::before,
-.gram-run-sheet .kit-note::before,
-.gram-run-sheet .kit-tools label > span::after {
+.gram-run-sheet .kit-tools li:not(.has-qty) label > span::after {
 	content: "";
 	flex: 1;
 	align-self: flex-end;
@@ -369,13 +404,18 @@
 	margin-bottom: 2pt;
 	border-bottom: 1pt dotted #aaa;
 }
-.gram-run-sheet .kit-qty,
-.gram-run-sheet .kit-note {
+.gram-run-sheet .kit-tools li:not(.has-qty) label > span::after {
+	grid-column: 2 / -1;
+	grid-row: 1;
+}
+.gram-run-sheet .kit-qty {
+	grid-column: 2 / -1;
+	grid-row: 1;
 	display: flex;
-	flex: 1;
 	justify-content: flex-end;
+	white-space: nowrap;
 	gap: 4pt;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;
 	color: var(--grey);
 }
@@ -413,7 +453,7 @@
 	color: #fff;
 	-webkit-print-color-adjust: exact;
 	print-color-adjust: exact;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8pt;
 	font-weight: 600;
 }
@@ -427,7 +467,7 @@
 	color: #fff;
 	-webkit-print-color-adjust: exact;
 	print-color-adjust: exact;
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -445,7 +485,7 @@
 	page-break-inside: avoid;
 }
 .gram-run-sheet .run-sheet-problems h3 {
-	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;
 	font-weight: 800;
 	text-transform: uppercase;
@@ -482,7 +522,4 @@
 .gram-run-sheet .kit-detail {
 	font-size: 7.5pt;
 	color: var(--grey);
-}
-.gram-run-sheet .kit-tools .has-qty label > span::after {
-	display: none;
 }

@@ -24,7 +24,7 @@ describe("nutrition panel warnings (I-1)", () => {
 	});
 });
 
-describe("print nutrition panel sodium unit (I-2)", () => {
+describe("print nutrition panel salt (I-2)", () => {
 	const database: Record<string, IngredientData> = {
 		bacon: {
 			name: "Bacon",
@@ -39,14 +39,13 @@ describe("print nutrition panel sodium unit (I-2)", () => {
 		},
 	};
 
-	it("renders sodium in milligrams, not grams", () => {
+	it("renders sodium as salt in grams (1717 mg × 2.5)", () => {
 		const source = "## Section\n\nCook @bacon{100g}.\n";
 		const compiled = compile(getAST(source));
 		const { result } = analyze(compiled, database);
 		const printHtml = toPrintHTML(result);
 
-		// Units are now spaced, driven by NUTRIENTS' `unit` field.
-		expect(printHtml).toContain("1717 mg");
-		expect(printHtml).not.toContain("1717 g");
+		expect(printHtml).toContain("4.29 g");
+		expect(printHtml).not.toContain("1717");
 	});
 });

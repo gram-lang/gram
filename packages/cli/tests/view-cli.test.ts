@@ -86,7 +86,7 @@ describe("gram view", () => {
 		const { code, out } = view();
 		expect(code).toBe(0);
 		expect(out).toStartWith("┌─ Country bread ");
-		expect(out).toContain(" 2 servings ─┐");
+		expect(out).toContain(" 2 portions ─┐");
 		expect(out).toContain("SHOPPING LIST\n  flour");
 		expect(out).toContain("COOKWARE\n  bowl");
 		expect(out).toContain("─── Dough ");
@@ -141,7 +141,8 @@ describe("gram view", () => {
 			"--db",
 			join(dir, "ingredients.yaml"),
 		);
-		expect(out).toContain("NUTRITION (PER PORTION)");
+		expect(out).toContain("NUTRITION INFORMATION");
+		expect(out).toContain("Per portion");
 		expect(out).toContain(
 			"⚠ 1 ingredient missing nutrition data — run `gram db enrich`",
 		);
@@ -155,7 +156,7 @@ describe("gram view", () => {
 			"--no-pager",
 			"--skip-db",
 		);
-		expect(out).toContain(" 2 parts ─┐");
+		expect(out).toContain(" 2 portions ─┐");
 		expect(out).toContain("LISTE DE COURSES");
 		expect(out).toContain("MATÉRIEL");
 		expect(out).toContain("Temps Total : ");

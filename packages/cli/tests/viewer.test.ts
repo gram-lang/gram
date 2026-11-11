@@ -21,7 +21,7 @@ describe("viewRecipe", () => {
 		options: Parameters<typeof viewRecipe>[1] = {},
 	) => (await viewRecipe(await tmp(source), options)).text;
 
-	it("writes the title, the servings, and the sections with their steps", async () => {
+	it("writes the title, the portions, and the sections with their steps", async () => {
 		const out = await text(
 			'---\ntitle: "Crepes"\nportions: 4\n---\n## Batter\n[Mix] Combine the @flour{200g} and @eggs{2}.\n',
 		);
@@ -29,7 +29,7 @@ describe("viewRecipe", () => {
 		expect(lines[0]).toStartWith("┌─ Crepes ");
 		// `portions` is the canonical key: it used to be read from a field the
 		// language doesn't have, so the header never showed a serving count.
-		expect(lines[0]).toContain(" 4 servings ");
+		expect(lines[0]).toContain(" 4 portions ");
 		expect(out).toContain("─── Batter ");
 		expect(out).toContain("1. [Mix] Combine the flour (200 g) and eggs (2).");
 	});

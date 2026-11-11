@@ -7,6 +7,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
+	/* The fonts of the screen, exactly (`tokens.css`): a view printed like its
+	   screen version takes them. `print-tokens.test.ts` keeps them equal. */
+	--gram-font-sans: system-ui, -apple-system, sans-serif;
+	--gram-font-mono:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
 	--black: #000000;
 	--dark-grey: #333333;
 	--grey: #666666;
@@ -42,6 +48,15 @@ svg.gicon,
 	height: 1em;
 	vertical-align: -0.125em;
 	display: inline-block;
+}
+
+/* A step element and what touches it, never split by a line break
+   (`nobr()` of `shared/utils.ts`, as in `base.css`). */
+.gram-nobr {
+	white-space: nowrap;
+}
+:where(.gram-nobr > *) {
+	white-space: normal;
 }
 
 /* ── Title ── */

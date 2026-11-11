@@ -70,6 +70,8 @@ export const en = {
 		metadata: "Metadata",
 		/** Marks a composite ingredient (`@yolk<@egg`) in a list. */
 		composite: "Composite",
+		/** Under a composite in the shopping list, the share of the item used whole (`@egg{1}` next to `@yolk<@egg`). */
+		directUse: "Direct use",
 		/** The label of the total mass in the recipe's header. */
 		totalMass: "Total Mass",
 		incomplete: "Incomplete",
@@ -79,8 +81,14 @@ export const en = {
 		unknownIngredient: "[Unknown Ingredient]",
 		unknownReference: "[Unknown Reference]",
 		/** The portions of the recipe (`portions:`), and once it is scaled. */
-		servings: "{count} servings",
-		servingsScaled: "{count} servings (×{factor})",
+		servings: "{count} portions",
+		servingsScaled: "{count} portions (×{factor})",
+		/** The word after the portions stepper, by plural category (`Intl.PluralRules`). */
+		portionsUnit: { one: "portion", other: "portions" },
+		/** The badge of a scaled recipe in the hero bar ("×1.5"). */
+		scaledRecipe: "Scaled recipe",
+		/** The pencil button beside the portions, where the surface can change them. */
+		changePortions: "Change the portions",
 		cookware: "Cookware",
 		equipment: "Equipment",
 		nutrition: "Nutrition",
@@ -189,8 +197,15 @@ export const en = {
 		colon: ": ",
 		standardizedMass: "Standardized mass",
 		quantity: "Quantity",
-		intermediateIngredient: "Intermediate Ingredient",
+		intermediateIngredient: "Intermediate ingredient",
+		// The rows of the tooltip of an ingredient in a step.
+		tooltipMass: "Mass",
+		tooltipPreparation: "Preparation",
+		tooltipBakers: "Baker's %",
+		tooltipTakenFrom: "Taken from",
 		alternatives: "Alternatives",
+		// The deprecated portions stepper of the HTML recipe (`interactiveScaling`).
+		// @remove-in: 2.0.0 [renderer-interactive-scaling]
 		decreasePortions: "Decrease portions",
 		editPortions: "Edit portions directly",
 		increasePortions: "Increase portions",
@@ -198,6 +213,9 @@ export const en = {
 		mixedUnitsTooltip:
 			"Couldn't be combined into one total — add a density to the ingredient database to merge them",
 		mixedUnits: "Mixed units",
+		copyShoppingList: "Copy list",
+		copied: "Copied!",
+		toggleStepDone: "Toggle step completion",
 		purchasingWeight: "Purchasing Weight (including waste/peel)",
 		gross: "gross",
 		intermediateResult: "Intermediate result for this section",
@@ -205,6 +223,17 @@ export const en = {
 		estimatedSuffix: " (Estimated)",
 		missingMass: " (Missing: ",
 		someIngredients: "some ingredients",
+		// The tooltip of a mass (the hero bar's total, a section's badge).
+		massTitle: "Ingredient mass, before cooking",
+		massSectionTitle: "Mass of this section's ingredients, before cooking",
+		massEstimated: "Estimated",
+		massEstimatedDetail: "converted with an average value",
+		massIncomplete: "Incomplete",
+		massIncompleteDetail: "no known mass",
+		massMethodDensity: "average density",
+		massMethodUnitWeight: "average unit weight",
+		massIncompleteHint:
+			"Give these a weight in grams, or a density or unit weight in densities: or the ingredient database",
 		// Nutrition bases. Which one is shown is the renderer's
 		// `nutritionBasis` option; the analyzer computes all three.
 		nutritionWholeRecipe: "Whole recipe",
@@ -226,9 +255,18 @@ export const en = {
 		// renderer test asserts the two stay in step. A sub-macro's label is
 		// prefixed with `ofWhich` at display time rather than baked in here,
 		// so the same string works standalone and nested.
+		// The nutrition table of the HTML recipe: salt is shown in place of
+		// sodium, and the reference intakes are the EU ones.
+		nutritionSalt: "Salt",
+		nutritionTableTitle: "Nutrition information",
+		nutritionReferenceIntake: "%RI",
+		nutritionReferenceIntakeNote:
+			"Reference intake of an average adult (8,400 kJ / 2,000 kcal)",
+		nutritionNutrient: "Nutrient",
+		nutritionWholeRecipeTotal: "Whole recipe: {kcal}",
 		ofWhich: "of which",
 		nutrients: {
-			calories: "Calories",
+			calories: "Energy",
 			fat: "Fat",
 			sat_fat: "saturates",
 			mono_fat: "mono-unsaturates",
@@ -334,6 +372,7 @@ export const en = {
 		},
 		options: {
 			scaleTitle: "Modify Quantities",
+			scalePortions: "Portions",
 			scaleGlobal: "Overall Scale",
 			scaleByIngredient: "By Ingredient",
 			selectIngredient: "Select ingredient...",
@@ -351,7 +390,7 @@ export const en = {
 			stepQuantitiesDesc:
 				"Writes the quantity of each ingredient in the text of the steps, after its name.",
 			nutritionBasis: "Nutrition basis",
-			nutritionBasisAuto: "Automatic (choose in the preview)",
+			nutritionBasisAuto: "Automatic (every basis, side by side)",
 			rejectedSlots: "Unavailable slots:",
 			forceReference: "Force Reference:",
 			autoDetect: "Auto (detect @*)",
@@ -377,8 +416,10 @@ export const en = {
 				"Sets the time zone used to display exact clock times on the run sheet and accurately handle day transitions.",
 			availability:
 				"Your daily kitchen hours. The schedule organizes tasks so you never have to cook outside this window (such as overnight).",
+			scalePortions:
+				"Sets how many portions the recipe makes: every quantity follows. The same as the overall scale, counted in portions.",
 			scaleGlobal:
-				"Adjusts all ingredient quantities and servings according to the specified percentage (e.g. 200% to double, 50% to halve).",
+				"Adjusts all ingredient quantities and portions according to the specified percentage (e.g. 200% to double, 50% to halve).",
 			scaleByIngredient:
 				"Proportionally recalculates the entire recipe to match the exact quantity you have on hand for a specific ingredient (e.g. only 3 eggs or 250g of butter).",
 			bakersMath:
@@ -388,7 +429,7 @@ export const en = {
 			stepQuantities:
 				"Writes each quantity in the step that uses it, with its weight in grams when the masses are standardized. Leave it off for shorter steps: the quantities stay in the ingredient lists.",
 			nutritionBasis:
-				"Which basis the nutrition panel shows, when the nutrition is estimated. Automatic lets you switch in the preview, starting per portion when the recipe declares portions.",
+				"Which basis the nutrition panel shows, when the nutrition is estimated. Automatic shows per 100 g and per portion side by side, with the whole recipe under them, in every recipe format.",
 			bakersMathOnly:
 				"Hides gram weights to display only relative percentages, turning the recipe into a pure ratio formula.",
 			bakersReference:

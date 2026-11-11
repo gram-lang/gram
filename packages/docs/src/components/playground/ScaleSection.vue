@@ -8,6 +8,7 @@ import PlaygroundTooltip from "./PlaygroundTooltip.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the template block below
 import GramSelect from "./GramSelect.vue";
 import {
+	factorForPortions,
 	isScaleModified,
 	knownUnits,
 	matchingUnits,
@@ -24,6 +25,9 @@ import { useI18n } from "./useI18n";
 const props = defineProps<{
 	open: boolean;
 	shoppingList?: ShoppingItem[];
+	/** The portions of the recipe now, and as written: `null` when it declares none. */
+	portions: number | null;
+	basePortions: number | null;
 	scaleFactorString?: string;
 	scaleTargetId: string | null;
 	scaleTargetQty: number | null;
@@ -41,6 +45,8 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+// biome-ignore lint/correctness/noUnusedVariables: portionsInputId is used in the <template> block below, which Biome's Vue support doesn't see.
+const portionsInputId = useId();
 
 const state = computed<ScaleState>(() => ({
 	shoppingList: props.shoppingList,
@@ -59,6 +65,21 @@ const globalScaleFactor = computed({
 	get: () => props.scaleFactorString || "100",
 	set: (val: string) => {
 		emit("update:scaleFactorString", val);
+		emit("clear-target");
+	},
+});
+
+// The recipe's portions: setting a count sets the overall scale.
+// biome-ignore lint/correctness/noUnusedVariables: portionsField is used in the <template> block below, which Biome's Vue support doesn't see.
+const portionsField = computed({
+	get: () =>
+		props.portions === null
+			? ""
+			: String(Math.round(props.portions * 100) / 100),
+	set: (val: string | number) => {
+		const factor = factorForPortions(Number(val), props.basePortions);
+		if (factor === null) return;
+		emit("update:scaleFactorString", factor);
 		emit("clear-target");
 	},
 });
@@ -201,6 +222,24 @@ function resetSection() {
     @toggle="emit('toggle')"
     @reset="resetSection"
   >
+    <div class="studio-field" v-if="props.basePortions">
+      <div class="studio-label-row">
+        <label class="studio-label" :for="portionsInputId">{{ t.playground.options.scalePortions }}</label>
+        <PlaygroundTooltip :text="t.playground.help.scalePortions" />
+      </div>
+      <div class="scale-factor-wrapper">
+        <input
+          :id="portionsInputId"
+          type="number"
+          class="scale-factor-input"
+          v-model.lazy="portionsField"
+          min="0.1"
+          step="any"
+          inputmode="decimal"
+        />
+      </div>
+    </div>
+
     <div class="studio-field">
       <div class="studio-label-row">
         <span class="studio-label">{{ t.playground.options.scaleGlobal }}</span>

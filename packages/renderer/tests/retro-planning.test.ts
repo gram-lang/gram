@@ -18,9 +18,9 @@ describe("retro-planning badge rendering", () => {
 		expect(md).toContain("### Dough ~{-2h}");
 	});
 
-	it("shows the raw annotation parenthetically in print HTML", () => {
+	it("shows the raw annotation as a badge in print HTML, as on screen", () => {
 		const html = toPrintHTML(compileRecipe("Dough ~{-2h}"));
-		expect(html).toContain("(-2h)");
+		expect(html).toMatch(/section-meta-retroplanning">[\s\S]*?-2h<\/small>/);
 	});
 
 	it("still displays free-text retro-planning as a degraded badge (raw fallback) instead of crashing", () => {

@@ -16,7 +16,7 @@ Le paquet `@gram-lang/renderer` prend en charge cet objet JSON complet pour le r
 Le moteur de rendu propose cinq cibles d'export :
 
 ### 1. Markdown (`toMarkdown`)
-Génère un document Markdown conforme à la spécification GitHub Flavored Markdown (GFM), comprenant la liste des ingrédients, le matériel requis, les étapes numérotées, les notes de bas de page (`[^1]`), les étiquettes de masse brute et le bloc nutritionnel (`## 🥗 Nutrition`). Ce format est idéal pour alimenter des générateurs de sites statiques (Astro, VitePress, Hugo) ou des applications de prise de notes (Obsidian).
+Génère un document Markdown conforme à la spécification GitHub Flavored Markdown (GFM), comprenant la liste des ingrédients, le matériel requis, les étapes numérotées, les notes de bas de page (`[^1]`), les étiquettes de masse brute et le bloc nutritionnel (`## Nutrition`). Ce format est idéal pour alimenter des générateurs de sites statiques (Astro, VitePress, Hugo) ou des applications de prise de notes (Obsidian).
 
 ### 2. HTML sémantique (`toHTML`)
 Produit un balisage HTML sémantique et accessible. L'export HTML repose sur un principe d'**inversion de contrôle** : vous pouvez injecter vos propres classes CSS (ex. Tailwind CSS) et vos jeux d'icônes SVG pour adapter le rendu à l'identité visuelle de votre application hôte.
@@ -105,7 +105,7 @@ L'objet `RendererOptions` propose également les options `bakersReference`/`bake
   Bien que cet échappement neutralise les injections HTML brutes, `toMarkdown` n'effectue pas d'assainissement complet sur les schémas d'URL (ex. liens `javascript:`). Si vous affichez des recettes issues de sources non fiables, appliquez un assainisseur dédié (`DOMPurify` ou `rehype-sanitize`) sur le balisage final.
   :::
 - **Formatage des durées** : Convertit les durées brutes exprimées en minutes en libellés temporels fluides (`90` → `1h 30m`).
-- **Styles CSS intégrés** : Le paquet fournit la feuille de style `gram.css` (définissant les tokens clairs et sombres pour l'ensemble des composants, y compris le plan de marche), ainsi que `gantt.css`, maintenue jusqu'à la version 2.0.0 pour le diagramme de Gantt déprécié. L'export pour impression intègre directement ses styles dans l'en-tête HTML, sans feuille de style externe requise.
+- **Styles CSS intégrés** : Le paquet fournit `@gram-lang/renderer/gram.css`. On y trouve les tokens clairs et sombres communs à toutes les vues, puis les styles propres à chacune, cantonnés à son élément racine (`<article class="gram-recipe">`, `<section class="gram-run-sheet">`) : une règle écrite pour une vue ne déborde jamais sur une autre. Jusqu'à la version 2.0.0, il fournit aussi `gantt.css` pour le diagramme de Gantt déprécié. L'export pour impression intègre directement ses styles dans l'en-tête HTML, sans feuille de style externe requise.
 
 ## Consommation directe du JSON
 

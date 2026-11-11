@@ -6,6 +6,7 @@
  * reloads it (no flash, the scroll position is kept).
  */
 
+import { attachTooltips } from "@gram-lang/renderer";
 import type {
 	Content,
 	PausedError,
@@ -35,6 +36,7 @@ function el<T extends Element = HTMLElement>(
 }
 
 const content = el(document, "#content");
+attachTooltips(content);
 const banner = el(document, "#banner");
 
 function showMacros(): void {

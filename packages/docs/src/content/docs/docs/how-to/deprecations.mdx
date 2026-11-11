@@ -18,6 +18,7 @@ This page documents all features currently deprecated across Gram, categorized b
 | Rendering a Gantt chart, VS Code command or language server notifications | See [Replacement of the Gantt chart and its components](#replacement-of-the-gantt-chart-and-its-components). |
 | Writing an editor client for the language server | See [Language server preview notification](#language-server-preview-notification). |
 | Programmatic integration of `@gram-lang/kitchen` or `@gram-lang/analyzer` | See [Compiled JSON fields](#compiled-json-fields), [`calculatePreparationTime`](#the-calculatepreparationtime-function), and [Backwards compatibility with older JSON](#backwards-compatibility-with-older-json). |
+| Rendering the HTML recipe with `toHTML()` options (`@gram-lang/renderer`) | See [The `interactiveNutrition` option](#the-interactivenutrition-option) and [The `interactiveScaling` option](#the-interactivescaling-option). |
 
 To audit your application code, see [Identify deprecated usages in your codebase](#identify-deprecated-usages-in-your-codebase).
 
@@ -199,6 +200,40 @@ The playground now shows the views of the renderer as tabs, each in its formats,
 | `playground.views.preview`, `runSheet`, `ast`, `json`, `jsonTree` | `renderer.outputs[id]`, with the output ids `recipe`, `runSheet`, `ast`, `json` and `json-tree` |
 | `playground.views.markdown` | `renderer.formats.markdown` (Markdown is a format of a view, not a view) |
 | `playground.viewLabel` | `playground.output.views` (the tabs) and `playground.output.inspect` (the inspector menu) |
+
+### The `interactiveNutrition` option
+
+<Since v="1.4.0" type="deprecated" />
+
+**Deprecated:** the `interactiveNutrition` option of `toHTML()` (`@gram-lang/renderer`). **Recommended replacement:** none needed, remove it.
+
+The HTML recipe now shows its nutrition as a table, with every basis side by side (per portion, per 100 g) and the whole recipe under it, so there is no basis switch left to turn on. The option is still accepted and does nothing until 2.0.0. To show a single basis, set `nutritionBasis`.
+
+### The `interactiveScaling` option
+
+<Since v="1.4.0" type="deprecated" />
+
+**Deprecated:** the `interactiveScaling` option of `toHTML()` (`@gram-lang/renderer`), and the `decreasePortions`, `increasePortions` and `editPortions` strings of `@gram-lang/i18n` that go with it. **Recommended replacement:** scale the recipe before rendering it.
+
+The option draws a portions stepper (− 4 +) in the hero bar of the HTML recipe. The recipe view ships no script, so its buttons only work if the page around it handles them: in an exported file or an editor preview, they would do nothing. The view now only shows the portions, and the factor of a scaled recipe (`6 portions ×1.5`); setting them belongs to the surface, like every other setting.
+
+Before:
+
+```typescript
+const html = toHTML(recipe, { interactiveScaling: true });
+// ...then listen to the stepper's data-scale-action buttons
+```
+
+After:
+
+```typescript
+import { compile, applyScale } from '@gram-lang/kitchen';
+
+const recipe = applyScale(compile(ast), 6 / 4); // from 4 portions to 6
+const html = toHTML(recipe); // shows "6 portions ×1.5"
+```
+
+The option keeps working until 2.0.0. In the playground, the portions are set in the **Portions & Scale** settings, which a click on the portions of the recipe opens.
 
 ### Backwards compatibility with older JSON
 

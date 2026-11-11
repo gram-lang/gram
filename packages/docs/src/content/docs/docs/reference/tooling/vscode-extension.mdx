@@ -66,7 +66,7 @@ This setting applies immediately to all open files (any unrecognized value defau
 | Setting | Values | Effect |
 |---|---|---|
 | `gram.stepQuantities` | `show` (default), `hide` | Controls whether ingredient quantities appear directly within step instructions, after each ingredient name, alongside standardized mass in grams: `flour (250 ml, ~148 g)`. Section ingredient lists always display them. |
-| `gram.nutritionBasis` | `auto` (default), `total`, `perPortion`, `per100g` | Calculation basis for the nutrition panel. In `auto` mode, the preview includes interactive toggles (starting per portion when declared); any other value locks the panel to that specific basis. |
+| `gram.nutritionBasis` | `auto` (default), `total`, `perPortion`, `per100g` | Calculation basis for the nutrition panel. In `auto` mode, the preview shows every basis side by side (per 100 g, per portion); any other value narrows the table to that basis. |
 | `gram.bakersMathOnly` | `false` (default), `true` | Displays only baker's percentages, omitting absolute weights. |
 
 Analyzer settings control which calculations are derived from the ingredient database. All are enabled by default, matching the core compiler engine. Modifying any of these settings immediately re-analyzes every open recipe and refreshes its diagnostics.

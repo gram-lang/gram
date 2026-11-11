@@ -1,0 +1,1880 @@
+/*
+ * The recipe on screen (`toHTML`, the `html` format of the recipe view).
+ *
+ * Every rule is scoped to the view's root, `<article class="gram-recipe">`:
+ * nothing here reaches another view, and nothing of another view reaches here.
+ * The tokens (colors, fonts) come from `shared/tokens.css`; the print layout is
+ * `print.css`, next to this file.
+ */
+
+@keyframes gram-recipe-pulse {
+	0% {
+		background-color: color-mix(in srgb, var(--item-ref-text) 25%, transparent);
+		outline: 2px solid var(--item-ref-text);
+		outline-offset: 4px;
+		box-shadow: 0 0 12px
+			color-mix(in srgb, var(--item-ref-text) 40%, transparent);
+	}
+	50% {
+		background-color: color-mix(in srgb, var(--item-ref-text) 15%, transparent);
+		outline: 2px solid var(--item-ref-text);
+		outline-offset: 2px;
+	}
+	100% {
+		background-color: transparent;
+		outline: 2px solid transparent;
+		box-shadow: none;
+	}
+}
+
+@keyframes gram-recipe-flash {
+	0% {
+		background-color: var(--color-bg-muted, rgba(200, 200, 200, 0.3));
+	}
+	100% {
+		background-color: transparent;
+	}
+}
+
+@scope (.gram-recipe) {
+	:scope {
+		container-type: inline-size;
+	}
+
+	/* ─── Headings ─────────────────────────────────────────────────────────── */
+
+	h1 {
+		font-size: 2rem;
+		font-weight: 700;
+		margin-bottom: 24px;
+	}
+
+	h2,
+	h3,
+	h4 {
+		color: var(--vscode-editor-foreground, inherit);
+	}
+
+	h3 {
+		font-size: 1.25rem;
+		margin-top: 2rem;
+		margin-bottom: 1rem;
+		font-weight: 800;
+	}
+
+	h4 {
+		display: none;
+	}
+
+	/* ─── Header: title, description, byline, tags ─────────────────────────── */
+
+	.recipe-title {
+		margin: 0 0 0.35rem;
+		font-size: 1.85rem;
+		font-weight: 800;
+		line-height: 1.15;
+		text-wrap: balance;
+		color: var(--color-text);
+	}
+
+	.recipe-description {
+		font-size: 0.96rem;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+		margin: 0 0 10px 0;
+	}
+
+	.recipe-byline {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px 10px;
+		font-size: 0.82rem;
+		color: var(--color-text-muted);
+		margin-bottom: 14px;
+		font-family: var(--gram-font-sans);
+	}
+
+	.byline-sep {
+		opacity: 0.4;
+	}
+
+	.byline-source {
+		color: var(--color-text);
+		text-decoration: underline;
+		text-decoration-style: dotted;
+	}
+
+	.byline-custom .label {
+		font-weight: 600;
+		text-transform: capitalize;
+	}
+
+	/* ─── Hero bar: portions (and the scaling controls), yield, mass ───────── */
+
+	.recipe-hero-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 7px 16px;
+		padding: 8px 14px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		margin-bottom: 16px;
+		font-size: 0.86rem;
+	}
+
+	/*
+	 * Two groups: the portions, which the reader sets, then what the recipe
+	 * makes, weighs and brings. The second goes to the next line as one,
+	 * under a dotted rule, rather than one item at a time; when the recipe
+	 * has room, it follows on the same line behind a hairline.
+	 */
+	.hero-facts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 7px 16px;
+		min-width: 0;
+	}
+
+	.hero-portions + .hero-facts {
+		flex-basis: 100%;
+		padding-top: 7px;
+		border-top: 1px dotted var(--color-border);
+	}
+
+	@container (min-width: 720px) {
+		.hero-portions + .hero-facts {
+			flex-basis: auto;
+			padding-top: 0;
+			padding-left: 16px;
+			border-top: none;
+			border-left: 1px solid var(--color-border);
+		}
+	}
+
+	/* The nutrition pill shows only with the table: without it, a group
+	   holding nothing else would leave its rule alone. */
+	.hero-facts:not(:has(.hero-yield, .hero-mass)) {
+		display: none;
+	}
+
+	.show-macros :scope .hero-facts:has(.hero-nutrition) {
+		display: flex;
+	}
+
+	.hero-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.hero-item svg {
+		color: var(--color-text-muted);
+		flex-shrink: 0;
+	}
+
+	/* @remove-in: 2.0.0 [renderer-interactive-scaling]: the stepper, from
+	   `.scale-control` to `.scale-btn.reset` (the `interactiveScaling` option). */
+
+	/*
+	 * The portions: an icon, then one stepper (− number +) in a single frame
+	 * cut by hairlines, then the word. Once the recipe is scaled, the factor
+	 * and a way back to the original follow; neither shows before.
+	 */
+	.hero-portions {
+		gap: 8px;
+	}
+
+	.scale-control {
+		display: inline-flex;
+		align-items: stretch;
+		height: 24px;
+		border: 1px solid var(--color-border-strong);
+		border-radius: 3px;
+		background: var(--color-bg);
+		overflow: hidden;
+	}
+
+	.scale-control:focus-within {
+		border-color: var(--color-text-muted);
+	}
+
+	/* The word after the number, muted, static or beside the stepper. */
+	.scale-val,
+	.portions-unit {
+		font-family: var(--gram-font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	.scale-val strong {
+		color: var(--color-text-strong);
+	}
+
+	.scale-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: transparent;
+		border: none;
+		color: var(--color-text-muted);
+		font-family: var(--gram-font-mono);
+		line-height: 1;
+		padding: 0;
+		cursor: pointer;
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.scale-btn:hover:not(:disabled) {
+		background-color: var(--color-bg-muted, rgba(200, 200, 200, 0.3));
+		color: var(--color-text-strong);
+	}
+
+	.scale-btn:focus-visible {
+		outline: 2px solid var(--color-text-muted);
+		outline-offset: -2px;
+	}
+
+	.scale-btn:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+
+	.scale-btn.minus,
+	.scale-btn.plus {
+		width: 24px;
+	}
+
+	.scale-input-inline {
+		width: 4ch;
+		min-width: 0;
+		background: transparent;
+		border: none;
+		border-inline: 1px solid var(--color-border);
+		border-radius: 0;
+		color: var(--color-text-strong);
+		font-family: var(--gram-font-mono);
+		font-size: 0.85rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		outline: none;
+		text-align: center;
+		padding: 0 2px;
+	}
+
+	.scale-input-inline:focus {
+		background: var(--color-bg-subtle);
+	}
+
+	.scale-input-inline::-webkit-outer-spin-button,
+	.scale-input-inline::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	.scale-input-inline[type="number"] {
+		-moz-appearance: textfield;
+	}
+
+	/*
+	 * The pencil beside the portions: shown only when the surface can change
+	 * them (a `can-edit-portions` class around the view), which then makes
+	 * the whole group a target.
+	 */
+	.edit-portions-btn {
+		display: none;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		height: 24px;
+		padding: 0;
+		background: transparent;
+		border: 1px solid transparent;
+		border-radius: 3px;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition:
+			background-color 0.15s ease,
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.can-edit-portions :scope .edit-portions-btn {
+		display: inline-flex;
+	}
+
+	.can-edit-portions :scope .hero-portions {
+		cursor: pointer;
+	}
+
+	.can-edit-portions :scope .hero-portions:hover .edit-portions-btn,
+	.edit-portions-btn:focus-visible {
+		background-color: var(--color-bg-muted, rgba(200, 200, 200, 0.3));
+		border-color: var(--color-border);
+		color: var(--color-text-strong);
+	}
+
+	.edit-portions-btn:focus-visible {
+		outline: 2px solid var(--color-text-muted);
+		outline-offset: 1px;
+	}
+
+	.hero-item .edit-portions-btn svg {
+		color: inherit;
+	}
+
+	/* The factor of a scaled recipe: dashed, like the baker's percentage. */
+	.scale-factor-badge {
+		font-family: var(--gram-font-mono);
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--color-text);
+		padding: 0 5px;
+		border: 1px dashed var(--color-text-muted);
+		border-radius: 3px;
+		line-height: 1.5;
+	}
+
+	.scale-btn.reset {
+		width: 24px;
+		height: 24px;
+		border-radius: 3px;
+		font-size: 1rem;
+	}
+
+	.hero-yield,
+	.hero-mass {
+		font-size: 0.8rem;
+		font-family: var(--gram-font-mono);
+	}
+
+	/* The figure only, smaller: what it measures and why it is estimated or
+	   incomplete are in its tooltip, which the dotted line announces. */
+	.hero-mass {
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.hero-mass .mass-value {
+		text-decoration: underline dotted;
+		text-underline-offset: 3px;
+	}
+
+	/* ─── Timings bar: total, idle, active, prep ───────────────────────────── */
+
+	.recipe-timings-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px 8px;
+		margin-bottom: 16px;
+		font-size: 0.86rem;
+	}
+
+	.timing-pill {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		padding: 2px 8px;
+		font-family: var(--gram-font-mono);
+		font-size: 0.78rem;
+		white-space: nowrap;
+		cursor: help;
+	}
+
+	.timing-pill.total {
+		border-color: var(--color-border-strong);
+		font-weight: 600;
+	}
+
+	/* The pill carries a rich breakdown of its own, not the CSS-only tooltip. */
+	.timing-pill::before,
+	.timing-pill::after {
+		display: none !important;
+	}
+
+	.timing-tooltip {
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%) translateY(2px);
+		background: var(--color-surface-raised);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		border: 1px solid var(--color-border);
+		color: var(--color-text-strong);
+		padding: 10px 14px;
+		border-radius: 3px;
+		font-size: 13px;
+		font-weight: 500;
+		font-family: var(--gram-font-sans);
+		width: max-content;
+		max-width: 300px;
+		box-shadow: 0 4px 12px color-mix(in srgb, var(--gray-1000) 15%, transparent);
+		opacity: 0;
+		visibility: hidden;
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease,
+			visibility 0.2s;
+		z-index: 100;
+		pointer-events: none;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	/* A host of a rich tooltip: a timing pill, a mass. */
+	.has-rich-tooltip {
+		position: relative;
+		cursor: help;
+	}
+
+	.has-rich-tooltip:hover .timing-tooltip,
+	.timing-pill:hover .timing-tooltip {
+		opacity: 1;
+		visibility: visible;
+		transform: translateX(-50%) translateY(8px);
+	}
+
+	.timing-tooltip::before {
+		content: "";
+		position: absolute;
+		bottom: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 6px solid transparent;
+		border-bottom-color: var(--color-surface-raised);
+	}
+
+	/* With the floating tooltip script, the breakdown is shown by it instead. */
+	body.gram-has-js-tooltips :scope .timing-tooltip {
+		display: none !important;
+	}
+
+	.timing-tooltip-title {
+		font-weight: 700;
+		color: var(--color-text);
+		margin-bottom: 2px;
+		text-align: center;
+	}
+
+	.timing-divider {
+		height: 1px;
+		background-color: var(--color-border);
+		margin: 2px 0;
+	}
+
+	.timing-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 16px;
+	}
+
+	.timing-label {
+		text-align: left;
+	}
+
+	.timing-detail-type {
+		color: var(--color-text-muted);
+		font-size: 0.9em;
+		font-style: italic;
+		font-weight: 400;
+	}
+
+	.timing-val {
+		text-align: right;
+		font-family: var(--gram-font-mono);
+		font-weight: 600;
+		color: var(--color-text-strong);
+	}
+
+	/* ─── Note of the recipe (`notes:` of the front matter) ────────────────── */
+
+	.recipe-note {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		background: var(--color-surface);
+		border-left: 3px solid var(--color-border-strong);
+		border-radius: 0 3px 3px 0;
+		padding: 8px 12px;
+		font-size: 0.86rem;
+		line-height: 1.45;
+		margin-bottom: 14px;
+	}
+
+	.recipe-note svg {
+		color: var(--color-text-muted);
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+
+	/* ─── Accordions ───────────────────────────────────────────────────────── */
+
+	details {
+		margin-bottom: 16px;
+	}
+
+	details > summary {
+		cursor: pointer;
+		list-style: none;
+		user-select: none;
+		margin: 0;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	details > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	details > summary > h2 {
+		display: inline-flex;
+		align-items: center;
+		margin: 0;
+		border: none;
+		padding: 0;
+		font-size: 1rem;
+	}
+
+	details > summary::after {
+		content: "";
+		display: inline-block;
+		width: 1.2em;
+		height: 1.2em;
+		margin-left: 8px;
+		background-color: var(--color-text-muted);
+		-webkit-mask:
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='black'%3E%3Cpath d='M213.66,165.66a8,8,0,0,1-11.32,0L128,91.31,53.66,165.66a8,8,0,0,1-11.32-11.32l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,213.66,165.66Z'/%3E%3C/svg%3E")
+			no-repeat center / contain;
+		mask:
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='black'%3E%3Cpath d='M213.66,165.66a8,8,0,0,1-11.32,0L128,91.31,53.66,165.66a8,8,0,0,1-11.32-11.32l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,213.66,165.66Z'/%3E%3C/svg%3E")
+			no-repeat center / contain;
+		transition: transform 0.2s ease;
+		transform: rotate(180deg);
+	}
+
+	details[open] > summary::after {
+		transform: rotate(0deg);
+	}
+
+	details > summary + ul {
+		margin-top: 10px !important;
+	}
+
+	/* ─── Shopping list and cookware (the prep accordion) ──────────────────── */
+
+	details.prep-accordion {
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		margin-bottom: 22px;
+		padding: 0 !important;
+	}
+
+	details.prep-accordion > summary {
+		padding: 10px 14px;
+		cursor: pointer;
+		user-select: none;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		font-size: 0.9rem;
+		list-style: none;
+	}
+
+	details.prep-accordion > summary::-webkit-details-marker,
+	.prep-summary::marker {
+		display: none;
+	}
+
+	.prep-summary-title {
+		font-size: 1rem;
+		font-weight: 800;
+		color: var(--color-text);
+	}
+
+	.copy-shopping-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		padding: 2px 7px;
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		user-select: none;
+		transition: all 0.15s ease;
+		font-family: var(--gram-font-mono);
+	}
+
+	.copy-shopping-btn:hover {
+		color: var(--color-text);
+		background: var(--color-surface);
+		border-color: var(--color-text-muted);
+	}
+
+	.copy-shopping-btn.copied {
+		color: #10b981;
+		border-color: #10b981;
+		background: color-mix(in srgb, #10b981 10%, transparent);
+	}
+
+	.copy-shopping-btn .copy-icon,
+	.copy-shopping-btn .check-icon {
+		display: inline-flex;
+		align-items: center;
+		font-size: 1.1em;
+	}
+
+	.prep-body {
+		padding: 12px 14px;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.mep-group {
+		margin-bottom: 20px;
+	}
+
+	.mep-group + .mep-group {
+		padding-top: 10px;
+		border-top: 1px dotted var(--color-border);
+	}
+
+	.mep-group:last-child {
+		margin-bottom: 0;
+	}
+
+	.mep-group-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin: 0 0 4px 0;
+		padding-bottom: 4px;
+	}
+
+	.mep-group-title {
+		font-size: 0.8rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--color-text);
+		margin: 0 0 4px 0;
+		padding-bottom: 4px;
+		font-family: var(--gram-font-mono);
+	}
+
+	.mep-group-header .mep-group-title {
+		margin: 0;
+		padding: 0;
+		border-bottom: none;
+	}
+
+	/* ─── Kit list: the items of the shopping list and of a section ────────── */
+
+	.kit-list {
+		columns: 300px;
+		column-gap: 2.5rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.kit-list li {
+		display: block;
+		break-inside: avoid;
+		min-width: 0;
+		margin-bottom: 0.35rem;
+		font-size: 0.88rem;
+	}
+
+	.kit-list li.list-item-group {
+		break-inside: avoid;
+		margin-bottom: 0.5rem;
+	}
+
+	.kit-list .sub-kit-list {
+		display: block;
+		columns: auto;
+		margin-top: 4px;
+		padding-left: 1.5rem;
+	}
+
+	.kit-list label {
+		display: flex;
+		align-items: baseline;
+		gap: 0.65rem;
+		width: 100%;
+		min-width: 0;
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.kit-list input[type="checkbox"] {
+		appearance: none;
+		-webkit-appearance: none;
+		position: relative;
+		flex-shrink: 0;
+		width: 12px;
+		height: 12px;
+		margin: 0;
+		border: 1.5px solid var(--color-text);
+		border-radius: 3px;
+		background: transparent;
+		cursor: pointer;
+		transform: translateY(1px);
+	}
+
+	.kit-list input[type="checkbox"]:checked {
+		background: var(--color-text);
+	}
+
+	.kit-list input[type="checkbox"]:checked::after {
+		content: "";
+		position: absolute;
+		top: 1px;
+		left: 3px;
+		width: 3px;
+		height: 6px;
+		border: solid var(--color-bg);
+		border-width: 0 1.5px 1.5px 0;
+		transform: rotate(45deg);
+	}
+
+	.kit-list label > span {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: baseline;
+		column-gap: 0.5rem;
+		flex: 1;
+		min-width: 0;
+		color: var(--color-text);
+	}
+
+	.kit-list input[type="checkbox"]:checked ~ span {
+		text-decoration: line-through;
+		color: var(--color-text-muted);
+	}
+
+	.kit-list li:not(.list-item-group) .kit-name-col {
+		display: contents;
+	}
+
+	.kit-list li.list-item-group > label > span > .kit-name-col {
+		grid-column: 1;
+		grid-row: 1;
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.35rem;
+	}
+
+	.kit-name-col {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		overflow-wrap: break-word;
+	}
+
+	.kit-name,
+	.alt-group {
+		grid-column: 1;
+		grid-row: 1;
+		color: var(--color-text);
+		font-weight: 500;
+		overflow-wrap: break-word;
+	}
+
+	/*
+	 * A list line starts with a capital, whatever the casing of the name: the
+	 * analyzer shows the database's name ("Flour") for a direct match but the
+	 * recipe's own word ("ground beef", "farine") for one found through an
+	 * alias. Each of these is a grid or flex item, hence a block box, the only
+	 * kind `::first-letter` applies to.
+	 */
+	.kit-name::first-letter,
+	.alt-group::first-letter,
+	.kit-usage-name::first-letter {
+		text-transform: uppercase;
+	}
+
+	.kit-prep {
+		grid-column: 1 / -1;
+		grid-row: 2;
+		font-size: 0.76rem;
+		color: var(--color-text-muted);
+		font-style: italic;
+		margin-top: 1px;
+		overflow-wrap: break-word;
+	}
+
+	/* The quantity, pushed to the right edge by a dot leader. */
+	.kit-qty {
+		grid-column: 2 / -1;
+		grid-row: 1;
+		display: flex;
+		align-items: baseline;
+		justify-content: flex-end;
+		gap: 0.5rem;
+		white-space: nowrap;
+		font-family: var(--gram-font-mono);
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	.kit-qty::before {
+		content: "";
+		flex: 1;
+		align-self: flex-end;
+		min-width: 0.75rem;
+		margin-bottom: 0.3em;
+		border-bottom: 2px dotted var(--color-border);
+	}
+
+	.kit-orig {
+		font-size: 0.76rem;
+		font-weight: 400;
+	}
+
+	/* ─── Composite: the parts used, under the item you buy ───────────────── */
+
+	/* Indented by the checkbox and its gap, so the arrow sits under the name. */
+	.kit-usage-list {
+		margin: 2px 0 0;
+		padding: 0 0 0 calc(12px + 0.65rem);
+		list-style: none;
+	}
+
+	.kit-list li.kit-usage {
+		display: flex;
+		align-items: baseline;
+		gap: 0.4rem;
+		margin-bottom: 0.1rem;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	.kit-usage-branch {
+		flex-shrink: 0;
+		user-select: none;
+	}
+
+	.kit-usage-name {
+		min-width: 0;
+		overflow-wrap: break-word;
+	}
+
+	.kit-usage-qty {
+		display: flex;
+		align-items: baseline;
+		gap: 0.4rem;
+		margin-left: auto;
+		white-space: nowrap;
+		font-family: var(--gram-font-mono);
+		font-size: 0.76rem;
+	}
+
+	.kit-usage-qty .kit-mass {
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	/* The parent's checkbox is inside its label, not a sibling of the list. */
+	.kit-list li.kit-composite:has(> label > input:checked) > .kit-usage-list {
+		opacity: 0.5;
+	}
+
+	.kit-mass {
+		font-weight: 700;
+		color: var(--color-text-strong);
+	}
+
+	/* The ingredients of one section, above its steps. */
+	.section-ingredients {
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		padding: 10px 14px 7px;
+		margin: 10px 0 16px 0;
+	}
+
+	/* ─── Steps ────────────────────────────────────────────────────────────── */
+
+	.steps {
+		list-style: none;
+		counter-reset: gram-step;
+		padding-left: 0;
+		margin-top: 16px;
+	}
+
+	.steps li {
+		position: relative;
+		counter-increment: gram-step;
+		padding: 2px 8px 4px 32px;
+		margin-bottom: 10px;
+		line-height: 1.8;
+		border-radius: 4px;
+		transition:
+			background-color 0.2s ease,
+			outline 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	/* The number, a discreet circle: clicked, it marks the step done. */
+	.steps li::before {
+		content: counter(gram-step);
+		position: absolute;
+		left: 0;
+		top: 4px;
+		width: 22px;
+		height: 22px;
+		background-color: var(--color-text);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.75em;
+		font-weight: 600;
+		font-family: var(--gram-font-mono);
+		color: var(--color-bg);
+		cursor: pointer;
+		user-select: none;
+		transition:
+			transform 0.15s ease,
+			background-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.steps li:not(.step-comment):hover::before {
+		background-color: var(--color-text-strong);
+	}
+
+	.steps li.is-completed {
+		opacity: 0.45;
+		transition: opacity 0.2s ease;
+	}
+
+	.steps li.is-completed:hover {
+		opacity: 0.85;
+	}
+
+	.steps li.is-completed::before {
+		content: "✓";
+		background-color: var(--color-text-muted);
+		color: #ffffff;
+		font-weight: 700;
+		font-size: 0.85em;
+		transform: none;
+	}
+
+	/* A comment alone on its line: an aside, not a step, with no number. */
+	.steps li.step-comment {
+		counter-increment: none;
+		list-style: none !important;
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+		margin: 12px 0 16px 0;
+		padding: 6px 10px;
+		border-radius: 6px;
+		color: var(--color-text);
+		font-size: 0.9em;
+		border: 1px solid var(--color-border);
+	}
+
+	.step-comment::before {
+		display: none !important;
+	}
+
+	.step-comment .comment-icon {
+		font-size: 1.2em;
+		color: var(--gray-500);
+		height: 22px;
+	}
+
+	/* The step that produces an intermediate, shown from where it is used. */
+	.steps li.gram-highlight-producer,
+	.section-header.gram-highlight-producer {
+		background-color: color-mix(in srgb, var(--item-ref-text) 10%, transparent);
+		outline: 2px solid var(--item-ref-text);
+		outline-offset: 3px;
+	}
+
+	.steps li.gram-pulse-producer,
+	.section-header.gram-pulse-producer {
+		animation: gram-recipe-pulse 1.2s ease-out;
+	}
+
+	/*
+	 * An ingredient or a tool hovered in a list, highlighted where it is used.
+	 * In a step, an outline fades in around it: its width and style are set
+	 * beforehand, transparent, so only its color moves. Transitioning the whole
+	 * `outline` from nothing would start from its initial values (3px, in the
+	 * color of the text) and flash a thick black frame first.
+	 */
+	.steps .ingredient[data-name],
+	.steps .cookware[data-name] {
+		border-radius: 1px;
+		outline: 1.5px solid transparent;
+		outline-offset: 1px;
+	}
+
+	/* A step's text is in ink: a highlighted element takes back its color. */
+	.steps .ingredient.gram-ingredient-active {
+		color: var(--item-ingredient-text);
+		background-color: color-mix(
+			in srgb,
+			var(--item-ingredient-text) 14%,
+			transparent
+		);
+		outline-color: var(--item-ingredient-text);
+	}
+
+	.steps .cookware.gram-ingredient-active {
+		color: var(--item-cookware-text);
+		background-color: color-mix(
+			in srgb,
+			var(--item-cookware-text) 14%,
+			transparent
+		);
+		outline-color: var(--item-cookware-text);
+	}
+
+	.steps .reference[data-ref-id]:hover,
+	.steps .reference[data-ref-id].gram-highlight-active,
+	.steps .reference[data-ref-id].gram-highlight-consumer {
+		color: var(--item-ref-text);
+	}
+
+	/*
+	 * In a list, the hovered line is tinted, a little beyond its text (a
+	 * shadow, which moves nothing around it), and its name takes the color of
+	 * the element; no frame inside the tinted line.
+	 */
+	.kit-list li.kit-ingredient,
+	.kit-list li.kit-cookware {
+		--kit-hl: var(--item-ingredient-text);
+		border-radius: 3px;
+		transition:
+			background-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.kit-list li.kit-cookware {
+		--kit-hl: var(--item-cookware-text);
+	}
+
+	.kit-list li.gram-ingredient-active {
+		--kit-hl-bg: color-mix(in srgb, var(--kit-hl) 10%, transparent);
+		background-color: var(--kit-hl-bg);
+		box-shadow: 0 0 0 4px var(--kit-hl-bg);
+	}
+
+	.kit-list .kit-name {
+		transition: color 0.15s ease;
+	}
+
+	.kit-list li.gram-ingredient-active .kit-name.gram-ingredient-active,
+	.kit-list li.gram-ingredient-active .alt-group .gram-ingredient-active {
+		color: var(--kit-hl);
+	}
+
+	.steps li.gram-ingredient-step-active {
+		border-radius: 0 4px 4px 0;
+	}
+
+	/* ─── Footnotes: the comments at the end of a line, and their notes ────── */
+
+	.footnote-ref {
+		font-size: 0.75em;
+		line-height: 0;
+		vertical-align: super;
+		margin-left: 2px;
+	}
+
+	.footnote-ref a {
+		color: var(--color-text-muted);
+		text-decoration: none;
+		font-weight: 600;
+		transition: color 0.2s ease;
+	}
+
+	.footnote-ref a:hover {
+		color: var(--color-text-strong);
+		text-decoration: underline;
+	}
+
+	.recipe-notes {
+		margin-top: 32px;
+		padding-top: 16px;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.recipe-notes h3 {
+		font-size: 1.1em;
+		font-weight: 600;
+		margin-top: 0;
+		margin-bottom: 12px;
+		color: var(--color-text-strong);
+	}
+
+	.recipe-notes ol {
+		padding-left: 20px;
+		margin: 0;
+		color: var(--color-text-muted);
+		font-size: 0.9em;
+		line-height: 1.6;
+	}
+
+	.recipe-notes li {
+		margin-bottom: 8px;
+		padding: 0px 8px;
+		border-radius: 6px;
+		transition: background-color 0.3s ease;
+	}
+
+	.note-return {
+		text-decoration: none;
+		color: var(--color-text-muted);
+		margin-left: 6px;
+		font-size: 1.1em;
+		transition: color 0.2s ease;
+	}
+
+	.note-return:hover {
+		color: var(--color-text-strong);
+	}
+
+	.target-highlight {
+		animation: gram-recipe-flash 2s ease-out;
+	}
+
+	/* ─── The elements of a step ───────────────────────────────────────────── */
+
+	.action {
+		display: inline-block;
+		margin-right: 0.25rem;
+		padding: 0.1rem 0.4rem;
+		border: 1px solid var(--color-border-strong);
+		border-radius: 3px;
+		background: var(--color-bg-subtle);
+		font-family: var(--gram-font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		vertical-align: 1px;
+		color: var(--color-text);
+		line-height: 1.5;
+	}
+
+	.ingredient {
+		font-weight: 400;
+	}
+
+	/*
+	 * A step reads in ink, like a cookbook: what goes in is bold, the tool sits
+	 * a little lighter, and a temperature or a timer is boxed. The element
+	 * colors of the `.gram` source come back on hover only, where they tie a
+	 * step to its lists.
+	 */
+	.steps .ingredient {
+		font-weight: 600;
+		color: var(--color-text-strong);
+	}
+
+	.steps .cookware {
+		font-weight: 500;
+		color: var(--color-text-strong);
+	}
+
+	.ingredient-alt-badge {
+		color: var(--color-text-muted);
+		font-size: 0.85em;
+		cursor: help;
+		text-decoration: underline dotted;
+		text-underline-offset: 2px;
+	}
+
+	span.cookware {
+		color: var(--color-text);
+	}
+
+	.reference,
+	.declaration {
+		color: var(--color-text);
+		font-weight: 600;
+	}
+
+	.steps .reference,
+	.steps .declaration {
+		color: var(--color-text-strong);
+	}
+
+	.declaration {
+		font-size: 0.9rem;
+	}
+
+	/* An intermediate that can be followed back to the step that makes it. */
+	.reference[data-ref-id] {
+		cursor: pointer;
+		border-bottom: 1px dotted var(--color-text-muted);
+		border-radius: 2px;
+		padding: 0 2px;
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.reference[data-ref-id]:hover,
+	.reference[data-ref-id].gram-highlight-active {
+		background-color: color-mix(in srgb, var(--item-ref-text) 16%, transparent);
+		outline: 1.5px solid var(--item-ref-text);
+		outline-offset: 1px;
+	}
+
+	.reference[data-ref-id].gram-highlight-consumer {
+		background-color: color-mix(in srgb, var(--item-ref-text) 20%, transparent);
+		outline: 1.5px solid var(--item-ref-text);
+		outline-offset: 1px;
+	}
+
+	/*
+	 * In a list, a reference is a line like any other: a click checks it, and
+	 * it has no tooltip, so no dotted line. Hovered, it takes back its color and
+	 * shows the step or the section that makes it.
+	 */
+	.kit-list .reference[data-ref-id] {
+		cursor: inherit;
+		border-bottom: none;
+		padding: 0;
+		font-size: inherit;
+		font-weight: 500;
+		color: var(--color-text);
+	}
+
+	.kit-list .reference[data-ref-id]:hover,
+	.kit-list .reference[data-ref-id].gram-highlight-active {
+		color: var(--item-ref-text);
+	}
+
+	/* A temperature is outlined, a timer is filled: told apart without color,
+	   as on the run sheet. */
+	.timer,
+	.temp {
+		font-family: var(--gram-font-mono);
+		font-weight: 700;
+		font-size: 0.8em;
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		margin: 0 0.1rem;
+		padding: 0 0.3rem;
+		border: 1.5px solid var(--color-text-strong);
+		border-radius: 3px;
+		white-space: nowrap;
+		text-decoration: none !important;
+		line-height: 1.7;
+		transform: translateY(1px);
+	}
+
+	.temp {
+		background: var(--color-bg);
+		color: var(--color-text-strong);
+	}
+
+	.timer {
+		background: var(--color-text-strong);
+		color: var(--color-bg);
+	}
+
+	/*
+	 * Hovered in a step, an element takes back the color it has in the `.gram`
+	 * source: the text of an ingredient or a tool, the box of a temperature or
+	 * a timer.
+	 */
+	.steps .ingredient,
+	.steps .cookware,
+	.steps .temp,
+	.steps .timer {
+		transition:
+			color 0.15s ease,
+			background-color 0.15s ease,
+			border-color 0.15s ease,
+			outline-color 0.15s ease;
+	}
+
+	.steps .ingredient:hover {
+		color: var(--item-ingredient-text);
+	}
+
+	.steps .cookware:hover {
+		color: var(--item-cookware-text);
+	}
+
+	.steps .temp:hover {
+		color: var(--item-temp-text);
+		border-color: var(--item-temp-text);
+	}
+
+	.steps .timer:hover {
+		background: var(--item-timer-text);
+		border-color: var(--item-timer-text);
+	}
+
+	.quantity {
+		font-family: var(--gram-font-mono);
+		font-size: 0.85em;
+		flex-shrink: 0;
+		color: var(--color-text-strong);
+		font-weight: 600;
+		padding: 2px 8px;
+		border-radius: 20px;
+		border: 1px solid var(--color-border);
+	}
+
+	/* A quantity written in the text of a step: part of the sentence, not a badge. */
+	.step-quantity {
+		color: var(--color-text-muted);
+		white-space: nowrap;
+		font-size: 0.8em;
+		font-weight: 500;
+	}
+
+	.mass-badge {
+		font-family: var(--gram-font-mono);
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+		font-weight: 500;
+		vertical-align: baseline;
+		cursor: help;
+		background-color: var(--color-bg-subtle);
+		border: 1px solid var(--color-border);
+		padding: 2px 6px;
+		border-radius: 4px;
+	}
+
+	.bakers-badge {
+		display: inline-block;
+		font-family: var(--gram-font-mono);
+		font-size: 0.85em;
+		font-weight: 600;
+		color: var(--color-text);
+		vertical-align: baseline;
+		cursor: help;
+		background-color: var(--color-bg-subtle);
+		border: 1px dashed var(--color-text-muted);
+		padding: 2px 6px;
+		border-radius: 4px;
+	}
+
+	.gross-mass {
+		color: var(--color-text-muted);
+		font-size: 0.85em;
+		margin-left: 2px;
+	}
+
+	.unit {
+		color: var(--color-text-muted);
+		font-size: 0.9em;
+		margin-left: 2px;
+	}
+
+	.prep,
+	.composite-parent {
+		color: var(--color-text-muted);
+		font-size: 0.95em;
+		font-style: italic;
+	}
+
+	.optional {
+		font-style: italic;
+		color: var(--color-text-muted);
+		font-size: 0.85em;
+		margin-left: 0.25em;
+	}
+
+	/* ─── Sections: header, badges, declarations ───────────────────────────── */
+
+	.section-header {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.section-meta-retroplanning,
+	.section-meta-mass,
+	.section-meta-module {
+		font-size: 0.6em;
+		border-radius: 3px;
+		padding: 2px 6px;
+		line-height: 1.5;
+		font-weight: 500;
+		font-family: var(--gram-font-mono);
+	}
+
+	.section-meta-retroplanning {
+		color: var(--item-timer-text);
+		border: 1px solid var(--item-timer-text);
+	}
+
+	.section-meta-mass {
+		color: var(--color-text-muted);
+		border: 1px solid var(--color-border);
+	}
+
+	.section-meta-module {
+		color: var(--color-text-muted);
+		background: var(--color-bg-muted);
+		border: 1px solid var(--color-border);
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		margin-left: auto;
+	}
+
+	/* What a step makes, on its own line under the step's text: "↳ dough". */
+	.step-result {
+		color: var(--color-text-muted);
+		border-top: 1px dashed var(--color-border);
+		width: fit-content;
+		margin-top: 8px;
+		padding-top: 4px;
+		font-size: 0.85em;
+		font-weight: 600;
+		display: block;
+	}
+
+	.step-result svg {
+		align-self: center;
+		flex-shrink: 0;
+	}
+
+	.steps .step-result-item {
+		font-size: inherit;
+		color: var(--color-text-strong);
+		cursor: pointer;
+	}
+
+	.step-result-item:hover {
+		text-decoration: underline dotted;
+	}
+
+	/* Hovered, the line takes back the color of what a step makes. */
+	.step-result,
+	.steps .step-result-item {
+		transition: color 0.15s ease;
+	}
+
+	.step-result:hover,
+	.step-result:hover .step-result-item {
+		color: var(--item-decl-text);
+	}
+
+	/* A click leads to where it is used: a pointer, not the tooltip's `help`. */
+	.section-declaration-badge[data-declares] {
+		cursor: pointer;
+	}
+
+	.section-declaration-badge.gram-highlight-active {
+		border-color: var(--item-decl-text);
+	}
+
+	.section-declaration-badge {
+		font-size: 0.65em;
+		font-weight: 700;
+		color: var(--item-decl-text);
+		border: 1px solid var(--item-decl-text);
+		padding: 1px 8px;
+		border-radius: 3px;
+		margin-left: auto;
+		line-height: 1.5;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	/* Declared by an imported module: the module, then what it declares. */
+	.section-declaration-badge.has-module {
+		padding: 0;
+		overflow: hidden;
+		gap: 0;
+	}
+
+	.section-declaration-badge .section-module-source {
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		font-weight: 500;
+		padding: 2px 8px;
+		border-right: 1px solid var(--color-border);
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.section-declaration-badge .section-decl-target {
+		padding: 2px 8px;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		color: var(--item-decl-text);
+	}
+
+	/* ─── Nutrition table ──────────────────────────────────────────────────── */
+	/* A European label set like an American one: per 100 g, per portion and
+	   the reference intake, in a frame cut into blocks by heavy rules, the
+	   energy in large type. The rules take the color of the text, as on a
+	   package. */
+
+	.nutrition-panel {
+		--nut-ink: var(--color-text-strong);
+		display: none;
+		margin-top: 32px;
+		max-width: 560px;
+		min-width: 0;
+		box-sizing: border-box;
+		padding: 10px 14px 10px;
+		border: 1px solid var(--nut-ink);
+		border-radius: 2px;
+		background-color: var(--color-bg);
+		/* The pill of the hero bar links here: leave room above it. */
+		scroll-margin-top: 16px;
+	}
+
+	/* Shown when the surface asks for it (a `show-macros` class around the view). */
+	.show-macros :scope .nutrition-panel {
+		display: block;
+	}
+
+	.nut-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+	}
+
+	.nut-title {
+		margin: 0;
+		font-size: 1.3em;
+		font-weight: 800;
+		line-height: 1.15;
+		letter-spacing: -0.01em;
+		color: var(--nut-ink);
+	}
+
+	.est-badge {
+		font-size: 0.62rem;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		background-color: var(--color-bg-muted);
+		padding: 2px 6px;
+		border-radius: 3px;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.nut-subtitle {
+		margin: 2px 0 0;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.nut-warnings {
+		margin: 8px 0 0;
+		padding: 8px 10px;
+		font-size: 0.82em;
+		color: var(--vscode-errorForeground, #f87171);
+		background-color: color-mix(
+			in srgb,
+			var(--vscode-errorForeground, #f87171) 10%,
+			transparent
+		);
+		border-radius: 3px;
+	}
+
+	/* Too narrow for the table: it scrolls inside the frame, the page does not. */
+	.nut-table-scroll {
+		margin-top: 6px;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.nut-table {
+		width: 100%;
+		border-collapse: collapse;
+		border-top: 8px solid var(--nut-ink);
+		border-bottom: 8px solid var(--nut-ink);
+		font-size: 0.86rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Hairlines between rows only: no vertical rule. */
+	.nut-table th,
+	.nut-table td {
+		padding: 4px 0 4px 12px;
+		border-bottom: 1px solid color-mix(in srgb, var(--nut-ink) 25%, transparent);
+		text-align: right;
+		white-space: nowrap;
+		vertical-align: top;
+	}
+
+	.nut-table th:first-child {
+		padding-left: 0;
+		text-align: left;
+		white-space: normal;
+	}
+
+	.nut-table thead th {
+		padding-top: 5px;
+		padding-bottom: 5px;
+		border-bottom: 2px solid var(--nut-ink);
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--nut-ink);
+		vertical-align: bottom;
+	}
+
+	.nut-table tbody th {
+		font-weight: 700;
+		color: var(--nut-ink);
+	}
+
+	/* The energy: kcal in large type over kJ, closed by a heavy rule. */
+	.nut-table tr.nut-energy > * {
+		padding-top: 6px;
+		padding-bottom: 6px;
+		border-bottom: 5px solid var(--nut-ink);
+	}
+
+	.nut-table tr.nut-energy th {
+		font-size: 1.05em;
+		font-weight: 800;
+	}
+
+	.nut-kcal {
+		display: block;
+		font-size: 1.35em;
+		font-weight: 800;
+		line-height: 1.1;
+		color: var(--nut-ink);
+	}
+
+	.nut-kj {
+		display: block;
+		font-size: 0.78em;
+		color: var(--color-text-muted);
+	}
+
+	.nut-table tr.nut-energy .nut-ri {
+		font-size: 1.1em;
+		font-weight: 800;
+	}
+
+	/* A sub-macro ("of which saturates"): indented, regular weight. */
+	.nut-table tr.is-nested th {
+		padding-left: 16px;
+		font-weight: 400;
+		color: var(--color-text);
+	}
+
+	.nut-table tr.is-nested td {
+		color: var(--color-text);
+	}
+
+	/* The last row sits on the closing heavy rule. */
+	.nut-table tbody tr:last-child > * {
+		border-bottom: none;
+	}
+
+	.nut-table .nut-col-ri,
+	.nut-table .nut-ri {
+		width: 4em;
+		font-weight: 700;
+		color: var(--nut-ink);
+	}
+
+	.nut-sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	.nut-footer {
+		margin-top: 6px;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		font-size: 0.72rem;
+		color: var(--color-text-muted);
+	}
+
+	.nut-footer p {
+		margin: 0;
+	}
+
+	.nut-total {
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	/* A link, not a tooltip: it jumps to the table at the bottom. */
+	.hero-nutrition {
+		display: none;
+		font-size: 0.75rem;
+		font-family: var(--gram-font-mono);
+		color: var(--color-text-muted);
+		text-decoration: none;
+		cursor: pointer;
+		border-radius: 3px;
+	}
+
+	.show-macros :scope .hero-nutrition {
+		display: inline-flex;
+	}
+
+	.hero-nutrition .nut-pill-value {
+		color: var(--color-text);
+		font-weight: 600;
+	}
+
+	.hero-nutrition:hover,
+	.hero-nutrition:hover .nut-pill-value {
+		color: var(--color-text-strong);
+	}
+
+	.hero-nutrition:hover .nut-pill-value {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.hero-nutrition:focus-visible {
+		outline: 2px solid var(--color-text-muted);
+		outline-offset: 2px;
+	}
+
+	/* ─── Tooltips, CSS only (`data-tooltip`) ──────────────────────────────── */
+	/* Shown without any script; `attachTooltips` replaces them when it runs. */
+
+	[data-tooltip] {
+		position: relative;
+		cursor: help;
+	}
+
+	/* Underlined, except on the elements that already look like a badge. */
+	[data-tooltip]:not(.timer):not(.mass-badge):not(.bakers-badge):not(
+		.gross-mass
+	):not(.section-meta-badge):not(.section-declaration-badge):not(
+		.est-badge
+	):not(.timing-pill):not(.reference):not(.scale-factor-badge) {
+		text-decoration: underline dotted;
+		text-underline-offset: 3px;
+		text-decoration-thickness: 1px;
+	}
+
+	[data-tooltip]::before,
+	[data-tooltip]::after {
+		position: absolute;
+		opacity: 0;
+		visibility: hidden;
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease,
+			visibility 0.2s;
+		z-index: 100;
+		pointer-events: none;
+	}
+
+	/* The body */
+	[data-tooltip]::after {
+		content: attr(data-tooltip);
+		bottom: 100%;
+		left: 50%;
+		transform: translateX(-50%) translateY(-2px);
+		background: var(--color-surface-raised);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		border: 1px solid var(--color-border);
+		color: var(--color-text-strong);
+		padding: 6px 12px;
+		border-radius: 6px;
+		font-size: 13px;
+		font-weight: 500;
+		font-family: var(--gram-font-sans);
+		white-space: pre-wrap;
+		width: max-content;
+		max-width: 240px;
+		text-align: left;
+		line-height: 1.4;
+		box-shadow: 0 4px 12px color-mix(in srgb, var(--gray-1000) 15%, transparent);
+	}
+
+	/* The arrow */
+	[data-tooltip]::before {
+		content: "";
+		bottom: 100%;
+		left: 50%;
+		transform: translateX(-50%) translateY(2px);
+		border: 5px solid transparent;
+		border-top-color: var(--color-surface-raised);
+	}
+
+	[data-tooltip]:hover::before,
+	[data-tooltip]:hover::after {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	[data-tooltip]:hover::after {
+		transform: translateX(-50%) translateY(-8px);
+	}
+
+	[data-tooltip]:hover::before {
+		transform: translateX(-50%) translateY(-3px);
+	}
+
+	/* A badge at the right end of a header (a section, the nutrition table):
+	   its tooltip opens leftwards. */
+	.section-declaration-badge[data-tooltip]::after,
+	.section-meta-module[data-tooltip]::after,
+	.est-badge[data-tooltip]::after {
+		left: auto;
+		right: 0;
+		transform: translateY(-2px);
+	}
+
+	.section-declaration-badge[data-tooltip]:hover::after,
+	.section-meta-module[data-tooltip]:hover::after,
+	.est-badge[data-tooltip]:hover::after {
+		transform: translateY(-8px);
+	}
+
+	.section-declaration-badge[data-tooltip]::before,
+	.section-meta-module[data-tooltip]::before,
+	.est-badge[data-tooltip]::before {
+		left: auto;
+		right: 16px;
+		transform: translateY(2px);
+	}
+
+	.section-declaration-badge[data-tooltip]:hover::before,
+	.section-meta-module[data-tooltip]:hover::before,
+	.est-badge[data-tooltip]:hover::before {
+		transform: translateY(-3px);
+	}
+}

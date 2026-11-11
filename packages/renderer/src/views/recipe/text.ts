@@ -4,10 +4,13 @@ import { formatElement } from "../../shared/element";
 import {
 	getMetrics,
 	hasNutritionToShow,
+	kcalToKj,
+	nutritionColumns,
 	nutritionRows,
-	resolveNutritionBasis,
+	referenceIntakePercent,
+	wholeRecipeBelow,
 } from "../../shared/nutrition";
-import { servingsLabel } from "../../shared/servings";
+import { portionsLabel } from "../../shared/portions";
 import {
 	aggToRendererItem,
 	formatDuration as defaultFormatDuration,
@@ -98,7 +101,7 @@ function packLine(parts: string[], width: number): string[] {
 
 /**
  * The recipe as plain text, for a terminal or a plain file: a box with the
- * title, the servings and the times, then the shopping list, the cookware,
+ * title, the portions and the times, then the shopping list, the cookware,
  * each section (its ingredients, then its numbered steps), the notes and the
  * nutrition. No markup and no escaping: the text of the recipe is written as
  * it is. A surface that can show colors passes a `textStyle`.
@@ -122,8 +125,8 @@ export const textBackend: RenderBackend = {
 	renderTitle(data, context, options) {
 		const t = getDictionary(options.lang).renderer;
 		const width = widthOf(options);
-		const servings = servingsLabel(data, options.lang);
-		const tail = servings ? ` ${servings} ` : "";
+		const portions = portionsLabel(data, options.lang);
+		const tail = portions ? ` ${portions} ` : "";
 		const room = width - 8 - tail.length;
 		const raw = data.title || "";
 		const title =
@@ -161,7 +164,7 @@ export const textBackend: RenderBackend = {
 	},
 
 	renderMeta() {
-		// The servings and the times are in the title box; the rest of the
+		// The portions and the times are in the title box; the rest of the
 		// frontmatter (author, tags...) is for the other formats.
 		return "";
 	},
@@ -331,41 +334,114 @@ export const textBackend: RenderBackend = {
 		const nutrition = getMetrics(data)?.nutrition;
 		if (!hasNutritionToShow(nutrition) || !nutrition) return "";
 		const t = getDictionary(options.lang).renderer;
-		const basis = resolveNutritionBasis(
+		const lines = ["", heading(options, t.nutritionTableTitle)];
+		const warnings = (nutrition.warnings ?? []).map((warning) =>
+			style(
+				options,
+				"dim",
+				`  ⚠ ${t.incompleteData}${t.colon}${warning.message}`,
+			),
+		);
+
+		// The table of the HTML view, in columns: per 100 g, per portion, the
+		// share of the reference intake of a portion; the energy in kcal over
+		// kJ; the whole recipe under the table.
+		const columns = nutritionColumns(
 			nutrition,
 			options.nutritionBasis,
 			options.lang,
 		);
-		const rows = nutritionRows(basis.values, options.lang);
-		if (rows.length === 0) return "";
-		const number = new Intl.NumberFormat(options.lang || "en", {
-			maximumFractionDigits: 1,
-		});
-		const labels = rows.map((row) =>
-			row.nested ? `  ${row.label}` : row.label,
+		const rowsByColumn = columns.map((c) =>
+			nutritionRows(c.values, options.lang),
 		);
-		const column = Math.max(...labels.map((label) => label.length)) + 2;
-		const lines = ["", heading(options, `${t.nutrition} (${basis.label})`)];
-		rows.forEach((row, i) => {
-			const value =
-				row.unit === "kcal"
-					? Math.round(row.value).toString()
-					: number.format(row.value);
-			lines.push(`  ${(labels[i] ?? "").padEnd(column)}${value} ${row.unit}`);
+		const rows = rowsByColumn[0] ?? [];
+		if ((nutrition.total?.calories ?? 0) <= 0 || rows.length === 0) {
+			lines.push(...warnings);
+			return `${lines.join("\n")}\n`;
+		}
+		const riBasis = columns.find((c) => c.key === "perPortion");
+		const riRows = riBasis ? nutritionRows(riBasis.values, options.lang) : [];
+		// Two decimals, as `nutritionRows` rounds them: a pinch of salt would
+		// read 0 g at one.
+		const number = new Intl.NumberFormat(options.lang || "en", {
+			maximumFractionDigits: 2,
 		});
-		if (basis.note) lines.push(style(options, "dim", `  ${basis.note}`));
+		const kcalOf = (values: Record<string, number | undefined>) =>
+			Math.round(values.calories ?? 0);
+		const riOf = (key: string) => {
+			const row = riRows.find((r) => r.key === key);
+			const pct = row ? referenceIntakePercent(key, row.value) : undefined;
+			return pct === undefined ? "" : `${pct}%`;
+		};
+
+		const subtitle = [
+			riBasis ? portionsLabel(data, options.lang) : undefined,
+			columns.find((c) => c.note)?.note,
+		].filter(Boolean);
+		if (subtitle.length > 0) {
+			lines.push(style(options, "dim", `  ${subtitle.join(" · ")}`));
+		}
+
+		// One array of cells per line: the label, a value per column, the %RI.
+		const table: string[][] = [
+			[
+				"",
+				...columns.map((c) => c.label),
+				...(riBasis ? [`${t.nutritionReferenceIntake}*`] : []),
+			],
+			[
+				t.nutrients.calories,
+				...columns.map((c) => `${kcalOf(c.values)} kcal`),
+				...(riBasis ? [riOf("calories")] : []),
+			],
+			[
+				"",
+				...columns.map((c) => `${kcalToKj(kcalOf(c.values))} kJ`),
+				...(riBasis ? [""] : []),
+			],
+		];
+		for (const row of rows) {
+			if (row.key === "calories") continue;
+			table.push([
+				row.nested ? `  ${row.label}` : row.label,
+				...rowsByColumn.map((cells) => {
+					const cell = cells.find((r) => r.key === row.key);
+					return cell ? `${number.format(cell.value)} ${cell.unit}` : "";
+				}),
+				...(riBasis ? [riOf(row.key)] : []),
+			]);
+		}
+		const widths = (table[0] ?? []).map((_, i) =>
+			Math.max(...table.map((cells) => (cells[i] ?? "").length)),
+		);
+		table.forEach((cells, i) => {
+			const line = cells
+				.map((cell, j) =>
+					j === 0
+						? cell.padEnd(widths[0] ?? 0)
+						: cell.padStart((widths[j] ?? 0) + 2),
+				)
+				.join("")
+				.trimEnd();
+			lines.push(i === 0 ? style(options, "dim", `  ${line}`) : `  ${line}`);
+		});
+
+		const total = wholeRecipeBelow(nutrition, columns, options.lang);
+		if (total) {
+			const kcal = kcalOf(total.values);
+			lines.push(
+				`  ${t.nutritionWholeRecipeTotal.replace("{kcal}", `${kcalToKj(kcal)} kJ / ${kcal} kcal`)}`,
+			);
+		}
+		if (riBasis) {
+			lines.push(
+				style(options, "dim", `  * ${t.nutritionReferenceIntakeNote}`),
+			);
+		}
 		if (nutrition.isEstimate) {
 			lines.push(style(options, "dim", `  * ${t.nutritionEstimated}`));
 		}
-		for (const warning of nutrition.warnings ?? []) {
-			lines.push(
-				style(
-					options,
-					"dim",
-					`  ⚠ ${t.incompleteData}${t.colon}${warning.message}`,
-				),
-			);
-		}
+		lines.push(...warnings);
 		return `${lines.join("\n")}\n`;
 	},
 

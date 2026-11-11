@@ -177,7 +177,7 @@ The Gram parser accepts **any** key-value pair in this block. You can add custom
 ### Functional keys
 These keys directly alter how the Gram Compiler processes the recipe:
 
-*   `portions`: (Integer) The baseline number of servings. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
+*   `portions`: (Integer) The baseline number of portions. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
 *   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
 
 ### Informational keys
@@ -363,7 +363,7 @@ A quantity in braces that can't be read (`@salt{1 g/l}`, or a brace that is neve
 ## Scaling & fixed quantities
 
 By default, the Gram Compiler scales an `@ingredient` **linearly** based on the number of portions requested. 
-If you scale a recipe from 2 to 4 servings, an `@ingredient` with `{100g}` becomes `{200g}`.
+If you scale a recipe from 2 to 4 portions, an `@ingredient` with `{100g}` becomes `{200g}`.
 
 ### Fixed quantities (`=`)
 Some `@ingredient` items (like salt, yeast, or spices) should not scale linearly. You can lock their quantity using the `=` modifier.
@@ -371,7 +371,7 @@ Some `@ingredient` items (like salt, yeast, or spices) should not scale linearly
 ```gram
 Season with @=salt{1 tsp} to taste.
 ```
-This keeps the salt at 1 tsp regardless of how many servings the user calculates.
+This keeps the salt at 1 tsp regardless of how many portions the user calculates.
 
 ## Ingredient modifiers
 
