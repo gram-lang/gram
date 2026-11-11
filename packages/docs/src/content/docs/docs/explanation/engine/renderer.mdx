@@ -104,7 +104,7 @@ The `RendererOptions` interface also provides `bakersReference`/`bakersMathOnly`
   :::caution[Untrusted Content Security]
   While tag injection is prevented, `toMarkdown` does not evaluate URL protocols (e.g. `javascript:` links). When rendering untrusted third-party recipes, apply a dedicated HTML sanitizer (`DOMPurify` or `rehype-sanitize`) on the final markup.
   :::
-- **Duration formatting**: Converts raw minute integers into natural duration strings (`90` → `1h 30m`).
+- **Duration formatting**: Converts raw minute integers into natural duration strings in the display language, rounded more coarsely as they grow: to the second below an hour, to the minute up to a day, to the hour beyond (`90` → `1h 30min`, `1506` → `1d 1h`).
 - **Bundled CSS**: The package distributes `@gram-lang/renderer/gram.css`: the light and dark tokens shared by every view, then the styles of each view, scoped to its root element (`<article class="gram-recipe">`, `<section class="gram-run-sheet">`) so that no rule of one view reaches another. Until 2.0.0 it also ships `gantt.css` for the deprecated Gantt chart. Print documents embed these rules directly in the document `<head>`, requiring no external asset fetching.
 
 ## Direct JSON consumption

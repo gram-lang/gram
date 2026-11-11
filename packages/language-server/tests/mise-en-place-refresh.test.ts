@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { compile, scheduleTimes } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
+import { formatDuration } from "@gram-lang/renderer";
 import { Client, URI } from "./helpers/lsp-client";
 
 /*
@@ -13,11 +14,13 @@ import { Client, URI } from "./helpers/lsp-client";
  * see this: the behaviour lives in how `server.ts` wires the connection.
  */
 
-const RECIPE = (title: string) => `---
+// Under a day, so the total keeps its minutes and tells the schedules apart;
+// the run sheet takes it two days ahead, to be laid out in days.
+const RECIPE = (title: string, ahead = "-2h") => `---
 title: ${title}
 ---
 
-## Pastry ~{-2d}
+## Pastry ~{${ahead}}
 
 Mix @flour{200g}(sifted).
 
@@ -28,11 +31,9 @@ Combine the pastry with @filling{300g}.
 
 // The retro-planning offset makes the two schedules give different totals.
 const compiled = compile(getAST(RECIPE("Tart")));
-const fmt = (minutes: number) =>
-	`${Math.floor(minutes / 60)}h ${Math.round(minutes % 60)}m`;
 const TOTAL = {
-	perSection: fmt(scheduleTimes(compiled, "perSection").totalTime),
-	upfront: fmt(scheduleTimes(compiled, "upfront").totalTime),
+	perSection: formatDuration(scheduleTimes(compiled, "perSection").totalTime),
+	upfront: formatDuration(scheduleTimes(compiled, "upfront").totalTime),
 };
 
 const totalOf = (html: string) =>
@@ -89,9 +90,7 @@ describe("gram.miseEnPlace in the language server", () => {
 			},
 		})) as Array<{ label: string }>;
 		const hint = hints.map((h) => h.label).join("");
-		expect(hint).toContain(
-			`Total Time: ${TOTAL.upfront.replace(/ (\d+)m/, "$1")}`,
-		);
+		expect(hint).toContain(`Total time: ${TOTAL.upfront}`);
 	}, 20_000);
 
 	it("ends on the newest text and the new schedule when a keystroke is still pending", async () => {
@@ -139,8 +138,12 @@ Bake &dough{500g} ~{30min}.
 `;
 const ranged = compile(getAST(RANGED("Bread")));
 const REST_TOTAL = {
-	shortest: fmt(scheduleTimes(ranged, undefined, "shortest").totalTime),
-	longest: fmt(scheduleTimes(ranged, undefined, "longest").totalTime),
+	shortest: formatDuration(
+		scheduleTimes(ranged, undefined, "shortest").totalTime,
+	),
+	longest: formatDuration(
+		scheduleTimes(ranged, undefined, "longest").totalTime,
+	),
 };
 
 describe("gram.rests in the language server", () => {
@@ -183,7 +186,7 @@ describe("the run sheet in the language server", () => {
 	it("renders the run sheet in days before the service", async () => {
 		client = new Client();
 		await client.start({ views: true });
-		client.open(RECIPE("Tart"));
+		client.open(RECIPE("Tart", "-2d"));
 		client.openViews(["runSheet"]);
 		const html = await client.viewHtml("runSheet", (h) =>
 			h.includes("Run sheet — Tart"),
@@ -201,7 +204,7 @@ describe("the run sheet in the language server", () => {
 			html.split('class="run-sheet-day"')[1] ?? "";
 		client = new Client();
 		await client.start({ views: true });
-		client.open(RECIPE("Tart"));
+		client.open(RECIPE("Tart", "-2d"));
 		client.openViews(["runSheet"]);
 		const bySection = await client.viewHtml("runSheet", (h) =>
 			h.includes("Run sheet — Tart"),

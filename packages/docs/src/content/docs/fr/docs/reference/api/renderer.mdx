@@ -52,7 +52,7 @@ Ces quatre formateurs partagent la même architecture de traversée (`RenderBack
 | `icons` | `RendererIcons` | Surcharge tout ou partie des icônes par défaut (voir `DEFAULT_ICONS` ci-dessous). |
 | `classes` | `RendererClasses` | Surcharge les noms de classes CSS appliquées aux éléments générés (HTML/print uniquement). |
 | `formatFraction` | `(value: number) => string` | Fonction de formatage décimal → fraction personnalisée (gère par défaut les fractions courantes, ex. : `0.5` → `"1/2"`). |
-| `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut, ex. : `90` → `"1h 30m"`). |
+| `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut, ex. : `90` → `"1h 30min"`, dans la `lang` des options). |
 | `hideStepQty` | `boolean` | Masque les quantités au sein du texte narratif des étapes (la liste de courses et les listes d'ingrédients de section restent intactes). Par défaut, <Since v="1.4.0" /> tous les formats affichent la quantité immédiatement après chaque ingrédient, accompagnée de sa masse standardisée quand elle apporte une précision utile : `farine (250 ml, ~148 g)`. En HTML, elle est balisée par un `<span class="step-quantity">` (`classes.stepQuantity`), l'infobulle détaillant les conversions. |
 | `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | <Since v="1.4.0" /> Stratégie d'ordonnancement suivie par le document : préparation immédiatement avant chaque section (`'perSection'`, par défaut), regroupée tout au début de la recette (`'upfront'`) ou au début de chaque journée de travail (`'perDay'`). Détermine le temps total affiché en en-tête. Le texte de la recette n'expose aucun ordonnancement temporel : la planification détaillée et la liste des éléments à mobiliser figurent dans le <Term id="runSheet" /> (`runSheet`). La chronologie est déduite à la volée depuis le graphe `tasks`. |
 | `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Élasticité appliquée aux minuteurs passifs définis par un intervalle (`~_{12-24h}`) : borne la plus courte (`'shortest'`, par défaut), médiane (`'balanced'`) ou borne la plus longue (`'longest'`). Les minuteurs passifs à durée fixe et les minuteurs actifs ne sont pas affectés. Pilote les mêmes durées que `miseEnPlace`. |
@@ -157,7 +157,7 @@ Une série d'utilitaires de bas niveau (exploités en interne par les moteurs de
 function formatDecimalToFraction(value: unknown): string   // 0.5 -> "1/2"
 function getQty(item: Record<string, unknown>): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
 function formatQuantityValue(q: any): string                // Quantité de minuteur/température -> chaîne d'affichage
-function formatDuration(minutes: number): string            // 90 -> "1h 30m" ; arrondi à la minute dès 1h, à la seconde en dessous (64.5 -> "1h 5m", 0.33 -> "20s")
+function formatDuration(minutes: number, lang?: string): string // 90 -> "1h 30min" ; à la seconde sous 1h (0.33 -> "20s"), à la minute jusqu'à un jour (64.5 -> "1h 5min"), à l'heure au-delà (1506 -> "1j 1h", "1d 1h" en anglais)
 function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h"
 function toCommonFraction(value: number): string | undefined   // 0.25 -> "1/4", 0.3 -> undefined
 function escapeHtml(unsafe: string | null | undefined): string

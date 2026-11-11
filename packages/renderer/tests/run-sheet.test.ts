@@ -103,14 +103,14 @@ describe("the model of the run sheet", () => {
 		expect(model.title).toBe("Run sheet — Country bread");
 		expect(model.subtitle).toBe("For Sunday, October 11 at 13:00 · 4 portions");
 		expect(model.summary).toBe(
-			"2 days · 2 visits to the kitchen · 55m of work in all",
+			"2 days · 2 visits to the kitchen · 55min of work in all",
 		);
 	});
 
 	it("lists a row per visit, the waits that go on without the cook, and the service", () => {
 		expect(model.schedule.map((r) => [r.kind, r.day, r.time, r.text])).toEqual([
 			["visit", "SAT 10", "21:40 – 22:00", "Dough"],
-			["thread", undefined, undefined, "Dough : Rise 14h 30m (8h to 16h)"],
+			["thread", undefined, undefined, "Dough : Rise 14h 30min (8h to 16h)"],
 			["visit", "SUN 11", "12:30 – 13:00", "Bake"],
 			["serve", undefined, "13:00", "Serve"],
 		]);
@@ -138,7 +138,7 @@ describe("the model of the run sheet", () => {
 	it("says what continues and when to come back", () => {
 		const [saturday, sunday] = model.days;
 		expect(saturday!.visits[0]!.leaving).toEqual([
-			"Dough : Rise 14h 30m (8h to 16h)",
+			"Dough : Rise 14h 30min (8h to 16h)",
 			"Next visit: Sunday 12:30",
 		]);
 		expect(sunday!.visits[0]!.leaving).toEqual(["Serve at 13:00"]);
@@ -146,7 +146,7 @@ describe("the model of the run sheet", () => {
 
 	it("tells a rest the plan stretched, on the day it starts", () => {
 		expect(model.days[0]!.notices).toEqual([
-			"Dough : Rise extended to 14h 30m (planned 8h to 16h) so the work falls within your availability.",
+			"Dough : Rise extended to 14h 30min (planned 8h to 16h) so the work falls within your availability.",
 		]);
 	});
 
@@ -183,7 +183,7 @@ describe("a plan of several days", () => {
 		expect(first!.visits[0]!.margin).toBe("Possible from 08:00.");
 		const [, , saturday] = model.days;
 		expect(saturday!.visits[0]!.margin).toBe(
-			"Can't start earlier: the “Cool” wait (Glaze) can't be longer than 1h 30m and must be over before Finish.",
+			"Can't start earlier: the “Cool” wait (Glaze) can't be longer than 1h 30min and must be over before Finish.",
 		);
 	});
 
@@ -214,7 +214,7 @@ describe("a plan of several days", () => {
 			"D-1",
 			"Day D",
 		]);
-		expect(relative.days[0]!.slot).toBe("~ 5m");
+		expect(relative.days[0]!.slot).toBe("~ 5min");
 		expect(relative.days.every((d) => d.visits.every((p) => !p.margin))).toBe(
 			true,
 		);
@@ -389,7 +389,7 @@ describe("what could not be fixed", () => {
 			long,
 		);
 		expect(out).toContain(
-			"Roast takes 3h 1m without a break, more than your longest availability (2h)",
+			"Roast takes 3h 1min without a break, more than your longest availability (2h)",
 		);
 	});
 
@@ -427,7 +427,7 @@ describe("runSheetToMarkdown", () => {
 	});
 
 	it("puts the adjustment under its day", () => {
-		expect(md).toContain("> ⚠️ Dough : Rise extended to 14h 30m");
+		expect(md).toContain("> ⚠️ Dough : Rise extended to 14h 30min");
 	});
 });
 

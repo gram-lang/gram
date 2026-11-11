@@ -159,7 +159,7 @@ describe("gram view", () => {
 		expect(out).toContain(" 2 portions ─┐");
 		expect(out).toContain("LISTE DE COURSES");
 		expect(out).toContain("MATÉRIEL");
-		expect(out).toContain("Temps Total : ");
+		expect(out).toContain("Temps total : ");
 	}, 30_000);
 
 	it("refuses an unknown value for a setting, with no stack", () => {

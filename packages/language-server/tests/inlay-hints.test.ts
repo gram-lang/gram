@@ -1,4 +1,5 @@
 import { scheduleFor } from "@gram-lang/kitchen";
+import { formatDuration } from "@gram-lang/renderer";
 import { describe, expect, it } from "bun:test";
 import { parseDocument } from "../src/document-state";
 import { provideInlayHints } from "../src/features/inlay-hints";
@@ -14,7 +15,7 @@ const SOURCE = `---
 title: Tart
 ---
 
-## Pastry ~{-2d}
+## Pastry ~{-2h}
 
 Mix @flour{200g}(sifted).
 
@@ -33,17 +34,12 @@ describe("provideInlayHints follows the chosen schedule", () => {
 		const { perSection, upfront } = schedulesOf(state.compilation!);
 		expect(perSection.totalTime).not.toBe(upfront.totalTime);
 
-		const fmt = (minutes: number) => {
-			const total = Math.round(minutes);
-			const h = Math.floor(total / 60);
-			const m = total % 60;
-			return h > 0 ? (m > 0 ? `${h}h${m}` : `${h}h`) : `${m}m`;
-		};
+		// The hint says the total as the views do.
 		expect(label(provideInlayHints(state, "perSection"))).toContain(
-			fmt(perSection.totalTime),
+			`Total time: ${formatDuration(perSection.totalTime)}`,
 		);
 		expect(label(provideInlayHints(state, "upfront"))).toContain(
-			fmt(upfront.totalTime),
+			`Total time: ${formatDuration(upfront.totalTime)}`,
 		);
 	});
 

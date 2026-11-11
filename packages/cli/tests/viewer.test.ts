@@ -101,7 +101,7 @@ describe("viewRecipe", () => {
 		const viewed = await viewRecipe(
 			await tmp("## Prep ~{10min}\n[Mix] Add @flour{200g}. ~_{5min}\n"),
 		);
-		expect(viewed.text).toContain("Total Time: ");
+		expect(viewed.text).toContain("Total time: ");
 		expect(viewed.totalMinutes).toBeGreaterThan(0);
 	});
 
@@ -128,8 +128,8 @@ describe("viewRecipe", () => {
 		const out = await text(
 			"## T\n\nMix @flour{200g}. ~_{30min}\n\nBake it ~{10min}.\n",
 		);
-		expect(out).toMatch(/Total Time: 3\dm/);
-		expect(out).not.toContain("Idle Time");
+		expect(out).toMatch(/Total time: 3\dm/);
+		expect(out).not.toContain("Idle time");
 	});
 
 	it("colors the parts of the recipe through the style it is given", async () => {

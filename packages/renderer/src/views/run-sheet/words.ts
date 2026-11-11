@@ -1,7 +1,7 @@
 import { fillTemplate, getDictionary } from "@gram-lang/i18n";
 import type { RunSheetDay, RunSheetThread } from "@gram-lang/scheduler";
 import { workingDayLabel } from "../../shared/mise-en-place";
-import { formatDuration } from "../../shared/utils";
+import { durationFormatter } from "../../shared/utils";
 import type { RenderableCompilationResult } from "../../types";
 import type { RunSheetRenderOptions } from "./model";
 
@@ -76,7 +76,7 @@ export function runSheetWords(
 ): RunSheetWords {
 	const t = getDictionary(options.lang).renderer;
 	const step = options.roundTo && options.roundTo > 0 ? options.roundTo : 5;
-	const fmt = options.formatDuration ?? formatDuration;
+	const fmt = durationFormatter(options);
 	const tasks = new Map((data.tasks?.tasks ?? []).map((x) => [x.id, x]));
 
 	const sectionTitle = (index: number) =>

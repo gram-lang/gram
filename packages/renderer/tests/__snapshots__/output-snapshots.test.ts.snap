@@ -5,64 +5,69 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
 <h1 class="recipe-title">Crêpes</h1>
 
 <div class="recipe-timings-bar">
-  <span class="timing-pill total" data-tooltip="Total Time: 45m">
-    <svg class="gicon gicon-clock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></svg> <span class="timing-text">45m</span>
+  <span class="timing-pill total" data-tooltip="Total time: 45min">
+    <svg class="gicon gicon-clock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></svg> <span class="timing-text">45min</span>
     <div class="timing-tooltip">
       <div class="timing-tooltip-title">Total time = prep + active + idle</div>
       <div class="timing-row">
-        <span class="timing-label">Prep Time</span>
-        <span class="timing-val">+ ~8m</span>
+        <span class="timing-label">Prep time</span>
+        <span class="timing-val">+ ~8min</span>
       </div>
       <div class="timing-row">
-        <span class="timing-label">Active Time</span>
-        <span class="timing-val">+ 37m</span>
+        <span class="timing-label">Active time</span>
+        <span class="timing-val">+ 37min</span>
+      </div>
+      <div class="timing-divider"></div>
+      <div class="timing-row">
+        <span class="timing-label"><strong>Total time</strong></span>
+        <span class="timing-val"><strong>= 45min</strong></span>
       </div>
       <div class="timing-divider"></div>
       <div class="timing-row"><span class="timing-label timing-detail-type">For the hour-by-hour plan, see the run sheet.</span></div>
     </div>
   </span>
-  <span class="timing-pill" data-tooltip="Active Time: 37m">
-    <svg class="gicon gicon-fire" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M183.89,153.34a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68ZM216,144a88,88,0,0,1-176,0c0-27.92,11-56.47,32.66-84.85a8,8,0,0,1,11.93-.89l24.12,23.41,22-60.41a8,8,0,0,1,12.63-3.41C165.21,36,216,84.55,216,144Zm-16,0c0-46.09-35.79-85.92-58.21-106.33L119.52,98.74a8,8,0,0,1-13.09,3L80.06,76.16C64.09,99.21,56,122,56,144a72,72,0,0,0,144,0Z"/></svg> <span class="timing-text">37m active time</span>
+  <span class="timing-pill" data-tooltip="Active time: 37min">
+    <svg class="gicon gicon-fire" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M183.89,153.34a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68ZM216,144a88,88,0,0,1-176,0c0-27.92,11-56.47,32.66-84.85a8,8,0,0,1,11.93-.89l24.12,23.41,22-60.41a8,8,0,0,1,12.63-3.41C165.21,36,216,84.55,216,144Zm-16,0c0-46.09-35.79-85.92-58.21-106.33L119.52,98.74a8,8,0,0,1-13.09,3L80.06,76.16C64.09,99.21,56,122,56,144a72,72,0,0,0,144,0Z"/></svg> <span class="timing-text">37min active time</span>
     <div class="timing-tooltip">
-      <div class="timing-tooltip-title">Active Time = Sum of manual work time</div>
+      <div class="timing-tooltip-title">Active time = sum of manual work time</div>
       <div class="timing-row">
         <span class="timing-label">Batter <span class="timing-detail-type">(Active)</span></span>
-        <span class="timing-val">+ 34m</span>
+        <span class="timing-val">+ 34min</span>
       </div>
       <div class="timing-row">
         <span class="timing-label">Cooking <span class="timing-detail-type">(Active)</span></span>
-        <span class="timing-val">+ 3m</span>
+        <span class="timing-val">+ 3min</span>
       </div>
     </div>
   </span>
-  <span class="timing-pill" data-tooltip="Prep Time: ~8m">
-    <svg class="gicon gicon-knife" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M231.87,32.13a27.84,27.84,0,0,0-39.32,0L18.34,206.4a8,8,0,0,0,3.86,13.45A160.67,160.67,0,0,0,58.4,224c32.95,0,65.92-10.2,96.95-30.23,31.76-20.5,50.19-43.82,51-44.81a8,8,0,0,0-.64-10.59L185.32,118l46.55-46.56A27.85,27.85,0,0,0,231.87,32.13ZM189.1,144.44a220.41,220.41,0,0,1-42.86,36.16c-34.43,22.1-69.94,30.92-105.77,26.3L146,101.33Zm31.46-84.3L174,106.7,157.32,90l46.55-46.56a11.8,11.8,0,0,1,16.69,16.69Z"/></svg> <span class="timing-text"><span class="est">~</span>8m prep time</span>
+  <span class="timing-pill" data-tooltip="Prep time: ~8min">
+    <svg class="gicon gicon-knife" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M231.87,32.13a27.84,27.84,0,0,0-39.32,0L18.34,206.4a8,8,0,0,0,3.86,13.45A160.67,160.67,0,0,0,58.4,224c32.95,0,65.92-10.2,96.95-30.23,31.76-20.5,50.19-43.82,51-44.81a8,8,0,0,0-.64-10.59L185.32,118l46.55-46.56A27.85,27.85,0,0,0,231.87,32.13ZM189.1,144.44a220.41,220.41,0,0,1-42.86,36.16c-34.43,22.1-69.94,30.92-105.77,26.3L146,101.33Zm31.46-84.3L174,106.7,157.32,90l46.55-46.56a11.8,11.8,0,0,1,16.69,16.69Z"/></svg> <span class="timing-text"><span class="est">~</span>8min prep time</span>
     <div class="timing-tooltip">
-      <div class="timing-tooltip-title">Prep Time = Time to gather and prepare ingredients and cookware (Estimated)</div>
+      <div class="timing-tooltip-title">Prep time = time to gather and prepare ingredients and cookware (Estimated)</div>
       <div class="timing-row">
         <span class="timing-label"><strong>Batter</strong></span>
-        <span class="timing-val">+ 6m</span>
+        <span class="timing-val">+ 6min</span>
       </div>
       <div class="timing-row">
-        <span class="timing-label"><span class="timing-detail-type">Ingredients lookup (base) (5 × 1m)</span></span>
-        <span class="timing-val">+ 5m</span>
+        <span class="timing-label"><span class="timing-detail-type">Ingredients lookup (base) (5 × 1min)</span></span>
+        <span class="timing-val">+ 5min</span>
       </div>
       <div class="timing-row">
-        <span class="timing-label"><span class="timing-detail-type">Cookware lookup (base) (1 × 1m)</span></span>
-        <span class="timing-val">+ 1m</span>
+        <span class="timing-label"><span class="timing-detail-type">Cookware lookup (base) (1 × 1min)</span></span>
+        <span class="timing-val">+ 1min</span>
       </div>
       <div class="timing-divider"></div>
       <div class="timing-row">
         <span class="timing-label"><strong>Cooking</strong></span>
-        <span class="timing-val">+ 2m</span>
+        <span class="timing-val">+ 2min</span>
       </div>
       <div class="timing-row">
-        <span class="timing-label"><span class="timing-detail-type">Ingredients lookup (base) (1 × 1m)</span></span>
-        <span class="timing-val">+ 1m</span>
+        <span class="timing-label"><span class="timing-detail-type">Ingredients lookup (base) (1 × 1min)</span></span>
+        <span class="timing-val">+ 1min</span>
       </div>
       <div class="timing-row">
-        <span class="timing-label"><span class="timing-detail-type">Cookware lookup (base) (1 × 1m)</span></span>
-        <span class="timing-val">+ 1m</span>
+        <span class="timing-label"><span class="timing-detail-type">Cookware lookup (base) (1 × 1min)</span></span>
+        <span class="timing-val">+ 1min</span>
       </div>
     </div>
   </span>
@@ -119,14 +124,14 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
       </li>
       <li value="2">
         Add <span class="ingredient" data-name="egg">egg <span class="step-quantity">(2)</span></span> <span class="ingredient-alt-badge" data-tooltip="Alternatives
-egg substitute: 2" data-tooltip-html="&lt;div class=&quot;gram-tip&quot;&gt;&lt;div class=&quot;gram-tip-head&quot;&gt;&lt;span class=&quot;gram-tip-title&quot;&gt;Alternatives&lt;/span&gt;&lt;/div&gt;&lt;dl class=&quot;gram-tip-rows&quot;&gt;&lt;dt&gt;egg substitute&lt;/dt&gt;&lt;dd&gt;&lt;span class=&quot;gram-tip-value&quot;&gt;2&lt;/span&gt;&lt;/dd&gt;&lt;/dl&gt;&lt;/div&gt;">(alt)</span> and whisk for <span class="gram-nobr"><span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">2 min</span></span>.</span>
+egg substitute: 2" data-tooltip-html="&lt;div class=&quot;gram-tip&quot;&gt;&lt;div class=&quot;gram-tip-head&quot;&gt;&lt;span class=&quot;gram-tip-title&quot;&gt;Alternatives&lt;/span&gt;&lt;/div&gt;&lt;dl class=&quot;gram-tip-rows&quot;&gt;&lt;dt&gt;egg substitute&lt;/dt&gt;&lt;dd&gt;&lt;span class=&quot;gram-tip-value&quot;&gt;2&lt;/span&gt;&lt;/dd&gt;&lt;/dl&gt;&lt;/div&gt;">(alt)</span> and whisk for <span class="gram-nobr"><span class="timer" data-tooltip="Active time" data-value="2" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">2 min</span></span>.</span>
       </li>
       <li class="step-comment">
         <span class="comment-icon"><svg class="gicon gicon-info" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"/></svg></span>
         <span class="comment-text">Rest the batter before cooking</span>
       </li>
       <li value="3">
-        Let rest at <span class="temp" data-semantic="fridge"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> fridge</span> for <span class="gram-nobr"><span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">30 min</span></span>.</span>
+        Let rest at <span class="temp" data-semantic="fridge"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> fridge</span> for <span class="gram-nobr"><span class="timer" data-tooltip="Active time" data-value="30" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">30 min</span></span>.</span>
       </li>
     </ol>
   </section>
@@ -142,7 +147,7 @@ egg substitute: 2" data-tooltip-html="&lt;div class=&quot;gram-tip&quot;&gt;&lt;
         Heat a <span class="cookware" data-name="pan">pan</span> on <span class="gram-nobr"><span class="temp" data-semantic="medium heat"><svg class="gicon gicon-thermometer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z"/></svg> medium heat</span>.</span>
       </li>
       <li value="2">
-        Pour <span class="reference" data-ref-id="batter" data-tooltip="Intermediate ingredient" data-tooltip-html="&lt;div class=&quot;gram-tip&quot;&gt;&lt;div class=&quot;gram-tip-head&quot;&gt;&lt;span class=&quot;gram-tip-title&quot;&gt;batter&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;gram-tip-subtitle&quot;&gt;Intermediate ingredient&lt;/div&gt;&lt;/div&gt;"><svg class="gicon gicon-caret-circle-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm29.66-93.66a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32L140.69,128,106.34,93.66a8,8,0,0,1,11.32-11.32Z"/></svg> batter</span> and cook for active <span class="gram-nobr"><span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">1 min</span></span>.</span>
+        Pour <span class="reference" data-ref-id="batter" data-tooltip="Intermediate ingredient" data-tooltip-html="&lt;div class=&quot;gram-tip&quot;&gt;&lt;div class=&quot;gram-tip-head&quot;&gt;&lt;span class=&quot;gram-tip-title&quot;&gt;batter&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;gram-tip-subtitle&quot;&gt;Intermediate ingredient&lt;/div&gt;&lt;/div&gt;"><svg class="gicon gicon-caret-circle-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm29.66-93.66a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32L140.69,128,106.34,93.66a8,8,0,0,1,11.32-11.32Z"/></svg> batter</span> and cook for active <span class="gram-nobr"><span class="timer" data-tooltip="Active time" data-value="1" data-unit="min"><svg class="gicon gicon-timer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg> <span class="timer-text">1 min</span></span>.</span>
       </li>
     </ol>
   </section>
@@ -155,9 +160,9 @@ exports[`renderer output snapshots toMarkdown output is stable 1`] = `
 "# Crêpes
 
 > **Metadata**
-> - **Total Time**: 45m
-> - **Active Time**: 37m
-> - **Prep Time**: 8m (est.)
+> - **Total time**: 45min
+> - **Active time**: 37min
+> - **Prep time**: 8min (est.)
 > - portions: 4
 
 ## Shopping List
@@ -1273,13 +1278,13 @@ h3 {
 
 <div class="recipe-timings-bar">
   <span class="timing-pill total">
-    <svg class="gicon gicon-clock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></svg> <span class="timing-text">45m</span>
+    <svg class="gicon gicon-clock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></svg> <span class="timing-text">45min</span>
   </span>
   <span class="timing-pill">
-    <svg class="gicon gicon-fire" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M183.89,153.34a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68ZM216,144a88,88,0,0,1-176,0c0-27.92,11-56.47,32.66-84.85a8,8,0,0,1,11.93-.89l24.12,23.41,22-60.41a8,8,0,0,1,12.63-3.41C165.21,36,216,84.55,216,144Zm-16,0c0-46.09-35.79-85.92-58.21-106.33L119.52,98.74a8,8,0,0,1-13.09,3L80.06,76.16C64.09,99.21,56,122,56,144a72,72,0,0,0,144,0Z"/></svg> <span class="timing-text">37m active time</span>
+    <svg class="gicon gicon-fire" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M183.89,153.34a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68ZM216,144a88,88,0,0,1-176,0c0-27.92,11-56.47,32.66-84.85a8,8,0,0,1,11.93-.89l24.12,23.41,22-60.41a8,8,0,0,1,12.63-3.41C165.21,36,216,84.55,216,144Zm-16,0c0-46.09-35.79-85.92-58.21-106.33L119.52,98.74a8,8,0,0,1-13.09,3L80.06,76.16C64.09,99.21,56,122,56,144a72,72,0,0,0,144,0Z"/></svg> <span class="timing-text">37min active time</span>
   </span>
   <span class="timing-pill">
-    <svg class="gicon gicon-knife" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M231.87,32.13a27.84,27.84,0,0,0-39.32,0L18.34,206.4a8,8,0,0,0,3.86,13.45A160.67,160.67,0,0,0,58.4,224c32.95,0,65.92-10.2,96.95-30.23,31.76-20.5,50.19-43.82,51-44.81a8,8,0,0,0-.64-10.59L185.32,118l46.55-46.56A27.85,27.85,0,0,0,231.87,32.13ZM189.1,144.44a220.41,220.41,0,0,1-42.86,36.16c-34.43,22.1-69.94,30.92-105.77,26.3L146,101.33Zm31.46-84.3L174,106.7,157.32,90l46.55-46.56a11.8,11.8,0,0,1,16.69,16.69Z"/></svg> <span class="timing-text"><span class="est">~</span>8m prep time</span>
+    <svg class="gicon gicon-knife" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M231.87,32.13a27.84,27.84,0,0,0-39.32,0L18.34,206.4a8,8,0,0,0,3.86,13.45A160.67,160.67,0,0,0,58.4,224c32.95,0,65.92-10.2,96.95-30.23,31.76-20.5,50.19-43.82,51-44.81a8,8,0,0,0-.64-10.59L185.32,118l46.55-46.56A27.85,27.85,0,0,0,231.87,32.13ZM189.1,144.44a220.41,220.41,0,0,1-42.86,36.16c-34.43,22.1-69.94,30.92-105.77,26.3L146,101.33Zm31.46-84.3L174,106.7,157.32,90l46.55-46.56a11.8,11.8,0,0,1,16.69,16.69Z"/></svg> <span class="timing-text"><span class="est">~</span>8min prep time</span>
   </span>
 </div>
 <div class="recipe-hero-bar">
