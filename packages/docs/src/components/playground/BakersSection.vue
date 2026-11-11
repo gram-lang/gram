@@ -107,9 +107,3 @@ const bakersReference = computed({
 <style scoped src="./optionsFields.css"></style>
 
 <style scoped src="./optionsChoices.css"></style>
-
-<style scoped>
-.select-wrapper::after {
-  top: 14px;
-}
-</style>

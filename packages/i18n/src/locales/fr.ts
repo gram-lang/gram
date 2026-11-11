@@ -263,6 +263,10 @@ export const fr: GramLocale = {
 		recipe: "Recette",
 		studioTitle: "Réglages de la recette",
 		settingsButton: "Réglages",
+		settingsHint: {
+			text: "Masquer les quantités dans les étapes, changer le nombre de portions, planifier un service… Tout se passe dans les Réglages.",
+			dismiss: "Compris",
+		},
 		activeOptionsBadge: "{count} actifs",
 		resetAll: "Réinitialiser tout",
 		resetSection: "Réinitialiser",
