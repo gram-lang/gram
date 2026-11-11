@@ -292,6 +292,10 @@ export const en = {
 		recipe: "Recipe",
 		studioTitle: "Recipe settings",
 		settingsButton: "Settings",
+		settingsHint: {
+			text: "Hide the quantities in the steps, change the servings, plan a service… It all happens in Settings.",
+			dismiss: "Got it",
+		},
 		activeOptionsBadge: "{count} active",
 		resetAll: "Reset all",
 		resetSection: "Reset",

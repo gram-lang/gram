@@ -81,6 +81,7 @@ import {
 	saveOptions,
 	saveSetting,
 } from "./settingsStorage";
+import { markSettingsHintSeen, shouldShowSettingsHint } from "./settingsHint";
 import { DEFAULT_ENTRY_URI, createPlaygroundHost } from "./vfsHost";
 import { getDictionary } from "@gram-lang/i18n";
 import { trackEvent, debounce } from "../../lib/umami";
@@ -278,6 +279,16 @@ function clearPlan() {
 	};
 }
 
+// The one-time hint pointing at the Settings button. Read on mount, not
+// during setup, so the server render and the first client render agree.
+const isSettingsHintVisible = ref(false);
+
+function dismissSettingsHint() {
+	if (!isSettingsHintVisible.value) return;
+	isSettingsHintVisible.value = false;
+	markSettingsHintSeen();
+}
+
 // Studio Drawer state
 const isDrawerOpen = ref(false);
 const drawerInitialSection = ref<string | undefined>(undefined);
@@ -304,6 +315,7 @@ function toggleStudio(section?: string) {
 function openStudio(section?: string) {
 	drawerInitialSection.value = section;
 	isDrawerOpen.value = true;
+	dismissSettingsHint();
 	trackEvent("playground-open-studio", { section: section || "all" });
 }
 
@@ -470,6 +482,8 @@ onMounted(() => {
 			}
 		})
 		.catch((err) => console.error("Manifest Error:", err));
+
+	isSettingsHintVisible.value = shouldShowSettingsHint();
 
 	// Track viewport width for docked (>= 1200px) vs overlay drawer (< 1200px)
 	if (typeof window !== "undefined" && window.matchMedia) {
@@ -1085,9 +1099,12 @@ onUnmounted(() => {
           />
         </div>
         
+        <div class="toolbar-studio-anchor">
         <button
           type="button"
           class="toolbar-studio-btn"
+          :class="{ 'has-hint': isSettingsHintVisible }"
+          :aria-describedby="isSettingsHintVisible ? 'gram-settings-hint' : undefined"
           :aria-expanded="isDrawerOpen"
           :aria-label="t.playground.studioTitle"
           :title="t.playground.studioTitle"
@@ -1107,6 +1124,18 @@ onUnmounted(() => {
           <span class="toolbar-studio-label">{{ t.playground.settingsButton }}</span>
           <span v-if="activeModifiersCount > 0" class="active-badge">{{ activeModifiersCount }}</span>
         </button>
+        <div
+          v-if="isSettingsHintVisible && !isDrawerOpen"
+          id="gram-settings-hint"
+          class="settings-hint"
+          role="status"
+        >
+          <p>{{ t.playground.settingsHint.text }}</p>
+          <button type="button" class="settings-hint-dismiss" @click="dismissSettingsHint">
+            {{ t.playground.settingsHint.dismiss }}
+          </button>
+        </div>
+        </div>
         
         <button class="toolbar-icon-btn" @click="toggleFullscreen" :title="isFullscreen ? t.playground.exitFullscreen : t.playground.fullscreen">
           <svg v-if="!isFullscreen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M21 3H13.5L16.5429 6.04289L13.2929 9.29289L14.7071 10.7071L17.9571 7.45711L21 10.5V3ZM3 21H10.5L7.45711 17.9571L10.7071 14.7071L9.29289 13.2929L6.04289 16.5429L3 13.5V21Z"></path></svg>
@@ -1318,6 +1347,68 @@ onUnmounted(() => {
 
 .toolbar-studio-label {
   display: inline;
+}
+
+.toolbar-studio-anchor {
+  position: relative;
+  display: flex;
+}
+
+.toolbar-studio-btn.has-hint {
+  border-color: var(--sl-color-accent);
+  animation: settings-hint-pulse 2s ease-out 3;
+}
+
+@keyframes settings-hint-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sl-color-accent) 55%, transparent); }
+  70% { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.settings-hint {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 50;
+  width: min(280px, calc(100vw - 32px));
+  padding: 12px 14px;
+  background-color: var(--sl-color-accent-high);
+  color: var(--sl-color-black);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.settings-hint::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 16px;
+  width: 12px;
+  height: 12px;
+  background-color: inherit;
+  transform: rotate(45deg);
+}
+
+.settings-hint p {
+  margin: 0 0 10px;
+}
+
+.settings-hint-dismiss {
+  display: block;
+  margin-left: auto;
+  padding: 4px 12px;
+  background-color: var(--sl-color-black);
+  color: var(--sl-color-white);
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolbar-studio-btn.has-hint {
+    animation: none;
+  }
 }
 
 .active-badge {
@@ -1653,6 +1744,7 @@ onUnmounted(() => {
     width: 100%;
   }
 
+  .toolbar-right .toolbar-studio-anchor,
   .toolbar-right .toolbar-studio-btn,
   .toolbar-right .toolbar-icon-btn {
     flex-shrink: 0;
