@@ -192,77 +192,43 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		scheduleInput: `## Tomato Basil Pasta\n\n[Boil] The @pasta{200g} in salted water for ~_boiling{10min}. ->&cooked pasta{}\n\n[Sauté] @cherry tomatoes{200g} and @garlic{2 cloves} in @olive oil{} for ~{5min}. ->&sauce\n\n[Toss] The &cooked pasta{} into the hot &sauce with @fresh basil{1 handful}.`,
+		scheduleInput: `---\ntitle: Lemon Tart\n---\n\n## Dough ->&dough ~{-1d}\n\n[Mix] Rub @flour{250g} with @butter{125g} ~{10min}.\n\n[Chill] Let the dough rest ~_{8-24h}.\n\n## Tart\n\n[Bake] Line the #tart ring{} with the &dough and blind bake ~{20min}.`,
 		scheduleOutput: JSON.stringify(
 			{
-				metrics: {
-					preparationTime: 7,
-					activeTime: 7,
-				},
-				miseEnPlace: [
+				title: "Lemon Tart",
+				serveAt: "2026-11-21T20:00",
+				timeZone: "Europe/Paris",
+				days: [
 					{
-						section: 0,
-						duration: 7,
-						items: [
+						date: "2026-11-20",
+						visits: [
 							{
-								kind: "gather",
-								target: "ingredient",
-								count: 7,
-								duration: 7,
+								startLocal: "2026-11-20T19:48",
+								endLocal: "2026-11-20T20:00",
+								sections: [0],
+							},
+						],
+						threads: [
+							{
+								visit: 0,
+								fromLocal: "2026-11-20T20:00",
+								toLocal: "2026-11-21T04:00",
+								range: { min: 480, max: 1440 },
 							},
 						],
 					},
+					{
+						date: "2026-11-21",
+						visits: [
+							{
+								startLocal: "2026-11-21T19:38",
+								endLocal: "2026-11-21T20:00",
+								sections: [1],
+							},
+						],
+						threads: [],
+					},
 				],
-				schedule: {
-					miseEnPlace: "perSection",
-					rests: "shortest",
-					activeTime: 7,
-					preparationTime: 7,
-					totalTime: 19,
-					idleTime: 5,
-					blocks: [
-						{
-							kind: "prep",
-							task: "s0.prep",
-							section: 0,
-							start: 0,
-							end: 7,
-						},
-						{
-							kind: "step",
-							task: "s0.0",
-							section: 0,
-							step: 0,
-							start: 7,
-							end: 7,
-						},
-						{
-							kind: "passive",
-							task: "s0.0.t0",
-							section: 0,
-							step: 0,
-							start: 7,
-							end: 17,
-							track: "boiling",
-						},
-						{
-							kind: "step",
-							task: "s0.1",
-							section: 0,
-							step: 1,
-							start: 12,
-							end: 17,
-						},
-						{
-							kind: "step",
-							task: "s0.2",
-							section: 0,
-							step: 2,
-							start: 17,
-							end: 19,
-						},
-					],
-				},
 			},
 			null,
 			2,
@@ -515,77 +481,43 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		scheduleInput: `## Pâtes Tomate Basilic\n\n[Bouillir] Les @pâtes{200g} dans de l'eau salée pendant ~_ebullition{10min}. ->&pâtes cuites{}\n\n[Sauter] Les @tomates cerises{200g} et l'@ail{2 gousses} dans de l'@huile d'olive{} pendant ~{5min}. ->&sauce\n\n[Mélanger] Les &pâtes cuites{} dans la &sauce chaude avec du @basilic frais{1 poignée}.`,
+		scheduleInput: `---\ntitle: Tarte au citron\n---\n\n## Pâte ->&pâte ~{-1d}\n\n[Sabler] Sabler la @farine{250g} avec le @beurre{125g} ~{10min}.\n\n[Reposer] Laisser reposer la pâte ~_{8-24h}.\n\n## Tarte\n\n[Cuire] Foncer le #cercle à tarte{} avec la &pâte et cuire à blanc ~{20min}.`,
 		scheduleOutput: JSON.stringify(
 			{
-				metrics: {
-					preparationTime: 7,
-					activeTime: 7,
-				},
-				miseEnPlace: [
+				title: "Tarte au citron",
+				serveAt: "2026-11-21T20:00",
+				timeZone: "Europe/Paris",
+				days: [
 					{
-						section: 0,
-						duration: 7,
-						items: [
+						date: "2026-11-20",
+						visits: [
 							{
-								kind: "gather",
-								target: "ingredient",
-								count: 7,
-								duration: 7,
+								startLocal: "2026-11-20T19:48",
+								endLocal: "2026-11-20T20:00",
+								sections: [0],
+							},
+						],
+						threads: [
+							{
+								visit: 0,
+								fromLocal: "2026-11-20T20:00",
+								toLocal: "2026-11-21T04:00",
+								range: { min: 480, max: 1440 },
 							},
 						],
 					},
+					{
+						date: "2026-11-21",
+						visits: [
+							{
+								startLocal: "2026-11-21T19:38",
+								endLocal: "2026-11-21T20:00",
+								sections: [1],
+							},
+						],
+						threads: [],
+					},
 				],
-				schedule: {
-					miseEnPlace: "perSection",
-					rests: "shortest",
-					activeTime: 7,
-					preparationTime: 7,
-					totalTime: 19,
-					idleTime: 5,
-					blocks: [
-						{
-							kind: "prep",
-							task: "s0.prep",
-							section: 0,
-							start: 0,
-							end: 7,
-						},
-						{
-							kind: "step",
-							task: "s0.0",
-							section: 0,
-							step: 0,
-							start: 7,
-							end: 7,
-						},
-						{
-							kind: "passive",
-							task: "s0.0.t0",
-							section: 0,
-							step: 0,
-							start: 7,
-							end: 17,
-							track: "ebullition",
-						},
-						{
-							kind: "step",
-							task: "s0.1",
-							section: 0,
-							step: 1,
-							start: 12,
-							end: 17,
-						},
-						{
-							kind: "step",
-							task: "s0.2",
-							section: 0,
-							step: 2,
-							start: 17,
-							end: 19,
-						},
-					],
-				},
 			},
 			null,
 			2,

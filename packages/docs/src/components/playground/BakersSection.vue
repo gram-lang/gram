@@ -98,7 +98,7 @@ const bakersReference = computed({
         block
         v-model="bakersReference"
         :disabled="!bakersMath"
-        :options="[{ value: '', label: t.playground.options.autoDetect }, ...props.shoppingList.map((item) => ({ value: item.id, label: item.name }))]"
+        :options="[{ value: '', label: t.playground.options.autoDetect }, ...(props.shoppingList ?? []).map((item) => ({ value: item.id, label: item.name }))]"
       />
     </div>
   </OptionsSection>

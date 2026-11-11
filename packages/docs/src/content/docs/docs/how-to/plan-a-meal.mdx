@@ -42,10 +42,51 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
    [Thaw] Thaw in the fridge for ~_{6h}.
    ```
 
+   <details>
+   <summary>The three bases this recipe imports</summary>
+
+   ```gram title="bases/pistachio-sponge.gram"
+   ---
+   title: Pistachio sponge
+   ---
+
+   ## Sponge ->&sponge
+
+   [Mix] Mix @pistachios{80g}, @eggs{3} and @sugar{60g} ~{10min}.
+
+   [Bake] Bake at ^{180C} ~{12min}.
+   ```
+
+   ```gram title="bases/raspberry-insert.gram"
+   ---
+   title: Raspberry insert
+   ---
+
+   ## Insert ->&insert
+
+   [Cook] Cook @raspberries{200g} and @sugar{40g} ~{5min}.
+
+   [Freeze] Let it set in the freezer ~_{12-72h}.
+   ```
+
+   ```gram title="bases/white-chocolate-glaze.gram"
+   ---
+   title: White chocolate glaze
+   ---
+
+   ## Glaze ->&glaze
+
+   [Heat] Heat @white chocolate{150g} and @cream{100g} ~{5min}.
+   ```
+
+   The durations and times shown below are the ones Gram computes with these three bases.
+   </details>
+
    See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges) and [Days and hours](/docs/reference/syntax/times/#days-and-hours).
 
-   > [!TIP]
-   > **Name your steps with `[Action]`**: The run sheet names steps and background threads after their actions (e.g. `Mousse : Assemble 12h to 48h` in the timeline and in the waits you leave running). Prefixing each step that carries a timer or wait with an `[Action]` ensures clear, descriptive labels there rather than raw durations or generic fallbacks like `Rest`.
+   :::tip
+   **Name your steps with `[Action]`**: The run sheet names steps and background threads after their actions (e.g. `Mousse : Assemble 12h to 2d` in the timeline and in the waits you leave running). Prefixing each step that carries a timer or wait with an `[Action]` ensures clear, descriptive labels there rather than raw durations or generic fallbacks like `Rest`.
+   :::
 
 2. ### Choose when to serve
 
@@ -57,19 +98,20 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
    ```
 
    ```text
-   Thursday, October 15 20:00 — start Tue 13:45 · 3 visits to the kitchen · no wait adjusted
-   Friday, October 16 20:00 — start Wed 13:45 · 3 visits to the kitchen · no wait adjusted
-   Saturday, October 17 20:00 — start Thu 13:45 · 3 visits to the kitchen · no wait adjusted
+   Thursday, October 15 20:00 — start Tue 13:29 · 3 visits to the kitchen · no wait adjusted
+   Friday, October 16 20:00 — start Wed 13:29 · 3 visits to the kitchen · no wait adjusted
+   Saturday, October 17 20:00 — start Thu 13:29 · 3 visits to the kitchen · no wait adjusted
    ...
-   Thursday, October 15 12:30 — not possible. Mise en place — Sponge, around Tue 06:15, falls when you are not available, ... (+2)
+   Thursday, October 15 12:30 — not possible. Mise en place — Sponge, around Tue 06:00, falls when you are not available, and no wait can be moved to fix it. (+2)
    ```
 
    Compatible options are listed first (prioritizing fewer adjusted waits, then fewer visits, then the earliest dates). For each incompatible slot, Gram explains the blocking constraint.
 
    The `--meal-times` flag replaces the default (`12:30,20:00`). To configure your preferred meal slots permanently, set the `mealTimes` list in `.gram/config.yaml`.
 
-   > [!TIP]
-   > If you do not provide any serving time, `gram plan entremets.gram` simply calculates the earliest possible serving time starting right now.
+   :::tip
+   If you do not provide any serving time, `gram plan entremets.gram` simply calculates the earliest possible serving time starting right now.
+   :::
 
 3. ### Generate the run sheet
 
@@ -83,22 +125,23 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
    - `--serve`: the target date and time of the meal.
    - `--available`: when you can cook (repeatable, e.g. `sat=09:00-23:00`, `2026-10-09=none`). Your usual hours can be saved once for the project via `gram config set availability 08:00-22:00`; the flag then only overrides them.
    - `--tz`: your IANA time zone (can be saved permanently via `gram config set timezone Europe/Paris`).
-   - `--stock`: indicates that a preparation (here the glaze) is already made in your freezer. Gram does not schedule it and flags it as "in stock".
+   - `--stock`: indicates that a preparation (here the glaze) is already made in your freezer. Gram does not schedule it and flags it as "in stock". The value is the `@use` path exactly as written in the recipe, **relative to the folder you run the command from** (not to the recipe's folder): run `gram plan` from the folder that holds `entremets.gram`.
 
    ```text
    Run sheet — Pistachio raspberry entremets
    For Saturday, October 17 at 20:00 · 6 portions
-   3 days · 3 visits to the kitchen · 45m of work in all
+   3 days · 3 visits to the kitchen · 1h 5min of work in all
 
-   THU 15   ▮ 13:45 – 14:00 Sponge, Insert
-            ┆ Sponge : Bake 12m
-            ┆ Insert : Freeze 12h to 72h
+   THU 15   ▮ 13:30 – 14:00 Sponge, Insert
+            ┆ Insert : Freeze 12h to 3d
    FRI 16   ▮ 13:35 – 14:00 Mousse
-            ┆ Mousse : Assemble 12h to 48h
+            ┆ Mousse : Assemble 12h to 2d
    SAT 17   ▮ 13:55 – 14:00 Finish
             ┆ Finish : Thaw 6h
             ★ 20:00         Serve
    ```
+
+   The glaze, in stock, appears in no visit. Times are rounded to five minutes.
 
 4. ### Read the plan
 
@@ -119,24 +162,26 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
    ```text
    FRIDAY, OCTOBER 16  13:35 → 14:00
      Possible from 08:00.
-     MISE EN PLACE
-       [ ] cream 250 g
-       [ ] sugar 30 g
-       [ ] milk 100 g
-       [ ] Sponge, made Thursday
-       [ ] Insert, made Thursday
-       [ ] stand mixer
-       [ ] 20 cm ring
-     EXECUTION
-       MOUSSE (Start: 13:40)
-         1. [Whip] Whip the cream with the sugar and the milk.
-         2. [Assemble] Fold in the sponge and the insert, in the 20 cm ring.
+     MOUSSE (Start: 13:40)
+       Mise en place
+         [ ] cream 250 g
+         [ ] sugar 30 g
+         [ ] milk 100 g
+         [ ] Sponge, made Thursday
+         [ ] Insert, made Thursday
+         [ ] stand mixer
+         [ ] 20 cm ring
+       Execution
+         1. [Whip] Whip cream with sugar and milk using the stand mixer 10 min.
+         2. [Assemble] Layer sponge, insert and the mousse in the 20 cm ring 10 min, then freeze 12-48 h.
      BEFORE LEAVING
-       Mousse : Assemble 12h to 48h, until 02:00
+       Mousse : Assemble 12h to 2d, until 02:00
      Next visit: Saturday 13:55
    ```
 
-   This example illustrates the per-working-day mode; in per-section mode, each section forms a distinct block with its mise en place above its steps.
+   This example is in per-section mode (the default): the section is a station, with its mise en place above its steps. In per-working-day mode, one block at the top of the visit gathers the ingredients of every section of the day.
+
+   In "Before leaving", `until 02:00` is the time the wait can end **at the earliest** (2 p.m. + 12 h), not the time it stops: the mousse must come out of the freezer before the finish, on Saturday. In between it stays in the freezer about 24 h, within its 12 to 48 h range.
 
    Any constraints the engine could not resolve (a start time already in the past, work outside your available hours, or an incompatible rest) are listed under **"To fix"** at the top. See [Diagnostics and unresolved constraints](/docs/explanation/planning-in-real-time/#diagnostics-and-unresolved-constraints).
 

@@ -25,14 +25,20 @@ const {
 	gramLang,
 	codeThemes,
 } = Astro.props;
+
+// The last word and the link stay together (a link alone on a line reads as
+// orphaned): the link is an inline-block, before which a browser may break
+// even after a no-break space, so both go in one nowrap span.
+const lastSpace = desc.lastIndexOf(" ");
+const descHead = lastSpace === -1 ? "" : desc.slice(0, lastSpace + 1);
+const descTail = lastSpace === -1 ? desc : desc.slice(lastSpace + 1);
 ---
 
 <div class="feature-panel" id={id}>
 	<p class="feature-desc">
-		{desc}
-		<a href={link} class="learn-more-link" style="margin-left: 0.5rem;">
+		{descHead}<span class="desc-tail">{descTail}&nbsp;<a href={link} class="learn-more-link">
 			{learnMoreText}{title && <span class="sr-only">: {title}</span>}<span aria-hidden="true"> &rarr;</span>
-		</a>
+		</a></span>
 	</p>
 	<div class="feature-columns">
 		<div class="col-input">
@@ -187,6 +193,10 @@ const {
 
 	.col-input .code-block {
 		height: 100%;
+	}
+
+	.desc-tail {
+		white-space: nowrap;
 	}
 
 	.learn-more-link {

@@ -188,7 +188,34 @@ To structure a recipe into working days, the scheduling engine relies exclusivel
 - **`~{-Nd}` (days) = a distinct working day.** This conveys explicit human intent (*"prepare the day before (D-1)"*, *"two days prior (D-2)"*). Gram then groups the mise en place of those sections into a dedicated working day.
 - **`~{-Nh}` (hours) = a relative deadline within a day.** An anchor such as `~{-2h}` or `~{-36h}` indicates that a step must complete 2 hours (or 36 hours) before serving, but **never** initiates a new working day on its own. Because a `.gram` recipe has no knowledge of actual meal timing, converting hours into calendar days would introduce meal-dependent ambiguity (`~{-12h}` lands in the morning for an 8 p.m. dinner, but at midnight the day before for a noon lunch).
 
-An unanchored section inherits the day of the **furthest day anchor among downstream sections**, or serving day (Day D) by default. In the example, the crust has no anchor of its own: it is assigned to D-1 alongside the tart, and ALAP scheduling places it as late as possible, immediately prior to assembly.
+An unanchored section attaches to the day anchor **that follows it** (the furthest one among the sections after it), or to Day D when there is none. This is the opposite of the reading direction, on purpose: the engine reasons backward from serving, and an anchor means "this section, and everything before it that has no anchor, is done by that day at the latest".
+
+:::caution[An anchor does not apply to the sections after it]
+In the example, the **crust** has no anchor and is written right after the cream `~{-3d}`, but it is **not** made on D-3. It attaches to the tart `~{-1d}`, which comes after it: it is made on D-1, right before the tart, because scheduling places every step as late as possible.
+:::
+
+Here is the run sheet Gram produces for this recipe (`gram plan tart.gram`):
+
+```text
+D-3      ▮ ~ 5min        Cream
+         ┆ Cream : Chill 1d
+D-1      ▮ ~ 40min       Crust, Tart
+Day D    ▮ ~ 5min        Serve
+         ★               Serve
+```
+
+To make the crust on a day of its own, between the cream and the tart, anchor it explicitly: `## Crust ~{-2d} ->&crust` gives a visit on D-2.
+
+```text
+D-3      ▮ ~ 5min        Cream
+         ┆ Cream : Chill 1d
+D-2      ▮ ~ 5min        Crust
+D-1      ▮ ~ 35min       Tart
+Day D    ▮ ~ 5min        Serve
+         ★               Serve
+```
+
+Anchoring the crust at `~{-3d}`, like the cream, makes no sense here: it uses the cream, which rests for 24 hours. Gram accepts it but reports a timeline conflict ("the working day starts before its 24 h window opens").
 
 :::caution[Common pitfalls]
 Two frequent patterns do **not** initiate a new working day:
@@ -199,7 +226,7 @@ Two frequent patterns do **not** initiate a new working day:
 
 In the example above:
 - **Cream** is prepared on **D-3**;
-- **Crust** and **tart** are executed on **D-1**;
+- **Crust** and **tart** are executed on **D-1** (the crust attaches to the tart, which follows it);
 - **Serving** occurs on **Day D**.
 
 Each working day is designed to fit within the 24 hours preceding the next. If an extensive passive duration forces active work outside this window, Gram emits a `DAY_OVERFLOW` diagnostic and recommends anchoring the section further back.

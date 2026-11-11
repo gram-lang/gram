@@ -549,6 +549,7 @@ async function updateGram() {
 	editorRef.value?.setErrorMarker(null, "");
 	// Which pipeline stage is running, so a thrown error can be attributed to it.
 	let stage: "compose" | "compile" | "analyze" | "render" = "compose";
+	const collectedScaleDiagnostics: PlaygroundDiagnostic[] = [];
 	try {
 		const host = createPlaygroundHost(new Map(files.value));
 		const graph = await loadModuleGraph(previewEntry, host);
@@ -614,7 +615,6 @@ async function updateGram() {
 		// `fullDatabase` spread last: real DB entries always win on id
 		// collision (MODULE_BINDING_SHADOWS_INGREDIENT), same as pipeline.ts.
 		const database = { ...composed.syntheticIngredients, ...fullDatabase };
-		const collectedScaleDiagnostics: PlaygroundDiagnostic[] = [];
 
 		const scaled = scaleRecipe(
 			result,

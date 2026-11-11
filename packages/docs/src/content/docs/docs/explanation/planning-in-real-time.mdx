@@ -68,15 +68,22 @@ A wait assigned to a named track (`~_oven{40min}`) is only stretched if that tra
 Served on Sunday at 13:00, with `08:00-22:00` daily availability, an 8-hour rise would place the kneading at 04:10. Gram automatically stretches the rise to 14 h 30 so that the kneading finishes at 22:00 on Saturday evening:
 
 ```text
+To fix
+  ! The work of Day D falls on Saturday, October 10 instead of Sunday, October 11.
+
 SAT 10   ▮ 21:40 – 22:00 Dough
-         ┆ Dough : Rise 14h 30m (8h to 16h)
+         ┆ Dough : Rise 14h 30min (8h to 16h)
 SUN 11   ▮ 12:30 – 13:00 Bake
          ★ 13:00         Serve
 
 SATURDAY, OCTOBER 10  21:40 → 22:00
-  ! Dough : Rise extended to 14h 30m (planned 8h to 16h) so the work falls within your availability.
+  ! Dough : Rise extended to 14h 30min (planned 8h to 16h) so the work falls within your availability.
   Possible from 20:10.
 ```
+
+The "To fix" message at the top is expected here. The recipe has no day anchor: all its work is assumed to fall on Day D, the Sunday. But the kneading had to move to Saturday evening, and Gram says so (`DAY_MISMATCH`). The plan is still valid; it is information.
+
+Do not silence it by anchoring the section (`## Dough ~{-1d}`): a day anchor fixes the section's day, and Gram then no longer stretches the rise to fit your availability. If the rise should adapt to your hours, leave the recipe without an anchor.
 
 If the rise were exact (`~_{8h}`), or if the range was too narrow to absorb the offset (`~_{8-10h}`), no adjustment could be made: the scheduler leaves the kneading at 04:10 and logs the diagnostic.
 
@@ -138,7 +145,7 @@ See [Plan a meal](/docs/how-to/plan-a-meal/) for an end-to-end practical guide.
     href="/docs/how-to/plan-a-meal/"
   />
   <LinkCard
-    title="Mise en place and planning"
+    title="Ingredients, mise en place and planning"
     description="How the compiler infers task dependencies, durations, and preparation costs."
     href="/docs/explanation/mise-en-place-and-planning/"
   />

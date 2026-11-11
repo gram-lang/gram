@@ -6,7 +6,7 @@ import gramGrammar from "@gram-lang/parser/textmate";
 import FeaturePanel from "./FeaturePanel.astro";
 import { GRAM_VERSION } from "../lib/gram-version";
 import { NUTRIENTS, type NutrientKey } from "@gram-lang/analyzer";
-import { nutritionGroups } from "@gram-lang/renderer";
+import { nutritionRows } from "@gram-lang/renderer";
 import { getDictionary } from "@gram-lang/i18n";
 
 const { lang, t } = Astro.props;
@@ -21,28 +21,42 @@ const codeThemes: Record<string, any> = {
 // grouping from `nutritionGroups()` keeps the two from drifting apart.
 const nutritionDict = getDictionary(lang);
 
-// Per-portion figures for the Chantilly mockup: one quarter of a 269 g batch
-// (240 g cream + 25 g powdered sugar + 4 g vanilla), the recipe shown in
+// Per-portion figures for the Chantilly mockup: one quarter of a 259 g batch
+// (240 g cream + 15 g powdered sugar + 4 g vanilla), the recipe shown in
 // `nutritionInput`. Values match the renderer's own output.
+const MOCK_PORTION_GRAMS = 259 / 4;
 const MOCK_NUTRITION_VALUES: Partial<Record<NutrientKey, number>> = {
-	calories: 231,
-	fat: 22,
-	carbs: 6.5,
-	sugar: 6.3,
+	calories: 220,
+	fat: 21.6,
+	carbs: 5.5,
+	sugar: 5.5,
 	fiber: 0,
-	protein: 1.5,
+	protein: 1.4,
 	sodium: 11,
 };
+const per100Values = Object.fromEntries(
+	Object.entries(MOCK_NUTRITION_VALUES).map(([k, v]) => [
+		k,
+		(v as number) * (100 / MOCK_PORTION_GRAMS),
+	]),
+);
 
-const mockNutrientGroups = nutritionGroups(MOCK_NUTRITION_VALUES as any, lang);
-
-// The recipe declares `portions: 4`, so the real panel offers all three bases
-// and opens on per-portion.
-const mockBases = [
-	{ label: nutritionDict.renderer.nutritionPerPortion, active: true },
-	{ label: nutritionDict.renderer.nutritionPer100g, active: false },
-	{ label: nutritionDict.renderer.nutritionWholeRecipe, active: false },
-];
+// The rows come from the renderer, so the labels and their order follow the
+// real table; the mockup is only its simplified picture (two columns, no %RI).
+const round1 = (n: number) => Math.round(n * 10) / 10;
+const portionRows = nutritionRows(MOCK_NUTRITION_VALUES as any, lang);
+const per100Rows = nutritionRows(per100Values as any, lang);
+const kcalPortion = Math.round(MOCK_NUTRITION_VALUES.calories ?? 0);
+const kcal100 = Math.round(per100Values.calories ?? 0);
+const kj = (kcal: number) => Math.round(kcal * 4.184);
+const mockNutrientRows = portionRows
+	.filter((r) => r.key !== "calories")
+	.map((r) => ({
+		label: r.label,
+		nested: r.nested,
+		portion: `${round1(r.value)} ${r.unit}`,
+		per100: `${round1(per100Rows.find((x) => x.key === r.key)?.value ?? 0)} ${r.unit}`,
+	}));
 ---
 
 <Layout title="Gram" description={t.metaDescription} currentLang={lang}>
@@ -156,90 +170,51 @@ const mockBases = [
               gramLang={gramLang}
               codeThemes={codeThemes}
             >
-              <div class="modern-mockup-card nut-card-mock" role="region" aria-label={nutritionDict.renderer.nutrition}>
-                <div class="mockup-steps">
-                  <ol class="gram-steps" aria-label={lang === "fr" ? "Étapes de la recette Chantilly" : "Chantilly recipe steps"}>
-                    <li>
-                      <span class="action"
-                        >{lang === "fr" ? "Fouetter" : "Whisk"}</span
-                      >
-                      {lang === "fr" ? "La " : ""}<strong
-                        >{
-                          lang === "fr" ? "crème liquide" : "Heavy cream"
-                        }</strong
-                      > (240g)
-                      {lang === "fr" ? " et le " : " and "}
-                      <strong
-                        >{
-                          lang === "fr" ? "sucre glace" : "powdered sugar"
-                        }</strong
-                      > (25g)
-                      {
-                        lang === "fr"
-                          ? " jusqu'à obtenir des pics souples."
-                          : " until soft peaks form."
-                      }
-                    </li>
-                    <li>
-                      <span class="action"
-                        >{lang === "fr" ? "Incorporer" : "Fold"}</span
-                      >
-                      {
-                        lang === "fr"
-                          ? "Ajouter délicatement l'"
-                          : "Gently incorporate "
-                      }<strong
-                        >{
-                          lang === "fr"
-                            ? "extrait de vanille"
-                            : "vanilla extract"
-                        }</strong
-                      > (4g).
-                    </li>
-                  </ol>
-                </div>
-                <div class="nut-panel-mock" role="group" aria-label={nutritionDict.renderer.nutrition}>
+              <div class="modern-mockup-card nut-card-mock" role="region" aria-label={nutritionDict.renderer.nutritionTableTitle}>
+                <ul class="kit-mock">
+                  <li>
+                    <span class="kit-mock-name">{lang === "fr" ? "crème liquide" : "heavy cream"}</span>
+                    <span class="kit-mock-qty"><span class="kit-mock-orig">{lang === "fr" ? "1 tasse" : "1 cup"}</span><strong>240 g</strong></span>
+                  </li>
+                  <li>
+                    <span class="kit-mock-name">{lang === "fr" ? "sucre glace" : "powdered sugar"}</span>
+                    <span class="kit-mock-qty"><span class="kit-mock-orig">{lang === "fr" ? "2 c.à.s" : "2 tbsp"}</span><strong>15 g</strong></span>
+                  </li>
+                  <li>
+                    <span class="kit-mock-name">{lang === "fr" ? "extrait de vanille" : "vanilla extract"}</span>
+                    <span class="kit-mock-qty"><span class="kit-mock-orig">{lang === "fr" ? "1 c.à.c" : "1 tsp"}</span><strong>4 g</strong></span>
+                  </li>
+                </ul>
+                <div class="nut-panel-mock">
                   <div class="nut-header-mock">
-                    {nutritionDict.renderer.nutrition}
+                    <strong>{nutritionDict.renderer.nutritionTableTitle}</strong>
                     <span>{nutritionDict.renderer.estimateTooltip}</span>
                   </div>
-                  <div class="nut-basis-switch-mock" role="group" aria-label={lang === "fr" ? "Base de calcul nutritionnel" : "Nutrition calculation basis"}>
-                    {
-                      mockBases.map((basis) => (
-                        <span
-                          class:list={["pill", { active: basis.active }]}
-                          aria-current={basis.active ? "true" : undefined}
-                        >
-                          {basis.label}
-                        </span>
-                      ))
-                    }
-                  </div>
-                  <div class="nut-grid-mock">
-                    {
-                      mockNutrientGroups.map((group) => (
-                        <div class="nut-item-mock">
-                          <span class="label">{group.label}</span>
-                          <strong>
-                            {group.value}{" "}
-                            <span class="unit">{group.unit}</span>
-                          </strong>
-                          {group.children.length > 0 && (
-                            <ul class="nut-item-children" aria-label={group.label}>
-                              {group.children.map((child) => (
-                                <li>
-                                  <span class="label">{child.label}</span>
-                                  <span class="value">
-                                    {child.value} {child.unit}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      ))
-                    }
-                  </div>
+                  <table class="nut-table-mock">
+                    <thead>
+                      <tr>
+                        <th scope="col"><span class="sr-only">{nutritionDict.renderer.nutritionNutrient}</span></th>
+                        <th scope="col">{nutritionDict.renderer.nutritionPerPortion}</th>
+                        <th scope="col">{nutritionDict.renderer.nutritionPer100g}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="nut-energy-mock">
+                        <th scope="row">{nutritionDict.renderer.nutrients.calories}</th>
+                        <td><span class="kcal">{kcalPortion} kcal</span><span class="kj">{kj(kcalPortion)} kJ</span></td>
+                        <td><span class="kcal">{kcal100} kcal</span><span class="kj">{kj(kcal100)} kJ</span></td>
+                      </tr>
+                      {
+                        mockNutrientRows.map((row) => (
+                          <tr class:list={{ nested: row.nested }}>
+                            <th scope="row">{row.label}</th>
+                            <td>{row.portion}</td>
+                            <td>{row.per100}</td>
+                          </tr>
+                        ))
+                      }
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </FeaturePanel>
@@ -264,45 +239,46 @@ const mockBases = [
               <div
                 class="modern-mockup-card timeline-mockup-card"
                 role="region"
-                aria-label={lang === "fr" ? "Aperçu de la planification et du rétro-planning" : "Schedule and timeline preview"}
+                aria-label={nutritionDict.renderer.outputs.runSheet}
               >
                 <div class="sr-only">
                   {lang === "fr"
-                    ? "Plan de marche pour le samedi 17 octobre à 20 h : un passage en cuisine de 19 h 40 à 20 h. À sortir : pâtes, tomates cerises, ail, huile d'olive, basilic. Au programme : cuire 10 minutes, sauter 5 minutes, mélanger."
-                    : "Run sheet for Saturday, October 17 at 8 p.m.: one visit to the kitchen from 7:40 to 8 p.m. To take out: pasta, cherry tomatoes, garlic, olive oil, basil. To do: boil 10 minutes, sauté 5 minutes, toss."}
+                    ? "Plan de marche de la tarte au citron servie le samedi 21 novembre à 20 h. Vendredi : un passage en cuisine à 19 h 50 pour la pâte, qui repose au frais. Samedi : un passage à 19 h 40 pour la tarte, puis service à 20 h."
+                    : "Run sheet for the lemon tart served Saturday, November 21 at 8 p.m. Friday: a visit to the kitchen at 7:50 p.m. for the dough, which rests in the fridge. Saturday: a visit at 7:40 p.m. for the tart, then serving at 8 p.m."}
                 </div>
                 <div class="plan-mock" aria-hidden="true">
-                  <div class="plan-mock-header">
-                    <strong>{lang === "fr" ? "Plan de marche" : "Run sheet"}</strong>
-                    <span>{lang === "fr" ? "Pour le samedi 17 octobre à 20:00" : "For Saturday, October 17 at 20:00"}</span>
-                  </div>
-                  <div class="plan-mock-row">
-                    <span class="plan-mock-day">{lang === "fr" ? "SAM. 17" : "SAT 17"}</span>
-                    <span class="plan-mock-time">19:40 – 20:00</span>
-                    <span>Tomato Basil Pasta</span>
-                  </div>
-                  <div class="plan-mock-row plan-mock-serve">
-                    <span class="plan-mock-day"></span>
-                    <span class="plan-mock-time">★ 20:00</span>
-                    <span>{lang === "fr" ? "Servir" : "Serve"}</span>
-                  </div>
-                  <div class="plan-mock-lists">
-                    <div>
-                      <div class="plan-mock-label">{lang === "fr" ? "À sortir" : "To take out"}</div>
-                      <ul>
-                        <li>pasta 200 g</li>
-                        <li>cherry tomatoes 200 g</li>
-                        <li>garlic 2 cloves</li>
-                        <li>olive oil</li>
-                        <li>fresh basil 1 handful</li>
-                      </ul>
+                  <h4 class="plan-mock-title">{lang === "fr" ? "Tarte au citron" : "Lemon Tart"}</h4>
+                  <p class="plan-mock-subtitle">{lang === "fr" ? "Pour le samedi 21 novembre à 20:00" : "For Saturday, November 21 at 20:00"}</p>
+                  <p class="plan-mock-summary">{lang === "fr" ? "2 jours · 2 passages en cuisine · 35min de travail en tout" : "2 days · 2 visits to the kitchen · 35min of work in all"}</p>
+                  <div class="plan-mock-schedule">
+                    <div class="plan-mock-group">
+                      <div class="plan-mock-day">{lang === "fr" ? "VEN." : "FRI"}<small>20</small></div>
+                      <div class="plan-mock-rows">
+                        <div class="plan-mock-row plan-mock-visit">
+                          <span class="plan-mock-time">■ 19:50 – 20:00</span>
+                          <span>{lang === "fr" ? "Pâte" : "Dough"}</span>
+                        </div>
+                        <div class="plan-mock-row plan-mock-thread">
+                          <span class="plan-mock-time"><i></i></span>
+                          <span>{lang === "fr" ? "Pâte : Reposer 8h à 1j" : "Dough : Chill 8h to 1d"}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div class="plan-mock-label">{lang === "fr" ? "Au programme" : "To do"}</div>
-                      <p>Tomato Basil Pasta <small>({lang === "fr" ? "étapes 1 à 3" : "steps 1 to 3"})</small></p>
-                      <p class="plan-mock-steps">Boil 10 min › Sauté 5 min › Toss</p>
+                    <div class="plan-mock-group">
+                      <div class="plan-mock-day">{lang === "fr" ? "SAM." : "SAT"}<small>21</small></div>
+                      <div class="plan-mock-rows">
+                        <div class="plan-mock-row plan-mock-visit">
+                          <span class="plan-mock-time">■ 19:40 – 20:00</span>
+                          <span>{lang === "fr" ? "Tarte" : "Tart"}</span>
+                        </div>
+                        <div class="plan-mock-row plan-mock-serve">
+                          <span class="plan-mock-time">★ 20:00</span>
+                          <span>{lang === "fr" ? "Servir" : "Serve"}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                  <p class="plan-mock-legend"><span>■ {nutritionDict.renderer.runSheetLegendCook}</span><span>┆ {nutritionDict.renderer.runSheetLegendThread}</span></p>
                 </div>
               </div>
             </FeaturePanel>
@@ -1000,189 +976,227 @@ const mockBases = [
     border: 1px solid var(--sl-color-border);
   }
 
-  /* Nutrition Panel Mockup */
-  .nut-panel-mock {
-    background-color: var(--sl-color-bg-nav);
-    padding: 0.75rem;
-    border: 1px solid var(--sl-color-border);
-    margin: 0rem 1rem 1rem 1rem;
+  /* Nutrition mockup: a simplified picture of the recipe view's ingredient
+     lines and nutrition table (renderer/src/views/recipe/screen.css). */
+  .nut-card-mock {
+    padding: 0.5rem 1rem 1rem;
   }
-  .nut-header-mock {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+  .kit-mock {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--sl-color-border);
+  }
+  .kit-mock li {
     display: flex;
-    align-items: center;
-    gap: 6px;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.2rem 0;
     color: var(--sl-color-white);
   }
+  .kit-mock li::after {
+    content: "";
+    order: 1;
+    flex: 1;
+    border-bottom: 2px dotted var(--sl-color-border);
+  }
+  .kit-mock-name {
+    order: 0;
+  }
+  .kit-mock-qty {
+    order: 2;
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    font-family: var(--sl-font-mono);
+    font-variant-ligatures: none;
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+  .kit-mock-orig {
+    font-size: 0.9rem;
+    color: var(--sl-color-gray-3);
+  }
+  .kit-mock-qty strong {
+    color: var(--sl-color-white);
+  }
+  .nut-panel-mock {
+    max-width: 30rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--sl-color-white);
+    color: var(--sl-color-white);
+  }
+  .nut-header-mock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+  }
+  .nut-header-mock strong {
+    font-size: 1.15rem;
+    font-weight: 800;
+  }
   .nut-header-mock span {
-    font-size: 0.6em;
+    font-size: 0.6rem;
     text-transform: uppercase;
     background-color: var(--sl-color-gray-3);
     padding: 2px 6px;
     font-weight: 700;
     color: var(--sl-color-bg);
   }
-  /* Mirrors the real panel's basis switch (renderer/src/views/recipe/screen.css), which is a set
-     of radio inputs there and a static picture here. */
-  .nut-basis-switch-mock {
-    display: inline-flex;
-    gap: 2px;
-    margin-bottom: 0.6rem;
-    padding: 2px;
-    background-color: var(--sl-color-gray-6);
+  .nut-table-mock {
+    width: 100%;
+    border-collapse: collapse;
+    border-block: 6px solid var(--sl-color-white);
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
   }
-  .nut-basis-switch-mock .pill {
-    font-size: 0.7em;
-    font-weight: 600;
-    padding: 4px 10px;
+  .nut-table-mock th,
+  .nut-table-mock td {
+    padding: 4px 0 4px 0.75rem;
+    text-align: right;
     white-space: nowrap;
-    color: var(--sl-color-gray-2);
-  }
-  .nut-basis-switch-mock .pill.active {
-    background-color: var(--sl-color-bg);
-    color: var(--sl-color-white);
-  }
-  .nut-grid-mock {
-    display: grid;
-    gap: 6px;
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: min-content;
-  }
-  @media (min-width: 480px) {
-    .nut-grid-mock {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  .nut-item-mock {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    background-color: var(--sl-color-bg);
-    padding: 8px 10px;
-    border: 1px solid var(--sl-color-hairline);
-  }
-  .nut-item-mock .label {
-    font-size: 0.65em;
-    text-transform: uppercase;
-    color: var(--sl-color-gray-3);
-    font-weight: 600;
-  }
-  .nut-item-mock strong {
-    font-size: 1.05em;
-    font-family: var(--sl-font-mono);
-    font-variant-ligatures: none;
-    color: var(--sl-color-white);
-  }
-  .nut-item-mock strong .unit {
-    font-size: 0.85em;
-    font-weight: 400;
-    color: var(--sl-color-gray-3);
-  }
-  .nut-item-children {
-    list-style: none;
-    margin: 0;
-    padding: 0px 0 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .nut-item-children li {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 4px;
-    font-size: 0.7em;
-    color: var(--sl-color-gray-3);
-  }
-  .nut-item-children .label {
-    font-size: 0.95em;
-    text-transform: none;
-    color: var(--sl-color-gray-3);
-    font-weight: 400;
-  }
-  .nut-item-children .value {
-    font-family: var(--sl-font-mono);
-    font-variant-ligatures: none;
-    font-weight: 600;
-    color: var(--sl-color-gray-2);
-    white-space: nowrap;
-  }
-
-  /* Run sheet mockup */
-  .timeline-mockup-card {
-    padding: 1rem 0;
-  }
-  .plan-mock {
-    padding: 0 1.5rem;
-    font-size: 0.9rem;
-    color: var(--sl-color-gray-2);
-  }
-  .plan-mock-header {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 1rem;
-    padding-bottom: 0.75rem;
-    margin-bottom: 0.75rem;
+    vertical-align: top;
     border-bottom: 1px solid var(--sl-color-border);
+  }
+  .nut-table-mock th:first-child {
+    padding-left: 0;
+    text-align: left;
+    white-space: normal;
+  }
+  .nut-table-mock thead th {
+    font-size: 0.85rem;
+    border-bottom: 2px solid var(--sl-color-white);
+  }
+  .nut-table-mock tbody th {
+    font-weight: 700;
+  }
+  .nut-table-mock tbody tr:last-child > * {
+    border-bottom: none;
+  }
+  .nut-table-mock tr.nested th {
+    padding-left: 1rem;
+    font-weight: 400;
+  }
+  .nut-table-mock .nut-energy-mock > * {
+    border-bottom: 4px solid var(--sl-color-white);
+  }
+  .nut-table-mock .kcal {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .nut-table-mock .kj {
+    display: block;
     font-size: 0.85rem;
     color: var(--sl-color-gray-3);
   }
-  .plan-mock-header strong {
+
+  /* Run sheet mockup: a simplified picture of the run sheet view
+     (renderer/src/views/run-sheet/screen.css). */
+  .timeline-mockup-card {
+    padding: 1rem 1.25rem;
+  }
+  .plan-mock {
+    font-size: 0.9rem;
+    color: var(--sl-color-gray-2);
+  }
+  .plan-mock-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.3rem;
+    font-weight: 800;
+  }
+  .plan-mock-summary {
+    margin: 0 0 0.9rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--sl-color-border);
+    background-color: var(--sl-color-bg-nav);
+    font-family: var(--sl-font-mono);
+    font-variant-ligatures: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
     color: var(--sl-color-white);
+  }
+  .plan-mock-schedule {
+    border: 1px solid var(--sl-color-border);
+  }
+  .plan-mock-group {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+  .plan-mock-group + .plan-mock-group {
+    border-top: 1px solid var(--sl-color-border);
+  }
+  .plan-mock-day {
+    padding: 0.6rem 0.75rem;
+    border-right: 1px solid var(--sl-color-border);
+    background-color: var(--sl-color-bg-nav);
+    font-family: var(--sl-font-mono);
+    font-variant-ligatures: none;
+    font-weight: 800;
+    color: var(--sl-color-white);
+  }
+  .plan-mock-day small {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--sl-color-gray-3);
+  }
+  .plan-mock-rows {
+    padding: 0.3rem 0.75rem;
   }
   .plan-mock-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.15rem 1rem;
-    margin: 0.35rem 0;
+    gap: 0.1rem 0.75rem;
+    padding: 0.3rem 0;
   }
-  .plan-mock-day {
-    min-width: 4.5rem;
-    font-weight: 600;
-    color: var(--sl-color-white);
+  .plan-mock-row + .plan-mock-row {
+    border-top: 1px dotted var(--sl-color-border);
   }
   .plan-mock-time {
-    min-width: 7rem;
+    min-width: 8rem;
     font-family: var(--sl-font-mono);
     font-variant-ligatures: none;
+    font-size: 0.82rem;
     color: var(--sl-color-gray-3);
   }
-  .plan-mock-serve {
+  .plan-mock-visit {
     font-weight: 600;
     color: var(--sl-color-white);
   }
-  .plan-mock-lists {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem 2rem;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--sl-color-border);
+  .plan-mock-thread {
+    font-style: italic;
+    color: var(--sl-color-gray-3);
   }
-  .plan-mock-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
+  .plan-mock-thread i {
+    display: inline-block;
+    min-height: 1.2em;
+    margin-left: 0.3em;
+    border-left: 2px dotted var(--sl-color-gray-3);
+    vertical-align: middle;
+  }
+  .plan-mock-serve {
+    font-weight: 800;
     text-transform: uppercase;
-    color: var(--sl-color-gray-3);
-    margin-bottom: 0.4rem;
+    color: var(--sl-color-white);
   }
-  .plan-mock-lists ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .plan-mock-lists li::before {
-    content: "☐ ";
+  .plan-mock-subtitle {
+    margin: 0 0 0.6rem;
+    font-size: 0.9rem;
     color: var(--sl-color-gray-3);
   }
-  .plan-mock-lists p {
-    margin: 0;
-  }
-  .plan-mock-steps {
-    color: var(--sl-color-accent-high);
-    margin-top: 0.25rem !important;
+  .plan-mock-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 1.25rem;
+    margin: 0.6rem 0 0;
+    font-size: 0.8rem;
+    color: var(--sl-color-gray-3);
   }
 
   /* Tabular Mockup */

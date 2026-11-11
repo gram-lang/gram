@@ -81,7 +81,8 @@ const counts = computed(() => {
 // [] against the old filter instead of falling back to "all", so the console
 // looks empty even though a real diagnostic (in another category) exists.
 watch(counts, (newCounts) => {
-	if (activeFilter.value !== "all" && newCounts[activeFilter.value] === 0) {
+	const filter = activeFilter.value;
+	if (filter !== "all" && newCounts[filter] === 0) {
 		activeFilter.value = "all";
 	}
 });

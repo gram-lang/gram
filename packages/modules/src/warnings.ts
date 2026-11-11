@@ -8,6 +8,8 @@ import {
 	type WarningSeverity,
 } from "@gram-lang/kitchen";
 
+export type { WarningSeverity };
+
 // Module-only diagnostic vocabulary (module-imports RFC,
 // .notes/plan-ajout-imports-recettes.md Phase E, and the stock/retro-planning
 // redesign). `MODULE_NOT_FOUND` stays on kitchen's own `WarningCode` — it's

@@ -1229,7 +1229,6 @@
 	/* An intermediate that can be followed back to the step that makes it. */
 	.reference[data-ref-id] {
 		cursor: pointer;
-		border-bottom: 1px dotted var(--color-text-muted);
 		border-radius: 2px;
 		padding: 0 2px;
 		transition:
@@ -1257,7 +1256,6 @@
 	 */
 	.kit-list .reference[data-ref-id] {
 		cursor: inherit;
-		border-bottom: none;
 		padding: 0;
 		font-size: inherit;
 		font-weight: 500;
@@ -1425,9 +1423,21 @@
 		font-family: var(--gram-font-mono);
 	}
 
+	/*
+	 * The badges of a section header are in ink, like a step: the color of
+	 * the `.gram` source comes back on hover only.
+	 */
 	.section-meta-retroplanning {
+		color: var(--color-text);
+		border: 1px solid var(--color-border-strong);
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease;
+	}
+
+	.section-meta-retroplanning:hover {
 		color: var(--item-timer-text);
-		border: 1px solid var(--item-timer-text);
+		border-color: var(--item-timer-text);
 	}
 
 	.section-meta-mass {
@@ -1488,15 +1498,20 @@
 		cursor: pointer;
 	}
 
+	.section-declaration-badge:hover,
 	.section-declaration-badge.gram-highlight-active {
+		color: var(--item-decl-text);
 		border-color: var(--item-decl-text);
 	}
 
 	.section-declaration-badge {
 		font-size: 0.65em;
 		font-weight: 700;
-		color: var(--item-decl-text);
-		border: 1px solid var(--item-decl-text);
+		color: var(--color-text-strong);
+		border: 1px solid var(--color-border-strong);
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease;
 		padding: 1px 8px;
 		border-radius: 3px;
 		margin-left: auto;
@@ -1529,7 +1544,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-		color: var(--item-decl-text);
+		color: inherit;
 	}
 
 	/* ─── Nutrition table ──────────────────────────────────────────────────── */
@@ -1781,7 +1796,7 @@
 		.gross-mass
 	):not(.section-meta-badge):not(.section-declaration-badge):not(
 		.est-badge
-	):not(.timing-pill):not(.reference):not(.scale-factor-badge) {
+	):not(.timing-pill):not(.scale-factor-badge) {
 		text-decoration: underline dotted;
 		text-underline-offset: 3px;
 		text-decoration-thickness: 1px;

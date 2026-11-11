@@ -262,8 +262,9 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
    - `day.entries[]`: ordered sequence of all blocks for the day (active and passive), useful for drawing a detailed custom timeline or day view.
    - `sheet.adjustments[]` and `sheet.diagnostics[]`: lists of passive rests that were adjusted to fit your availability, and unresolved scheduling constraints that triggered warnings.
 
-   > [!TIP]
-   > **Reuse label formatters:** To format ingredient and equipment checklists or step references without rewriting culinary logic, import the modular helper functions from `@gram-lang/renderer`, such as `visitKit()` (ingredients and cookware to take out) and `sectionProgram()` (the section and the range of steps a visit covers). See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-run-sheet) for terminology details.
+   :::tip
+   **Reuse label formatters:** To format ingredient and equipment checklists or step references without rewriting culinary logic, import the modular helper functions from `@gram-lang/renderer`, such as `visitKit()` (ingredients and cookware to take out) and `sectionProgram()` (the section and the range of steps a visit covers). See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-run-sheet) for terminology details.
+   :::
 
 </Steps>
 

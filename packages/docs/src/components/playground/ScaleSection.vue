@@ -265,7 +265,7 @@ function resetSection() {
       <GramSelect
         block
         v-model="targetId"
-        :options="[{ value: '', label: t.playground.options.selectIngredient }, ...props.shoppingList.map((item) => ({ value: item.id, label: item.name }))]"
+        :options="[{ value: '', label: t.playground.options.selectIngredient }, ...(props.shoppingList ?? []).map((item) => ({ value: item.id, label: item.name }))]"
       />
       <div class="scale-inputs" v-if="targetId">
         <input

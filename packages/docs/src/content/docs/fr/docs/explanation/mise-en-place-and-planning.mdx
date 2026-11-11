@@ -188,7 +188,34 @@ Pour structurer une recette en journées de travail, le moteur d'ordonnancement 
 - **`~{-Nd}` (jours) = une journée de travail.** Cela exprime une intention explicite (*« préparation réalisée la veille (J-1) »*, *« deux jours avant (J-2) »*). Gram regroupe alors la mise en place de ces sections dans une journée de travail dédiée.
 - **`~{-Nh}` (heures) = une échéance relative au sein de la journée.** Une ancre telle que `~{-2h}` ou `~{-36h}` indique que l'étape doit s'achever 2 heures (ou 36 heures) avant le service, mais n'ouvre **jamais** de nouvelle journée à elle seule. Une recette `.gram` ne connaissant pas l'heure réelle de votre repas, convertir des heures en jours introduirait des ambiguïtés dépendantes de l'heure du repas (`~{-12h}` tombe le matin pour un dîner à 20 h, mais la veille à minuit pour un déjeuner à 12 h).
 
-Une section sans ancre hérite du jour de **l'ancre en jours la plus lointaine parmi les sections qui lui succèdent**, ou du jour J par défaut. Dans l'exemple, le fond ne possède pas d'ancre propre : il est affecté à J-1 avec la tarte, et l'ordonnancement ALAP le planifie au plus tard, immédiatement avant elle.
+Une section sans ancre se rattache à l'ancre en jours **qui la suit** (la plus lointaine parmi les sections situées après elle), ou au jour J s'il n'y en a pas. C'est l'inverse du sens de lecture, et c'est voulu : le moteur raisonne depuis le service en remontant le temps, et une ancre dit « cette section, et tout ce qui la précède sans ancre, est faite au plus tard ce jour-là ».
+
+:::caution[Une ancre ne s'applique pas aux sections qui la suivent]
+Dans l'exemple, le **fond** n'a pas d'ancre et il est écrit juste après la crème `~{-3d}`, mais il n'est **pas** fait à J-3. Il se rattache à la tarte `~{-1d}`, qui vient après lui : il est donc fait à J-1, juste avant elle, puisque l'ordonnancement place chaque étape au plus tard.
+:::
+
+Voici le plan de marche que Gram produit pour cette recette (`gram plan tarte.gram`) :
+
+```text
+J-3      ▮ ~ 5min        Crème
+         ┆ Crème : Refroidir 1j
+J-1      ▮ ~ 40min       Fond, Tarte
+Jour J   ▮ ~ 5min        Service
+         ★               Servir
+```
+
+Pour faire le fond un jour à part, entre la crème et la tarte, ancrez-le explicitement : `## Fond ~{-2d} ->&fond` donne un passage à J-2.
+
+```text
+J-3      ▮ ~ 5min        Crème
+         ┆ Crème : Refroidir 1j
+J-2      ▮ ~ 5min        Fond
+J-1      ▮ ~ 35min       Tarte
+Jour J   ▮ ~ 5min        Service
+         ★               Servir
+```
+
+Ancrer le fond à `~{-3d}`, comme la crème, n'a pas de sens ici : il consomme la crème, qui repose 24 heures. Gram l'accepte mais signale un conflit de chronologie (« la journée de travail commence avant l'ouverture de sa fenêtre de 24 h »).
 
 :::caution[Points d'attention]
 Deux situations courantes n'ouvrent **pas** de nouvelle journée de travail :
@@ -199,7 +226,7 @@ Deux situations courantes n'ouvrent **pas** de nouvelle journée de travail :
 
 Dans l'exemple ci-dessus :
 - La **crème** est préparée à **J-3** ;
-- Le **fond** et la **tarte** sont réalisés à **J-1** ;
+- Le **fond** et la **tarte** sont réalisés à **J-1** (le fond se rattache à la tarte, qui le suit) ;
 - Le **service** s'effectue le **jour J**.
 
 Chaque journée est conçue pour s'inscrire dans les 24 heures précédant la suivante. Si un long temps passif repousse le travail d'une journée hors de cette fenêtre, Gram émet le diagnostic `DAY_OVERFLOW` et suggère d'ancrer la section plus en amont.
