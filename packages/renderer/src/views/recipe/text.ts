@@ -13,7 +13,7 @@ import {
 import { portionsLabel } from "../../shared/portions";
 import {
 	aggToRendererItem,
-	formatDuration as defaultFormatDuration,
+	durationFormatter,
 	groupMultiUnitEntries,
 	isAlternativeGroup,
 	isCompositeItem,
@@ -110,7 +110,7 @@ export const textBackend: RenderBackend = {
 	buildContext(data, options) {
 		return {
 			registry: data.registry || { ingredients: {}, cookware: {} },
-			formatDuration: options.formatDuration || defaultFormatDuration,
+			formatDuration: durationFormatter(options),
 			formatFraction: options.formatFraction,
 			bakersMathOnly: options.bakersMathOnly,
 			lang: options.lang,
@@ -139,8 +139,9 @@ export const textBackend: RenderBackend = {
 		const lines = [style(options, "title", `┌─${label}${fill}${tail}─┐`)];
 
 		if (data.metrics) {
-			const formatDuration = context.formatDuration ?? defaultFormatDuration;
-			const { totalTime, idleTime } = timesIn(context);
+			const formatDuration =
+				context.formatDuration ?? durationFormatter(options);
+			const { totalTime } = timesIn(context);
 			const parts: string[] = [];
 			const part = (label: string, minutes: number, suffix = "") => {
 				if (minutes) {
@@ -149,7 +150,6 @@ export const textBackend: RenderBackend = {
 			};
 			part(t.prepTime, data.metrics.preparationTime ?? 0, ` ${t.est}`);
 			part(t.activeTime, data.metrics.activeTime ?? 0);
-			part(t.idleTime, idleTime);
 			part(t.totalTime, totalTime);
 			const inner = width - 5;
 			for (const line of packLine(parts, inner)) {

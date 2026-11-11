@@ -1,7 +1,7 @@
 import { ASTNodeType } from "@gram-lang/parser";
 import { round2 } from "@gram-lang/kitchen";
 import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
-import { isCoarseUnit } from "@gram-lang/i18n";
+import { getDictionary, isCoarseUnit } from "@gram-lang/i18n";
 
 // Converts an AggregatedIngredient to a plain object that formatElement can render.
 // The first quantity becomes qty/unit; additional ones become variable_entries strings.
@@ -137,24 +137,49 @@ export function formatQuantityValue(q: any): string {
 	return String(q);
 }
 
+const MINUTES_PER_DAY = 24 * 60;
+
 /**
- * Formats duration values into human readable strings (e.g. 90 -> 1h 30m).
- * Compiled timings are floats (20s is 0.333 min), so the value is rounded:
- * to the minute from one hour up, to the second below — never a raw decimal.
+ * Formats duration values into human readable strings (e.g. 90 -> 1h 30min),
+ * with the units of the display language (`durationUnits`: "1j 1h" in French).
+ * Compiled timings are floats (20s is 0.333 min), so the value is rounded,
+ * and the coarser the duration the coarser the rounding — never a raw
+ * decimal: to the second below an hour, to the minute up to a day, to the
+ * hour from a day up, where the minutes no longer tell the reader anything.
+ * `{ days: false }` keeps hours and minutes however long the duration, for
+ * figures that must add up (the breakdown of a total).
  */
-export function formatDuration(minutes: number): string {
-	if (!Number.isFinite(minutes) || minutes <= 0) return "0m";
-	if (minutes >= 60) {
+export function formatDuration(
+	minutes: number,
+	lang?: string,
+	{ days = true }: { days?: boolean } = {},
+): string {
+	const u = getDictionary(lang).renderer.durationUnits;
+	if (!Number.isFinite(minutes) || minutes <= 0) return `0${u.minute}`;
+	const join = (a: number, ua: string, b: number, ub: string) =>
+		b > 0 ? (a > 0 ? `${a}${ua} ${b}${ub}` : `${b}${ub}`) : `${a}${ua}`;
+	if (days && Math.round(minutes) >= MINUTES_PER_DAY) {
+		const hours = Math.round(minutes / 60);
+		return join(Math.floor(hours / 24), u.day, hours % 24, u.hour);
+	}
+	if (Math.round(minutes * 60) >= 3600) {
 		const total = Math.round(minutes);
-		const h = Math.floor(total / 60);
-		const m = total % 60;
-		return m > 0 ? `${h}h ${m}m` : `${h}h`;
+		return join(Math.floor(total / 60), u.hour, total % 60, u.minute);
 	}
 	const totalSeconds = Math.round(minutes * 60);
 	const m = Math.floor(totalSeconds / 60);
-	const s = totalSeconds % 60;
-	if (m === 0) return `${s}s`;
-	return s > 0 ? `${m}m ${s}s` : `${m}m`;
+	return join(m, u.minute, totalSeconds % 60, u.second);
+}
+
+/**
+ * The duration formatter of a render: the one the options give, or the
+ * default one in the options' language.
+ */
+export function durationFormatter(options: {
+	formatDuration?: (minutes: number) => string;
+	lang?: string;
+}): (minutes: number) => string {
+	return options.formatDuration ?? ((m) => formatDuration(m, options.lang));
 }
 
 /**

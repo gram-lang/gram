@@ -4,6 +4,8 @@ import {
 	type RestChoice,
 	scheduleTimes,
 } from "@gram-lang/kitchen";
+import { getDictionary } from "@gram-lang/i18n";
+import { formatDuration } from "@gram-lang/renderer";
 import type { DocumentState } from "../document-state";
 
 export function provideInlayHints(
@@ -29,15 +31,13 @@ export function provideInlayHints(
 	}
 
 	if (totalTime > 0) {
-		const totalMinutes = Math.round(totalTime);
-		const hours = Math.floor(totalMinutes / 60);
-		const mins = totalMinutes % 60;
-		const timeStr =
-			hours > 0 ? (mins > 0 ? `${hours}h${mins}` : `${hours}h`) : `${mins}m`;
-
+		// The words and the duration of the views, in the recipe's language.
+		const meta = state.compilation.meta?.language;
+		const lang = typeof meta === "string" ? meta : undefined;
+		const t = getDictionary(lang).renderer;
 		hints.push({
 			position: Position.create(titleLine, titleChar),
-			label: `  Total Time: ${timeStr}`,
+			label: `  ${t.totalTime}${t.colon}${formatDuration(totalTime, lang)}`,
 			kind: InlayHintKind.Type,
 			paddingLeft: true,
 		});

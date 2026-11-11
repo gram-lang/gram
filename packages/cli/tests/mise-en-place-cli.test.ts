@@ -18,7 +18,7 @@ const TART = `---
 title: Tart
 ---
 
-## Pastry ~{-2d}
+## Pastry ~{-2h}
 
 Mix @flour{200g}(sifted).
 
@@ -56,7 +56,7 @@ function gram(...args: string[]) {
 	};
 }
 
-/** "48h 5m", "2h", "35m" -> minutes. */
+/** "2h 5min", "2h", "35min" -> minutes. */
 function toMinutes(text: string): number {
 	const h = /(\d+)h/.exec(text)?.[1] ?? "0";
 	const m = /(\d+)m/.exec(text)?.[1] ?? "0";
@@ -64,7 +64,7 @@ function toMinutes(text: string): number {
 }
 
 const viewTotal = (out: string) =>
-	toMinutes(/Total Time: ([^\s│]+(?: \d+m)?)/.exec(out)?.[1] ?? "");
+	toMinutes(/Total time: ([^\s│]+(?: \d+min)?)/.exec(out)?.[1] ?? "");
 
 describe("gram view --mise-en-place", () => {
 	it("plans right before each section by default", () => {
@@ -93,7 +93,7 @@ describe("gram view --mise-en-place", () => {
 
 	it("keeps preparation and active time the same in all of them", () => {
 		const times = (out: string) =>
-			/Prep Time: [^·]+·\s+Active Time: [^·]+/.exec(out)?.[0].trim();
+			/Prep time: [^·]+·\s+Active time: [^·│]+/.exec(out)?.[0].trim();
 		const a = gram("view", recipe, "--mise-en-place", "per-section").out;
 		const b = gram("view", recipe, "--mise-en-place", "upfront").out;
 		expect(times(a)).toBeDefined();
@@ -115,7 +115,7 @@ describe("gram export --mise-en-place", () => {
 		);
 		expect(run.code).toBe(0);
 		const md = await readFile(target, "utf-8");
-		return toMinutes(/\*\*Total Time\*\*: (.+)/.exec(md)?.[1] ?? "");
+		return toMinutes(/\*\*Total time\*\*: (.+)/.exec(md)?.[1] ?? "");
 	}
 
 	it("writes the total time of the chosen schedule", async () => {

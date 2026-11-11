@@ -346,7 +346,7 @@ describe("gram plan --find", () => {
 describe("--rests on the other commands", () => {
 	it("changes the total of gram view, like --mise-en-place does", () => {
 		const total = (rests: string) =>
-			/Total Time: ([^\s│]+(?: \d+m)?)/.exec(
+			/Total time: ([^\s│]+(?: \d+m)?)/.exec(
 				gram("view", "bread.gram", "--rests", rests).out,
 			)?.[1];
 		expect(total("shortest")).not.toBe(total("longest"));

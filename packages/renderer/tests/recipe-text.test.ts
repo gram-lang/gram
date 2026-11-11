@@ -64,7 +64,7 @@ describe("recipe view, text format", () => {
 		const lines = text().split("\n");
 		expect(lines[0]).toStartWith("┌─ Country bread ");
 		expect(lines[0]).toEndWith(" 2 portions ─┐");
-		expect(lines.slice(1, 3).join("\n")).toContain("Total Time: ");
+		expect(lines.slice(1, 3).join("\n")).toContain("Total time: ");
 		expect(lines.find((l) => l.startsWith("└"))).toBe(`└${"─".repeat(76)}┘`);
 		// Every line of the box is as wide as the box.
 		const box = lines.slice(0, lines.findIndex((l) => l.startsWith("└")) + 1);
@@ -152,7 +152,7 @@ describe("recipe view, text format", () => {
 		expect(out).toContain(" 2 portions ─┐");
 		expect(out).toContain("LISTE DE COURSES");
 		expect(out).toContain("MATÉRIEL");
-		expect(out).toContain("Temps Total : ");
+		expect(out).toContain("Temps total : ");
 		expect(out).toContain("VALEURS NUTRITIONNELLES");
 	});
 

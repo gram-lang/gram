@@ -21,7 +21,7 @@ const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
 });
 
 // A section with a retro-planning offset makes the two timelines differ.
-const TART = `## Pastry ~{-2d}
+const TART = `## Pastry ~{-2h}
 
 Mix @flour{200g}(sifted).
 
@@ -178,15 +178,11 @@ describe("view, export and print follow --mise-en-place", () => {
 		expect(per.totalMinutes).toBe(perSection.totalTime);
 		expect(up.totalMinutes).toBe(upfront.totalTime);
 		expect(per.text).toContain(
-			`Total Time: ${formatDuration(perSection.totalTime)}`,
-		);
-		expect(per.text).toContain(
-			`Idle Time: ${formatDuration(perSection.idleTime)}`,
+			`Total time: ${formatDuration(perSection.totalTime)}`,
 		);
 		expect(up.text).toContain(
-			`Total Time: ${formatDuration(upfront.totalTime)}`,
+			`Total time: ${formatDuration(upfront.totalTime)}`,
 		);
-		expect(up.text).toContain(`Idle Time: ${formatDuration(upfront.idleTime)}`);
 	});
 
 	it("defaults to preparing right before each section", async () => {
@@ -200,7 +196,7 @@ describe("view, export and print follow --mise-en-place", () => {
 	it("keeps active and preparation time the same in both", async () => {
 		const path = await tmp(TART);
 		const times = (text: string) =>
-			/Prep Time: [^·]+·\s+Active Time: [^·│]+/.exec(text)?.[0].trim();
+			/Prep time: [^·]+·\s+Active time: [^·│]+/.exec(text)?.[0].trim();
 		const per = await viewRecipe(path);
 		const up = await viewRecipe(path, { settings: { miseEnPlace: "upfront" } });
 		expect(times(per.text)).toBeDefined();

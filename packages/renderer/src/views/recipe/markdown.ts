@@ -6,7 +6,7 @@ import type {
 import type { RenderBackend, RenderSections } from "./traversal";
 import { renderRecipe, timesIn } from "./traversal";
 import {
-	formatDuration as defaultFormatDuration,
+	durationFormatter,
 	aggToRendererItem,
 	isAlternativeGroup,
 	isCompositeItem,
@@ -34,7 +34,7 @@ import { getDictionary } from "@gram-lang/i18n";
 export const markdownBackend: RenderBackend = {
 	buildContext(data, options) {
 		const registry = data.registry || { ingredients: {}, cookware: {} };
-		const formatDuration = options.formatDuration || defaultFormatDuration;
+		const formatDuration = durationFormatter(options);
 		return {
 			registry,
 			icons: options.icons,
@@ -59,23 +59,21 @@ export const markdownBackend: RenderBackend = {
 			return "";
 		}
 		const t = getDictionary(options.lang);
-		const formatDuration = options.formatDuration || defaultFormatDuration;
+		const formatDuration = durationFormatter(options);
 
 		let md = `> **${t.renderer.metadata}**\n`;
 		if (data.metrics) {
-			// Total and idle time follow the chosen schedule; the other two do not.
-			const { totalTime, idleTime } = timesIn(context);
+			// The total follows the chosen schedule; the other two do not. The
+			// wait is left out: the run sheet is where time is managed.
+			const { totalTime } = timesIn(context);
 			if (totalTime) {
-				md += `> - **${t.renderer.totalTime}**: ${formatDuration(totalTime)}\n`;
-			}
-			if (idleTime) {
-				md += `> - **${t.renderer.idleTime}**: ${formatDuration(idleTime)}\n`;
+				md += `> - **${t.renderer.totalTime}**${t.renderer.colon}${formatDuration(totalTime)}\n`;
 			}
 			if (data.metrics.activeTime) {
-				md += `> - **${t.renderer.activeTime}**: ${formatDuration(data.metrics.activeTime)}\n`;
+				md += `> - **${t.renderer.activeTime}**${t.renderer.colon}${formatDuration(data.metrics.activeTime)}\n`;
 			}
 			if (data.metrics.preparationTime) {
-				md += `> - **${t.renderer.prepTime}**: ${formatDuration(data.metrics.preparationTime)} ${t.renderer.est}\n`;
+				md += `> - **${t.renderer.prepTime}**${t.renderer.colon}${formatDuration(data.metrics.preparationTime)} ${t.renderer.est}\n`;
 			}
 		}
 		if (data.meta) {

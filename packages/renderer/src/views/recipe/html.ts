@@ -7,6 +7,7 @@ import type {
 import type { RenderBackend, RenderSections } from "./traversal";
 import { renderRecipe, timesIn } from "./traversal";
 import {
+	durationFormatter,
 	formatDuration as defaultFormatDuration,
 	escapeHtml,
 	aggToRendererItem,
@@ -47,7 +48,7 @@ import {
 	round2,
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
-import { getDictionary } from "@gram-lang/i18n";
+import { fillTemplate, getDictionary } from "@gram-lang/i18n";
 import {
 	resolveContributingUsage,
 	type AnalyzedUsage,
@@ -533,7 +534,7 @@ function inlineBasisLabel(basis: ResolvedBasis, lang?: string): string {
 export const htmlBackend: RenderBackend = {
 	buildContext(data, options) {
 		const registry = data.registry || { ingredients: {}, cookware: {} };
-		const formatDuration = options.formatDuration || defaultFormatDuration;
+		const formatDuration = durationFormatter(options);
 		return {
 			registry,
 			icons: options.icons,
@@ -568,7 +569,7 @@ export const htmlBackend: RenderBackend = {
 
 	renderMeta(data, context, options) {
 		const t = getDictionary(options.lang);
-		const formatDuration = options.formatDuration || defaultFormatDuration;
+		const formatDuration = durationFormatter(options);
 		const metrics = data.metrics as RenderableMetrics;
 
 		let html = "";
@@ -685,9 +686,6 @@ export const htmlBackend: RenderBackend = {
 
 			const sectionTitle = (index: number) =>
 				data.sections[index]?.title || t.renderer.miseEnPlace;
-			const miseSummaryRows = (data.miseEnPlace ?? [])
-				.map((m) => timingRow(escapeHtml(sectionTitle(m.section)), m.duration))
-				.join("\n");
 			const miseDetailRows = (data.miseEnPlace ?? [])
 				.map((m) =>
 					[
@@ -747,24 +745,74 @@ export const htmlBackend: RenderBackend = {
 			html += `<div class="${timingsBarClass}">\n`;
 
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
-			const totalTooltip = renderTooltipHTML(
-				t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
-				undefined,
-				miseSummaryRows,
+			// The total explains itself: its three parts, which add up to it to the
+			// minute (no day rounding here, so "1d 1h" on the pill is read as the
+			// rounded "25h 6min" it is), then where the hour-by-hour plan lives.
+			// The wait is not a pill of its own.
+			const exact =
+				options.formatDuration ??
+				((m: number) =>
+					defaultFormatDuration(m, options.lang, { days: false }));
+			// From an hour up the figures are whole minutes: the wait takes what
+			// is left, so the rounding of each part never breaks the sum.
+			const whole = (m: number) => (totalTime >= 60 ? Math.round(m) : m);
+			const prepPart = whole(metrics.preparationTime ?? 0);
+			const activePart = whole(metrics.activeTime ?? 0);
+			const totalPart = whole(totalTime);
+			const idlePart =
+				totalTime >= 60
+					? Math.max(0, totalPart - prepPart - activePart)
+					: idleTime;
+			const breakdownRow = (label: string, value: string) =>
+				`      <div class="timing-row">
+        <span class="timing-label">${label}</span>
+        <span class="timing-val">${value}</span>
+      </div>`;
+			const totalParts = [
+				prepPart
+					? breakdownRow(
+							escapeHtml(t.renderer.prepTime),
+							`+ ~${exact(prepPart)}`,
+						)
+					: "",
+				activePart
+					? breakdownRow(
+							escapeHtml(t.renderer.activeTime),
+							`+ ${exact(activePart)}`,
+						)
+					: "",
+				idlePart
+					? breakdownRow(
+							escapeHtml(t.renderer.idleTime),
+							`+ ${exact(idlePart)}`,
+						)
+					: "",
+				`      <div class="timing-divider"></div>`,
+				breakdownRow(
+					`<strong>${escapeHtml(t.renderer.totalTime)}</strong>`,
+					`<strong>= ${exact(totalPart)}</strong>`,
+				),
+			].filter(Boolean);
+			const runSheetName = t.renderer.outputs.runSheet?.toLocaleLowerCase(
+				options.lang || "en",
 			);
-			html += `  <span class="timing-pill total${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.totalTime)}: ${formatDuration(totalTime)}">\n`;
+			const totalRows = [
+				totalParts.join("\n"),
+				...(runSheetName
+					? [
+							`      <div class="timing-divider"></div>`,
+							`      <div class="timing-row"><span class="timing-label timing-detail-type">${escapeHtml(fillTemplate(t.renderer.totalTimeRunSheetHint, { view: runSheetName }))}</span></div>`,
+						]
+					: []),
+			].join("\n");
+			const totalTooltip = renderTooltipHTML(
+				t.renderer.totalTimeTooltip,
+				undefined,
+				totalRows,
+			);
+			html += `  <span class="timing-pill total${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.totalTime)}${t.renderer.colon}${formatDuration(totalTime)}">\n`;
 			html += `    ${clockIcon} <span class="timing-text${metaValueClass}">${formatDuration(totalTime)}</span>${totalTooltip}\n`;
 			html += `  </span>\n`;
-
-			if (idleTime) {
-				const idleTooltip = renderTooltipHTML(
-					t.renderer.idleTimeTooltip ??
-						"Idle Time = Total Time - Prep - Active",
-				);
-				html += `  <span class="timing-pill${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.idleTime)}: ${formatDuration(idleTime)}">\n`;
-				html += `    ${options.icons?.hourglass ?? DEFAULT_ICONS.html.hourglass} <span class="timing-text${metaValueClass}">${formatDuration(idleTime)} ${escapeHtml(t.renderer.idleTime.toLowerCase())}</span>${idleTooltip}\n`;
-				html += `  </span>\n`;
-			}
 
 			const fireIcon = options.icons?.fire ?? DEFAULT_ICONS.html.fire;
 			// @remove-in: 2.0.0 [renderer-active-breakdown-tooltip]
@@ -772,7 +820,7 @@ export const htmlBackend: RenderBackend = {
 				t.renderer.activeTimeCardTooltip ?? t.renderer.activeTime,
 				metrics.activeBreakdown,
 			);
-			html += `  <span class="timing-pill${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.activeTime)}: ${formatDuration(metrics.activeTime)}">\n`;
+			html += `  <span class="timing-pill${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.activeTime)}${t.renderer.colon}${formatDuration(metrics.activeTime)}">\n`;
 			html += `    ${fireIcon} <span class="timing-text${metaValueClass}">${formatDuration(metrics.activeTime)} ${escapeHtml(t.renderer.activeTime.toLowerCase())}</span>${activeTooltip}\n`;
 			html += `  </span>\n`;
 
@@ -786,7 +834,7 @@ export const htmlBackend: RenderBackend = {
 			);
 			const metaEstClass = options.classes?.metaEst || "est";
 			const prepDuration = formatDuration(metrics.preparationTime);
-			html += `  <span class="timing-pill${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.prepTime)}: ~${prepDuration}">\n`;
+			html += `  <span class="timing-pill${timingCardClass}" data-tooltip="${escapeHtml(t.renderer.prepTime)}${t.renderer.colon}~${prepDuration}">\n`;
 			html += `    ${knifeIcon} <span class="timing-text${metaValueClass}"><span class="${metaEstClass}">~</span>${prepDuration} ${escapeHtml(t.renderer.prepTime.toLowerCase())}</span>${prepTooltip}\n`;
 			html += `  </span>\n`;
 

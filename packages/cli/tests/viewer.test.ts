@@ -101,7 +101,7 @@ describe("viewRecipe", () => {
 		const viewed = await viewRecipe(
 			await tmp("## Prep ~{10min}\n[Mix] Add @flour{200g}. ~_{5min}\n"),
 		);
-		expect(viewed.text).toContain("Total Time: ");
+		expect(viewed.text).toContain("Total time: ");
 		expect(viewed.totalMinutes).toBeGreaterThan(0);
 	});
 
@@ -124,11 +124,12 @@ describe("viewRecipe", () => {
 		expect(out).not.toContain("1 min");
 	});
 
-	it("shows the resting time as the idle time", async () => {
+	it("counts the resting time in the total, with no idle time of its own", async () => {
 		const out = await text(
 			"## T\n\nMix @flour{200g}. ~_{30min}\n\nBake it ~{10min}.\n",
 		);
-		expect(out).toMatch(/Idle Time: [1-9]/);
+		expect(out).toMatch(/Total time: 3\dm/);
+		expect(out).not.toContain("Idle time");
 	});
 
 	it("colors the parts of the recipe through the style it is given", async () => {

@@ -305,9 +305,9 @@ describe("mise en place wording", () => {
 
 	it("still gives it where there is no column, in the Gantt block's tooltip", () => {
 		const tooltips = toGanttHTML(compiled).match(/data-tooltip="[^"]*"/g) ?? [];
-		expect(tooltips.some((t) => t.includes("Preparation: onions (+ 2m)"))).toBe(
-			true,
-		);
+		expect(
+			tooltips.some((t) => t.includes("Preparation: onions (+ 2min)")),
+		).toBe(true);
 	});
 
 	it("puts no space before the colon in English, one in French", () => {
@@ -322,5 +322,42 @@ describe("mise en place wording", () => {
 		const html = toHTML(compiled, { formatDuration: (m) => `${m} min` });
 		expect(html).toContain("(2 × 1 min)");
 		expect(html).not.toContain("× 1min");
+	});
+});
+
+describe("the total time tooltip", () => {
+	// Over a day: the pill rounds to the hour, the tooltip must still add up.
+	const LONG = `## Batter
+
+Mix @milk{1l} with @flour{250g} ~{14min}.
+
+[Rest] Let it rest in the fridge ~_{24h}.
+
+## Bake
+
+Bake ~{60min}.
+`;
+	const html = toHTML(compile(getAST(LONG)), { lang: "en" });
+	const tooltip =
+		/timing-pill total[\s\S]*?<div class="timing-tooltip">([\s\S]*?)<\/div>\s*<\/span>/.exec(
+			html,
+		)?.[1] ?? "";
+	const values = [...tooltip.matchAll(/timing-val">(?:<strong>)?([^<]+)/g)].map(
+		(m) => m[1]!,
+	);
+	const minutes = (text: string) =>
+		Number(/(\d+)h/.exec(text)?.[1] ?? 0) * 60 +
+		Number(/(\d+)min/.exec(text)?.[1] ?? 0);
+
+	it("shows the pill in days, the breakdown in hours and minutes", () => {
+		expect(html).toMatch(/<span class="timing-text">1d( \dh)?<\/span>/);
+		expect(tooltip).not.toMatch(/\dd\b/);
+	});
+
+	it("adds its parts up to the total it ends on", () => {
+		const parts = values.filter((v) => v.startsWith("+"));
+		const total = values.find((v) => v.startsWith("="))!;
+		expect(parts.length).toBe(3);
+		expect(parts.reduce((sum, v) => sum + minutes(v), 0)).toBe(minutes(total));
 	});
 });

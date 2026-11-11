@@ -6,7 +6,7 @@ import type {
 } from "@gram-lang/scheduler";
 import { workingDayLabel } from "../../shared/mise-en-place";
 import { portionsLabel } from "../../shared/portions";
-import { formatDuration } from "../../shared/utils";
+import { durationFormatter } from "../../shared/utils";
 import type { CommentsMode, RenderableCompilationResult } from "../../types";
 import { longDate, shortDay } from "./dates";
 import type { KitItem, ProgramStep } from "./parts";
@@ -163,7 +163,7 @@ export function describeProblems(
 	const t = getDictionary(options.lang).renderer;
 	const lang = options.lang;
 	const step = options.roundTo && options.roundTo > 0 ? options.roundTo : 5;
-	const fmt = options.formatDuration ?? formatDuration;
+	const fmt = durationFormatter(options);
 	const tasks = new Map((data.tasks?.tasks ?? []).map((x) => [x.id, x]));
 	const sectionTitle = (index: number) =>
 		data.sections?.[index]?.title || t.runSheetUnnamedSection;
