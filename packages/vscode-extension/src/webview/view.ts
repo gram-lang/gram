@@ -198,6 +198,16 @@ function setSession(session: Session): void {
 	if (document.activeElement !== factor) {
 		factor.value = scale?.type === "factor" ? percentOf(scale.value) : "";
 	}
+	const portions = el<HTMLInputElement>(sessionBlock, "#scale-portions");
+	if (document.activeElement !== portions) {
+		const base = choices?.portions;
+		portions.value =
+			base !== undefined && scale?.type === "factor"
+				? String(Math.round(base * scale.value * 100) / 100)
+				: base !== undefined && !scale
+					? String(base)
+					: "";
+	}
 	if (scale?.type === "target") {
 		el<HTMLSelectElement>(sessionBlock, "#scale-target").value = scale.id;
 		el<HTMLInputElement>(sessionBlock, "#scale-qty").value = String(scale.qty);
@@ -231,6 +241,7 @@ function showChoices(data: SessionChoices | null): void {
 		option("", s.auto),
 		...ingredients.map((i) => option(i.id, i.name)),
 	);
+	el(sessionBlock, "#portions-row").hidden = data?.portions === undefined;
 	el(sessionBlock, "#bakers-row").hidden = !data?.bakersMath;
 	const stock = el(sessionBlock, "#stock");
 	const legend = el(stock, "legend");
@@ -270,6 +281,18 @@ if (sessionBlock) {
 				factor.value === "" || !(value > 0)
 					? null
 					: { type: "factor", value: value / 100 },
+		});
+	});
+	const portions = el<HTMLInputElement>(block, "#scale-portions");
+	portions.addEventListener("change", () => {
+		const base = choices?.portions;
+		const value = Number(portions.value);
+		if (base === undefined) return;
+		post({
+			scale:
+				portions.value === "" || !(value > 0)
+					? null
+					: { type: "factor", value: value / base },
 		});
 	});
 	target.addEventListener("change", () => {

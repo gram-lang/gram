@@ -244,7 +244,9 @@ export function sessionChoicesOf(
 		}
 	}
 	const scaleError = options.viewState?.scaleError;
+	const portions = Number.parseFloat(String(compilation.meta?.portions ?? ""));
 	return {
+		...(Number.isFinite(portions) && portions > 0 && { portions }),
 		ingredients,
 		imports,
 		bakersMath: options.bakersMath,

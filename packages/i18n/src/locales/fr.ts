@@ -26,6 +26,7 @@ export const fr: GramLocale = {
 		session: {
 			title: "Échelle et stock",
 			scale: "Échelle",
+			portions: "Portions",
 			byIngredient: "ou par ingrédient",
 			ingredient: "Choisir un ingrédient",
 			qty: "Quantité",
