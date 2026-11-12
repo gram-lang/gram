@@ -296,7 +296,7 @@ export const en = {
 		studioTitle: "Recipe settings",
 		settingsButton: "Settings",
 		settingsHint: {
-			text: "Hide the quantities in the steps, change the servings, plan a service… It all happens in Settings.",
+			text: "Adjust quantities, schedule service, customize the display… it all happens in Settings.",
 			dismiss: "Got it",
 		},
 		activeOptionsBadge: "{count} active",
@@ -305,12 +305,12 @@ export const en = {
 		openScheduleSettings: "Adjust schedule",
 		scheduleButton: "Schedule",
 		sections: {
-			schedule: "Schedule & Service",
-			scale: "Scale & Portions",
-			bakersMath: "Baker's math",
+			schedule: "Schedule",
+			scale: "Quantities",
+			bakersMath: "Baker's percentages",
 			display: "Display",
-			physics: "Physical analysis & Nutrition",
-			stock: "Stock & Modules",
+			physics: "Nutrition and mass",
+			stock: "Stocked bases",
 		},
 		badges: {
 			default: "Default",
