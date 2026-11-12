@@ -52,7 +52,8 @@ const database = {
 const analysisResult = analyze(compiled, database, {
   enableMassStandardization: true,
   enableYieldCalculation: true,
-  enableNutritionalEstimation: false
+  enableNutritionalEstimation: false,
+  enableBakersMath: true
 });
 
 console.log(analysisResult.result.metrics.totalMass);
@@ -69,7 +70,9 @@ console.log(analysisResult.result.shopping_list); // Purchasing mass auto-calcul
 *   `src/metrics.ts`: Computes global mass metrics and warning outputs.
 *   `src/ingredient_db.ts`: Handles database lookup maps and validation.
 *   `src/shopping_aggregation.ts`: Aggregates analyzed quantities into the final shopping list.
-*   `src/diff.ts`: Computes semantic diffs between two analyzed recipes.
+*   `src/diff.ts`: Computes semantic diffs between two analyzed recipes, comparing the total, idle and active times of their default schedule.
+*   `src/nutrients.ts`: The nutrients the analysis knows, and their units.
+*   `src/usage_selection.ts`: Resolves which usage of an item counts in the mass and nutrition totals.
 *   `src/schemas.ts`: Zod schemas for analyzer options and ingredient database entries.
 
 ---
