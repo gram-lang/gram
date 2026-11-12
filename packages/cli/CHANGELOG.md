@@ -4,102 +4,89 @@
 
 ### Minor Changes
 
-- 9737e58: **Analyzer / Diff**: `gram diff` now compares the total and idle times of the default schedule, with the mise en place right before each section, so the times it reports match what `gram view` shows by default; the active time is the schedule's too, so changing the range of a cooking time (`~{20-25min}`, planned on its longest figure) shows in the comparison, and the preparation time is compared as before
-- 4be3d19: **CLI / View & Export**: `gram view`, `gram export` and `gram print` accept a new `--mise-en-place <per-section|upfront|per-day>` option, to see the recipe with the mise en place planned right before each section (the default), all at the start, or at the start of each working day:
-
-  - The total and idle times shown follow the chosen option; the active and preparation times stay the same
-  - A new `--rests <shortest|balanced|longest>` option does the same for a wait written as a range (`~_{12-24h}`): the shortest by default, the middle or the longest, in the total time as in the length shown on the step itself
-  - `gram cook` accepts both options too, for the total time it shows; `--rests` also sets how long the timer of such a wait runs
-
-- ea80164: **CLI / Plan**: A new `gram plan <recipe>` command plans a recipe: the days of work, the visits to the kitchen, what to take out and which steps of each section to read:
+- **CLI / Plan**: A new `gram plan <recipe>` command plans a recipe: the days of work, the visits to the kitchen, what to take out and which steps of each section to read:
 
   - `--serve "2026-10-11 13:00"` plans it backward from the time it is served; without it, the plan is told in days before the service (D-2, D-1, day D) and ends with the earliest time it could be ready if you start now
-  - `--tz Europe/Paris` sets the time zone; by default it is the new `timezone` setting of `.gram/config.yaml` (or of your global config), and only then this machine's. `--available` says when you can cook, as many times as needed: `08:00-22:00` for every day, `fri=18:00-22:00` for a day of the week, `2026-10-09=none` for a date. By default it is the new `availability` setting of `.gram/config.yaml`, written the same way (`gram config set availability 08:00-22:00`), and only then all day
+  - `--tz Europe/Paris` sets the time zone and `--available` says when you can cook (`08:00-22:00` for every day, `fri=18:00-22:00` for a day of the week, `2026-10-09=none` for a date). By default they come from the new `timezone` and `availability` settings of `.gram/config.yaml` (`gram config set availability 08:00-22:00`), and only then from this machine
   - A wait written as a range (`~_{8-16h}`) is made longer or shorter to keep your own work out of the hours you are not available, and the plan says which one and why; what cannot be fixed is listed at the top
-  - `--find 2026-10-12/2026-10-15` lists the serving times that work between two moments, at your meal times (`--meal-times 12:30,20:00`, or the new `mealTimes` setting of `.gram/config.yaml`), best first, and why each of the others does not
-  - A date that does not exist (`--serve "2026-02-30 20:00"`, a 31st of April in `--find` or `--available`) and a `--now` that cannot be read are refused with a message saying what is expected, instead of planning for another day or stopping with an internal error
-  - `--format text|md|html|json` picks the output, and `--ics plan.ics` also writes a calendar file with an event for every visit to the kitchen, an alarm before it, and the lists in its description
-  - `--mise-en-place`, `--rests`, `--scale` and `--stock` work as they do in `gram view`; the mise en place mode also decides what goes in each visit's list of things to take out
-  - `gram export` and `gram print` render the run sheet instead of the recipe via `--view run-sheet` (the recipe remains the default), supporting `--serve`, `--tz`, and `--available`; without `--serve`, the schedule is organized in relative countdown days (`D-2`, `D-1`, `Day D`). The print document formats one day per page, and `gram export` automatically outputs to `<recipe>.run-sheet.md` (or `.html`, `.txt`) unless `--output` is specified
-  - `gram export --view run-sheet --format text` writes the run sheet as plain text, as `gram plan` prints it. Each view offers only the formats it has: asking the recipe for `--format text` says which formats it offers instead of writing something else
+  - `--find 2026-10-12/2026-10-15` lists the serving times that work between two moments, at your meal times (`--meal-times 12:30,20:00`, or the new `mealTimes` setting), best first, and why each of the others does not
+  - `--format text|md|html|json` picks the output, and `--ics plan.ics` also writes a calendar file with an event and an alarm for every visit to the kitchen
+  - `--mise-en-place`, `--rests`, `--scale` and `--stock` work as they do in `gram view`
 
-- a20f506: **CLI / Settings**: Every setting of a recipe now has a flag named after it, on every command where it changes something, with the same values and default as in the editor and the playground:
+- **CLI / Run sheet**: `gram export` and `gram print` can now write the run sheet instead of the recipe:
 
-  - `--step-quantities show|hide` on `gram print` and `gram export` chooses whether the quantities are written in the text of the steps (replaces `--no-step-qty`, which still works)
-  - `--nutrition-basis` is the new name of `--nutrition` on `gram view`, `gram print` and `gram export` (`--nutrition` still works)
+  - `--view run-sheet` (the recipe remains the default) supports `--serve`, `--tz` and `--available`; without `--serve`, the plan is told in days before the service (`D-2`, `D-1`, `Day D`)
+  - `gram export` writes `<recipe>.run-sheet.md` (or `.html`, `.txt`) next to the recipe unless `--output` is given, and `gram print` puts one day per page
+  - Each view offers only the formats it has: asking the recipe for `--format text` says which formats it offers instead of writing something else
+
+- **CLI / View & Export**: `gram view`, `gram export` and `gram print` accept a new `--mise-en-place <per-section|upfront|per-day>` option, to see the recipe with the mise en place planned right before each section (the default), all at the start, or at the start of each working day:
+
+  - A new `--rests <shortest|balanced|longest>` option does the same for a wait written as a range (`~_{12-24h}`): the shortest by default, the middle or the longest, in the total time as in the length shown on the step itself
+  - `gram cook` accepts both options too, for the total time it shows and the length of the timer of such a wait
+
+- **Analyzer / Diff**: `gram diff` now compares the total and idle times of the default schedule, with the mise en place right before each section, so the times it reports match what `gram view` shows by default; the active time is the schedule's too, so changing the range of a cooking time (`~{20-25min}`, planned on its longest figure) shows in the comparison, and the preparation time is compared as before
+- **CLI / Settings**: Every setting of a recipe now has a flag named after it, on every command where it changes something, with the same values and default as in the editor and the playground:
+
+  - `--step-quantities show|hide` and `--nutrition-basis` are the new names of `--no-step-qty` and `--nutrition`, which still work
   - What the analyzer computes can now be turned off on `gram view`, `gram print`, `gram export`, `gram cook`, `gram build`, `gram watch` and `gram shop`: `--no-mass-standardization`, `--no-yield-calculation`, `--no-nutrition-estimation` and `--no-bakers-math`; everything stays on by default
   - An unknown value stops the command and lists the values it accepts, under the name you typed
 
-- 7165632: **CLI / View**: `gram view` now shows the recipe the way every other view of Gram does, and in your language:
+- **Comments**: You can now choose whether the comments of a recipe (`// like this`) are shown or left out, in every view:
 
-  - The headings, the labels and the nutrition follow the language of your project, instead of always being English
-  - The text of each step repeats the quantity next to each ingredient (`flour (200 g)`), as in the exported recipe; `--step-quantities hide` (or `--no-step-qty`) leaves them out
-  - Comments are shown, as notes under the recipe; `--comments hide` leaves them out
-  - An ingredient with an alternative is written in full (`egg or egg substitute`) where it used to read "alternative", a section brought in from another module says where it comes from, and a nutrition table with nothing in it is no longer printed
-  - A wait written as a range (`8-16 h`) is shown as written, and the duration the schedule retains is left to the run sheet, so the `(~8h)` that followed such a step is gone
-  - The colors follow your terminal: nothing but plain text is written when the output goes to a file or another command, `NO_COLOR` is respected, and `FORCE_COLOR=1` keeps them for `gram view | less -R`
+  - The renderer takes a new `comments: "show" | "hide"` option (default `"show"`) that the recipe views, the print and the run sheet follow; hiding leaves no empty notes section behind
+  - `gram export`, `gram print` and `gram plan` accept `--comments <show|hide>`, and the editor has a new `gram.comments` setting for the preview and the run sheet; the playground gets a **Display** section with a switch
+  - In the run sheet, a note alone on a line sits under its step in small muted text, and one at the end of a line stays in the sentence, between parentheses
 
-- c653893: **Comments**: You can now choose whether the comments of a recipe (`// like this`) are shown or left out, in every view:
-
-  - The renderer takes a new `comments: "show" | "hide"` option (default `"show"`): the recipe views, the print and the run sheet all follow it, and hiding leaves no empty notes section behind
-  - `gram export`, `gram print` and `gram plan` accept `--comments <show|hide>`
-  - A new `gram.comments` setting does the same for the VS Code preview and run sheet, and the playground gets a **Display** section with a switch
-  - In the run sheet, comments are set apart discreetly: a note alone on a line sits under its step in small muted text, and one at the end of a line stays in the sentence, between parentheses
-
-- dc6899d: **Nutrition & Rendering**: The nutrition of the HTML recipe is now a compact table, like a European food label, and easy to reach from the top of the recipe:
+- **Renderer / Nutrition**: The nutrition of the HTML recipe is now a compact table, like a European food label, and easy to reach from the top of the recipe:
 
   - One column per basis, side by side (per 100 g, then per portion), with the energy as the first row in kJ and kcal and the whole recipe underneath; no more switching between bases
   - A `%RI` column gives each nutrient's share of the reference intake of an average adult (8,400 kJ / 2,000 kcal), per portion
   - The hero bar shows the energy (`493 kcal per portion`, or per 100 g when the recipe declares no portions); clicking it jumps to the table
-  - Sodium is now shown as salt, in grams (sodium × 2.5), and calories as energy, in every view and every language: the HTML and printed recipe, Markdown, plain text and the terminal
+  - Sodium is now shown as salt, in grams (sodium × 2.5), and calories as energy, in every view and every language
   - With the `nutritionBasis` setting set to one basis, the table and the hero bar show that basis alone
-  - The Markdown and plain text recipes show the same table by default (per 100 g and per portion side by side, the `%RI` column and the whole recipe underneath), instead of the values per portion only
-  - **Deprecated**: the `interactiveNutrition` option of the renderer no longer has any effect, since every basis is shown at once. Remove it; it will be removed in 2.0.0
+  - The Markdown and plain text recipes show the same table by default, instead of the values per portion only
 
-- 26171cc: **Rendering**: The recipe can now be written as plain text, for a terminal or a plain file:
+  **Deprecated**
 
-  - A box with the title, the servings and the times, then the shopping list, the cookware, each section with its ingredients and its numbered steps, the notes and the nutrition, with the quantities lined up in a column
-  - Every word is in the reader's language, and the text follows the same settings as the other formats (comments, quantities in the steps, baker's percentages, nutrition basis, mise en place and rests)
-  - `gram export --format text` writes it next to the recipe (`brioche.txt`), and the playground offers it as a format of the recipe
-  - The Markdown, HTML and print versions of the recipe now speak the reader's language too: "Instructions", "Ingredients", "Metadata", "Total Mass", "or", "optional", "passive" and the other words that were always in English now follow the language setting (`Étapes`, `Ingrédients`, `Métadonnées`, `ou`, `optionnel`... in French). The English output is unchanged, and the run sheet gets the same words
-  - For developers: `toText()` and the `text` format of the recipe view; a `textStyle` option lets a terminal add its own colors, and `width` sets the width of the box and the rules
+  - Renderer: the `interactiveNutrition` option no longer has any effect, since every basis is shown at once, and is removed in 2.0.0. Remove it from your calls
+
+- **Renderer / Text**: The recipe can now be written as plain text, for a terminal or a plain file:
+
+  - A box with the title, the servings and the times, then the shopping list, the cookware, each section with its numbered steps, the notes and the nutrition, in the reader's language and following the same settings as the other formats
+  - `gram export --format text` writes it next to the recipe (`brioche.txt`), and the playground offers it as a format of the recipe; for developers, `toText()` and the `text` format of the recipe view
+  - The Markdown, HTML and print versions of the recipe now speak the reader's language too: "Instructions", "Ingredients", "or", "optional" and the other words that were always in English follow the language setting (the English output is unchanged)
+
+- **CLI / View**: `gram view` now shows the recipe the way every other view of Gram does:
+
+  - The headings, the labels and the nutrition follow the language of your project, instead of always being English
+  - The steps repeat the quantity next to each ingredient (`flour (200 g)`), comments are shown as notes (`--comments hide` leaves them out), and a wait written as a range (`8-16 h`) is shown as written
+  - The colors follow your terminal: plain text when the output goes to a file or another command, `NO_COLOR` respected, `FORCE_COLOR=1` to keep them in `gram view | less -R`
 
 ### Patch Changes
 
-- 32927c6: **CLI**: Durations now read the same in `gram diff` and at the end of `gram cook` as in the rendered recipe (`1h 30min`, `45min`, `30s`), instead of a mix of `90 min` and `1h 30 min`.
-- a8633be: **CLI**: Every command now stops on an unexpected error the same way: a one-line message instead of a stack trace, which `--verbose` still shows.
-- 90af908: **CLI / Stock**: `gram view`, `gram cook`, `gram check`, `gram scale`, `gram export` and `gram print` now warn on stderr when a `--stock` entry matches none of the recipe's `@use`, as `gram build` and `gram shop` already did, instead of ignoring it silently — most often a relative path typed from another directory, since it is resolved from the current directory
-- Updated dependencies [9737e58]
-- Updated dependencies [c653893]
-- Updated dependencies [1639636]
-- Updated dependencies [9c6f1af]
-- Updated dependencies [62b6223]
-- Updated dependencies [e5694b0]
-- Updated dependencies [c653893]
-- Updated dependencies [588328e]
-- Updated dependencies [c653893]
-- Updated dependencies [a20f506]
-- Updated dependencies [067d607]
-- Updated dependencies [b195eb3]
-- Updated dependencies [b1a15f8]
-- Updated dependencies [dc6899d]
-- Updated dependencies [dc6899d]
-- Updated dependencies [32ba341]
-- Updated dependencies [12e7460]
-- Updated dependencies [dc6899d]
-- Updated dependencies [523a241]
-- Updated dependencies [26171cc]
-- Updated dependencies [c653893]
-- Updated dependencies [879594d]
-- Updated dependencies [a20f506]
-- Updated dependencies [c653893]
-- Updated dependencies [c156d56]
-- Updated dependencies [bdd85c5]
-  - @gram-lang/analyzer@1.4.0
+- **CLI / Stock**: `gram view`, `gram cook`, `gram check`, `gram scale`, `gram export` and `gram print` now warn on stderr when a `--stock` entry matches none of the recipe's `@use`, as `gram build` and `gram shop` already did, instead of ignoring it silently — most often a relative path typed from another directory, since it is resolved from the current directory
+- **CLI**: Every command now stops on an unexpected error the same way: a one-line message instead of a stack trace, which `--verbose` still shows.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
   - @gram-lang/renderer@1.4.0
-  - @gram-lang/i18n@1.4.0
-  - @gram-lang/kitchen@1.4.0
   - @gram-lang/scheduler@1.4.0
+  - @gram-lang/kitchen@1.4.0
+  - @gram-lang/analyzer@1.4.0
+  - @gram-lang/i18n@1.4.0
   - @gram-lang/modules@1.4.0
   - @gram-lang/format@1.4.0
   - @gram-lang/parser@1.4.0
