@@ -11,10 +11,5 @@ export function provideCodeLenses(_state: DocumentState): CodeLens[] {
 		command: Command.create("▶ Aperçu", "gram.showPreview"),
 	});
 
-	lenses.push({
-		range: topRange,
-		command: Command.create("📊 Macros", "gram.showNutrition"),
-	});
-
 	return lenses;
 }

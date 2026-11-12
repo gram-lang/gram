@@ -98,6 +98,8 @@ export interface SessionChoices {
 	ingredients: { id: string; name: string; qty?: number; unit?: string }[];
 	/** Every `@use` import of the recipe, nested ones included, that can be marked in stock. */
 	imports: { uri: string; specifier: string }[];
+	/** The number of portions the recipe is written for (`portions` in its metadata), when it is a number. */
+	portions?: number;
 	/** Whether baker's percentages are on (`gram.bakersMath`): the reference only matters then. */
 	bakersMath: boolean;
 	/** Why the session's scale could not be applied, when it could not. */

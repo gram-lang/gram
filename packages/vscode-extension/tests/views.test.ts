@@ -264,6 +264,7 @@ describe("the session of a recipe: scale, stock, baker's reference", () => {
 	const SESSION = {
 		title: "Échelle et stock",
 		scale: "Échelle",
+		portions: "Portions",
 		byIngredient: "ou par ingrédient",
 		ingredient: "Choisir",
 		qty: "Quantité",
@@ -353,6 +354,7 @@ describe("the session of a recipe: scale, stock, baker's reference", () => {
 		const page = webviewPage({ ...base, session: SESSION });
 		expect(page).toContain('id="session"');
 		expect(page).toContain('id="scale-factor"');
+		expect(page).toContain('id="scale-portions"');
 		expect(page).toContain("Auto &lt;@*&gt;");
 		expect(webviewPage(base)).not.toContain('id="session"');
 	});

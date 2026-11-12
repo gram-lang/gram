@@ -71,11 +71,6 @@
           "command": "gram.showRunSheet",
           "when": "resourceLangId == gram",
           "group": "navigation@2"
-        },
-        {
-          "command": "gram.showNutrition",
-          "when": "resourceLangId == gram",
-          "group": "navigation@3"
         }
       ]
     },

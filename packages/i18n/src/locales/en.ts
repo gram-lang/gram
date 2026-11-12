@@ -28,6 +28,7 @@ export const en = {
 		session: {
 			title: "Scale and stock",
 			scale: "Scale",
+			portions: "Portions",
 			byIngredient: "or by ingredient",
 			ingredient: "Choose an ingredient",
 			qty: "Quantity",

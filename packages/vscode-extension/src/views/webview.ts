@@ -70,6 +70,10 @@ export function webviewPage(options: WebviewPageOptions): string {
 			<label for="scale-factor">${escapeAttr(session.scale)}</label>
 			<input id="scale-factor" type="number" min="1" step="any" placeholder="100"> %
 		</div>
+		<div class="session-row" id="portions-row" hidden>
+			<label for="scale-portions">${escapeAttr(session.portions)}</label>
+			<input id="scale-portions" type="number" min="0" step="any">
+		</div>
 		<div class="session-row">
 			<label for="scale-target">${escapeAttr(session.byIngredient)}</label>
 			<select id="scale-target"><option value="">${escapeAttr(session.ingredient)}</option></select>
