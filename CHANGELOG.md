@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.4.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.3.0...v.1.4.0) - 2026-11-12
+## [1.4.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.3.0...v.1.4.0) - 2026-11-13
 
 ### New features
 - **Scheduler**: The planning engine now lives in its own package, `@gram-lang/scheduler`, which `@gram-lang/kitchen` uses. Compiled recipes keep every field published in 1.3.0, and everything `@gram-lang/kitchen` exported before is still exported from it:
