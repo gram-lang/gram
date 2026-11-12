@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
-// Safe release publisher: verifies git status, extracts release notes from CHANGELOG.md,
-// creates the annotated git tag, pushes to origin, and publishes the release on Forgejo via `tea`.
+// Safe release publisher: verifies git status, checks npm auth, publishes packages to npm
+// (with interactive 2FA), extracts release notes from CHANGELOG.md, creates the annotated
+// git tag, pushes to origin, and publishes the release on Forgejo via `tea`.
 
 import { execSync, spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
@@ -12,6 +13,7 @@ interface ReleaseOptions {
 	draft: boolean;
 	yes: boolean;
 	skipChecks: boolean;
+	skipNpm: boolean;
 	targetVersion?: string;
 }
 
@@ -22,6 +24,7 @@ function parseArgs(): ReleaseOptions {
 		draft: args.includes("--draft") || args.includes("-d"),
 		yes: args.includes("--yes") || args.includes("-y"),
 		skipChecks: args.includes("--skip-checks") || args.includes("--skip-ci"),
+		skipNpm: args.includes("--skip-npm"),
 		targetVersion: args.find((a) => !a.startsWith("-")),
 	};
 }
@@ -85,7 +88,18 @@ async function main() {
 		process.exit(1);
 	}
 
-	// 2. Check git branch is main
+	// 2. Check npm login status if publishing to npm
+	if (!options.skipNpm && !options.dryRun) {
+		try {
+			const npmUser = run("npm whoami");
+			console.log(`✓ npm authenticated as '${npmUser}'`);
+		} catch {
+			console.error("❌ Not logged into npm. Run `npm login` first, or pass `--skip-npm`.");
+			process.exit(1);
+		}
+	}
+
+	// 3. Check git branch is main
 	const currentBranch = run("git rev-parse --abbrev-ref HEAD");
 	if (currentBranch !== "main") {
 		console.warn(`⚠️  Current branch is '${currentBranch}', not 'main'.`);
@@ -102,7 +116,7 @@ async function main() {
 		console.log("✓ Git branch is 'main'");
 	}
 
-	// 3. Check git worktree is clean
+	// 4. Check git worktree is clean
 	const gitStatus = run("git status --porcelain");
 	if (gitStatus.length > 0) {
 		if (options.dryRun) {
@@ -117,7 +131,7 @@ async function main() {
 		console.log("✓ Git working tree is clean");
 	}
 
-	// 4. Run quality checks unless skipped
+	// 5. Run quality checks unless skipped
 	if (!options.skipChecks && !options.dryRun) {
 		console.log("\n🧪 Running quality gates (lint, typecheck, tests, conformance)...");
 		try {
@@ -130,12 +144,12 @@ async function main() {
 		}
 	}
 
-	// 5. Determine version and tag name
+	// 6. Determine version and tag name
 	const version = options.targetVersion || await getVersionFromPackages();
 	const tag = `v.${version}`;
 	console.log(`\n📦 Target version: ${version} (Git tag: ${tag})`);
 
-	// 6. Extract release notes from CHANGELOG.md
+	// 7. Extract release notes from CHANGELOG.md
 	const changelogContent = await readFile("./CHANGELOG.md", "utf-8");
 	let notes: string;
 	try {
@@ -151,19 +165,31 @@ async function main() {
 
 	if (options.dryRun) {
 		console.log("✨ [DRY RUN] Would perform:");
-		console.log(`  1. git tag -a ${tag} -m "chore: release ${tag}"`);
-		console.log(`  2. git push origin main --tags`);
-		console.log(`  3. tea release create --tag "${tag}" --title "${tag}" --note "<extracted notes>"${options.draft ? " --draft" : ""}`);
+		if (!options.skipNpm) {
+			console.log(`  1. Resolve workspace versions on disk (node scripts/resolve-workspace-versions.cjs)`);
+			console.log(`  2. Publish packages to npm (npx changeset publish) [interactive 2FA]`);
+			console.log(`  3. Restore workspace dependencies in package.json (git checkout -- packages/*/package.json)`);
+			console.log(`  4. git tag -a ${tag} -m "chore: release ${tag}"`);
+			console.log(`  5. git push origin main --tags`);
+			console.log(`  6. tea release create --tag "${tag}" --title "${tag}" --note "<extracted notes>"${options.draft ? " --draft" : ""}`);
+		} else {
+			console.log(`  1. git tag -a ${tag} -m "chore: release ${tag}"`);
+			console.log(`  2. git push origin main --tags`);
+			console.log(`  3. tea release create --tag "${tag}" --title "${tag}" --note "<extracted notes>"${options.draft ? " --draft" : ""}`);
+		}
 		console.log("\nDry run completed successfully. No changes were made.");
 		return;
 	}
 
-	// 7. Ask for explicit user confirmation
+	// 8. Ask for explicit user confirmation
 	if (!options.yes) {
 		const rl = createInterface({ input: stdin, output: stdout });
+		const actionDesc = options.skipNpm
+			? `create release ${tag} on Forgejo (skipping npm)`
+			: `publish to npm (interactive 2FA) and create release ${tag} on Forgejo`;
 		const promptMsg = options.draft
-			? `Publish release ${tag} as DRAFT on Forgejo? (y/N): `
-			: `Publish release ${tag} on Forgejo? (y/N): `;
+			? `Proceed to ${actionDesc} as DRAFT? (y/N): `
+			: `Proceed to ${actionDesc}? (y/N): `;
 		const answer = await rl.question(promptMsg);
 		rl.close();
 
@@ -173,7 +199,40 @@ async function main() {
 		}
 	}
 
-	// 8. Create git tag if it doesn't already exist
+	// 9. Publish packages to npm via changeset
+	if (!options.skipNpm) {
+		console.log("\n📦 Publishing packages to npm via changeset...");
+		let publishStatus = 0;
+
+		try {
+			console.log("   Resolving workspace:* versions in package.json manifests...");
+			run("node scripts/resolve-workspace-versions.cjs");
+
+			console.log("   Running changeset publish (enter 2FA code / WebAuthn if prompted)...");
+			const publishResult = spawnSync("npx", ["changeset", "publish"], { stdio: "inherit" });
+			publishStatus = publishResult.status ?? 1;
+		} catch (err) {
+			console.error("❌ Could not prepare or run the npm publication:", err);
+			publishStatus = 1;
+		} finally {
+			// Always restore workspace:* ranges on disk so git worktree stays clean.
+			// (Never call process.exit inside the try: it would skip this block.)
+			console.log("   Restoring package.json workspace dependencies...");
+			run("git checkout -- packages/*/package.json");
+		}
+
+		if (publishStatus !== 0) {
+			console.error(`\n❌ npm publication failed (exit code ${publishStatus}).`);
+			console.error("Aborting release: git tag was not pushed and Forgejo release was not created.");
+			console.error("Already published packages are skipped on re-run: fix the cause and run `bun run release` again.");
+			process.exit(publishStatus);
+		}
+		console.log("✓ Successfully published packages to npm.");
+	} else {
+		console.log("\n⏭️  Skipping npm publish (--skip-npm).");
+	}
+
+	// 10. Create git tag if it doesn't already exist
 	const existingTags = run("git tag -l").split("\n");
 	if (!existingTags.includes(tag)) {
 		console.log(`🏷️  Creating git tag ${tag}...`);
@@ -182,11 +241,11 @@ async function main() {
 		console.log(`ℹ️  Git tag ${tag} already exists locally.`);
 	}
 
-	// 9. Push commit and tags to origin
+	// 11. Push commit and tags to origin
 	console.log("🚀 Pushing to origin...");
 	run("git push origin main --tags", { stdio: "inherit" });
 
-	// 10. Create release on Forgejo via tea
+	// 12. Create release on Forgejo via tea
 	console.log("📢 Creating release on Forgejo via `tea`...");
 	const teaArgs = [
 		"release",

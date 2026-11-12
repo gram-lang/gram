@@ -5,8 +5,9 @@
 // (see getPublishTool in @changesets/cli) — it never resolves the bun/pnpm
 // workspace protocol itself. Left untouched, `workspace:*` ends up published
 // verbatim into the npm manifest, which breaks installation for consumers.
-// Run this once, right before `npx changeset publish`, against the CI clone
-// only — it never gets committed.
+// Run by `scripts/publish-release.ts` right before `npx changeset publish`.
+// It must never be committed: the release script restores the manifests
+// afterwards with `git checkout -- packages/*/package.json`.
 const fs = require("node:fs");
 const path = require("node:path");
 
