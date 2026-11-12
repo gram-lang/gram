@@ -10,7 +10,12 @@ body.vscode-high-contrast {
 	--color-surface: var(--vscode-editorWidget-background);
 	--color-surface-raised: var(--vscode-editorWidget-background);
 	--color-border: var(--vscode-widget-border);
-	--color-border-strong: var(--vscode-focusBorder);
+	/* A neutral gray, never the theme's blue focus border. */
+	--color-border-strong: color-mix(
+		in srgb,
+		var(--vscode-editor-foreground) 35%,
+		transparent
+	);
 	--color-text-muted: var(--vscode-descriptionForeground);
 	--color-text: var(--vscode-editor-foreground);
 	--color-text-strong: var(--vscode-editor-foreground);
