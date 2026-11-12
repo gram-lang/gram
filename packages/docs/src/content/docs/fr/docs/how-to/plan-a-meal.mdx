@@ -31,13 +31,13 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
 
    ## Mousse ->&mousse ~{-1d}
 
-   [Monter] Monter @crème{250g} avec @sucre{30g} et @lait{100g} au #batteur{} ~{10min}.
+   [Monter] Monter la @crème{250g} avec le @sucre{30g} et le @lait{100g} au #batteur{} pendant ~{10min}.
 
-   [Monter l'entremets] Superposer &biscuit, &insert et la mousse dans le #cercle de 20 cm{} ~{10min}, puis congeler ~_{12-48h}.
+   [Superposer] Le &biscuit, l'&insert et la mousse dans le #cercle{}(20 cm), puis congeler pendant ~_{12-48h}.
 
    ## Finition
 
-   [Démouler] Démouler l'entremets et le napper de &glaçage ~{5min}.
+   [Démouler] Démouler l'entremets et le napper avec le &glaçage.
 
    [Décongeler] Laisser décongeler au réfrigérateur ~_{6h}.
    ```
@@ -52,9 +52,9 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
 
    ## Biscuit ->&biscuit
 
-   [Mélanger] @pistaches{80g}, @œufs{3} et @sucre{60g} ~{10min}.
+   [Mélanger] Les @pistaches{80g}, les @œufs{3} et le @sucre{60g}.
 
-   [Cuire] Cuire à ^{180C} ~{12min}.
+   [Cuire] À ^{180C} pendant ~{12min}.
    ```
 
    ```gram title="bases/insert-framboise.gram"
@@ -64,9 +64,9 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
 
    ## Insert ->&insert
 
-   [Cuire] Cuire @framboises{200g} et @sucre{40g} ~{5min}.
+   [Cuire] Cuire les @framboises{200g} et le @sucre{40g} pendant ~{5min}.
 
-   [Congeler] Laisser prendre au congélateur ~_{12-72h}.
+   [Congeler] Laisser prendre au congélateur pour ~_{12-72h}.
    ```
 
    ```gram title="bases/glacage-blanc.gram"
@@ -76,7 +76,7 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
 
    ## Glaçage ->&glaçage
 
-   [Chauffer] Chauffer @chocolat blanc{150g} et @crème{100g} ~{5min}.
+   [Chauffer] Chauffer le @chocolat blanc{150g} et la @crème{100g} pendant ~{5min}.
    ```
 
    Les durées et les horaires affichés plus bas sont ceux que Gram calcule avec ces trois bases.
@@ -85,7 +85,7 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
    Pour approfondir la syntaxe des durées et des ancres, consultez [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes) ainsi que [Jours et heures](/fr/docs/reference/syntax/times/#jours-et-heures).
 
    :::tip
-   **Nommez vos étapes avec une `[Action]`** : Le plan de marche nomme les étapes et les fils d'attente d'après leur verbe d'action (ex. : `Mousse : Monter l'entremets 12h à 2j` dans la vue chronologique et pour les temps d'attente qui se poursuivent sans vous). Préfixer chaque étape minutée d'une `[Action]` garantit des intitulés explicites et parlants à ces endroits, plutôt que des durées isolées ou des libellés génériques comme `Repos`.
+   **Nommez vos étapes avec une `[Action]`** : Le plan de marche nomme les étapes et les fils d'attente d'après leur verbe d'action (ex. : `Mousse : Superposer 12h à 2j` dans la vue chronologique et pour les temps d'attente qui se poursuivent sans vous). Préfixer chaque étape minutée d'une `[Action]` garantit des intitulés explicites et parlants à ces endroits, plutôt que des durées isolées ou des libellés génériques comme `Repos`.
    :::
 
 2. ### Déterminer l'heure du service
@@ -98,11 +98,11 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
    ```
 
    ```text
-   jeudi 15 octobre 20:00 — début mar. 13:29 · 3 passages en cuisine · aucune attente ajustée
-   vendredi 16 octobre 20:00 — début mer. 13:29 · 3 passages en cuisine · aucune attente ajustée
-   samedi 17 octobre 20:00 — début jeu. 13:29 · 3 passages en cuisine · aucune attente ajustée
+   jeudi 15 octobre 20:00 — début mar. 13:37 · 3 passages en cuisine · aucune attente ajustée
+   vendredi 16 octobre 20:00 — début mer. 13:37 · 3 passages en cuisine · aucune attente ajustée
+   samedi 17 octobre 20:00 — début jeu. 13:37 · 3 passages en cuisine · aucune attente ajustée
    ...
-   jeudi 15 octobre 12:30 — impossible. Mise en place — Biscuit, vers mar. 06:00, tombe quand vous n'êtes pas disponible, et aucune attente ne peut bouger pour arranger ça. (+2)
+   jeudi 15 octobre 12:30 — impossible. Mise en place — Biscuit, vers mar. 06:05, tombe quand vous n'êtes pas disponible, et aucune attente ne peut bouger pour arranger ça. (+2)
    ```
 
    Les créneaux compatibles sont présentés en priorité (ceux qui demandent le moins d'ajustements de repos, puis le moins de passages en cuisine, puis les plus proches). Pour chaque créneau non retenu, Gram détaille la contrainte bloquante.
@@ -130,12 +130,12 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
    ```text
    Plan de marche — Entremets pistache framboise
    Pour le samedi 17 octobre à 20:00 · 6 portions
-   3 jours · 3 passages en cuisine · 1h 5min de travail en tout
+   3 jours · 3 passages en cuisine · 45min de travail en tout
 
-   JEU. 15  ▮ 13:30 – 14:00 Biscuit, Insert
+   JEU. 15  ▮ 13:35 – 14:00 Biscuit, Insert
             ┆ Insert : Congeler 12h à 3j
-   VEN. 16  ▮ 13:35 – 14:00 Mousse
-            ┆ Mousse : Monter l'entremets 12h à 2j
+   VEN. 16  ▮ 13:40 – 14:00 Mousse
+            ┆ Mousse : Superposer 12h à 2j
    SAM. 17  ▮ 13:55 – 14:00 Finition
             ┆ Finition : Décongeler 6h
             ★ 20:00         Servir
@@ -153,16 +153,20 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
    #### Le détail jour par jour
    Chaque passage dispose ensuite de sa propre fiche d'action, rangée sous la journée où il a lieu :
 
-   - **Mise en place** : les ingrédients requis, les préparations issues d'un passage précédent (`Biscuit, fait jeudi`), les éléments préexistants (`glaçage, en stock`) et le matériel nécessaire, mentionné une seule fois par passage avec le nombre d'exemplaires et la taille quand la recette les précise (`moule à tarte (24cm)`, `plaque ×2`). Quand la [standardisation des masses](/fr/docs/reference/api/analyzer/) est activée, un ingrédient écrit en tasses, en cuillères ou en millilitres affiche aussi son poids (`farine 2 cup · 260.3 g`), additionné quand plusieurs sections l'utilisent. Cochez-les au fur et à mesure de vos préparatifs. Leur disposition varie selon votre [mode de mise en place](/fr/docs/explanation/mise-en-place-and-planning/) : par section (mode par défaut), chaque section forme un poste avec sa propre mise en place, juste au-dessus de ses étapes, et le matériel n'est mentionné qu'une fois, lors de la première section qui l'utilise ; par journée de travail, un bloc en haut de passage cumule les ingrédients bruts (ex. `sucre 90 g (60 + 30)`) ; en amont (`upfront`), ce bloc rassemble tous les ingrédients bruts dès le premier passage. Une préparation, quant à elle, est toujours listée lors du premier passage où elle est utilisée.
-   - **Exécution** : les étapes de chaque section, détaillées comme dans la recette et numérotées à l'identique, avec leur action, leurs températures et leurs minuteurs, ainsi que l'heure à laquelle la section commence (`Début : 13:40`, uniquement lorsque le plan de marche comporte une heure de service). Une section importée indique son fichier source, une section qui se poursuit depuis un passage précédent porte la mention « suite », et une note isolée reste là où la recette la place. La mise en place comporte des cases à cocher, contrairement aux étapes.
+   - **Mise en place** : tout ce qu'il faut rassembler et peser avant d'entamer les manipulations :
+     - *Ingrédients bruts* : chaque ingrédient avec sa quantité à cocher au fur et à mesure. Lorsque la [standardisation des masses](/fr/docs/reference/api/analyzer/) est active, les volumes indiquent aussi leur équivalent en grammes (`farine 2 cup · 260.3 g`).
+     - *Préparations intermédiaires* : les composants confectionnés lors d'un passage précédent (`Biscuit, fait jeudi`) ou déjà prêts (`glaçage, en stock`).
+     - *Matériel* : mentionné une seule fois par passage, avec le nombre d'exemplaires et la taille (`moule à tarte (24cm)`, `plaque ×2`).
+     - *Organisation* : présentée par section (par défaut), par journée de travail (`per-day`), ou groupée tout au début (`upfront`), selon votre [mode de mise en place](/fr/docs/explanation/planning/#les-trois-stratégies-de-mise-en-place).
+   - **Exécution** : les étapes de chaque section, détaillées comme dans la recette et numérotées à l'identique, avec leur action, leurs températures et leurs minuteurs, ainsi que l'heure à laquelle la section commence (`Début : 13:40`).
    - **En partant** : les processus passifs qui continuent sans surveillance et l'horaire précis de votre prochain passage en cuisine.
-   - **Possible dès... / Début non avançable** : indique la marge d'anticipation possible pour ce passage sans perturber le reste de la recette, ou nomme l'attente qui bloque son horaire (par exemple un repos de 2 h qui doit se terminer au service).
-   - **Ajustements de repos** : tout temps d'attente passif que le moteur a dû prolonger ou raccourcir pour respecter vos plages disponibles est signalé en tête de la journée concernée.
+   - **Possible dès... / Début non avançable** : la marge d'anticipation permise pour ce passage sans perturber le reste du calendrier.
+   - **Ajustements de repos** : les éventuelles attentes passives que Gram a adaptées pour respecter vos plages de disponibilité.
 
    ```text
-   VENDREDI 16 OCTOBRE  13:35 → 14:00
+   VENDREDI 16 OCTOBRE  13:40 → 14:00
      Possible dès 08:00.
-     MOUSSE (Début : 13:40)
+     MOUSSE (Début : 13:50)
        Mise en place
          [ ] crème 250 g
          [ ] sucre 30 g
@@ -170,12 +174,12 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
          [ ] Biscuit, fait jeudi
          [ ] Insert, fait jeudi
          [ ] batteur
-         [ ] cercle de 20 cm
+         [ ] cercle (20 cm)
        Exécution
-         1. [Monter] Monter crème avec sucre et lait au batteur 10 min.
-         2. [Monter l'entremets] Superposer biscuit, insert et la mousse dans le cercle de 20 cm 10 min, puis congeler 12-48 h.
+         1. [Monter] Monter la crème avec le sucre et le lait au batteur pendant 10 min.
+         2. [Superposer] Le biscuit, l'insert et la mousse dans le cercle, puis congeler pendant 12-48 h.
      EN PARTANT
-       Mousse : Monter l'entremets 12h à 2j, jusqu'à 02:00
+       Mousse : Superposer 12h à 2j, jusqu'à 02:00
      Prochain passage : samedi 13:55
    ```
 
@@ -183,7 +187,7 @@ La recette décrit **comment** réaliser chaque étape. Le plan de marche, lui, 
 
    Dans « En partant », `jusqu'à 02:00` est l'heure à laquelle l'attente peut se terminer **au plus tôt** (14 h + 12 h), pas celle où elle s'arrête : la mousse doit être sortie du congélateur avant la finition, le samedi. Entre les deux, elle reste au congélateur environ 24 h, dans sa fourchette de 12 à 48 h.
 
-   Si certaines contraintes s'avèrent impossibles à résoudre (démarrage dans le passé, travail hors de vos plages autorisées ou repos incompatible), Gram les regroupe dans une section **« À régler »** en en-tête. Pour en savoir plus, consultez [Diagnostics et contraintes non résolues](/fr/docs/explanation/planning-in-real-time/#diagnostics-et-contraintes-non-résolues).
+   Si certaines contraintes s'avèrent impossibles à résoudre (démarrage dans le passé, travail hors de vos plages autorisées ou repos incompatible), Gram les regroupe dans une section **« À régler »** en en-tête. Pour en savoir plus, consultez [Diagnostics et contraintes non résolues](/fr/docs/explanation/planning/#diagnostics-et-contraintes-non-résolues).
 
 5. ### Exporter, imprimer ou synchroniser le plan de marche
 
@@ -254,9 +258,9 @@ Le texte ci-dessus n'est qu'un mode de présentation parmi d'autres : l'ordonnan
     href="/fr/docs/explanation/engine/scheduler/"
   />
   <LinkCard
-    title="Planifier en heures réelles"
-    description="Comment l'heure de service, vos plages de disponibilité et les fourchettes de repos se transforment en un calendrier concret."
-    href="/fr/docs/explanation/planning-in-real-time/"
+    title="Planification et plan de marche"
+    description="Modes de mise en place, découpage multi-jours, disponibilités et ajustements de repos."
+    href="/fr/docs/explanation/planning/"
   />
   <LinkCard
     title="Référence de l'API scheduler"

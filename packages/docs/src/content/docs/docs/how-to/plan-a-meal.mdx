@@ -31,13 +31,13 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
 
    ## Mousse ->&mousse ~{-1d}
 
-   [Whip] Whip @cream{250g} with @sugar{30g} and @milk{100g} using the #stand mixer{} ~{10min}.
+   [Whip] Whip @cream{250g} with @sugar{30g} and @milk{100g} using the #stand mixer{} for ~{10min}.
 
-   [Assemble] Layer &sponge, &insert and the mousse in the #20 cm ring{} ~{10min}, then freeze ~_{12-48h}.
+   [Layer] The &sponge, &insert and mousse in the #ring{}(20 cm), then freeze for ~_{12-48h}.
 
    ## Finish
 
-   [Unmould] Unmould the entremets and cover it with &glaze ~{5min}.
+   [Unmould] Unmould the entremets and glaze with &glaze.
 
    [Thaw] Thaw in the fridge for ~_{6h}.
    ```
@@ -52,9 +52,9 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
 
    ## Sponge ->&sponge
 
-   [Mix] Mix @pistachios{80g}, @eggs{3} and @sugar{60g} ~{10min}.
+   [Mix] Mix @pistachios{80g}, @eggs{3} and @sugar{60g}.
 
-   [Bake] Bake at ^{180C} ~{12min}.
+   [Bake] Bake at ^{180C} for ~{12min}.
    ```
 
    ```gram title="bases/raspberry-insert.gram"
@@ -64,9 +64,9 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
 
    ## Insert ->&insert
 
-   [Cook] Cook @raspberries{200g} and @sugar{40g} ~{5min}.
+   [Cook] Cook @raspberries{200g} and @sugar{40g} for ~{5min}.
 
-   [Freeze] Let it set in the freezer ~_{12-72h}.
+   [Freeze] Freeze for ~_{12-72h}.
    ```
 
    ```gram title="bases/white-chocolate-glaze.gram"
@@ -76,7 +76,7 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
 
    ## Glaze ->&glaze
 
-   [Heat] Heat @white chocolate{150g} and @cream{100g} ~{5min}.
+   [Heat] Heat @white chocolate{150g} and @cream{100g} for ~{5min}.
    ```
 
    The durations and times shown below are the ones Gram computes with these three bases.
@@ -85,7 +85,7 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
    See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges) and [Days and hours](/docs/reference/syntax/times/#days-and-hours).
 
    :::tip
-   **Name your steps with `[Action]`**: The run sheet names steps and background threads after their actions (e.g. `Mousse : Assemble 12h to 2d` in the timeline and in the waits you leave running). Prefixing each step that carries a timer or wait with an `[Action]` ensures clear, descriptive labels there rather than raw durations or generic fallbacks like `Rest`.
+   **Name your steps with an `[Action]`**: The run sheet names steps and background threads after their actions (e.g. `Mousse : Layer 12h to 2d` in the timeline and in the waits you leave running). Prefixing each step that carries a timer or wait with an `[Action]` ensures clear, descriptive labels there rather than raw durations or generic fallbacks like `Rest`.
    :::
 
 2. ### Choose when to serve
@@ -98,11 +98,11 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
    ```
 
    ```text
-   Thursday, October 15 20:00 — start Tue 13:29 · 3 visits to the kitchen · no wait adjusted
-   Friday, October 16 20:00 — start Wed 13:29 · 3 visits to the kitchen · no wait adjusted
-   Saturday, October 17 20:00 — start Thu 13:29 · 3 visits to the kitchen · no wait adjusted
+   Thursday, October 15 20:00 — start Tue 13:37 · 3 visits to the kitchen · no wait adjusted
+   Friday, October 16 20:00 — start Wed 13:37 · 3 visits to the kitchen · no wait adjusted
+   Saturday, October 17 20:00 — start Thu 13:37 · 3 visits to the kitchen · no wait adjusted
    ...
-   Thursday, October 15 12:30 — not possible. Mise en place — Sponge, around Tue 06:00, falls when you are not available, and no wait can be moved to fix it. (+2)
+   Thursday, October 15 12:30 — not possible. Mise en place — Sponge, around Tue 06:05, falls when you are not available, and no wait can be moved to fix it. (+2)
    ```
 
    Compatible options are listed first (prioritizing fewer adjusted waits, then fewer visits, then the earliest dates). For each incompatible slot, Gram explains the blocking constraint.
@@ -130,12 +130,12 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
    ```text
    Run sheet — Pistachio raspberry entremets
    For Saturday, October 17 at 20:00 · 6 portions
-   3 days · 3 visits to the kitchen · 1h 5min of work in all
+   3 days · 3 visits to the kitchen · 45min of work in all
 
-   THU 15   ▮ 13:30 – 14:00 Sponge, Insert
+   THU 15   ▮ 13:35 – 14:00 Sponge, Insert
             ┆ Insert : Freeze 12h to 3d
-   FRI 16   ▮ 13:35 – 14:00 Mousse
-            ┆ Mousse : Assemble 12h to 2d
+   FRI 16   ▮ 13:40 – 14:00 Mousse
+            ┆ Mousse : Layer 12h to 2d
    SAT 17   ▮ 13:55 – 14:00 Finish
             ┆ Finish : Thaw 6h
             ★ 20:00         Serve
@@ -153,16 +153,20 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
    #### Day-by-day detail
    Each visit has its own actionable checklist, grouped under the day it falls on:
 
-   - **Mise en place**: the required ingredients, preparations made during an earlier visit (`Sponge, made Thursday`), stocked items (`glaze, in stock`), and cookware, which is listed once per visit with how many you need and its size when the recipe says so (`tart tin (24cm)`, `tray ×2`). When the [mass standardization](/docs/reference/api/analyzer/) is on, an ingredient written in cups, spoons or millilitres also shows its weight (`flour 2 cup · 260.3 g`), summed when several sections use it. Check them off while you set up. Where it goes follows your [mise en place mode](/docs/explanation/mise-en-place-and-planning/): by section (the default), each section is a station with its own mise en place, right above its steps, and the cookware is named once, at the first section that uses it; per working day, one block at the top of the visit sums the raw ingredients (e.g. `sugar 90 g (60 + 30)`); upfront, that block holds everything raw at the first visit. A preparation is always listed at the visit of the first step that uses it.
-   - **Execution**: the steps of each section, written out as in the recipe and numbered the same way, with their action, temperatures and timers, and the time the section starts (`Start: 13:40`, only when the plan has a serving time). A section that comes from an import names its source file, a section that goes on from an earlier visit is marked "continued", and a standalone note stays where the recipe puts it. The mise en place has check boxes; the steps do not.
+   - **Mise en place**: everything to measure and set up before starting tasks:
+     - *Raw ingredients*: check off each ingredient as you weigh it. When [mass standardization](/docs/reference/api/analyzer/) is active, volume quantities also display their gram equivalent (`flour 2 cup · 260.3 g`).
+     - *Intermediate preparations*: components made during an earlier visit (`Sponge, made Thursday`) or stocked items (`glaze, in stock`).
+     - *Cookware*: listed once per visit with quantity and size (`tart tin (24cm)`, `tray ×2`).
+     - *Layout*: organized by section (default), per working day (`per-day`), or upfront (`upfront`), following your [mise en place mode](/docs/explanation/planning/#the-three-mise-en-place-strategies).
+   - **Execution**: the steps of each section, written out as in the recipe and numbered the same way, with their action, temperatures and timers, and the time the section starts (`Start: 13:40`).
    - **Before leaving**: passive processes that continue unattended, and the exact time of your next kitchen visit.
-   - **Possible from... / Can't start earlier**: shows how early this visit could start without affecting the rest of the schedule, or names the wait that holds it in place (for example, a 2 h chill that must end when you serve).
+   - **Possible from... / Can't start earlier**: shows how early this visit could start without affecting the rest of the schedule.
    - **Adjusted waits**: any passive rest that the scheduler shortened or lengthened to fit your available hours is reported at the top of that day.
 
    ```text
-   FRIDAY, OCTOBER 16  13:35 → 14:00
+   FRIDAY, OCTOBER 16  13:40 → 14:00
      Possible from 08:00.
-     MOUSSE (Start: 13:40)
+     MOUSSE (Start: 13:50)
        Mise en place
          [ ] cream 250 g
          [ ] sugar 30 g
@@ -170,12 +174,12 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
          [ ] Sponge, made Thursday
          [ ] Insert, made Thursday
          [ ] stand mixer
-         [ ] 20 cm ring
+         [ ] ring (20 cm)
        Execution
-         1. [Whip] Whip cream with sugar and milk using the stand mixer 10 min.
-         2. [Assemble] Layer sponge, insert and the mousse in the 20 cm ring 10 min, then freeze 12-48 h.
+         1. [Whip] Whip cream with sugar and milk using the stand mixer for 10 min.
+         2. [Layer] The sponge, insert and mousse in the ring, then freeze for 12-48 h.
      BEFORE LEAVING
-       Mousse : Assemble 12h to 2d, until 02:00
+       Mousse : Layer 12h to 2d, until 02:00
      Next visit: Saturday 13:55
    ```
 
@@ -183,7 +187,7 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
 
    In "Before leaving", `until 02:00` is the time the wait can end **at the earliest** (2 p.m. + 12 h), not the time it stops: the mousse must come out of the freezer before the finish, on Saturday. In between it stays in the freezer about 24 h, within its 12 to 48 h range.
 
-   Any constraints the engine could not resolve (a start time already in the past, work outside your available hours, or an incompatible rest) are listed under **"To fix"** at the top. See [Diagnostics and unresolved constraints](/docs/explanation/planning-in-real-time/#diagnostics-and-unresolved-constraints).
+   Any constraints the engine could not resolve (a start time already in the past, work outside your available hours, or an incompatible rest) are listed under **"To fix"** at the top. See [Diagnostics and unresolved constraints](/docs/explanation/planning/#diagnostics-and-unresolved-constraints).
 
 5. ### Export, print, or sync your calendar
 
@@ -254,9 +258,9 @@ The plain text output above is only one presentation layer: the scheduler produc
     href="/docs/explanation/engine/scheduler/"
   />
   <LinkCard
-    title="Planning in real time"
-    description="How the serving time, your availability and the ranges turn into a calendar."
-    href="/docs/explanation/planning-in-real-time/"
+    title="Planning and run sheets"
+    description="Mise en place modes, multi-day recipes, kitchen availability, and rest adjustments."
+    href="/docs/explanation/planning/"
   />
   <LinkCard
     title="Scheduler API reference"

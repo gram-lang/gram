@@ -11,7 +11,7 @@ import Term from '../../../../../components/Term.astro';
 
 Gram's scheduling engine takes an agnostic **task graph** (the `tasks` field of a compiled recipe) and answers two fundamental questions: how do these tasks lay out chronologically (`layout`), and precisely when should each task begin, given a target serving time and cooking availability (`project`).
 
-The scheduler has no knowledge of the AST or the `.gram` syntax, operating solely on the neutral task graph. See [The scheduling engine](/docs/explanation/engine/scheduler/) for how its architecture works and [Planning in real time](/docs/explanation/planning-in-real-time/) for practical usage.
+The scheduler has no knowledge of the AST or the `.gram` syntax, operating solely on the neutral task graph. See [The scheduling engine](/docs/explanation/engine/scheduler/) for how its architecture works and [Planning and run sheets](/docs/explanation/planning/) for practical usage.
 
 :::note[Pure functions and determinism]
 Every function in the engine is pure: identical inputs always yield identical outputs. Nothing is read from the runtime environment (no system clock, no host time zone), and input arguments are never mutated.
@@ -240,7 +240,7 @@ type ProjectionDiagnostic =
   | { code: "MULTI_RECIPE_UNSUPPORTED"; recipes: number };
 ```
 
-These diagnostics depend on the user's execution context: they are included directly in the `ProjectedPlan` result rather than being compiler warnings. See [Planning in real time](/docs/explanation/planning-in-real-time/#diagnostics-and-unresolved-constraints) for a detailed breakdown of each code.
+These diagnostics depend on the user's execution context: they are included directly in the `ProjectedPlan` result rather than being compiler warnings. See [Planning and run sheets](/docs/explanation/planning/#diagnostics-and-unresolved-constraints) for a detailed breakdown of each code.
 
 ## `runSheet`
 
@@ -414,9 +414,9 @@ A date that does not exist (a 30th of February, a 31st of April) is refused with
 
 <CardGrid>
   <LinkCard
-    title="Planning in real time"
+    title="Planning and run sheets"
     description="Understand how target serving times and availability constraints form a prep timeline."
-    href="/docs/explanation/planning-in-real-time/"
+    href="/docs/explanation/planning/"
   />
   <LinkCard
     title="The scheduling engine"
