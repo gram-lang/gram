@@ -40,7 +40,6 @@ attachTooltips(content);
 const banner = el(document, "#banner");
 
 function showMacros(): void {
-	document.body.classList.add("show-macros");
 	document
 		.querySelector(".nutrition-panel")
 		?.scrollIntoView({ behavior: "smooth" });
@@ -49,6 +48,8 @@ function showMacros(): void {
 function show(next: Content): void {
 	content.className = "";
 	document.body.classList.toggle("gram-preview", next.type === "html");
+	// The macros are always shown, as in the playground.
+	document.body.classList.toggle("show-macros", next.type === "html");
 	if (next.type === "html" || next.type === "tree") {
 		content.innerHTML = next.html;
 	} else if (next.type === "code") {

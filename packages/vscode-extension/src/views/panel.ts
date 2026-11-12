@@ -235,7 +235,7 @@ export class ViewPanel {
 		);
 	}
 
-	/** Scrolls the recipe to its nutrition panel, now or once the page is ready. */
+	/** `Gram: Macros`: scrolls the recipe to its nutrition panel, now or once the page is ready. */
 	showMacros(): void {
 		if (!this.ready) {
 			this.macrosPending = true;
