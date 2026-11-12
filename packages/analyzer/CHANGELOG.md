@@ -1,5 +1,35 @@
 # @gram-lang/analyzer
 
+## 1.4.0
+
+### Minor Changes
+
+- 9737e58: **Analyzer / Diff**: `gram diff` now compares the total and idle times of the default schedule, with the mise en place right before each section, so the times it reports match what `gram view` shows by default; the active time is the schedule's too, so changing the range of a cooking time (`~{20-25min}`, planned on its longest figure) shows in the comparison, and the preparation time is compared as before
+
+### Patch Changes
+
+- Updated dependencies [c653893]
+- Updated dependencies [1639636]
+- Updated dependencies [9c6f1af]
+- Updated dependencies [62b6223]
+- Updated dependencies [e5694b0]
+- Updated dependencies [c653893]
+- Updated dependencies [588328e]
+- Updated dependencies [a20f506]
+- Updated dependencies [067d607]
+- Updated dependencies [b195eb3]
+- Updated dependencies [b1a15f8]
+- Updated dependencies [dc6899d]
+- Updated dependencies [12e7460]
+- Updated dependencies [dc6899d]
+- Updated dependencies [26171cc]
+- Updated dependencies [c653893]
+- Updated dependencies [c156d56]
+- Updated dependencies [bdd85c5]
+  - @gram-lang/i18n@1.4.0
+  - @gram-lang/kitchen@1.4.0
+  - @gram-lang/parser@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes

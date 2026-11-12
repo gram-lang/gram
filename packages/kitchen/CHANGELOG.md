@@ -1,5 +1,77 @@
 # @gram-lang/kitchen
 
+## 1.4.0
+
+### Minor Changes
+
+- 62b6223: **Kitchen**: A duration longer than 1000 years (a timer, or a section's retro-planning offset) no longer breaks the timeline:
+
+  - It is capped at 1000 years and the compiler warns with the new `DURATION_OUT_OF_RANGE` code; before, the times came out as `0` minutes, `Infinity` or `NaN` (`null` in the JSON) without any warning. Durations up to the limit are planned as written
+  - `quantityToMinutes` caps its result the same way, and `MAX_DURATION_MINUTES`, `isDurationTooLong` and `maxDurationIn` are exported
+
+- e5694b0: **Kitchen**: Recipes now know when each part of the mise en place should happen:
+
+  - Each section reports how long its own preparation takes (new `miseEnPlace` field)
+  - A recipe carries its list of tasks and what each one waits for (new `tasks` field), and a default timeline laid out from it (new `schedule` field): the preparation right before each section, the shortest rests
+  - Any other timeline comes from the same list, without compiling again: all the preparation at the start (`upfront`), or the preparation of each working day gathered at the start of that day (`perDay`, for recipes over several days), with the shortest, middle or longest of every rest written as a range (new `layout()`, from `@gram-lang/scheduler`)
+  - A timer is exact: `~_{12h}` lasts exactly 12 hours. A rest written as a range (`~_{12-24h}`) is planned on its shortest figure unless you pick another; an active timer written as a range (`~{20-25min}`) is always planned on its longest, so dinner is never late
+  - Only an anchor in days (`~{-1d}`, `~{-2d}`) opens a working day; an anchor in hours (`~{-18h}`, `~{-36h}`) is a deadline inside the day the section falls on. A section without an anchor takes the day of the furthest anchor in days after it, and a recipe with no anchor in days is a single working day, like `upfront`
+  - A new `DAY_OVERFLOW` warning flags a working day pushed before its 24 hours by a long rest, and suggests anchoring the section further back
+  - Every timeline lists its working days in a new `days` field, and a preparation planned later than the rest of its section's (an intermediate made the same day) is flagged `deferred`
+  - A section without any step carries no preparation time (its share moves to the first section that has steps), so a recipe with no step at all now has a preparation time of 0
+  - An intermediate (`&dough`) is gathered in the section that uses it, whether it is declared on the section title or at the end of a step
+  - An ingredient, a piece of cookware and an alternative (`a|b`) that share a name are no longer mixed up when splitting the preparation by section
+  - New `computeMiseEnPlace(sections, registry)` gives the same split as the `miseEnPlace` field for sections you built yourself, and `calculatePreparationTime` can take its result as an optional third argument
+  - New `MiseEnPlaceMode`, `MISE_EN_PLACE_MODES`, `DEFAULT_MISE_EN_PLACE_MODE`, `isMiseEnPlaceMode`, `RestChoice`, `REST_CHOICES`, `scheduleFor` and `scheduleTimes` to choose between the timelines the same way everywhere (the renderer keeps re-exporting `MiseEnPlaceMode`)
+  - JSON compiled before 1.4.0, which has no `tasks`, still gets a total and idle time, read from its old `metrics` fields, in the renderer outputs, the editor hint and `gram diff`
+  - The compiled recipe now says which version produced it (new `generator` field)
+
+  **Deprecated**
+
+  - Kitchen: `steps[].timings` and `steps[].backgroundTasks`, removed in 2.0.0. Read the `step` and `passive` blocks of `schedule.blocks` instead
+  - Kitchen: `metrics.totalTime` and `metrics.idleTime`, removed in 2.0.0. Read `schedule.totalTime` and `schedule.idleTime` instead (the old `metrics.totalTime` is the total with every preparation first: `layout(tasks, { miseEnPlace: "upfront" })` gives the same number unless the recipe has intermediates, which it prepares once they exist)
+  - Kitchen: `metrics.activeTime`, removed in 2.0.0. Read `schedule.activeTime` instead (a timer written as a range counts as its average in `metrics.activeTime`, and as its longest figure in the schedule)
+  - Kitchen: `metrics.activeBreakdown`, `metrics.prepBreakdown` and `metrics.totalBreakdown`, removed in 2.0.0. Use `miseEnPlace` and `schedule` instead
+  - Kitchen: the `breakdown` returned by `calculatePreparationTime`, removed in 2.0.0 (the function then returns `{ total }`, so code reading `total` is unaffected). Read the `items` of `computeMiseEnPlace()` instead
+  - Kitchen: reading the old `metrics` fields when compiled JSON has no `tasks` (JSON compiled before 1.4.0), removed in 2.0.0. Compile your recipes again with 1.4.0 or later
+  - Everything above keeps working, with the same values, until 2.0.0. The Deprecated features page shows what to change for each of them: https://gram-lang.org/docs/how-to/deprecations/
+
+- c653893: **Kitchen**: A new `PASSIVE_OVERLAP_SAME_COOKWARE` notice flags two passive timers that overlap in steps citing the same cookware (`#oven` in both) with no named track in common, and suggests a named track so they take turns; it is informational, since two trays can share an oven
+- c156d56: **Scheduler**: The planning engine now lives in its own package, `@gram-lang/scheduler`, which `@gram-lang/kitchen` uses:
+
+  - `layout(tasks, { miseEnPlace, rests })` lays a recipe's list of tasks out on a timeline, for any mise en place plan and any choice of waits, and reports what cannot work (a time paradox, a track contention, a working day pushed before its 24 hours)
+  - The choices (`MISE_EN_PLACE_MODES`, `REST_CHOICES`, their defaults and guards) and the task types (`TaskGraph`, `Task`, `TaskDuration`) are exported too
+  - Compiled recipes keep every field published in 1.3.0 unchanged, and everything `@gram-lang/kitchen` exported before is still exported from it
+  - `project(recipes, context)` places a recipe on the calendar: it takes a serving time, a time zone and when the cook is available, and returns each task with its date and time (UTC and local), stretching or shortening the waits written as a range so the cook's own work avoids the night, and reporting what it could not fix
+  - `runSheet(plan)` groups a plan, or a bare schedule, into the days of the recipe (and says which mise en place mode it was made in), the visits to the kitchen (a wait of an hour or more ends one) and the waits that go on without the cook; with the graph and the context, it also says how early each visit could be done, and which exact wait holds it in place; each visit also says when each of its sections starts (`sectionStarts`)
+  - `findServeTimes()` tries each day of a range at your meal times and ranks the serving times that work, with the reasons of the others; `earliestServe()` gives the first one that works if the cook starts now
+  - `parseAvailability(entries)` reads when the cook is available from entries like `08:00-22:00`, `fri=18:00-22:00` or `2026-10-09=none` (the syntax of `gram plan --available` and of the `availability` setting), and says which part is wrong when it cannot
+  - `isTimeZone()`, `parseMealTimes()` and `availabilityEntries()` check a time zone, meal times written "HH:MM" and the entries of an `availability` setting, so the CLI and the editor read a project's settings the same way
+  - `isCalendarDate("2026-02-30")` tells a real day from a string that only looks like one; the scheduler refuses a date that does not exist (a 30th of February, a 31st of April) everywhere it reads one, instead of moving it to the next month
+
+### Patch Changes
+
+- 9c6f1af: **Kitchen**: Scaling an already compiled recipe (`applyScale`) now also scales the quantity a step quotes for an intermediate (`Use &dough{100g}`), so it gives the same result as compiling the recipe with that scale factor
+- Updated dependencies [c653893]
+- Updated dependencies [1639636]
+- Updated dependencies [588328e]
+- Updated dependencies [c653893]
+- Updated dependencies [a20f506]
+- Updated dependencies [067d607]
+- Updated dependencies [b195eb3]
+- Updated dependencies [b1a15f8]
+- Updated dependencies [dc6899d]
+- Updated dependencies [12e7460]
+- Updated dependencies [dc6899d]
+- Updated dependencies [26171cc]
+- Updated dependencies [c653893]
+- Updated dependencies [c653893]
+- Updated dependencies [c156d56]
+- Updated dependencies [bdd85c5]
+  - @gram-lang/i18n@1.4.0
+  - @gram-lang/scheduler@1.4.0
+  - @gram-lang/parser@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes
