@@ -265,7 +265,7 @@ export const fr: GramLocale = {
 		studioTitle: "Réglages de la recette",
 		settingsButton: "Réglages",
 		settingsHint: {
-			text: "Masquer les quantités dans les étapes, changer le nombre de portions, planifier un service… Tout se passe dans les Réglages.",
+			text: "Ajuster les quantités, planifier le service, personnaliser l'affichage… tout se passe dans les réglages.",
 			dismiss: "Compris",
 		},
 		activeOptionsBadge: "{count} actifs",
@@ -274,12 +274,12 @@ export const fr: GramLocale = {
 		openScheduleSettings: "Ajuster la planification",
 		scheduleButton: "Planifier",
 		sections: {
-			schedule: "Planification & Service",
-			scale: "Portions & Échelle",
-			bakersMath: "Boulangerie",
+			schedule: "Planification",
+			scale: "Quantités",
+			bakersMath: "Pourcentages boulangers",
 			display: "Affichage",
-			physics: "Physique & Nutrition",
-			stock: "Stock & Modules",
+			physics: "Nutrition et masses",
+			stock: "Bases en stock",
 		},
 		badges: {
 			default: "Par défaut",

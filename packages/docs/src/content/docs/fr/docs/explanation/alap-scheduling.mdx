@@ -18,7 +18,7 @@ Considérons une recette classique associant une pâte nécessitant 1 heure de l
 ```gram
 [Pétrir] La @farine avec l'@eau et laisser lever ~_{1h}. ->&pâte
 
-[Mélanger] Les ingrédients de la sauce ~{10min}. ->&sauce
+[Mélanger] Les la @purée de tomate{} et le @basilic ~{10min}. ->&sauce
 
 [Cuire] La &pâte avec la &sauce au four pendant ~_{30min}.
 ```
@@ -70,81 +70,9 @@ gantt
     Cuire au four (temps passif)        : b4, after b2, 30m
 ```
 
-*(Note : à défaut de minuteur actif explicite sur le pétrissage, Gram lui alloue automatiquement 2 minutes de travail actif).*
+*(Note : à défaut de minuteur actif explicite sur le pétrissage, Gram lui alloue automatiquement 2 minutes de travail actif forfaitaire).*
 
 En calant la confection de la sauce sur la fin de la pousse, Gram intercale ce travail actif **pendant** le temps passif de la pâte. Vos gestes s'enchaînent de manière fluide, le temps total est rationalisé et vos préparations conservent une fraîcheur maximale.
-
-## Planifier la mise en place
-<Since v="1.4.0" />
-
-La mise en place d'une section (rassembler et peser les ingrédients, sortir le matériel) constitue une tâche à part entière planifiée en tête de section. Prenons l'exemple d'une pâte suivie d'une garniture à cuire :
-
-```gram
-## Pâte ->&pâte
-
-[Mélanger] La @farine{500g} et l'@eau{300ml} dans un #saladier.
-
-[Pointer] Laisser lever la pâte ~_{2h}.
-
-## Garniture ->&garniture
-
-[Suer] Faire revenir les @oignons{200g}(émincés) dans une #poêle.
-
-## Montage
-
-[Étaler] La &garniture sur la &pâte.
-
-[Cuire] Au #four pendant ~{25min}.
-```
-
-Ordonnancée **par section** (le mode par défaut), la préparation de chaque section se place au plus près de son exécution. Les préparations de la garniture et du montage glissent naturellement au sein des 2 heures de pousse de la pâte, en temps masqué :
-
-```mermaid
-gantt
-    title Mise en place par section (2 h 32)
-    dateFormat  HH:mm
-    axisFormat %H:%M
-    todayMarker off
-    section Pâte
-    Mise en place                     : p1, 00:00, 3m
-    Mélanger                          : active, a1, 00:03, 2m
-    Pousse (temps passif)             : r1, 00:05, 120m
-    section Garniture
-    Mise en place                     : p2, 01:56, 4m
-    Suer                              : active, a2, 02:00, 2m
-    section Montage
-    Mise en place                     : p3, 02:02, 3m
-    Étaler                            : active, a3, 02:05, 2m
-    Cuire                             : active, a4, 02:07, 25m
-```
-
-Ordonnée **tout au début**, la mise en place de tous les ingrédients bruts est regroupée en amont de toute cuisson :
-
-```mermaid
-gantt
-    title Mise en place tout au début (2 h 39)
-    dateFormat  HH:mm
-    axisFormat %H:%M
-    todayMarker off
-    section Mise en place
-    Pâte                              : p1, 00:00, 3m
-    Garniture                         : p2, 00:03, 4m
-    Montage                           : p3, 00:07, 3m
-    section Pâte
-    Mélanger                          : active, a1, 00:10, 2m
-    Pousse (temps passif)             : r1, 00:12, 120m
-    section Garniture
-    Suer                              : active, a2, 02:10, 2m
-    section Montage
-    Étaler                            : active, a3, 02:12, 2m
-    Cuire                             : active, a4, 02:14, 25m
-```
-
-Les deux plannings décrivent fidèlement la même recette. La durée globale varie uniquement de 7 minutes (les 4 minutes de préparation de la garniture et les 3 minutes du montage) qui ne sont plus absorbées en temps masqué pendant la pousse. Le mode « par section » optimise la durée totale, tandis que « tout au début » séduit les cuisiniers souhaitant dégager leur plan de travail avant d'allumer les feux.
-
-:::note[Pesée des intermédiaires]
-Un ingrédient intermédiaire (`&pâte`) requiert environ une minute de manipulation. Ce coût est imputé à la section qui le **consomme** (ici, le montage), et non à celle qui le produit.
-:::
 
 ## Pistes d'équipement dédiées (named tracks)
 
@@ -169,17 +97,6 @@ gantt
 
 L'étape `Préparer le pain` est automatiquement programmée pendant la cuisson de la tarte (entre la 20e et la 25e minute) : le pain est ainsi prêt à enfourner dès que la tarte libère le four à la 25e minute.
 
-## Ancres temporelles, journées de travail et dépendances
-
-L'ancre de rétroplanning d'une section (`~{-2d}`) exprime une **échéance impérative** : le travail de cette section doit être achevé à ce moment précis, compté à rebours depuis l'heure de service. Entre deux sections ancrées, les étapes intermédiaires s'alignent automatiquement par rétro-propagation.
-
-Quelques règles essentielles pour modéliser des recettes s'étendant sur plusieurs jours :
-
-- **Ancrez en jours calendaires (`~{-Nd}`)** : le découpage en journées de travail repose exclusivement sur les ancres exprimées en jours (`~{-1d}`, `~{-2d}`). Une section sans ancre est rattachée au jour de l'ancre en jours la plus lointaine parmi les sections avales.
-- **Un temps passif long n'initie pas de nouvelle journée** : une étape comportant `~_{48h}` décale bien l'étape vers l'amont sur la chronologie, mais ne crée pas de journée J-2 en l'absence d'une ancre de section explicite (`## Crème ~{-2d}`).
-- **Une ancre en heures (`~{-Nh}`) n'ouvre pas de journée de travail** : une valeur comme `~{-18h}` ou `~{-36h}` fixe une échéance stricte au sein de la journée, mais n'ouvre pas de journée autonome. Pour débuter formellement la veille, utilisez l'ancre `~{-1d}`.
-- **Sections successives au cours du même jour** : ancrez uniquement la dernière section (`## Tarte ~{-1d}`) et laissez les sections amont sans ancre. Assigner la même ancre à deux sections interdépendantes générerait un diagnostic de paradoxe temporel.
-
 ## Ancrage modulaire (`@use ... ~{-1d}`)
 
 Lors de l'assemblage de recettes modulaires avec `@gram-lang/modules`, vous pouvez déclarer un décalage rétro-planning directement sur une directive d'importation :
@@ -198,41 +115,41 @@ L'algorithme ALAP répercute cet ancrage vers l'amont à travers l'ensemble du s
 Pour exploiter toute la puissance de l'ordonnancement ALAP de Gram, appliquez ces recommandations opérationnelles :
 
 <Steps>
-1. **Distinguez soigneusement travail actif et temps passif (`~_`)**
-   Dès qu'une opération n'exige pas la présence continue du cuisinier (cuisson au four, fermentation, mijotage, refroidissement), utilisez un minuteur passif (`~_`). Si vous utilisiez par erreur un minuteur actif (`~{1h}` au lieu de `~_{1h}`), Gram supposerait que vous manipulez la préparation pendant une heure pleine, ce qui bloquerait l'ordonnancement d'autres tâches en temps masqué.
+1. **Distinguez soigneusement travail actif et temps passif (`~_`)**  
+   Dès qu'une opération n'exige pas votre présence continue (cuisson au four, fermentation, refroidissement), utilisez un minuteur passif (`~_`). Si vous utilisiez par erreur un minuteur actif (`~{1h}` au lieu de `~_{1h}`), Gram supposerait que vous manipulez la préparation pendant une heure pleine, ce qui bloquerait l'ordonnancement d'autres tâches en temps masqué.
 
-2. **Déclarez les intermédiaires au plus tôt, consommez-les au plus tard**
+2. **Déclarez les intermédiaires au plus tôt, consommez-les au plus tard**  
    Déclarez un ingrédient intermédiaire (`->&nom`) dès que sa confection active s'achève, et référencez-le (`&nom`) uniquement dans l'étape où il est incorporé. Gram ajustera automatiquement l'intervalle entre production et consommation.
 
-3. **Mobilisez les pistes nommées pour les équipements partagés**
+3. **Mobilisez les pistes nommées pour les équipements partagés**  
    Si vous disposez d'un unique four pour plusieurs préparations indépendantes, identifiez-le via une piste dédiée (`~_four{10min}`, `~_four{30min}`). Sans cette désignation, Gram considérerait que chaque tâche dispose de son propre équipement et les planifierait en parallèle.
 
-4. **Découpez des étapes réalistes**
+4. **Découpez des étapes réalistes**  
    Chaque étape sans minuteur hérite d'une durée forfaitaire de 2 minutes de travail actif. Privilégiez des étapes décrivant des unités de geste cohérentes plutôt qu'un découpage excessif qui alourdirait inutilement la durée active totale.
 </Steps>
 
-## Visualisation et intégration dans les interfaces
+## De l'algorithme à la planification
 
-Grâce au calcul déterministe des bornes temporelles `start` et `end` par le moteur ALAP, les interfaces utilisateur n'ont aucune logique de calcul de dates à implémenter : elles exploitent directement les données du graphe planifié.
+L'algorithme ALAP produit la chronologie de base (`layout()`). C'est cette ossature qui sert ensuite de socle à toutes les options de mise en scène :
 
-Une représentation chronologique (à l'image des diagrammes `gantt` Mermaid ci-dessus) met parfaitement en évidence le chevauchement des temps passifs et l'insertion du travail actif en temps masqué. Ce sont exactement ces mêmes données que met en scène le <Term id="runSheet" />. Vous pouvez tester et visualiser cet ordonnancement en direct dans le **[Playground de Gram](/fr/play/)**.
+- **Organisation de la mise en place** : ordonnancement par section (en temps masqué), groupé au début, ou par journée.
+- **Recettes multi-jours** : découpage automatique grâce aux ancres calendaires (`~{-1d}`, `~{-2d}`).
+- **Projection sur le calendrier** : adaptation dynamique à votre heure de service et à vos disponibilités en cuisine.
 
-### Ce que l'ALAP implique pour la marge
-
-Puisque la planification s'effectue **au plus tard**, un passage en cuisine ne peut qu'être **avancé**, jamais différé sans repousser directement l'heure de service. L'indication de marge du plan de marche (« Possible dès 18:00 ») quantifie ainsi l'anticipation maximale admissible pour un passage tant que les temps d'attente qui l'encadrent respectent leurs fourchettes de durée. Une recette modélisée avec des durées passives flexibles bénéficie de marges d'anticipation, tandis qu'une recette aux attentes strictement figées n'en dispose d'aucune. Pour approfondir le calcul de ces fenêtres, consultez la section dédiée dans [Le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-marche).
+Pour explorer ces fonctionnalités et découvrir comment elles forment le <Term id="runSheet" />, consultez le guide approfondi [Planification et plan de marche](/fr/docs/explanation/planning/).
 
 ## Ressources associées
 
 <CardGrid>
   <LinkCard
-    title="Planifier en heures réelles"
-    description="Découvrez comment le rétroplanning ALAP s'articule avec les horaires réels et vos disponibilités."
-    href="/fr/docs/explanation/planning-in-real-time/"
+    title="Planification et plan de marche"
+    description="Mise en place, recettes sur plusieurs jours, projection calendaire et fiches de production."
+    href="/fr/docs/explanation/planning/"
   />
   <LinkCard
-    title="Mise en place et planification"
-    description="Comprenez l'articulation entre le travail préparatoire, l'ordonnancement et les ancres journalières."
-    href="/fr/docs/explanation/mise-en-place-and-planning/"
+    title="Planifier un repas"
+    description="Guide pratique pas-à-pas pour générer votre plan de marche avec la CLI ou dans l'éditeur."
+    href="/fr/docs/how-to/plan-a-meal/"
   />
   <LinkCard
     title="Syntaxe des temps et durées"
@@ -240,8 +157,8 @@ Puisque la planification s'effectue **au plus tard**, un passage en cuisine ne p
     href="/fr/docs/reference/syntax/times/"
   />
   <LinkCard
-    title="Référence de l'API Scheduler"
-    description="Documentation complète de layout(), project() et du moteur d'ordonnancement."
-    href="/fr/docs/reference/api/scheduler/"
+    title="Le moteur d'ordonnancement"
+    description="Architecture du paquet @gram-lang/scheduler, graphe de tâches et fonctions pures."
+    href="/fr/docs/explanation/engine/scheduler/"
   />
 </CardGrid>

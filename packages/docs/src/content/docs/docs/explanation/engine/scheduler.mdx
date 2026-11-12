@@ -66,7 +66,7 @@ Waits written as a range follow the strategy specified via `rests` (`"shortest"`
 
 - Any active work stretch falling into unavailable hours is shifted by lengthening or shortening the nearest flexible wait (written as a range) downstream.
 - The entire timeline is re-laid out on each adjustment to verify dependencies and track availability against the concrete result.
-- For an end-to-end explanation, see [Planning in real time](/docs/explanation/planning-in-real-time/).
+- For a step-by-step walkthrough, see [Planning and run sheets](/docs/explanation/planning/).
 
 Internal time is counted in continuous absolute minutes since the POSIX epoch. Local time display relies on `Intl.DateTimeFormat` with an explicit time zone. No third-party date library or implicit system clock is involved: the plan remains byte-for-byte identical regardless of host environment, and a 23-hour or 25-hour daylight saving transition day counts for its actual duration.
 
@@ -85,20 +85,18 @@ The engine produces **pure structural data**; the run sheet is one way to displa
 
 Every metric is calculated by the engine as relative minutes from serving time, whether in an abstract schedule or a concrete timestamped calendar.
 
-A visit's anticipation margin is guaranteed safe by construction:
-- Planning is computed as late as possible (ALAP), meaning a visit can only ever be shifted earlier;
-- Shifting it earlier shortens the preceding passive rest and lengthens the succeeding one;
-- Both bounds are strictly checked against their declared ranges and the nominal scheduled time of neighboring visits.
+The anticipation margin quantifies how far a visit can be shifted earlier without disrupting the rest of the recipe:
+- Because scheduling works as late as possible (ALAP), a visit can only ever be moved earlier, never delayed without pushing back serving time;
+- Moving it earlier shortens the preceding passive wait and extends the succeeding one, within their declared ranges;
+- If an actual delay occurs during cooking, the engine does not retroactively rewrite past events: simply run a fresh projection with an updated target time.
 
-Advancing one or several visits never invalidates the margin of another visit. The calculated margin is occasionally conservative, but mathematically always safe. Conversely, an actual execution delay (starting a visit after its scheduled time) invalidates the downstream schedule: because the engine does not automatically recalculate schedules in the background, you must run projection again with an updated serving target or starting time.
-
-How these details are presented, and with what editorial tone, is entirely up to the viewing layer. Gram's default [run sheet](/docs/how-to/plan-a-meal/) splits a day whenever a passive rest reaches one hour, displays margins starting at 15 minutes (`WINDOW_MIN_MINUTES`), and reads equipment ("To take out") and tasks ("To do") directly from the compiled recipe. Custom applications are free to adopt different visual conventions using the exact same underlying data (see [Build a custom UI](/docs/how-to/build-custom-ui/)).
+How these details are presented is up to the viewing layer. Gram's default [run sheet](/docs/how-to/plan-a-meal/) splits a day whenever a passive rest reaches one hour, displays margins starting at 15 minutes, and extracts ingredients and equipment from the compiled recipe. Custom applications are free to adopt different visual conventions using the exact same underlying data (see [Build a custom UI](/docs/how-to/build-custom-ui/)).
 
 ### What the engine does not support
 
-- **One recipe at a time**: Planning a multi-recipe menu simultaneously with shared physical tracks is not yet supported (`MULTI_RECIPE_UNSUPPORTED`).
+- **One recipe at a time**: Planning a multi-recipe menu simultaneously with shared physical tracks is planned for a future release (`MULTI_RECIPE_UNSUPPORTED`).
 - **No background live replanning**: Because scheduling is a deterministic, pure function of its inputs, an actual delay requires invoking the engine again with updated parameters.
-- **No arbitrary schedule decisions**: The engine evaluates candidate serving times provided by the user (`findServeTimes()` targeting usual meal times, or `earliestServe()` starting right now), reporting which slots succeed and why others fail.
+- **No arbitrary decisions**: The engine evaluates candidate serving times provided by the user (`findServeTimes()` targeting usual meal times, or `earliestServe()` starting right now), reporting which slots succeed and why others fail.
 
 ## Two diagnostic families
 
@@ -123,14 +121,9 @@ Downstream views (the default run sheet or custom UI components) sit **after** t
 
 <CardGrid>
   <LinkCard
-    title="Scheduler API reference"
-    description="Function signatures, options, and TypeScript types for layout(), project(), runSheet() and the serving time search."
-    href="/docs/reference/api/scheduler/"
-  />
-  <LinkCard
-    title="Planning in real time"
-    description="How the scheduler projects tasks onto clock times and user availability windows."
-    href="/docs/explanation/planning-in-real-time/"
+    title="Planning and run sheets"
+    description="Mise en place strategies, multi-day recipes, calendar projection, and run sheet generation."
+    href="/docs/explanation/planning/"
   />
   <LinkCard
     title="ALAP scheduling"
@@ -138,8 +131,13 @@ Downstream views (the default run sheet or custom UI components) sit **after** t
     href="/docs/explanation/alap-scheduling/"
   />
   <LinkCard
-    title="Mise en place and planning"
-    description="How preparation costs and multi-day recipes interact with temporal planning."
-    href="/docs/explanation/mise-en-place-and-planning/"
+    title="Plan a meal"
+    description="Step-by-step practical guide: CLI commands, Markdown export, and calendar synchronization (.ics)."
+    href="/docs/how-to/plan-a-meal/"
+  />
+  <LinkCard
+    title="Scheduler API reference"
+    description="Function signatures, options, and TypeScript types for layout(), project(), and runSheet()."
+    href="/docs/reference/api/scheduler/"
   />
 </CardGrid>

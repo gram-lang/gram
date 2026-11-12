@@ -18,6 +18,12 @@ const SITE_URL = 'https://gram-lang.org';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://gram-lang.org',
+  redirects: {
+    '/docs/explanation/mise-en-place-and-planning': '/docs/explanation/planning',
+    '/docs/explanation/planning-in-real-time': '/docs/explanation/planning',
+    '/fr/docs/explanation/mise-en-place-and-planning': '/fr/docs/explanation/planning',
+    '/fr/docs/explanation/planning-in-real-time': '/fr/docs/explanation/planning'
+  },
   devToolbar: {
     enabled: false
   },
@@ -151,8 +157,7 @@ export default defineConfig({
             { label: 'Nutrition', slug: 'docs/explanation/nutrition' },
             { label: 'Shopping lists', translations: { fr: 'Liste de courses' }, slug: 'docs/explanation/shopping-list-aggregation' },
             { label: 'Scaling', translations: { fr: "Ajustement des proportions" }, slug: 'docs/explanation/scaling' },
-            { label: 'Mise en place & planning', translations: { fr: 'Mise en place & planning' }, slug: 'docs/explanation/mise-en-place-and-planning', badge: { text: 'v1.4.0', variant: 'default' } },
-            { label: 'Planning in real time', translations: { fr: 'Planifier en heures réelles' }, slug: 'docs/explanation/planning-in-real-time', badge: { text: 'v1.4.0', variant: 'default' } }
+            { label: 'Planning & run sheet', translations: { fr: 'Planification & plan de marche' }, slug: 'docs/explanation/planning', badge: { text: 'v1.4.0', variant: 'default' } }
           ]
         },
         { label: 'Changelog', translations: { fr: 'Changelog' }, slug: 'docs/changelog' }

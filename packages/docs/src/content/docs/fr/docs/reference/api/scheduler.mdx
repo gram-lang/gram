@@ -11,7 +11,7 @@ import Term from '../../../../../../components/Term.astro';
 
 Le moteur d'ordonnancement de Gram prend en entrée un **graphe de tâches** agnostique (le champ `tasks` d'une recette compilée) et répond à deux questions fondamentales : comment ces tâches s'articulent-elles chronologiquement (`layout`), et à quel moment précis démarrer chaque tâche compte tenu de l'heure de service visée et des disponibilités de l'utilisateur (`project`).
 
-Le scheduler ne possède aucune connaissance de l'AST ou de la syntaxe `.gram` : il opère exclusivement sur le graphe de tâches. Consultez [Le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/) pour approfondir son architecture interne et [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/) pour ses cas d'usage pratiques.
+Le scheduler ne possède aucune connaissance de l'AST ou de la syntaxe `.gram` : il opère exclusivement sur le graphe de tâches. Consultez [Le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/) pour approfondir son architecture interne et [Planification et plan de marche](/fr/docs/explanation/planning/) pour ses cas d'usage pratiques.
 
 :::note[Fonctions pures et déterminisme]
 Chaque fonction du moteur est pure : à entrées identiques correspondent toujours des sorties strictement identiques. Aucune donnée n'est lue sur l'environnement d'exécution (ni horloge système, ni fuseau horaire local), et les objets passés en paramètre ne sont jamais mutés.
@@ -240,7 +240,7 @@ type ProjectionDiagnostic =
   | { code: "MULTI_RECIPE_UNSUPPORTED"; recipes: number };
 ```
 
-Ces diagnostics dépendent du contexte d'exécution et des disponibilités de l'utilisateur : ils sont portés par le résultat de `project()` et ne constituent pas des avertissements de compilation. Consultez [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/#diagnostics-et-contraintes-non-résolues) pour le détail de chaque diagnostic.
+Ces diagnostics dépendent du contexte d'exécution et des disponibilités de l'utilisateur : ils sont portés par le résultat de `project()` et ne constituent pas des avertissements de compilation. Consultez [Planification et plan de marche](/fr/docs/explanation/planning/#diagnostics-et-contraintes-non-résolues) pour le détail de chaque diagnostic.
 
 ## `runSheet`
 
@@ -414,9 +414,9 @@ Une date qui n'existe pas (un 30 février, un 31 avril) est refusée par une `Ra
 
 <CardGrid>
   <LinkCard
-    title="Planifier en heures réelles"
+    title="Planification et plan de marche"
     description="Comprenez l'articulation entre heure de service, fenêtres de disponibilité et rétroplanning."
-    href="/fr/docs/explanation/planning-in-real-time/"
+    href="/fr/docs/explanation/planning/"
   />
   <LinkCard
     title="Le moteur d'ordonnancement"
