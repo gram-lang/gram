@@ -5,9 +5,10 @@ import {
 	getQty,
 	formatQuantityValue,
 	formatDecimalToFraction,
+	largerAmount,
 	round1,
 } from "./utils";
-import { getDictionary, normalizeUnit } from "@gram-lang/i18n";
+import { getDictionary, isMetricMassUnit } from "@gram-lang/i18n";
 
 import { DEFAULT_ICONS } from "./icons";
 import { type TooltipRow, tooltipCardAttrs } from "./tooltip-card";
@@ -200,12 +201,18 @@ const strategies: Record<
 			conversionMethod = item.conversionMethod || "";
 		}
 
+		// A shopping list is what you buy: 1000 g or more in kg, 1000 ml or
+		// more in l. Elsewhere a quantity is what you weigh, and stays as is.
+		const buying = context.formatMode === "shopping-list";
 		let plainQty = "";
 		let originalQtyStr = "";
 		if (qty) {
 			originalQtyStr =
+				(buying &&
+					typeof qty.value === "number" &&
+					largerAmount(qty.value, item.unit, context.lang)) ||
 				(qty.text || formatDecimalToFraction(qty.value, item.unit)) +
-				(item.unit ? ` ${item.unit}` : "");
+					(item.unit ? ` ${item.unit}` : "");
 		}
 
 		if (item.bakersPercentage !== undefined) {
@@ -233,15 +240,20 @@ const strategies: Record<
 
 		// The standardized mass, next to the quantity as written, wherever it
 		// tells something the written quantity doesn't: not for a quantity
-		// already in grams, nor for a relative one (its mass is derived), nor
+		// already a metric weight (g, kg, mg), nor for a relative one (its mass is derived), nor
 		// with baker's percentages (`plainQty` already carries the mass).
 		const massAddsInfo =
 			normalizedMass !== null &&
 			conversionMethod !== "relative" &&
-			normalizeUnit(item.unit, context.lang) !== "g";
+			!isMetricMassUnit(item.unit, context.lang);
 		const massText =
 			massAddsInfo && item.bakersPercentage === undefined
-				? `${isEstimate ? (format === "text" ? "≈" : "~") : ""}${normalizedMass} g`
+				? `${isEstimate ? (format === "text" ? "≈" : "~") : ""}${
+						(buying &&
+							normalizedMass !== null &&
+							largerAmount(normalizedMass, "g", context.lang)) ||
+						`${normalizedMass} g`
+					}`
 				: "";
 		// The quantity written in a sentence or a Markdown list: as written,
 		// then the mass when it adds something (`250 ml, ~147.5 g`).

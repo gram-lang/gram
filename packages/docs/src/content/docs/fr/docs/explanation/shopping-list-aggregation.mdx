@@ -28,6 +28,8 @@ flowchart TD
 ```
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
+import Term from '../../../../../components/Term.astro';
 
 <Steps>
 1. ### Normalisation des ID et alias
@@ -36,14 +38,14 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
    La résolution des alias intervient une couche au-dessus, dans `@gram-lang/analyzer`, qui lui accède à la base de données. Si `beurre` y est défini comme alias de `butter`, l'Analyseur va regrouper les entrées brutes sous cet identifiant canonique, fusionnant `@butter` et `@beurre` en une seule ligne `butter`. **Cette étape requiert impérativement une base de données** ; sans elle (compilation avec `@gram-lang/kitchen` seul, ou CLI lancé à nu), les alias sont ignorés et le doublon subsiste.
 
 2. ### Fusion des unités
-   Si les ingrédients regroupés partagent la même unité (ex : `100 g` et `50 g`), ils sont simplement additionnés (`150 g`) — cela se produit directement dans `@gram-lang/kitchen`, sans avoir besoin de base de données.
+   Si les ingrédients regroupés partagent la même unité (ex : `100 g` et `50 g`), ils sont simplement additionnés (`150 g`), cela se produit directement dans `@gram-lang/kitchen`, sans avoir besoin de base de données.
 
-   S'ils ont des unités différentes (ex : `100 g` et `1 tasse`), les additionner nécessite une conversion via la masse, ce qui — tout comme la résolution des alias — dépend de la base de données d'ingrédients et se produit donc dans `@gram-lang/analyzer`. Si chaque quantité contributrice se résout en une masse (densité connue, depuis la BDD ou une surcharge au niveau de la recette), l'analyseur les convertit toutes en grammes et les fusionne en une seule entrée.
+   S'ils ont des unités différentes (ex : `100 g` et `1 tasse`), les additionner nécessite une conversion via la masse, ce qui, tout comme la résolution des alias, dépend de la base de données d'ingrédients et se produit donc dans `@gram-lang/analyzer`. Si chaque quantité contributrice se résout en une masse (densité connue, depuis la BDD ou une surcharge au niveau de la recette), l'analyseur les convertit toutes en grammes et les fusionne en une seule entrée.
 
    **Repli (*Fallback*) : densité manquante.** Si la densité est introuvable pour au moins l'une des unités, l'Analyseur ne peut mathématiquement pas produire un total fiable. Plutôt que d'inventer une valeur, il conserve les lignes séparées, leur applique l'identifiant canonique, et les marque via le *flag* `multiUnit: true`. Les moteurs de rendu exploitent ce flag pour regrouper ces entrées sous un en-tête commun (ex : « ⚠️ Unités mixtes »). Cela signale au cuisinier qu'il s'agit du même ingrédient, tout en évitant d'additionner silencieusement des choux et des carottes.
 
    :::tip[Id canonique vs. nom affiché]
-   L'id canonique (ex : `butter`) n'existe que pour permettre le regroupement et la fusion des entrées — c'est une clé interne, pas le libellé montré au cuisinier. Le **nom** affiché dans une entrée de la liste de courses suit une seule règle, appliquée à l'identique partout (le Playground, `gram view`, `gram shop`, `gram export`) :
+   L'id canonique (ex : `butter`) n'existe que pour permettre le regroupement et la fusion des entrées, c'est une clé interne, pas le libellé montré au cuisinier. Le **nom** affiché dans une entrée de la liste de courses suit une seule règle, appliquée à l'identique partout (le Playground, `gram view`, `gram shop`, `gram export`) :
 
    | Ce que vous écrivez | ID Canonique trouvé | `name` dans la base | Nom affiché dans la liste | Pourquoi ? |
    | --- | --- | --- | --- | --- | --- |
@@ -54,7 +56,7 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
    C'est ce qui permet à un écosystème Gram d'être véritablement international. Que vous écriviez une recette en français, en espagnol ou en allemand et que vous la compiliez avec une base de données mondiale maintenue en anglais, votre liste de courses conservera toujours votre terminologie locale (`farine`, `harina`, `Mehl`). Pendant ce temps, les recettes utilisant le vocabulaire natif de la base bénéficieront de noms enrichis.
 
-   **Pas de base de données, ou pas d'entrée correspondante ?** Il n'y a alors tout simplement aucun `name` canonique à préférer, donc le mot de la recette est toujours utilisé — cela fonctionne avec une base vide (`{}`), une base qui n'a aucune entrée pour cet ingrédient, et avec `compile()` de `@gram-lang/kitchen` utilisé seul, sans jamais appeler `@gram-lang/analyzer`.
+   **Pas de base de données, ou pas d'entrée correspondante ?** Il n'y a alors tout simplement aucun `name` canonique à préférer, donc le mot de la recette est toujours utilisé, cela fonctionne avec une base vide (`{}`), une base qui n'a aucune entrée pour cet ingrédient, et avec `compile()` de `@gram-lang/kitchen` utilisé seul, sans jamais appeler `@gram-lang/analyzer`.
    :::
 
 3. ### Masquage (*ghosting*) des quantités relatives
@@ -75,6 +77,23 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ## Le résultat final
 En sortie, vous obtenez un tableau d'objets `ShoppingItem` hautement optimisé, dédupliqué et mathématiquement rigoureux. Il est regroupé par clés de catégories culinaires stables (`CATEGORY_KEYS` issues de `@gram-lang/i18n`) et trié selon les règles de traduction locales (`getCategoryLabels(lang)`), prêt à être injecté dans votre terminal ou votre interface web.
+
+## On achète en kilos, on pèse en grammes
+
+<Since v="1.4.1" />
+
+Une même quantité ne s'affiche pas partout de la même façon, selon l'usage qu'on en fait :
+
+- **Ce qu'on achète, ou qu'on lit comme un total** : à partir de 1000 g (ou 1000 ml), la liste de courses, les totaux de la recette ou des sections et les poids de référence nutritionnels passent en kilos (`3.9 kg` plutôt que `3900 g`) et en litres (`2.25 l` de lait), les unités utilisées en magasin.
+- **Ce qu'on pèse** : les étapes, les ingrédients d'une section et le <Term id="runSheet" /> restent en grammes même au-delà de 1000 g (`1500 g` de farine). Une balance affiche des grammes, et arrondir `1234 g` à `1,23 kg` ferait perdre en précision.
+
+Règles de formatage :
+
+- Les unités explicites dans les étapes restent telles qu'elles ont été écrites (`@farine{2kg}` s'affiche `2 kg`, et `@lait{1500ml}` reste `1500 ml`).
+- Seules les unités métriques changent d'échelle (g et mg vers kg ; ml, cl et dl vers l), jamais les tasses ni les onces. Kilos et litres sont arrondis à deux décimales.
+- Une quantité déjà exprimée en masse métrique (`mg`, `g`, `kg`) constitue son propre poids : sa masse standardisée n'est pas répétée à côté.
+
+Toutes les surfaces appliquent cette règle via `toLargerMetricUnit` (`@gram-lang/i18n`) : la vue recette du Playground, `gram view`, `gram export` et `gram shop`, tandis que `gram cook` conserve ses masses en grammes.
 
 ## Ressources associées
 

@@ -17,6 +17,7 @@ import {
 	nobr,
 	groupMultiUnitEntries,
 	round1,
+	largerAmount,
 	getQty,
 	trimBeforeComments,
 } from "../../shared/utils";
@@ -48,7 +49,7 @@ import {
 	round2,
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
-import { fillTemplate, getDictionary } from "@gram-lang/i18n";
+import { fillTemplate, getDictionary, isMetricMassUnit } from "@gram-lang/i18n";
 import {
 	resolveContributingUsage,
 	type AnalyzedUsage,
@@ -101,30 +102,43 @@ function kitQtyHtml(
 		isCookware = false,
 		showBareCount = false,
 		withBadges = true,
+		large = false,
+		lang,
 	}: {
 		isCookware?: boolean;
 		showBareCount?: boolean;
 		withBadges?: boolean;
+		/** A shopping list: 1000 g or more in kg, 1000 ml or more in l. */
+		large?: boolean;
+		lang?: string;
 	} = {},
 ): string {
 	let html = "";
-	const unitStr = item.unit ? ` ${escapeHtml(item.unit)}` : "";
-	if (qty && item.normalizedMass && round1(item.normalizedMass) !== qty) {
-		html += `<span class="kit-orig">${escapeHtml(String(qty))}${unitStr}</span>`;
+	const unit = item.unit ?? "";
+	const written = () =>
+		(large && typeof qty === "number" && largerAmount(qty, unit, lang)) ||
+		`${String(qty)}${unit ? ` ${unit}` : ""}`;
+	const grams = (mass: number) =>
+		(large && largerAmount(mass, "g", lang)) || `${round1(mass)} g`;
+	// A quantity already in g, kg or mg is its own weight: the standardized
+	// mass would only say it again (3 kg, 3000 g).
+	const mass = isMetricMassUnit(unit, lang) ? undefined : item.normalizedMass;
+	if (qty && mass && round1(mass) !== qty) {
+		html += `<span class="kit-orig">${escapeHtml(written())}</span>`;
 	}
-	if (item.normalizedMass) {
+	if (mass) {
 		const isEst = item.isEstimate ? "~" : "";
-		html += `<span class="kit-mass">${isEst}${round1(item.normalizedMass)} g</span>`;
-	} else if (qty && !isCookware && (item.unit || showBareCount)) {
-		html += `<span class="kit-mass">${escapeHtml(String(qty))}${unitStr}</span>`;
+		html += `<span class="kit-mass">${isEst}${escapeHtml(grams(mass))}</span>`;
+	} else if (qty && !isCookware && (unit || showBareCount)) {
+		html += `<span class="kit-mass">${escapeHtml(written())}</span>`;
 	}
 	if (!withBadges) return html;
 	if (item.bakersPercentage !== undefined) {
 		html += ` <span class="bakers-badge">${round1(item.bakersPercentage)}%</span>`;
 	}
 	if (item.purchasingMass && item.purchasingMass !== item.normalizedMass) {
-		const gross = round1(item.purchasingMass);
-		html += ` <span class="gross-mass" data-tooltip="${escapeHtml(t.renderer.purchasingWeight)}">(${gross}g ${escapeHtml(t.renderer.gross)})</span>`;
+		const gross = grams(item.purchasingMass).replace(" ", "");
+		html += ` <span class="gross-mass" data-tooltip="${escapeHtml(t.renderer.purchasingWeight)}">(${escapeHtml(gross)} ${escapeHtml(t.renderer.gross)})</span>`;
 	}
 	return html;
 }
@@ -180,7 +194,10 @@ function renderKitItem(
 		? itemQty && String(itemQty) !== "1"
 			? `<span class="kit-mass">×${escapeHtml(String(itemQty))}</span>`
 			: ""
-		: kitQtyHtml(item, itemQty, t);
+		: kitQtyHtml(item, itemQty, t, {
+				large: context.formatMode === "shopping-list",
+				lang: options.lang,
+			});
 
 	const itemTypeClass = isCookware
 		? "cookware"
@@ -262,6 +279,8 @@ function renderKitAlternativeItem(
 		qtyContent = kitQtyHtml(first, firstQty, t, {
 			isCookware,
 			withBadges: false,
+			large: context.formatMode === "shopping-list",
+			lang: options.lang,
 		});
 	}
 
@@ -302,7 +321,11 @@ function renderKitUsageItem(
 			? q.value
 			: q.text || child.quantity
 		: child.quantity;
-	const qtyContent = kitQtyHtml(child, childQty, t, { showBareCount: true });
+	const qtyContent = kitQtyHtml(child, childQty, t, {
+		showBareCount: true,
+		large: context.formatMode === "shopping-list",
+		lang: context.lang,
+	});
 
 	let html = `            <li class="kit-usage">`;
 	html += `<span class="kit-usage-branch" aria-hidden="true">↳</span>`;
@@ -387,11 +410,13 @@ function renderStepResult(
  * mass is known, "~850g" when some come from an average value of the
  * database, ">850g" when some are missing (the real mass is higher).
  */
-function massLabel(metrics: Partial<MassMetrics>) {
-	const mass = Math.round(metrics.totalMass ?? 0);
-	if (metrics.massStatus === "incomplete") return `>${mass}g`;
-	if (metrics.massStatus === "estimated") return `~${mass}g`;
-	return `${mass}g`;
+function massLabel(metrics: Partial<MassMetrics>, lang?: string) {
+	const grams = Math.round(metrics.totalMass ?? 0);
+	// A total is read, not weighed: 1000 g or more in kg.
+	const mass = largerAmount(grams, "g", lang)?.replace(" ", "") ?? `${grams}g`;
+	if (metrics.massStatus === "incomplete") return `>${mass}`;
+	if (metrics.massStatus === "estimated") return `~${mass}`;
+	return mass;
 }
 
 /**
@@ -932,7 +957,7 @@ export const htmlBackend: RenderBackend = {
 				t,
 			);
 			factsHtml += `    <div class="hero-item hero-mass has-rich-tooltip">\n`;
-			factsHtml += `      ${scalesIcon} <span class="mass-value">${escapeHtml(massLabel(metrics))}</span>${tooltip}\n`;
+			factsHtml += `      ${scalesIcon} <span class="mass-value">${escapeHtml(massLabel(metrics, options.lang))}</span>${tooltip}\n`;
 			factsHtml += `    </div>\n`;
 		}
 
@@ -1011,24 +1036,20 @@ export const htmlBackend: RenderBackend = {
 				html += `      </div>\n`;
 			}
 			html += `      <ul class="kit-list">\n`;
+			// What you buy: 1000 g or more in kg, 1000 ml or more in l.
+			const buying: RenderContext = { ...context, formatMode: "shopping-list" };
 			const groups = groupMultiUnitEntries(shoppingItems);
 			groups.forEach((group) => {
 				const item = group[0];
 				if (!item) return;
 				if (isAlternativeGroup(item)) {
-					html += renderKitAlternativeItem(
-						item,
-						context,
-						options,
-						false,
-						false,
-					);
+					html += renderKitAlternativeItem(item, buying, options, false, false);
 				} else if (isCompositeItem(item)) {
-					html += renderKitCompositeItem(item, context, options);
+					html += renderKitCompositeItem(item, buying, options);
 				} else if (group.length > 1) {
-					html += renderKitMixedUnitsItem(group, context, options);
+					html += renderKitMixedUnitsItem(group, buying, options);
 				} else {
-					html += renderKitItem(item, context, options);
+					html += renderKitItem(item, buying, options);
 				}
 			});
 			html += `      </ul>\n`;
@@ -1126,7 +1147,7 @@ export const htmlBackend: RenderBackend = {
 						context,
 						t,
 					);
-					titleHtml += ` <small class="section-meta-badge section-meta-mass has-rich-tooltip">${sIcon} ${escapeHtml(massLabel(sec.metrics))}${tooltip}</small>`;
+					titleHtml += ` <small class="section-meta-badge section-meta-mass has-rich-tooltip">${sIcon} ${escapeHtml(massLabel(sec.metrics, options.lang))}${tooltip}</small>`;
 				}
 
 				const declLabel = sec.intermediate_preparation

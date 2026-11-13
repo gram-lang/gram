@@ -18,6 +18,7 @@ import {
 	isAlternativeGroup,
 	isCompositeItem,
 	joinStepTokens,
+	largerAmount,
 	round1,
 } from "../../shared/utils";
 import type {
@@ -203,7 +204,10 @@ export const textBackend: RenderBackend = {
 					item.purchasingMass &&
 					item.purchasingMass !== item.normalizedMass
 				) {
-					gross = ` ${style(options, "dim", `(${round1(item.purchasingMass)} g ${t.gross})`)}`;
+					const mass =
+						largerAmount(item.purchasingMass, "g", options.lang) ??
+						`${round1(item.purchasingMass)} g`;
+					gross = ` ${style(options, "dim", `(${mass} ${t.gross})`)}`;
 				}
 				lines.push(`  ${formatElement(item, "text", row)}${gross}`);
 			}

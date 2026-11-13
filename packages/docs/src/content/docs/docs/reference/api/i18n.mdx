@@ -78,6 +78,26 @@ UNIT_CONVERSIONS.volume.map.tbsp; // 14.7868 (mL)
 TIME_TO_MINUTES.h; // 60 (minutes)
 ```
 
+### Large amounts and metric weights
+
+`toLargerMetricUnit` converts a metric mass (`mg`, `g`) or volume (`ml`, `cl`, `dl`) to `kg` or `l` once it reaches 1000 g or 1000 ml (rounded to two decimal places), and returns any other amount unchanged. Gram uses it for what is bought or read as a total, never for what is weighed (see [Kilograms to buy, grams to weigh](/docs/explanation/shopping-list-aggregation/#kilograms-to-buy-grams-to-weigh)). `isMetricMassUnit` checks whether a unit (including localized aliases) is a metric mass (`mg`, `g`, `kg`).
+
+```typescript
+function toLargerMetricUnit(value: number, rawUnit: string | undefined | null, lang?: string): { value: number; unit: string }
+function isMetricMassUnit(rawUnit: string | undefined | null, lang?: string): boolean
+```
+
+```typescript
+import { toLargerMetricUnit, isMetricMassUnit } from '@gram-lang/i18n';
+
+toLargerMetricUnit(3900, 'g');   // { value: 3.9, unit: "kg" }
+toLargerMetricUnit(150, 'cl');   // { value: 1.5, unit: "l" }
+toLargerMetricUnit(999, 'g');    // { value: 999, unit: "g" }
+toLargerMetricUnit(64, 'oz');    // { value: 64, unit: "oz" }
+isMetricMassUnit('kilo', 'fr');  // true
+isMetricMassUnit('lb');          // false
+```
+
 ## Related resources
 
 <CardGrid>

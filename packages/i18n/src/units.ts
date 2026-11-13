@@ -207,3 +207,53 @@ export function isCoarseUnit(rawUnit: string | undefined | null): boolean {
 	}
 	return false;
 }
+
+/** The metric units a mass or a volume is read in, smallest first. */
+const METRIC_LADDER = {
+	mass: { units: ["mg", "g", "kg"], large: "kg" },
+	volume: { units: ["ml", "cl", "dl", "l"], large: "l" },
+} as const;
+
+/**
+ * True for a metric unit of mass (mg, g, kg): a quantity in it is already a
+ * weight, so a standardized mass next to it would only say it again. An
+ * imperial mass (oz, lb) is not one: its weight in grams still tells something.
+ */
+export function isMetricMassUnit(
+	rawUnit: string | undefined | null,
+	lang?: string,
+): boolean {
+	return (METRIC_LADDER.mass.units as readonly string[]).includes(
+		normalizeUnit(rawUnit, lang),
+	);
+}
+
+/**
+ * A metric mass or volume in kilograms or liters once it reaches 1000 g or
+ * 1000 ml (3900 g → 3.9 kg, 2250 ml → 2.25 l), rounded to 2 decimals; any
+ * other amount comes back as it was. For what a reader buys (a shopping list)
+ * or reads as a total (the weight of a recipe): what is weighed stays in grams,
+ * since a scale shows grams and a cook writes "1500 g of flour".
+ * Every surface reads a large amount through this, so a shopping list says
+ * the same thing in the renderer, `gram shop` and `gram cook`.
+ */
+export function toLargerMetricUnit(
+	value: number,
+	rawUnit: string | undefined | null,
+	lang?: string,
+): { value: number; unit: string } {
+	const unit = rawUnit ?? "";
+	const canonical = normalizeUnit(unit, lang);
+	for (const [category, ladder] of Object.entries(METRIC_LADDER) as [
+		keyof typeof METRIC_LADDER,
+		(typeof METRIC_LADDER)[keyof typeof METRIC_LADDER],
+	][]) {
+		if (canonical === ladder.large) break;
+		if (!(ladder.units as readonly string[]).includes(canonical)) continue;
+		const factor = UNIT_CONVERSIONS[category].map[canonical] ?? 1;
+		const base = value * factor;
+		if (base < 1000) break;
+		return { value: Math.round(base / 10) / 100, unit: ladder.large };
+	}
+	return { value, unit };
+}

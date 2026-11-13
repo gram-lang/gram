@@ -4,6 +4,7 @@
 import { NUTRIENTS } from "@gram-lang/analyzer/nutrients";
 import type { NutritionMetrics } from "@gram-lang/analyzer";
 import { getDictionary } from "@gram-lang/i18n";
+import { largerAmount } from "./utils";
 import type {
 	NutritionBasis,
 	RenderableCompilationResult,
@@ -75,7 +76,10 @@ function massNote(nut: NutritionMetrics, lang?: string): string | undefined {
 			? t.renderer.nutritionRawMassNotePartial
 			: t.renderer.nutritionRawMassNote;
 
-	return template.replace("{mass}", `${prefix}${Math.round(basis.mass)} g`);
+	// A total, read rather than weighed: 1000 g or more in kg.
+	const grams = Math.round(basis.mass);
+	const mass = largerAmount(grams, "g", lang) ?? `${grams} g`;
+	return template.replace("{mass}", `${prefix}${mass}`);
 }
 
 /**

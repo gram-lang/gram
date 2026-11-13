@@ -3,6 +3,7 @@ import {
 	quantityToMinutes,
 	aggregateSectionIngredients,
 } from "@gram-lang/kitchen";
+import { isMetricMassUnit } from "@gram-lang/i18n";
 import { splitDuration } from "../../core/format";
 import { passiveTimers } from "../../core/schedule";
 import type { RecipeData, FlatStep, CookTimer } from "./types";
@@ -32,11 +33,14 @@ export function fmtCountdown(remainingMs: number): string {
 
 // Returns true when showing ≈ mass is useful (unit is not already a metric mass unit)
 export function shouldShowMass(unit?: string | null): boolean {
-	return unit == null || !/^(g|kg|mg)$/i.test(unit);
+	return !isMetricMassUnit(unit);
 }
 
+/**
+ * A mass in a step or the mise en place: what you weigh, so in grams even
+ * past 1000 (1500 g), as a scale shows it and as the recipe view writes it.
+ */
 export function fmtMass(g: number): string {
-	if (g >= 1000) return `${+(g / 1000).toFixed(1)} kg`;
 	if (g >= 10) return `${Math.round(g)} g`;
 	return `${+g.toFixed(1)} g`;
 }

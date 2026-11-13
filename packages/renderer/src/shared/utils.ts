@@ -1,7 +1,11 @@
 import { ASTNodeType } from "@gram-lang/parser";
 import { round2 } from "@gram-lang/kitchen";
 import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
-import { getDictionary, isCoarseUnit } from "@gram-lang/i18n";
+import {
+	getDictionary,
+	isCoarseUnit,
+	toLargerMetricUnit,
+} from "@gram-lang/i18n";
 
 // Converts an AggregatedIngredient to a plain object that formatElement can render.
 // The first quantity becomes qty/unit; additional ones become variable_entries strings.
@@ -48,6 +52,24 @@ export function aggToRendererItem(
 // formatDecimalToFraction below, for raw qty+unit display.
 export function round1(value: number): number {
 	return Math.round(value * 10) / 10;
+}
+
+/**
+ * "3.9 kg" for 3900 g, "2.25 l" for 2250 ml: an amount of a shopping list or
+ * a total in the larger metric unit (`toLargerMetricUnit`), or `undefined`
+ * when it stays in the unit it has (under 1000, or not a metric unit). What
+ * is weighed (a step, the ingredients of a section, the run sheet) never goes
+ * through this: it stays in grams, as a scale shows them.
+ */
+export function largerAmount(
+	value: number,
+	unit: string | null | undefined,
+	lang?: string,
+): string | undefined {
+	const larger = toLargerMetricUnit(value, unit, lang);
+	return larger.unit !== (unit ?? "")
+		? `${larger.value} ${larger.unit}`
+		: undefined;
 }
 
 const COMMON_FRACTIONS = [
