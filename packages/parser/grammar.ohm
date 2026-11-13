@@ -41,7 +41,15 @@ GRAM {
   bindingStop = space | nl | syntaxChar | sentencePunct | "~{"
 
   Section = header Block*
-  header = "##" sp+ title headerExtension? sp* nl+
+  header =
+      | "##" sp+ title headerExtension? sp* (nl+ | end)      -- ok
+      | "##" sp+ title headerExtension sp* headerTrailing (nl+ | end) -- trailing
+  // Text left after a header's `~{...}` / `->&name` (most often the second
+  // word of a multi-word intermediate written without `{}`). Without this
+  // branch the whole `##` line silently fell back to a step: the section
+  // vanished, or its `~{-1d}` anchor surfaced as a misleading timer error.
+  // Matched only to raise a readable error (see `header_trailing`).
+  headerTrailing = (~nl any)+
   headerExtension = 
       | retroPlanning sp* intermediateDecl?  -- retro
       | intermediateDecl sp* retroPlanning?  -- decl
