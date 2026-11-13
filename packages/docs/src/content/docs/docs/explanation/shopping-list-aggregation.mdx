@@ -28,6 +28,8 @@ flowchart TD
 ```
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../components/Since.astro';
+import Term from '../../../../components/Term.astro';
 
 <Steps>
 1. ### ID normalization and aliasing
@@ -75,6 +77,23 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ## The final output
 The result is a highly optimized, deduplicated, and mathematically sound array of `ShoppingItem` objects, grouped by stable culinary categories (`CATEGORY_KEYS` from `@gram-lang/i18n`) and sorted according to localized category rules (`getCategoryLabels(lang)`), ready to be rendered in the terminal or a web UI.
+
+## Kilograms to buy, grams to weigh
+
+<Since v="1.4.1" />
+
+The same amount is formatted differently depending on how you use it:
+
+- **What you buy, or read as a total**: starting at 1000 g (or 1000 ml), shopping lists, recipe and section totals, and nutrition reference weights switch to kilograms (`3.9 kg` instead of `3900 g`) and liters (`2.25 l` of milk), the units you actually buy at the store.
+- **What you weigh**: steps, section ingredient lists, and the <Term id="runSheet" /> stay in grams even past 1000 g (`1500 g` of flour). Kitchen scales usually read in grams, and rounding `1234 g` to `1.23 kg` loses precision.
+
+Formatting rules:
+
+- Explicit units in steps stay as authored (`@flour{2kg}` shows as `2 kg`, and `@milk{1500ml}` stays `1500 ml`).
+- Only metric units move up (g and mg to kg, ml, cl and dl to l), never cups or ounces. Kilograms and liters are rounded to two decimals.
+- A quantity already in metric mass (`mg`, `g`, `kg`) is its own weight, so its standardized mass is not repeated.
+
+Every surface follows this rule via `toLargerMetricUnit` (`@gram-lang/i18n`): the Playground recipe view, `gram view`, `gram export`, and `gram shop`, while `gram cook` keeps masses in grams.
 
 ## Related resources
 
