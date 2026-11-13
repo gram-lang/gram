@@ -925,7 +925,7 @@
 		padding: 2px 8px 4px 32px;
 		margin-bottom: 10px;
 		line-height: 1.8;
-		border-radius: 4px;
+		border-radius: 3px;
 		transition:
 			background-color 0.2s ease,
 			outline 0.2s ease,
@@ -1004,12 +1004,16 @@
 		height: 22px;
 	}
 
-	/* The step that produces an intermediate, shown from where it is used. */
+	/*
+	 * What produces an intermediate, shown from where it is used: the step,
+	 * or the whole section for a section that makes it (`## Dough ->&dough`).
+	 */
 	.steps li.gram-highlight-producer,
-	.section-header.gram-highlight-producer {
+	.instructions > section.gram-highlight-producer {
 		background-color: color-mix(in srgb, var(--item-ref-text) 10%, transparent);
 		outline: 2px solid var(--item-ref-text);
 		outline-offset: 3px;
+		border-radius: 3px;
 	}
 
 	.steps li.gram-pulse-producer,
@@ -1360,7 +1364,7 @@
 		background-color: var(--color-bg-subtle);
 		border: 1px solid var(--color-border);
 		padding: 2px 6px;
-		border-radius: 4px;
+		border-radius: 3px;
 	}
 
 	.bakers-badge {
@@ -1374,7 +1378,7 @@
 		background-color: var(--color-bg-subtle);
 		border: 1px dashed var(--color-text-muted);
 		padding: 2px 6px;
-		border-radius: 4px;
+		border-radius: 3px;
 	}
 
 	.gross-mass {

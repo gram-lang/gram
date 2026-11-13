@@ -102,7 +102,19 @@ export function attachTooltips(container?: HTMLElement | Document): () => void {
 				const producers = targetContainer.querySelectorAll<HTMLElement>(
 					`[data-declares~="${safeId}"]`,
 				);
+				// A section that makes the intermediate (`## Dough ->&dough`) is
+				// highlighted whole, not only its title: the reader sees all it
+				// takes to make it.
+				const highlighted = new Set<HTMLElement>();
 				producers.forEach((p) => {
+					const inHeader =
+						p.classList.contains("section-header") ||
+						p.classList.contains("section-declaration-badge");
+					highlighted.add(
+						inHeader ? (p.closest<HTMLElement>("section") ?? p) : p,
+					);
+				});
+				highlighted.forEach((p) => {
 					p.classList.add("gram-highlight-producer");
 					activeProducers.push(p);
 				});
@@ -586,8 +598,11 @@ export const TOOLTIP_SCRIPT = `(function() {
         var s = (typeof CSS !== 'undefined' && CSS.escape) ? CSS.escape(rId) : rId;
         var prods = document.querySelectorAll('[data-declares~="' + s + '"]');
         for (var k = 0; k < prods.length; k++) {
-          prods[k].classList.add('gram-highlight-producer');
-          activeProds.push(prods[k]);
+          var box = prods[k];
+          if (box.classList.contains('section-header') || box.classList.contains('section-declaration-badge')) box = box.closest('section') || box;
+          if (activeProds.indexOf(box) !== -1) continue;
+          box.classList.add('gram-highlight-producer');
+          activeProds.push(box);
         }
         return;
       }

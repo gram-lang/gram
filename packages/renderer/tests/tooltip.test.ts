@@ -509,6 +509,48 @@ describe("Universal Tooltip Engine", () => {
 			container.remove();
 		});
 
+		it("highlights the whole section that makes an intermediate, not only its title", () => {
+			const container = (document as any).createElement("div");
+
+			// `## Dough ->&dough`: the title and its badge declare it
+			const section = (document as any).createElement("section");
+			const header = (document as any).createElement("h3");
+			// The mock keeps `className` and `classList` apart: set both.
+			header.className = "section-header";
+			header.classList.add("section-header");
+			header.setAttribute("data-declares", "dough");
+			const badge = (document as any).createElement("span");
+			badge.className = "section-declaration-badge";
+			badge.classList.add("section-declaration-badge");
+			badge.setAttribute("data-declares", "dough");
+			header.appendChild(badge);
+			section.appendChild(header);
+			container.appendChild(section);
+
+			// A later section uses it in its list of ingredients
+			const kitList = (document as any).createElement("ul");
+			kitList.className = "kit-list";
+			const kitName = (document as any).createElement("span");
+			kitName.className = "kit-name reference";
+			kitName.setAttribute("data-ref-id", "dough");
+			kitList.appendChild(kitName);
+			container.appendChild(kitList);
+
+			document.body.appendChild(container);
+			const cleanup = attachTooltips(container as any);
+
+			kitName.dispatchEvent({ type: "pointerover", bubbles: true });
+			expect(section.classList.contains("gram-highlight-producer")).toBe(true);
+			expect(header.classList.contains("gram-highlight-producer")).toBe(false);
+			expect(badge.classList.contains("gram-highlight-producer")).toBe(false);
+
+			kitName.dispatchEvent({ type: "pointerout", bubbles: true });
+			expect(section.classList.contains("gram-highlight-producer")).toBe(false);
+
+			cleanup();
+			container.remove();
+		});
+
 		it("links an intermediate from its result line only, not from anywhere in the step", () => {
 			const container = (document as any).createElement("div");
 
