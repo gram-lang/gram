@@ -4,6 +4,8 @@ import {
 	unitKey,
 	UNIT_CONVERSIONS,
 	UNIT_DICTIONARIES,
+	isMetricMassUnit,
+	toLargerMetricUnit,
 } from "../src/units";
 
 describe("normalizeUnit", () => {
@@ -143,5 +145,54 @@ describe("unitKey", () => {
 				}
 			}
 		}
+	});
+});
+
+describe("isMetricMassUnit", () => {
+	it("is true for g, kg and mg, in any spelling the dictionaries know", () => {
+		for (const unit of ["g", "kg", "mg", "kilo", "grammes"]) {
+			expect(isMetricMassUnit(unit, "fr")).toBe(true);
+		}
+	});
+
+	it("is false for an imperial mass, a volume, a count or no unit", () => {
+		for (const unit of ["oz", "lb", "ml", "cup", "", null, undefined]) {
+			expect(isMetricMassUnit(unit)).toBe(false);
+		}
+	});
+});
+
+describe("toLargerMetricUnit", () => {
+	it("moves a mass of 1000 g or more to kilograms, rounded to 2 decimals", () => {
+		expect(toLargerMetricUnit(3900, "g")).toEqual({ value: 3.9, unit: "kg" });
+		expect(toLargerMetricUnit(1000, "g")).toEqual({ value: 1, unit: "kg" });
+		expect(toLargerMetricUnit(1234, "g")).toEqual({ value: 1.23, unit: "kg" });
+		expect(toLargerMetricUnit(1500000, "mg")).toEqual({
+			value: 1.5,
+			unit: "kg",
+		});
+	});
+
+	it("moves a volume of 1000 ml or more to liters, from ml, cl or dl", () => {
+		expect(toLargerMetricUnit(2250, "ml")).toEqual({ value: 2.25, unit: "l" });
+		expect(toLargerMetricUnit(150, "cl")).toEqual({ value: 1.5, unit: "l" });
+		expect(toLargerMetricUnit(12, "dl")).toEqual({ value: 1.2, unit: "l" });
+	});
+
+	it("reads the unit through the dictionaries (grammes, millilitres)", () => {
+		expect(toLargerMetricUnit(2000, "grammes", "fr")).toEqual({
+			value: 2,
+			unit: "kg",
+		});
+	});
+
+	it("leaves as it was an amount under 1000, one already large, or another unit", () => {
+		expect(toLargerMetricUnit(999, "g")).toEqual({ value: 999, unit: "g" });
+		expect(toLargerMetricUnit(50, "cl")).toEqual({ value: 50, unit: "cl" });
+		expect(toLargerMetricUnit(2.5, "kg")).toEqual({ value: 2.5, unit: "kg" });
+		expect(toLargerMetricUnit(3, "l")).toEqual({ value: 3, unit: "l" });
+		expect(toLargerMetricUnit(64, "oz")).toEqual({ value: 64, unit: "oz" });
+		expect(toLargerMetricUnit(12, "cup")).toEqual({ value: 12, unit: "cup" });
+		expect(toLargerMetricUnit(1200, null)).toEqual({ value: 1200, unit: "" });
 	});
 });
