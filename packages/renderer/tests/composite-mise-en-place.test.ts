@@ -49,7 +49,7 @@ describe("composite parent display in section/mise-en-place ingredient lists", (
 	it("HTML shopping list: one checkbox on the parent, its parts as sub-lines", () => {
 		const html = toHTML(compiled);
 		expect(html).toContain(
-			'<li class="kit-ingredient kit-composite"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name">citron</span></span><span class="kit-qty"><span class="kit-mass">0.5</span></span></span></label>',
+			'<li class="kit-ingredient kit-composite"><label><input type="checkbox"><span><span class="kit-name-col"><span class="kit-name">citron</span></span><span class="kit-qty"><span class="kit-mass">1/2</span></span></span></label>',
 		);
 		expect(html).toContain(
 			'<li class="kit-usage"><span class="kit-usage-branch" aria-hidden="true">↳</span><span class="kit-usage-name">jus</span><span class="kit-usage-qty"><span class="kit-mass">2 cl</span></span></li>',

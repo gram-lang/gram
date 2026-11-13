@@ -2,10 +2,32 @@ import { ASTNodeType } from "@gram-lang/parser";
 import { round2 } from "@gram-lang/kitchen";
 import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
 import {
+	commonFraction,
+	formatNumber,
 	getDictionary,
 	isCoarseUnit,
+	localizeDecimals,
+	toKitchenFraction,
 	toLargerMetricUnit,
 } from "@gram-lang/i18n";
+
+/**
+ * How a view writes the numbers it shows: in the reader's language (`1,5` in
+ * French), or through the integrator's own `formatFraction`.
+ */
+export interface NumberStyle {
+	lang?: string;
+	/** `RendererOptions.formatFraction`: replaces the default for a quantity. */
+	formatFraction?: (value: number) => string;
+}
+
+/**
+ * A mass in grams as a view shows it: one decimal, in the reader's language
+ * (`147,5 g` in French).
+ */
+export function formatGrams(grams: number, lang?: string): string {
+	return `${formatNumber(grams, lang, 1)} g`;
+}
 
 // Converts an AggregatedIngredient to a plain object that formatElement can render.
 // The first quantity becomes qty/unit; additional ones become variable_entries strings.
@@ -68,44 +90,45 @@ export function largerAmount(
 ): string | undefined {
 	const larger = toLargerMetricUnit(value, unit, lang);
 	return larger.unit !== (unit ?? "")
-		? `${larger.value} ${larger.unit}`
+		? `${formatNumber(larger.value, lang)} ${larger.unit}`
 		: undefined;
 }
 
-const COMMON_FRACTIONS = [
-	{ val: 0.5, str: "1/2" },
-	{ val: 0.25, str: "1/4" },
-	{ val: 0.75, str: "3/4" },
-	{ val: 1 / 3, str: "1/3" },
-	{ val: 2 / 3, str: "2/3" },
-	{ val: 0.125, str: "1/8" },
-	{ val: 0.375, str: "3/8" },
-	{ val: 0.625, str: "5/8" },
-	{ val: 0.875, str: "7/8" },
-];
-
 /** "1/4" for a value strictly below 1 that is (nearly) a common fraction. */
 export function toCommonFraction(value: number): string | undefined {
-	if (value >= 1) return undefined;
-	return COMMON_FRACTIONS.find((f) => Math.abs(value - f.val) < 0.01)?.str;
+	return commonFraction(value);
 }
 
-export function formatDecimalToFraction(value: unknown, unit?: string): string {
+/**
+ * A quantity as a cook reads it: a whole number, a common fraction (`1/2`), or
+ * a decimal rounded to what the unit needs, in the reader's language (`1,5`
+ * in French). An integrator's `formatFraction` replaces all of it.
+ */
+export function formatDecimalToFraction(
+	value: unknown,
+	unit?: string,
+	style: NumberStyle = {},
+): string {
 	if (typeof value !== "number") return String(value);
+	if (style.formatFraction) return style.formatFraction(value);
 
 	// Exact integers
 	if (Math.abs(value - Math.round(value)) < 0.01) {
 		return String(Math.round(value));
 	}
 
+	// A spoon, a cup, an imperial measure: `1 3/4 cup`, as a cook writes it.
+	const kitchen = toKitchenFraction(value, unit, style.lang);
+	if (kitchen) return kitchen;
+
 	const fraction = toCommonFraction(value);
 	if (fraction) return fraction;
 
 	if (unit && isCoarseUnit(unit)) {
-		return String(round1(value));
+		return formatNumber(round1(value), style.lang, 1);
 	}
 
-	return String(round2(value));
+	return formatNumber(round2(value), style.lang);
 }
 
 export interface ExtractedQuantity {
@@ -116,6 +139,7 @@ export interface ExtractedQuantity {
 
 export function getQty(
 	item: Record<string, unknown>,
+	style: NumberStyle = {},
 ): ExtractedQuantity | undefined {
 	if (item.qty !== undefined) {
 		if (typeof item.qty === "number") {
@@ -124,6 +148,7 @@ export function getQty(
 				text: formatDecimalToFraction(
 					item.qty,
 					item.unit as string | undefined,
+					style,
 				),
 			};
 		}
@@ -139,22 +164,33 @@ export function getQty(
 				isRelative: true,
 			};
 		}
-		return item.qty as ExtractedQuantity;
+		return localizedQuantity(item.qty as ExtractedQuantity, style.lang);
 	}
-	if (item.quantity) return item.quantity as ExtractedQuantity;
+	if (item.quantity)
+		return localizedQuantity(item.quantity as ExtractedQuantity, style.lang);
 	return undefined;
+}
+
+/** A quantity kept as text (`2.5-3`, `1/2`), its decimals in the reader's language. */
+function localizedQuantity(
+	qty: ExtractedQuantity,
+	lang?: string,
+): ExtractedQuantity {
+	if (!qty || typeof qty !== "object" || typeof qty.text !== "string")
+		return qty;
+	return { ...qty, text: localizeDecimals(qty.text, lang) };
 }
 
 /**
  * Helper to display Timer/Temperature range or value.
  */
-export function formatQuantityValue(q: any): string {
+export function formatQuantityValue(q: any, lang?: string): string {
 	if (!q) return "";
-	if (q.type === "range" && q.text) return q.text;
-	if (q.text) return q.text;
+	if (q.text) return localizeDecimals(String(q.text), lang);
 	if (q.type === ASTNodeType.RelativeQuantity) {
 		return `${q.percent}% of ${q.target}`;
 	}
+	if (typeof q.value === "number") return formatNumber(q.value, lang);
 	if (q.value !== undefined) return String(q.value);
 	return String(q);
 }

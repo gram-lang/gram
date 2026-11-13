@@ -45,7 +45,7 @@ describe("the tooltip card of a step element", () => {
 
 	it("follows the colon of the reader's language", () => {
 		expect(tooltipOf(toHTML(result, { lang: "fr" }), "sugar")).toContain(
-			"Masse : ~25.1 g",
+			"Masse : ~25,1 g",
 		);
 	});
 
