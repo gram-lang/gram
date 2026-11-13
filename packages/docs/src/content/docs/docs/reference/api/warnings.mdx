@@ -58,6 +58,8 @@ A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` in
 ### `INVALID_UNIT`
 Either a `Timer` was given a non-numeric (text) quantity, or a `Temperature` was given a unit other than Celsius/Fahrenheit. **Fix**: use a numeric value + a recognized unit for timers; use `°C` or `°F` for temperatures.
 
+<Since v="1.4.1" type="changed" /> It also flags an ingredient whose unit reads as two quantities: a known unit, a number and another known unit, as in `@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`. Gram does not add quantities, so the whole `cup 5 tbsp` was taken as one unknown unit: no mass, and a scaled recipe read `2 cup 5 tbsp`. **Fix**: write the total in one unit (`@flour{1.2 kg}`). A number that only describes the unit, as in `@tomatoes{1 tin of 400 g}`, raises nothing: scaling the number of tins stays right.
+
 ### `DURATION_OUT_OF_RANGE`
 <Since v="1.4.0" />
 

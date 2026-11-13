@@ -59,6 +59,8 @@ Un `Timer` (minuteur) ou une `Temperature` a été écrit sans unité explicite 
 ### `INVALID_UNIT`
 Soit un `Timer` a reçu une quantité non numérique (du texte), soit une `Temperature` a reçu une unité autre que Celsius ou Fahrenheit. **Correction** : utilisez une valeur numérique couplée à une unité temporelle reconnue pour les minuteurs, et limitez-vous à `°C` ou `°F` pour les températures.
 
+<Since v="1.4.1" type="changed" /> L'avertissement signale aussi un ingrédient dont l'unité se lit comme deux quantités : une unité connue, un nombre puis une autre unité connue, comme dans `@farine{1 cup 5 tbsp}` ou `@farine{1 kg 200 g}`. Gram n'additionne pas les quantités : tout `cup 5 tbsp` passait donc pour une seule unité inconnue, sans masse, et une recette doublée affichait `2 cup 5 tbsp`. **Correction** : écrivez le total dans une seule unité (`@farine{1.2 kg}`). Un nombre qui ne fait que décrire l'unité, comme dans `@tomates{1 boîte de 400 g}`, ne déclenche rien : doubler le nombre de boîtes reste juste.
+
 ### `DURATION_OUT_OF_RANGE`
 <Since v="1.4.0" />
 
