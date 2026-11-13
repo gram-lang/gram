@@ -29,6 +29,12 @@ Cuire pendant ~{25 min}.
 La notation abrégée `m` ou le terme `minutes` sont automatiquement normalisés en `min` par le compilateur.
 :::
 
+Une durée peut être décimale, avec une virgule ou un point (`~{1,5 h}`, `~{1.5 h}` ; voir les [nombres décimaux](/fr/docs/reference/syntax/ingredients/#nombres-décimaux)).
+
+:::caution
+Une décimale est une fraction de l'unité, pas des minutes : `~{1,30 h}` (ou `~{1.30 h}`) fait 1 heure 18, et non 1 h 30. Pour une heure et demie, écrivez `~{90min}` ou `~{1,5 h}`.
+:::
+
 La résolution des unités s'appuie sur le dictionnaire temporel multilingue de Gram. Les alias localisés ci-dessous sont donc nativement reconnus, quelle que soit la langue de rédaction de la recette (ainsi, `~{2j}` équivaut rigoureusement à `~{2d}`).
 
 <GeneratedTable table={timeUnitsTable("fr")} />

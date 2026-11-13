@@ -67,6 +67,11 @@ It flags as well a unit that hides a quantity, as in `@flour{about 200g}`: a qua
 
 A timer or a section's retro-planning offset lasts longer than 1000 years. **Fix**: check the number, often a stray digit or a missing unit letter (`~{-3000d}` is eight years, `~{-3000000000d}` is not a recipe). The duration is capped at 1000 years, so the timeline stays finite instead of coming out as `0`, `Infinity` or `NaN`. That limit is a technical bound, not a judgement on recipes: anything up to it, a solera that runs for decades included, is planned as written and raises nothing.
 
+### `AMBIGUOUS_NUMBER`
+<Since v="1.5.0" />
+
+A comma followed by exactly three digits, after a whole part of one to three digits, as in `@flour{1,000 g}` or `@flour{12,500 g}`. Gram reads a comma between two digits as a decimal and has no thousands separator, so this is 1 g (and 12.5 g); the warning says how the number was read, because an English reader would see a thousand. The quantity stays usable either way. **Fix**: write `{1000 g}` if a thousand was meant, or `{1 g}` otherwise. A number that cannot be a thousands separator, such as `{0,125 kg}` or `{1,25 kg}`, raises nothing, and neither does a point: `{1.000 kg}` has always meant 1 kg.
+
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`>> name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
 

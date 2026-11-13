@@ -197,7 +197,10 @@ GRAM {
   refSigil = "@" | "#" | "~" | "^" | "&"
 
   number = mixedFraction | unicodeFraction | plainNumber
-  plainNumber = digit+ ("." digit+)? ("/" digit+)?
+  // "." or "," between two digits is a decimal separator (1.5, 1,5): Gram has
+  // no thousands separator. A comma not between two digits ({1, 5 kg}) still
+  // fails, so the commas of the prose around an element are never touched.
+  plainNumber = digit+ (("." | ",") digit+)? ("/" digit+)?
   mixedFraction = digit+ sp+ digit+ "/" digit+
   unicodeFraction =
       | digit+ unicodeFractionChar -- mixed

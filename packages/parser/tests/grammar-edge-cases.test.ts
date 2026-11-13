@@ -592,3 +592,77 @@ describe("malformed quantity braces are errors, not silent drops (issue #24)", (
 		).not.toThrow();
 	});
 });
+
+describe("decimal comma", () => {
+	// Every element of a step, in a one-step recipe.
+	const elements = (src: string): any[] => {
+		const ast = getAST(`## T\n\n${src}\n`);
+		const section = ast.children[0] as { children: { children: any[] }[] };
+		return section.children[0].children;
+	};
+	const ofType = (src: string, type: ASTNodeType) =>
+		elements(src).filter((c) => c.type === type);
+
+	it("reads a comma between two digits as a decimal in an ingredient", () => {
+		const [ing] = firstIngredients("@farine{1,5 kg}");
+		expect(ing.quantity.value).toEqual({
+			type: "single",
+			value: 1.5,
+			text: "1,5",
+		});
+		expect(ing.quantity.unit).toBe("kg");
+	});
+
+	it("reads it in a range, a fraction and a number glued to its unit", () => {
+		expect(firstIngredients("@eau{1,5-2,5 l}")[0].quantity.value.range).toEqual(
+			{
+				min: 1.5,
+				max: 2.5,
+			},
+		);
+		expect(firstIngredients("@sel{1,5/2 g}")[0].quantity.value.value).toBe(
+			0.75,
+		);
+		expect(firstIngredients("@lait{0,5l}")[0].quantity.unit).toBe("l");
+	});
+
+	it("reads it in a relative quantity (12,5% is not 12%)", () => {
+		const [ing] = firstIngredients("@eau{12,5% &pâte}");
+		expect(ing.quantity.percent).toBe(12.5);
+	});
+
+	it("reads it in a timer, a temperature and a cookware count", () => {
+		expect(
+			ofType("Cuire ~{1,5 h}.", ASTNodeType.Timer)[0].quantity.value.value,
+		).toBe(1.5);
+		expect(
+			ofType("Four ^{37,5 °C}.", ASTNodeType.Temperature)[0].value.value,
+		).toBe(37.5);
+		expect(
+			ofType("Prendre #moules{1,5}.", ASTNodeType.Cookware)[0].quantity.value
+				.value,
+		).toBe(1.5);
+	});
+
+	it("reads it in a section anchor", () => {
+		const ast = getAST("## Pâte ~{-1,5h}\n\nPétrir.\n");
+		expect((ast.children[0] as any).retroPlanning).toEqual({
+			raw: "-1,5h",
+			sign: -1,
+			value: 1.5,
+			unit: "h",
+		});
+	});
+
+	it("leaves commas of the prose alone", () => {
+		const names = firstIngredients(
+			"Mélanger @farine{1}, @sucre{2,5 g}, @sel et @oeufs{3}.",
+		).map((i) => i.name);
+		expect(names).toEqual(["farine", "sucre", "sel", "oeufs"]);
+	});
+
+	it("still rejects a comma that is not between two digits", () => {
+		expect(() => getAST("## T\n\n@farine{1, 5 kg}.\n")).toThrow(GramParseError);
+		expect(() => getAST("## T\n\n@farine{1,kg}.\n")).toThrow(GramParseError);
+	});
+});

@@ -1,0 +1,73 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Ambiguous Number"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 50,
+                "end": 54
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1,000"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 61,
+                  "end": 68
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 54,
+                "end": 69
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 69,
+                "end": 70
+              }
+            }
+          ],
+          "loc": {
+            "start": 50,
+            "end": 71
+          }
+        }
+      ],
+      "loc": {
+        "start": 38,
+        "end": 71
+      }
+    }
+  ]
+}

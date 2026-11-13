@@ -5,6 +5,7 @@ description: "Comment déclarer les ingrédients avec le symbole @, préciser qu
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 Les ingrédients constituent la matière première de toute recette Gram.
 
@@ -189,6 +190,19 @@ Ajouter la @farine{1 1/2 tasse}.
 Ajouter le @beurre{1½ plaquette}.
 ```
 
+### Nombres décimaux
+<Since v="1.5.0" />
+
+Un nombre décimal s'écrit avec une virgule ou un point, selon votre habitude : `{1,5 kg}` et `{1.5 kg}` désignent la même quantité. C'est valable pour tous les nombres entre accolades : ingrédients, fourchettes (`{0,5-0,75 l}`), quantités relatives (`{12,5% &pâte}`), ustensiles, températures (`^{37,5°C}`), minuteurs et ancres de section.
+
+```gram
+Ajouter la @farine{1,5 kg} et le @sel{0.125 kg}.
+
+Verser le @lait{0,5-0,75 l}.
+```
+
+Gram n'a pas de séparateur de milliers : écrivez `{1500 g}`, jamais `{1,500 g}`. Une virgule suivie d'exactement trois chiffres se lit comme une décimale, comme les autres (`{1,000 g}` fait 1 g). Mais comme un lecteur anglophone y verrait mille, le compilateur émet `AMBIGUOUS_NUMBER` et précise comment il a lu le nombre. Le point garde le sens qu'il a toujours eu : `{1.000 kg}` fait 1 kg, sans avertissement.
+
 ## Gestion des erreurs
 
 Certaines erreurs de syntaxe arrêtent la lecture de la recette avant même la compilation : une quantité entre accolades illisible (`@sel{1 g/l}`), une accolade jamais refermée. Le message indique l'endroit exact à corriger, et l'éditeur le souligne.
@@ -200,6 +214,7 @@ Le compilateur vérifie les erreurs sémantiques dans vos déclarations d'`@ingr
 - **Base de Données Manquante** : Si vous compilez avec une base de données et que l'`@ingrédient` est introuvable, il avertit `MISSING_INGREDIENT`.
 - **Macros Manquants** : Si la base de données ne contient pas d'informations nutritionnelles pour l'`@ingrédient`, il avertit `MISSING_MACROS`.
 - **Masse Inconnue** : S'il ne peut pas convertir un volume ou une unité en grammes pour estimer la nutrition, il avertit `UNKNOWN_MASS`.
+- **Nombre ambigu** : si une virgule est suivie d'exactement trois chiffres (`{1,000 g}`), il lit une décimale et avertit `AMBIGUOUS_NUMBER`, au cas où mille était voulu.
 
 ## Ressources associées
 

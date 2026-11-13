@@ -51,15 +51,25 @@ export function decimalSeparator(lang?: string): string {
 }
 
 /**
- * The decimal points of a quantity already written as text (a range
- * `1.5-2`, a timer `1.5`) in the reader's language: `"1,5-2"` in French.
- * Only a point between two digits changes, so `1/2` or a unit stay as they are.
+ * The decimal separators of a quantity already written as text (a range
+ * `1.5-2`, a timer `1,5`) in the reader's language: `"1,5-2"` in French,
+ * `"1.5"` in English. Gram reads a point or a comma between two digits as a
+ * decimal separator, so both change; `1/2` or a unit stay as they are.
  */
 export function localizeDecimals(text: string, lang?: string): string {
-	const separator = decimalSeparator(lang);
-	return separator === "."
-		? text
-		: text.replace(/(\d)\.(\d)/g, `$1${separator}$2`);
+	return text.replace(/(\d)[.,](\d)/g, `$1${decimalSeparator(lang)}$2`);
+}
+
+/**
+ * A comma that a reader could take for a thousands separator: exactly three
+ * digits after it and a whole part of one to three digits, not zero
+ * (`1,000`, `12,500`). Gram reads it as a decimal (1, 12.5), as it reads every
+ * comma between two digits, and has no thousands separator; `0,125` or
+ * `1,25` cannot be one. The point is not concerned: it has always been a
+ * decimal in Gram, so `1.000` keeps meaning 1.
+ */
+export function looksLikeThousands(text: string): boolean {
+	return /(?<![\d.,])(?!0+,)\d{1,3},\d{3}(?![\d.,])/.test(text);
 }
 
 /** The fractions a cook reads on a spoon or a cup, from 1/8 to 7/8. */

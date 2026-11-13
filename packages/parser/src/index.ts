@@ -83,8 +83,8 @@ function throwMalformedQuantity(
 	);
 }
 
-const RETRO_PLANNING_NUMBER_UNIT = /^(-)?\s*(\d+(?:\.\d+)?)\s*(\p{L}+)$/u;
-const RETRO_PLANNING_NUMBER_ONLY = /^(-)?\s*(\d+(?:\.\d+)?)\s*$/;
+const RETRO_PLANNING_NUMBER_UNIT = /^(-)?\s*(\d+(?:[.,]\d+)?)\s*(\p{L}+)$/u;
+const RETRO_PLANNING_NUMBER_ONLY = /^(-)?\s*(\d+(?:[.,]\d+)?)\s*$/;
 
 /**
  * Mechanically extracts sign/value/unit from a raw `~{...}` retro-planning
@@ -98,7 +98,7 @@ const parseRetroPlanning = (raw: string): RetroPlanningAST => {
 		return {
 			raw,
 			sign: numberUnit[1] ? -1 : 1,
-			value: Number(numberUnit[2]),
+			value: readDecimal(numberUnit[2] ?? ""),
 			unit: numberUnit[3] ?? null,
 		};
 	}
@@ -108,7 +108,7 @@ const parseRetroPlanning = (raw: string): RetroPlanningAST => {
 		return {
 			raw,
 			sign: numberOnly[1] ? -1 : 1,
-			value: Number(numberOnly[2]),
+			value: readDecimal(numberOnly[2] ?? ""),
 			unit: null,
 		};
 	}
@@ -126,6 +126,7 @@ const getOpt = (node: any) =>
 // package's public surface, and stays independently testable in isolation.
 import {
 	parseNumber,
+	readDecimal,
 	unicodeFractionValue,
 	makeMixedFraction,
 	makeRange,
@@ -610,7 +611,12 @@ semantics.addOperation("toAST", {
 	): RelativeQuantityAST {
 		return {
 			type: ASTNodeType.RelativeQuantity,
-			percent: parseFloat(val.sourceString),
+			// The grammar's number, not `parseFloat` of its text, which stops at
+			// a decimal comma: `{12,5% &dough}` must not become 12%. A fraction
+			// over zero has no value (`parseNumber`): its text is read as before.
+			percent:
+				(val.toAST() as QuantityValueAST | null)?.value ??
+				readDecimal(val.sourceString),
 			target: clean(name.sourceString),
 			referenceType: marker.sourceString === "&" ? "variable" : "ingredient",
 			loc: { start: this.source.startIdx, end: this.source.endIdx },

@@ -68,6 +68,11 @@ Il signale enfin une unité qui cache une quantité, comme dans `@farine{environ
 
 Un minuteur, ou le décalage du rétroplanning d'une section, dure plus de 1000 ans. **Correction** : vérifiez le nombre, souvent un chiffre en trop ou une lettre d'unité oubliée (`~{-3000d}` fait huit ans, `~{-3000000000d}` n'est plus une recette). La durée est ramenée à 1000 ans, pour que la chronologie reste finie au lieu de donner `0`, `Infinity` ou `NaN`. Cette limite est une borne technique, pas un jugement sur les recettes : tout ce qui la respecte, une solera de plusieurs décennies comprise, est planifié tel quel et ne déclenche rien.
 
+### `AMBIGUOUS_NUMBER`
+<Since v="1.5.0" />
+
+Une virgule suivie d'exactement trois chiffres, après une partie entière d'un à trois chiffres, comme dans `@farine{1,000 g}` ou `@farine{12,500 g}`. Gram lit une virgule entre deux chiffres comme une décimale et n'a pas de séparateur de milliers : c'est donc 1 g (et 12,5 g). L'avertissement dit comment le nombre a été lu, parce qu'un lecteur anglophone y verrait mille. Dans tous les cas, la quantité reste utilisable. **Correction** : écrivez `{1000 g}` si vous vouliez mille, `{1 g}` sinon. Un nombre qui ne peut pas être un séparateur de milliers, comme `{0,125 kg}` ou `{1,25 kg}`, ne déclenche rien, pas plus que le point : `{1.000 kg}` a toujours voulu dire 1 kg.
+
 ### `SCOPE_CONFLICT`
 Deux sections déclarent un même nom de variable (`>> nom`). Les noms de variables doivent être uniques à l'échelle de toute la recette, pas juste de la section. **Correction** : renommez l'une des deux variables.
 

@@ -5,6 +5,7 @@ description: "How to declare ingredients with the @ symbol, specify quantities a
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 Ingredients are the core building blocks of any Gram recipe.
 
@@ -189,6 +190,19 @@ Add @flour{1 1/2 cups}.
 Add @butter{1½ sticks}.
 ```
 
+### Decimal numbers
+<Since v="1.5.0" />
+
+A decimal number takes a point or a comma, whichever you are used to: `{1.5 kg}` and `{1,5 kg}` are the same quantity. This holds for every number in braces: ingredients, ranges (`{0,5-0,75 l}`), relative quantities (`{12,5% &dough}`), cookware, temperatures (`^{37,5°C}`), timers and section anchors.
+
+```gram
+Add @flour{1,5 kg} and @salt{0.125 kg}.
+
+Pour @milk{0,5-0,75 l}.
+```
+
+Gram has no thousands separator: write `{1500 g}`, never `{1,500 g}`. A comma followed by exactly three digits is read as a decimal like any other (`{1,000 g}` is 1 g), but since a reader could mean a thousand, the compiler warns `AMBIGUOUS_NUMBER` and says how it read the number. A point keeps the meaning it has always had: `{1.000 kg}` is 1 kg, with no warning.
+
 ## Error handling
 
 Some syntax errors stop the recipe from being read before it is even compiled: an unreadable quantity in braces (`@salt{1 g/l}`), a brace that is never closed. The message points at the exact spot to fix, and the editor underlines it.
@@ -200,6 +214,7 @@ The compiler checks for semantic errors in your `@ingredient` declarations and w
 - **Database Missing**: If you compile with a database and the `@ingredient` is not found, it warns `MISSING_INGREDIENT`.
 - **Missing Macros**: If the database lacks nutritional information for the `@ingredient`, it warns `MISSING_MACROS`.
 - **Unknown Mass**: If it cannot convert a volume or count into grams to estimate nutrition, it warns `UNKNOWN_MASS`.
+- **Ambiguous Number**: If a comma is followed by exactly three digits (`{1,000 g}`), it reads a decimal and warns `AMBIGUOUS_NUMBER`, in case a thousand was meant.
 
 ## Related resources
 

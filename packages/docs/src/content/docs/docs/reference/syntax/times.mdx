@@ -29,6 +29,12 @@ Bake for ~{25min}.
 Shorthand `m` or the word `minutes` are automatically normalized to `min` by the compiler.
 :::
 
+A duration can be a decimal, with a point or a comma (`~{1.5 h}`, `~{1,5 h}`; see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
+
+:::caution
+A decimal is a fraction of the unit, not minutes: `~{1.30 h}` (or `~{1,30 h}`) is 1 hour 18 minutes, not 1 hour 30. Write `~{90min}` or `~{1.5 h}` for an hour and a half.
+:::
+
 These units are resolved through Gram's multi-language time dictionary: localized aliases below are recognized natively regardless of the recipe language (e.g. in a French recipe, `~{2j}` resolves identically to `~{2d}`).
 
 <GeneratedTable table={timeUnitsTable("en")} />

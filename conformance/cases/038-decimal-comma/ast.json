@@ -1,0 +1,413 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Decimal Comma",
+    "portions": "4"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": {
+        "raw": "-4,5h",
+        "sign": -1,
+        "value": 4.5,
+        "unit": "h"
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "dough",
+        "loc": {
+          "start": 60,
+          "end": 68
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 70,
+                "end": 74
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1.5,
+                  "text": "1,5"
+                },
+                "unit": "kg",
+                "fixed": false,
+                "loc": {
+                  "start": 81,
+                  "end": 87
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 74,
+                "end": 88
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 88,
+                "end": 90
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 0.125,
+                  "text": "0,125"
+                },
+                "unit": "kg",
+                "fixed": false,
+                "loc": {
+                  "start": 96,
+                  "end": 104
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 90,
+                "end": 105
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 105,
+                "end": 107
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1.000"
+                },
+                "unit": "kg",
+                "fixed": false,
+                "loc": {
+                  "start": 115,
+                  "end": 123
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 107,
+                "end": 124
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 125,
+                "end": 129
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "range",
+                  "value": 0.625,
+                  "range": {
+                    "min": 0.5,
+                    "max": 0.75
+                  },
+                  "text": "0,5-0,75"
+                },
+                "unit": "l",
+                "fixed": false,
+                "loc": {
+                  "start": 135,
+                  "end": 145
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 129,
+                "end": 146
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then ",
+              "loc": {
+                "start": 146,
+                "end": 153
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 12.5,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 160,
+                  "end": 173
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 153,
+                "end": 174
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 174,
+                "end": 175
+              }
+            }
+          ],
+          "loc": {
+            "start": 70,
+            "end": 177
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Knead on ",
+              "loc": {
+                "start": 177,
+                "end": 186
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "board",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 192,
+                  "end": 195
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 186,
+                "end": 195
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and rest ",
+              "loc": {
+                "start": 196,
+                "end": 205
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1.5,
+                  "text": "1,5"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 207,
+                  "end": 212
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 205,
+                "end": 213
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 213,
+                "end": 214
+              }
+            }
+          ],
+          "loc": {
+            "start": 177,
+            "end": 216
+          }
+        }
+      ],
+      "loc": {
+        "start": 42,
+        "end": 216
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake ",
+              "loc": {
+                "start": 225,
+                "end": 230
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough",
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 237,
+                  "end": 237
+                }
+              },
+              "loc": {
+                "start": 230,
+                "end": 238
+              }
+            },
+            {
+              "type": "Text",
+              "value": "at ",
+              "loc": {
+                "start": 239,
+                "end": 242
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 242,
+                "end": 252
+              },
+              "value": {
+                "type": "single",
+                "value": 180.5,
+                "text": "180,5"
+              },
+              "unit": "°C"
+            },
+            {
+              "type": "Text",
+              "value": "for ",
+              "loc": {
+                "start": 253,
+                "end": 257
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2.25,
+                  "text": "2,25"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 259,
+                  "end": 265
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 257,
+                "end": 266
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 266,
+                "end": 267
+              }
+            }
+          ],
+          "loc": {
+            "start": 225,
+            "end": 268
+          }
+        }
+      ],
+      "loc": {
+        "start": 216,
+        "end": 268
+      }
+    }
+  ]
+}

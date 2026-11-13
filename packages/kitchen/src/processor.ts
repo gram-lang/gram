@@ -64,6 +64,7 @@ import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
 import {
 	isMeasureUnit,
+	looksLikeThousands,
 	resolveTimeUnit,
 	unitContainsQuantity,
 } from "@gram-lang/i18n";
@@ -139,6 +140,97 @@ function checkModifiers(
 }
 
 export type ProcessedBlockResult = StepToken;
+
+type QuantityValue = NonNullable<TemperatureAST["value"]>;
+
+/** How Gram read a number: `1`, or `1-2` for a range. */
+function readAs(value: QuantityValue): string {
+	return value.type === "range"
+		? `${value.range.min}-${value.range.max}`
+		: String(value.value);
+}
+
+/**
+ * `{1,000 g}`: a comma a reader could take for a thousands separator. Gram
+ * reads every comma between two digits as a decimal (the parser keeps the
+ * number as written in `text`), so the quantity stays usable, 1 g here; the
+ * warning says how it was read, in case a thousand was meant.
+ */
+function checkAmbiguousNumber(
+	ctx: ProcessorContext,
+	value: QuantityValue | null | undefined,
+	item: string,
+	loc?: Location,
+) {
+	const text = value?.text;
+	if (!value || !text || !looksLikeThousands(text)) return;
+	pushWarning(ctx, WarningCode.AMBIGUOUS_NUMBER, {
+		value: text,
+		read: readAs(value),
+		suggestion: text.replace(/(\d),(\d{3})(?!\d)/g, "$1$2"),
+		item,
+		loc,
+	});
+}
+
+/** The number of an element's `{…}`, when it has one. */
+const quantityValue = (
+	quantity: { type: ASTNodeType; value?: unknown } | null | undefined,
+): QuantityValue | null =>
+	quantity?.type === ASTNodeType.Quantity
+		? ((quantity.value as QuantityValue | null) ?? null)
+		: null;
+
+/**
+ * Every number an element holds (its own, a composite parent's). An
+ * alternative's options come through `processBlockItem` one by one.
+ */
+function checkAmbiguousNumbers(
+	item: StepAST["children"][number],
+	ctx: ProcessorContext,
+) {
+	switch (item.type) {
+		case ASTNodeType.Ingredient:
+			checkAmbiguousNumber(
+				ctx,
+				quantityValue(item.quantity),
+				item.name,
+				item.loc,
+			);
+			checkAmbiguousNumber(
+				ctx,
+				quantityValue(item.composite?.quantity),
+				item.composite?.parent ?? item.name,
+				item.loc,
+			);
+			return;
+		case ASTNodeType.Cookware:
+		case ASTNodeType.Reference:
+			checkAmbiguousNumber(
+				ctx,
+				quantityValue(item.quantity),
+				item.name,
+				item.loc,
+			);
+			return;
+		case ASTNodeType.Timer:
+			checkAmbiguousNumber(
+				ctx,
+				quantityValue(item.quantity),
+				item.name || "Timer",
+				item.loc,
+			);
+			return;
+		case ASTNodeType.Temperature:
+			checkAmbiguousNumber(
+				ctx,
+				item.value,
+				item.name || "Temperature",
+				item.loc,
+			);
+			return;
+	}
+}
 
 /**
  * `{1 cup 5 tbsp}`: a unit made of a known unit, a number and another known
@@ -659,6 +751,7 @@ export function processBlockItem(
 	secCookware: Usage[],
 ): ProcessedBlockResult | null {
 	if (!item) return null;
+	checkAmbiguousNumbers(item, ctx);
 
 	switch (item.type) {
 		case ASTNodeType.Ingredient: {
