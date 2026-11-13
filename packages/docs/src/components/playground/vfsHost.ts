@@ -3,7 +3,6 @@ import type { ModuleHost } from "@gram-lang/modules";
 
 // Default virtual path used when creating a blank recipe scratchpad.
 export const DEFAULT_ENTRY_URI = "/blank.gram";
-export const ENTRY_URI = DEFAULT_ENTRY_URI;
 
 /**
  * The playground's `ModuleHost` (module-imports RFC §B.2): a thin wrapper
