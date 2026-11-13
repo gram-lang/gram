@@ -62,7 +62,11 @@ import {
 } from "./schedule-warnings";
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
-import { resolveTimeUnit } from "@gram-lang/i18n";
+import {
+	normalizeUnit,
+	resolveTimeUnit,
+	UNIT_CONVERSIONS,
+} from "@gram-lang/i18n";
 import { type Warning, WarningCode, pushWarning } from "./warnings";
 import { detectIntermediateCycles } from "./graph";
 import { calculatePreparationTime } from "./metrics";
@@ -136,6 +140,34 @@ function checkModifiers(
 
 export type ProcessedBlockResult = StepToken;
 
+/** True for a unit of mass or volume Gram knows (g, kg, cup, tbsp, c.à.s...). */
+function isKnownMeasure(unit: string): boolean {
+	const canonical = normalizeUnit(unit);
+	return (
+		UNIT_CONVERSIONS.mass.map[canonical] !== undefined ||
+		UNIT_CONVERSIONS.volume.map[canonical] !== undefined
+	);
+}
+
+/**
+ * `{1 cup 5 tbsp}`: a unit made of a known unit, a number and another known
+ * unit reads as two quantities, which Gram does not add. Unflagged, the whole
+ * "cup 5 tbsp" passed as one unknown unit: no mass, and a scaled recipe read
+ * "2 cup 5 tbsp". `{1 boîte de 400 g}` is not one: "boîte de" is no unit, and
+ * its 400 g describes the tin, so scaling the number of tins stays right.
+ */
+export function looksLikeTwoQuantities(unit: string): boolean {
+	const words = unit.trim().split(/\s+/);
+	for (let i = 1; i < words.length; i++) {
+		const number = words[i]?.match(/^\d+(?:[.,/]\d+)?(.*)$/);
+		if (!number) continue;
+		const first = words.slice(0, i).join(" ");
+		const second = [number[1], ...words.slice(i + 1)].join(" ").trim();
+		if (second && isKnownMeasure(first) && isKnownMeasure(second)) return true;
+	}
+	return false;
+}
+
 function processIngredient(
 	item: IngredientAST,
 	ctx: ProcessorContext,
@@ -147,6 +179,14 @@ function processIngredient(
 	const defaultUnit =
 		(item.quantity && "unit" in item.quantity && item.quantity.unit) ||
 		undefined;
+	if (typeof defaultUnit === "string" && looksLikeTwoQuantities(defaultUnit)) {
+		pushWarning(ctx, WarningCode.INVALID_UNIT, {
+			type: "Ingredient",
+			value: defaultUnit,
+			item: item.name,
+			loc: item.loc,
+		});
+	}
 	const id = registry.registerIngredient(
 		item.name,
 		defaultUnit ? { default_unit: defaultUnit } : undefined,

@@ -65,7 +65,7 @@ export interface WarningPayloads {
 		loc?: Location;
 	};
 	[WarningCode.INVALID_UNIT]: {
-		type: "Timer" | "Temperature" | "RetroPlanning";
+		type: "Timer" | "Temperature" | "RetroPlanning" | "Ingredient";
 		value: string;
 		item?: string;
 		loc?: Location;
@@ -151,7 +151,9 @@ export const warningTemplates: {
 	[WarningCode.INVALID_UNIT]: (p) =>
 		p.type === "RetroPlanning"
 			? `Invalid retro-planning unit "${p.value}"${p.item ? ` on "${p.item}"` : ""} — expected d, h, or min.`
-			: `Invalid unit "${p.value}" for ${p.type}.`,
+			: p.type === "Ingredient"
+				? `Unit "${p.value}"${p.item ? ` of "${p.item}"` : ""} reads as two quantities, which Gram does not add: write the total in one unit (e.g. {1.2 kg} rather than {1 kg 200 g}).`
+				: `Invalid unit "${p.value}" for ${p.type}.`,
 	[WarningCode.DURATION_OUT_OF_RANGE]: (p) =>
 		`${p.type === "RetroPlanning" ? `Retro-planning offset for "${p.item}"` : `Timer "${p.item}"`} is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
