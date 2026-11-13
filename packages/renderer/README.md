@@ -5,7 +5,7 @@
 
 *Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
 
-The universal renderer for the Gram recipe language. It takes compiled or analyzed recipe ASTs and renders them into structured Markdown or semantic HTML with support for custom visual elements and class names.
+The renderer of the Gram recipe language. It turns a compiled (or analyzed) recipe into **views**, the recipe and its run sheet, each written in every format it offers: semantic HTML, Markdown, plain text and a print layout. The views follow a list of settings (comments, mise en place, rests, quantities in the steps, nutrition basis...) that the CLI, the editor and the playground read from the same place. The engine computes, the views only show.
 
 ---
 
@@ -28,85 +28,75 @@ bun add @gram-lang/renderer
 ## ⚡ Usage
 
 ```typescript
+import { getAST } from '@gram-lang/parser';
+import { compile } from '@gram-lang/kitchen';
+import { analyze } from '@gram-lang/analyzer';
 import {
-  toMarkdown,
   toHTML,
+  toMarkdown,
+  toText,
   toPrintHTML,
-  runSheetToText,
-  runSheetToHTML
+  prepareViews,
+  render,
+  views
 } from '@gram-lang/renderer';
-import { project, runSheet } from '@gram-lang/scheduler';
 
-const recipe = {
-  title: "Simple Crepes",
-  metrics: { activeTime: 10 },
-  // The timelines a compiled recipe carries, one per mode (`perSection`,
-  // `upfront`, `perDay`; `compile()` produces them for you): only the one
-  // you render is read. `metrics.totalTime` is deprecated: it is only read when
-  // `schedules` is missing.
-  schedules: {
-    perSection: { totalTime: 30, idleTime: 20, blocks: [], days: [] }
-  },
-  shopping_list: [
-    { id: "flour", qty: 200, unit: "g" }
-  ],
-  sections: [
-    {
-      title: "Preparation",
-      steps: [
-        { type: "step", content: ["Whisk everything together."] }
-      ]
-    }
-  ]
-};
+const { result: recipe } = analyze(compile(getAST(source)), ingredientDatabase);
 
-// 1. Simple Markdown rendering
+// 1. The recipe in each of its formats
+const html = toHTML(recipe, { lang: 'en' });       // semantic HTML, styled by gram.css
 const markdown = toMarkdown(recipe);
+const text = toText(recipe, { lang: 'en' });       // plain text, for a terminal or a file
+const printHtml = toPrintHTML(recipe);             // self-contained, one page per day
 
-// 2. Customized HTML rendering with custom icons (Inversion of Control)
-const html = toHTML(recipe, {
-  icons: {
-    clock: '<span class="icon-clock">🕒</span>',
-    fire: '<span class="icon-fire">🔥</span>'
-  },
-  classes: {
-    recipeTitle: "custom-title",
-    recipeMeta: "flex gap-2"
-  }
+// 2. Customized HTML (inversion of control)
+const custom = toHTML(recipe, {
+  icons: { clock: '<span class="icon-clock">🕒</span>' },
+  classes: { recipeTitle: 'custom-title' }
 });
 
-// 3. Print-optimized HTML rendering (self-contained, single-page layout)
-const printHtml = toPrintHTML(recipe);
+// 3. Views: the same pipeline for every view, worked out once
+//    `prepareViews()` computes the timeline, the run sheet and the serving time
+//    search only when a view asks for them.
+const input = prepareViews(
+  recipe,
+  { miseEnPlace: 'perSection', rests: 'shortest', comments: 'show' },   // the view settings
+  {
+    lang: 'en',
+    serveAt: '2026-10-17T20:00',                                        // optional: put the plan on the calendar
+    kitchen: { timeZone: 'Europe/Paris', availability: { daily: [{ start: '08:00', end: '22:00' }] } }
+  }
+);
 
-// 4. The run sheet of a schedule: the days, the visits to the kitchen, what to take out.
-// `runSheet()` (from @gram-lang/scheduler) computes it; the renderer writes it.
-const context = {
-  serveAt: '2026-10-17T20:00',
-  timeZone: 'Europe/Paris',
-  availability: { daily: [{ start: '08:00', end: '22:00' }] }
-};
-const sheet = runSheet(project([{ graph: recipe.tasks }], context), { graph: recipe.tasks, context });
-const text = runSheetToText(sheet, recipe, { lang: 'en' });  // plain text
-const fragment = runSheetToHTML(sheet, recipe);              // HTML fragment, no script
-
-// 5. Or write it after the recipe, in one document
-const document = toHTML(recipe, { runSheet: sheet });
+for (const view of views) {
+  // `views` lists each view with its formats; `render()` returns null when the recipe has nothing for it
+  console.log(view.id, view.formats);                     // 'recipe' [...], 'runSheet' [...]
+}
+const runSheetHtml = render('runSheet', input, 'html');   // HTML fragment, no script
+const runSheetText = render('runSheet', input, 'text');
 ```
+
+The settings are described once in `VIEW_SETTINGS` and `RECIPE_SETTINGS` (values, defaults, descriptions), read with `parseViewSettings()` and `parseRecipeSettings()`. `inspectors` and `outputs` list the looks at the pipeline (composed AST, compiled JSON, JSON tree) next to the views, for an interface that offers both.
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) to add a view or a setting.
 
 ---
 
 ## 🏗️ Structure
 
 *   `src/index.ts`: The main entry point exporting public APIs.
+*   `src/prepare-views.ts`: `prepareViews()`, the one entry point of the views: the timeline, the run sheet and the serving time search, worked out once and only when a view reads them.
+*   `src/contract.ts`: What a view (`ViewDefinition`) and an inspector are, and the formats.
+*   `src/views/registry.ts`, `src/outputs.ts`: The list of views (`views`, `render()`) and of every output (views and inspectors).
+*   `src/views/recipe/`: The recipe view: HTML, Markdown, plain text and print, its `screen.css` and `print.css`.
+*   `src/views/run-sheet/`: The run sheet view (`runSheetTo*`, `describeRunSheet`): the days, the visits to the kitchen, what to take out and what to do, and the serving time search in words.
+*   `src/inspectors/`: The AST as an S-expression and the JSON tree (`renderSExpr`, `renderJsonTree`).
+*   `src/settings.ts`: The descriptors of the view and recipe settings, shared by every surface.
+*   `src/shared/`: What several views use (formatting of a step, nutrition, icons, tooltips, `tokens.css`, `base.css` and the base print stylesheet).
+*   `src/describe-error.ts`: `describeError()`, the same error report for every interface.
 *   `src/types.ts`: TypeScript interfaces for `RendererOptions`, `RendererIcons`, and `RendererClasses`.
-*   `src/utils.ts`: Common helpers (decimal-to-fraction formatting, HTML escaping, duration formatting).
-*   `src/run-sheet.ts`, `src/run-sheet-parts.ts`, `src/serve-times.ts`: The run sheet in words (`describeRunSheet`, `runSheetTo*`), what to take out and what to do (`visitKit`, `sectionProgram`), and the serving time search in words.
-*   `src/gantt/`: The deprecated Gantt chart (removed in 2.0.0): layout computation, HTML fragment rendering, and event delegation interactivity.
-*   `src/formatters/element.ts`: Universal formatter for individual AST nodes (ingredients, cookware, timers, alternative groups).
-*   `src/formatters/markdown.ts`: Orchestrates Markdown generation for full recipes.
-*   `src/formatters/html.ts`: Orchestrates HTML generation for full recipes using classes and icons injection.
-*   `src/formatters/print.ts`: Orchestrates self-contained, print-optimized HTML generation (`toPrintHTML`).
-*   `gram.css` (`@gram-lang/renderer/gram.css`, built into `dist/`): Stylesheet of every view on screen, joined from `src/shared/tokens.css` and each view's `screen.css`, each scoped to the view's root (`.gram-recipe`, `.gram-run-sheet`).
+*   `src/gantt/`: The deprecated Gantt chart (removed in 2.0.0), no longer drawn by any Gram surface: use the run sheet.
+*   `gram.css` (`@gram-lang/renderer/gram.css`, built into `dist/`): The stylesheet of every view on screen, each view scoped to its own root element (`.gram-recipe`, `.gram-run-sheet`) with the CSS `@scope` rule.
 *   `gantt.css`: Stylesheet of the deprecated Gantt chart.
 
 ---

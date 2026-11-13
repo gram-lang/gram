@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   ci:
-    name: Build, Test & Publish
+    name: Build & Test
     runs-on: docker
     container:
       image: oven/bun:1.3.14
@@ -112,12 +112,3 @@ jobs:
           echo "GEMINI_API_KEY=fake-key-for-smoke-test" > .env
           ! $GRAM_BIN import does-not-exist.gram 2>/tmp/env-smoke-stderr.txt
           ! grep -q 'No AI provider configured' /tmp/env-smoke-stderr.txt
-
-      - name: Publish changesets
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-          node scripts/resolve-workspace-versions.cjs
-          npx changeset publish

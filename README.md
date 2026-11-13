@@ -38,7 +38,7 @@ Gram turns plain-text recipes into structured, queryable data while keeping them
 * **Modular Recipes (`@use`)**: Import and compose external base recipes (`@use "./bases/shortcrust.gram" as &crust`) with automatic yield scaling, timeline interleaving, and unified shopping lists.
 * **Dynamic Calculations**: Declare Baker's percentages, relative quantities (`@water{75% @&flour}`), and automatic unit conversions directly in your recipe.
 * **Step References & Variables**: Reuse intermediate preparations (`->&dough`) and sub-ingredients (`<@lemons{2}`) without messing up shopping list totals.
-* **Timers & Run Sheet**: Separate active steps (`~{10min}`) from background waiting times (`~_{2h}`): Gram computes your schedule, working backward from the service, and tells you when to be in the kitchen and what to take out.
+* **Timers & Run Sheet**: Separate active steps (`~{10min}`) from background waiting times (`~_{2h}`): Gram computes your schedule, working backward from the service, and tells you when to be in the kitchen and what to take out. Give it a serving time and the hours you can cook, and a wait written as a range (`~_{8-16h}`) stretches or shortens to keep your work out of the night.
 * **Developer Tooling**: Includes a Language Server (LSP), a VS Code extension with real-time diagnostics, a CLI tool, and a TypeScript API.
 
 ---
@@ -75,7 +75,7 @@ Gram comes with tools to help write, inspect, and compile recipes.
 
 ### VS Code Extension & Language Server
 [**Available on the VS Code Marketplace**](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)
-- **Live Preview & Run Sheet**: Side-by-side recipe rendering and the run sheet of the recipe (days, visits to the kitchen, what to take out).
+- **Live Preview & Run Sheet**: Side-by-side recipe rendering and the run sheet of the recipe (days, visits to the kitchen, what to take out), with the serving time, the scale and the settings (mise en place, rests, comments...) one click away.
 - **Autocomplete**: Contextual suggestions for ingredients from your database, units, and step references.
 - **Diagnostics**: Real-time error checking for missing ingredients, unused references, or circular dependencies.
 
@@ -83,6 +83,9 @@ Gram comes with tools to help write, inspect, and compile recipes.
 [**View on npmjs**](https://www.npmjs.com/package/@gram-lang/cli)
 - **`gram check` & `gram build`**: Validate syntax and compile `.gram` files to JSON.
 - **`gram cook`**: Step-by-step cooking assistant in your terminal with live timers.
+- **`gram view`**: Read a recipe in the terminal, in your language, with the same settings as the editor and the playground (`--mise-en-place`, `--rests`, `--comments`...).
+- **`gram plan`**: Plan a recipe: the days of work, the visits to the kitchen and what to take out, backward from a serving time (`--serve`) within your hours (`--available`), or find the serving times that work (`--find`).
+- **`gram export` & `gram print`**: Write the recipe or its run sheet (`--view run-sheet`) as HTML, Markdown or text, or in a print layout.
 - **`gram scale`**: Resize recipes (e.g., `--scale=2` or `--scale flour=300g`) with before/after comparison tables.
 - **`gram diff`**: Semantic diff to compare quantities, timings, or temperatures between recipe versions.
 - **`gram shop`**: Generate aggregated shopping lists across multiple recipes.
@@ -118,7 +121,7 @@ This monorepo is divided into specialized packages under `packages/`:
 | [**`@gram-lang/scheduler`**](./packages/scheduler/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/scheduler?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/scheduler) | The scheduling engine: lays a recipe's tasks out on a timeline and places it on the calendar from a serving time and your availability. |
 | [**`@gram-lang/format`**](./packages/format/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/format?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/format) | Canonical `.gram` source code formatter. |
 | [**`@gram-lang/analyzer`**](./packages/analyzer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/analyzer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/analyzer) | The physical resolver for mass normalization, yield, and nutrition. |
-| [**`@gram-lang/renderer`**](./packages/renderer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/renderer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/renderer) | The display layer converting JSON into HTML, Markdown, or the run sheet of a schedule. |
+| [**`@gram-lang/renderer`**](./packages/renderer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/renderer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/renderer) | The display layer: the views of a recipe and its run sheet, in HTML, Markdown, text and print. |
 | [**`@gram-lang/cli`**](./packages/cli/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/cli?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/cli) | The official command-line interface. |
 | [**`@gram-lang/i18n`**](./packages/i18n/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/i18n?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/i18n) | Localization layer for units, categories, and AI prompts. |
 | [**`vscode-extension`**](./packages/vscode-extension/README.md) | [![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/gram-lang.gram-lang.svg?style=flat-square&color=007acc)](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang) | The Visual Studio Code extension. |

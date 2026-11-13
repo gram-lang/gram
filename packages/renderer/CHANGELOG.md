@@ -1,5 +1,100 @@
 # @gram-lang/renderer
 
+## 1.4.0
+
+### Minor Changes
+
+- **Run sheet**: A new run sheet shows what the scheduler computed, and replaces the Gantt chart as the view of the schedule:
+
+  - `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML` and `runSheetToPrintHTML` write the plan: the days of the recipe, then for each visit to the kitchen a worksheet in three parts: the mise en place (what to take out, with the weights, the preparations made before and the bases in stock), the execution (the steps of each section, numbered as in the recipe) and what to do on leaving (what goes on afterwards, and when to come back)
+  - Each visit says how early it could be done ("Possible from 18:00") or which wait holds it in place, and a wait the plan stretched or shortened is reported on its day
+  - A recipe with no serving time is told in days before the service (D-2, D-1, day D); the printed plan has one day per page, with boxes to tick for the mise en place
+  - The recipe views no longer carry schedule details: the run sheet is its own view. For developers, `describeRunSheet()` gives the same plan in words
+
+  **Deprecated**
+
+  - Renderer: the Gantt chart (`toGanttHTML`, `attachGanttInteractivity`, `formatTime`, `formatAxisTime`, the `Gantt*` types), `@gram-lang/renderer/gantt.css` and the `gantt_*` strings of the playground, removed in 2.0.0. No Gram surface draws it any more. Use the run sheet (`runSheetToHTML`), or build a view of your own from the data of `runSheet()`; `toGanttHTML` warns once on the console. The Deprecated features page shows how: https://gram-lang.org/docs/how-to/deprecations/
+
+- **Renderer / Mise en place**: The mise en place can now be planned right before each section, all at the start, or at the start of each working day:
+
+  - New `miseEnPlace` option (`"perSection"` by default, `"upfront"` or `"perDay"`) on the HTML, Markdown and print outputs, and a new `rests` option (`"shortest"` by default, `"balanced"` or `"longest"`) for the waits written as a range (`~_{12-24h}`)
+  - The total time follows the chosen schedule, and its tooltip explains how it adds up (preparation, active time and waits), then points to the run sheet for the hour-by-hour plan
+  - The recipe no longer shows the waiting time on its own, in any format: it is counted in the total time, and the run sheet is where the waits are planned
+
+- **Renderer / Settings**: The renderer now describes, in one place, every setting a reader can choose about a recipe, so that tools built on Gram can offer the same choices as the command line, the editor and the playground:
+
+  - `VIEW_SETTINGS` lists what the views show (mise en place, rests, comments, nutrition basis, baker's percentages only, quantities in the steps) and `RECIPE_SETTINGS` what the analyzer computes (baker's percentages, weights in grams, preparation losses, nutrition), each with its values, its default and a short description
+  - `parseViewSettings()` and `parseRecipeSettings()` read them from any configuration object, and fall back on the default for anything missing or unknown, so a mistyped setting never blanks a view
+  - `viewSettingsToRendererOptions()` and `recipeSettingsToAnalyzerOptions()` turn them into the options of the renderer and of the analyzer
+
+- **Comments**: You can now choose whether the comments of a recipe (`// like this`) are shown or left out, in every view:
+
+  - The renderer takes a new `comments: "show" | "hide"` option (default `"show"`) that the recipe views, the print and the run sheet follow; hiding leaves no empty notes section behind
+  - `gram export`, `gram print` and `gram plan` accept `--comments <show|hide>`, and the editor has a new `gram.comments` setting for the preview and the run sheet; the playground gets a **Display** section with a switch
+  - In the run sheet, a note alone on a line sits under its step in small muted text, and one at the end of a line stays in the sentence, between parentheses
+
+- **Renderer / HTML recipe**: The HTML recipe has a new design, and the printed recipe follows it:
+
+  - A better organized header (title, description, author, source, tags), a summary bar with the portions, the yield, the mass and the energy, and a bar for the times
+  - Tooltips that stay readable wherever they open in the window, with more practical information: quantity, weight and how it was estimated, preparation, what a part is taken from
+  - A more interactive recipe: hover an ingredient or a piece of cookware to see the steps that use it, tick the steps off, and follow what a step makes to the steps that use it
+  - The printed recipe (`gram print`, `gram export --format html`) now looks like the one on screen, in black and white, with boxes to tick
+  - Each view keeps its own styles (`@gram-lang/renderer/gram.css` is imported as before and relies on the CSS `@scope` rule, supported by every current browser), so one view can no longer change another
+
+  **Deprecated**
+
+  - Renderer: the `interactiveScaling` option of `toHTML()`, and the `decreasePortions`, `increasePortions` and `editPortions` strings of `@gram-lang/i18n`, removed in 2.0.0. The portions stepper they draw only works where the page around the recipe handles its buttons, so it did nothing in an exported file or an editor preview. Scale the recipe before rendering it instead (`applyScale()` of `@gram-lang/kitchen`): the recipe then shows its portions and its scale factor by itself. The option keeps working until 2.0.0
+
+- **Renderer / Nutrition**: The nutrition of the HTML recipe is now a compact table, like a European food label, and easy to reach from the top of the recipe:
+
+  - One column per basis, side by side (per 100 g, then per portion), with the energy as the first row in kJ and kcal and the whole recipe underneath; no more switching between bases
+  - A `%RI` column gives each nutrient's share of the reference intake of an average adult (8,400 kJ / 2,000 kcal), per portion
+  - The hero bar shows the energy (`493 kcal per portion`, or per 100 g when the recipe declares no portions); clicking it jumps to the table
+  - Sodium is now shown as salt, in grams (sodium × 2.5), and calories as energy, in every view and every language
+  - With the `nutritionBasis` setting set to one basis, the table and the hero bar show that basis alone
+  - The Markdown and plain text recipes show the same table by default, instead of the values per portion only
+
+  **Deprecated**
+
+  - Renderer: the `interactiveNutrition` option no longer has any effect, since every basis is shown at once, and is removed in 2.0.0. Remove it from your calls
+
+- **Renderer / Quantities**: Quantities read the same in every format, on screen and on paper:
+
+  - The quantity is written after its ingredient in the text of each step in the HTML views and the print, as Markdown already did, so a printed recipe shows them too, and the weight in grams is written next to the quantity as written in the recipe whenever it tells something more (`flour (250 ml, ~148 g)`, but `sugar (100 g)`), in Markdown as well
+  - Hiding the quantities of the steps (`hideStepQty`) now works in the HTML views and the print, not only in Markdown
+
+- **Renderer / Durations**: Durations read more naturally, in the reader's language:
+
+  - A duration of a day or more is written in days and hours (a recipe of 25 hours shows `1d 1h`, `1j 1h` in French), and minutes are written `min` (`1h 30min`), in every view; the total time tooltip ends on the exact total (`= 25h 6min`)
+  - `formatDuration()` takes the language as an optional second argument and `{ days: false }` as a third, and a new `durationUnits` entry of `@gram-lang/i18n` holds the units of each language
+
+- **Renderer / Text**: The recipe can now be written as plain text, for a terminal or a plain file:
+
+  - A box with the title, the servings and the times, then the shopping list, the cookware, each section with its numbered steps, the notes and the nutrition, in the reader's language and following the same settings as the other formats
+  - `gram export --format text` writes it next to the recipe (`brioche.txt`), and the playground offers it as a format of the recipe; for developers, `toText()` and the `text` format of the recipe view
+  - The Markdown, HTML and print versions of the recipe now speak the reader's language too: "Instructions", "Ingredients", "or", "optional" and the other words that were always in English follow the language setting (the English output is unchanged)
+
+- **Renderer / Views**: A new `prepareViews()` gathers everything a view of a recipe is built from, worked out once and only when a view asks for it (the timeline, the run sheet, the serving time search):
+
+  - `views` lists the views of a recipe (the recipe, the run sheet) with the formats each one offers, the settings it follows and what it needs worked out, and `render(view, input, format)` writes one of them; `toHTML`, `runSheetToHTML` and the other functions stay as they are
+  - `inspectors` lists the looks at the pipeline (the composed AST as an S-expression, the analyzed recipe as JSON or as a folding tree) and `outputs` lists the views and the inspectors together, for an interface that offers both
+  - `describeError()` picks the error to show when a recipe stops compiling and gives its code, message, file, position and a title in the recipe's language, so every interface reports it the same way, and `suggestServeTimes()` puts the serving time search in words
+
+### Patch Changes
+
+- **Renderer / Markdown**: The Markdown recipe is tidier: the headings and alerts have no more emoji prefixes, a blank line separates the notes from the nutrition, and temperatures show a thermometer (`🌡️ 180 °C`, `🌡️ fridge`) instead of a flame.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @gram-lang/scheduler@1.4.0
+  - @gram-lang/kitchen@1.4.0
+  - @gram-lang/analyzer@1.4.0
+  - @gram-lang/i18n@1.4.0
+  - @gram-lang/parser@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes

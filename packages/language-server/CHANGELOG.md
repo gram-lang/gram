@@ -1,5 +1,64 @@
 # @gram-lang/language-server
 
+## 1.4.0
+
+### Minor Changes
+
+- **VS Code / Run sheet**: The editor shows the run sheet of the recipe in place of the Gantt chart:
+
+  - A new `Gram: Run Sheet` command opens it next to the recipe, in days before the service (D-2, D-1, day D); it follows the `gram.miseEnPlace`, `gram.rests` and `gram.comments` settings
+  - A **Served at** field at the top of the run sheet puts it on the calendar, with dates and clock times, in your project's time zone and hours (`timezone` and `availability` in `.gram/config.yaml`); **When to serve?** proposes the times that work over the next seven days, the earliest first, and says why the others do not. The serving time is kept per recipe while VS Code is open, never saved
+  - A **Scale and stock** section at the top of the recipe and of the run sheet adjusts this sitting, as `--scale`, `--stock` and `--bakers-reference` do in the CLI: a scale in percent or a target quantity of one ingredient, the baker's reference, and the imports already made. These choices are shared by every panel of the recipe and kept while VS Code is open, never saved
+
+  **Deprecated**
+
+  - VS Code: the `Gram: Gantt Chart` command, removed in 2.0.0. It still works and opens the run sheet, with a notice once. Use `Gram: Run Sheet`
+  - Language server: the `gram/ganttUpdated` notification, removed in 2.0.0. It is still sent to clients that do not declare the views protocol, and the VS Code extension no longer reads it. Read `gram/viewUpdated` with the `runSheet` output, or the data of the compiled recipe
+
+- **VS Code / Settings**: The editor now offers every setting of a recipe, with the same values and default as the command line and the playground:
+
+  - `gram.miseEnPlace` (`perSection`, the default, `upfront` or `perDay`) chooses when the mise en place is planned, and `gram.rests` (`shortest`, the default, `balanced` or `longest`) how long a rest written as a range (`~_{12-24h}`) lasts; the preview, the run sheet and the total time hint next to the recipe title all follow them
+  - `gram.stepQuantities` writes the quantities in the text of the steps, or leaves them out, `gram.nutritionBasis` pins the basis of the nutrition (`auto` is the default) and `gram.bakersMathOnly` shows only the baker's percentages
+  - `gram.bakersMath`, `gram.massStandardization`, `gram.yieldCalculation` and `gram.nutritionEstimation` choose what is computed from the ingredient database; all are on by default
+  - Changing a `gram.*` setting now reaches the language server straight away, without reloading the window (this also applies to `gram.ingredientDatabase.path`), updates every open recipe, and a recipe already open when the editor starts follows it too
+
+- **Comments**: You can now choose whether the comments of a recipe (`// like this`) are shown or left out, in every view:
+
+  - The renderer takes a new `comments: "show" | "hide"` option (default `"show"`) that the recipe views, the print and the run sheet follow; hiding leaves no empty notes section behind
+  - `gram export`, `gram print` and `gram plan` accept `--comments <show|hide>`, and the editor has a new `gram.comments` setting for the preview and the run sheet; the playground gets a **Display** section with a switch
+  - In the run sheet, a note alone on a line sits under its step in small muted text, and one at the end of a line stays in the sentence, between parentheses
+
+- **Renderer / Durations**: Durations read more naturally, in the reader's language:
+
+  - A duration of a day or more is written in days and hours (a recipe of 25 hours shows `1d 1h`, `1j 1h` in French), and minutes are written `min` (`1h 30min`), in every view; the total time tooltip ends on the exact total (`= 25h 6min`)
+  - `formatDuration()` takes the language as an optional second argument and `{ days: false }` as a third, and a new `durationUnits` entry of `@gram-lang/i18n` holds the units of each language
+
+- **Language Server / Views**: Editors can now request only active views through a dedicated views protocol:
+
+  - A client declaring `initializationOptions.views` specifies open recipe outputs via `gram/setOpenViews` and receives targeted updates in `gram/viewUpdated`: recipe and run sheet views as HTML, or AST and compiled JSON as text or interactive trees. Closed outputs are no longer evaluated
+  - When a recipe encounters compilation errors, open outputs are paused rather than replaced by an error card: editors retain their last valid rendered view, while localized error summaries are provided alongside standard LSP diagnostics
+  - `gram/setSession` configures transient session parameters for a recipe: target serving time (projecting the run sheet onto the calendar in the project's `timezone` and within its `availability`), scaling factor, pre-prepared imports in stock, and baker's percentage reference. Sessions are held per document in memory, while compiler diagnostics continue evaluating the recipe as written
+  - The outputs a client can open are listed in the `initialize` result, each with its name in the editor's language and what it reads from the plan, so an editor shows a new view of Gram without an update of its own, and offers a serving time for any view laid out in time
+  - A `gram/serveTimes` request gives the serving times to propose for a recipe, in words: those that work over the next seven days at the project's `mealTimes`, why the others do not, and the earliest one
+  - A `gram/sessionChoices` request gives what session controls offer for a recipe as written: its ingredients, its `@use` imports (nested ones included), whether baker's math is on, and why the session's scale could not be applied
+  - Editing `.gram/config.yaml` (its `timezone`, `availability` or `paths`) now updates the open recipes and their views right away, instead of at their next edit
+
+  **Deprecated**
+
+  - Language Server: the `gram/previewUpdated` notification, sent to clients that do not declare the views protocol, is deprecated and will be removed in 2.0.0. Adopt `gram/viewUpdated` with the `recipe` output instead (see the deprecations page of the docs)
+
+- **VS Code / Views**: Unified view panels and new developer inspectors:
+
+  - A new `Gram: Show View...` command lists all available views and opens the selected one: recipe preview, run sheet, and developer inspectors (composed AST and compiled JSON, as source text or an interactive tree). `Gram: Live Preview`, `Gram: Run Sheet` and `Gram: Macros` remain available as direct shortcuts
+  - Open panels follow the active `.gram` editor tab, refresh when brought back into focus, and the language server computes only the panels that are visible
+  - When a recipe contains errors, panels keep their last valid rendering, dimmed beneath a banner with a button that jumps to the error, instead of going blank
+  - The live preview always shows the nutrition summary, as the playground does: the **Macros** button is gone, and `Gram: Macros` scrolls to the table
+  - The **Scale and stock** section has a **Portions** field, shown when the recipe states its portions, that scales the recipe when you change it
+
+### Patch Changes
+
+- **Language Server / Diagnostics**: Fixed diagnostics and previews that could go back to an older version of a recipe until the next edit, when it was edited quickly while its imports were being read.
+
 ## 1.3.0
 
 No changes in this release.

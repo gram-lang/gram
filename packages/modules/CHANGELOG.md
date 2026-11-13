@@ -1,5 +1,20 @@
 # @gram-lang/modules
 
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @gram-lang/kitchen@1.4.0
+  - @gram-lang/analyzer@1.4.0
+  - @gram-lang/i18n@1.4.0
+  - @gram-lang/parser@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes

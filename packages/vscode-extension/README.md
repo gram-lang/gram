@@ -42,13 +42,14 @@ Search for **"Gram - Recipe Language"** in the Extensions view (`Ctrl+Shift+X` /
 ## ⚡ Features
 
 *   **Language Server Protocol (LSP)**: Real-time diagnostics, missing reference checks, and unused declaration warnings.
-*   **Live Preview**: Real-time side-by-side rendering of the recipe with a built-in, togglable nutrition/macros panel.
-*   **Run Sheet View**: Shows the plan of your recipe: the days, when you are in the kitchen, what to take out for each visit and what goes on in between.
-*   **Inspectors**: `Gram: Show View...` opens technical inspectors (composed AST and compiled JSON as text or an interactive tree), updating live as you edit.
+*   **Live Preview**: Real-time side-by-side rendering of the recipe, with its nutrition summary always shown (`Gram: Macros` jumps to the table). **Scale and stock** at the top lets you set the portions, a scale or a target quantity, the baker's reference and the imports you already made, for this sitting only.
+*   **Run Sheet View**: Shows the plan of your recipe: the days, when you are in the kitchen, what to take out for each visit and what goes on in between. A **Served at** field puts it on the calendar in your project's time zone and hours (`timezone` and `availability` in `.gram/config.yaml`), and **When to serve?** proposes the times that work over the next days. It replaces the Gantt chart (`Gram: Gantt Chart` now opens it, and is removed in 2.0.0).
+*   **Views and inspectors**: `Gram: Show View...` lists every view (recipe, run sheet) and the technical inspectors (composed AST and compiled JSON as text or an interactive tree). Open panels follow the active editor, update live, and keep their last valid rendering, under a banner, while the recipe has errors.
+*   **Settings**: The `gram.*` settings choose what the preview and the run sheet show, with the same values and defaults as the CLI and the playground: when the mise en place is planned (`gram.miseEnPlace`), how long a rest written as a range lasts (`gram.rests`), the comments (`gram.comments`), the quantities in the steps (`gram.stepQuantities`), the nutrition basis and baker's percentages, and what is computed from your ingredient database (`gram.massStandardization`, `gram.yieldCalculation`, `gram.nutritionEstimation`, `gram.bakersMath`). A change applies to every open recipe right away.
 *   **Smart Autocomplete**: Contextual suggestions for ingredients (from your local YAML database), units, and intermediate references.
 *   **Advanced Navigation**: Jump to definition, find all references, outline view, and AST-driven semantic highlighting.
 *   **Code Actions & Formatting**: Automatic document formatting (`Format Document` / `Format on Save` via `@gram-lang/format`), quick fixes for common errors, and volume-to-mass conversions.
-*   **Inlay Hints & CodeLens**: Displays cumulative time and quick action buttons directly in the editor.
+*   **Inlay Hints & CodeLens**: Displays the total time, in the recipe's language, and quick actions directly in the editor.
 
 ---
 

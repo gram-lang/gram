@@ -1,5 +1,87 @@
 # @gram-lang/vscode-extension
 
+## 1.4.0
+
+### Minor Changes
+
+- **VS Code / Run sheet**: The editor shows the run sheet of the recipe in place of the Gantt chart:
+
+  - A new `Gram: Run Sheet` command opens it next to the recipe, in days before the service (D-2, D-1, day D); it follows the `gram.miseEnPlace`, `gram.rests` and `gram.comments` settings
+  - A **Served at** field at the top of the run sheet puts it on the calendar, with dates and clock times, in your project's time zone and hours (`timezone` and `availability` in `.gram/config.yaml`); **When to serve?** proposes the times that work over the next seven days, the earliest first, and says why the others do not. The serving time is kept per recipe while VS Code is open, never saved
+  - A **Scale and stock** section at the top of the recipe and of the run sheet adjusts this sitting, as `--scale`, `--stock` and `--bakers-reference` do in the CLI: a scale in percent or a target quantity of one ingredient, the baker's reference, and the imports already made. These choices are shared by every panel of the recipe and kept while VS Code is open, never saved
+
+  **Deprecated**
+
+  - VS Code: the `Gram: Gantt Chart` command, removed in 2.0.0. It still works and opens the run sheet, with a notice once. Use `Gram: Run Sheet`
+  - Language server: the `gram/ganttUpdated` notification, removed in 2.0.0. It is still sent to clients that do not declare the views protocol, and the VS Code extension no longer reads it. Read `gram/viewUpdated` with the `runSheet` output, or the data of the compiled recipe
+
+- **VS Code / Settings**: The editor now offers every setting of a recipe, with the same values and default as the command line and the playground:
+
+  - `gram.miseEnPlace` (`perSection`, the default, `upfront` or `perDay`) chooses when the mise en place is planned, and `gram.rests` (`shortest`, the default, `balanced` or `longest`) how long a rest written as a range (`~_{12-24h}`) lasts; the preview, the run sheet and the total time hint next to the recipe title all follow them
+  - `gram.stepQuantities` writes the quantities in the text of the steps, or leaves them out, `gram.nutritionBasis` pins the basis of the nutrition (`auto` is the default) and `gram.bakersMathOnly` shows only the baker's percentages
+  - `gram.bakersMath`, `gram.massStandardization`, `gram.yieldCalculation` and `gram.nutritionEstimation` choose what is computed from the ingredient database; all are on by default
+  - Changing a `gram.*` setting now reaches the language server straight away, without reloading the window (this also applies to `gram.ingredientDatabase.path`), updates every open recipe, and a recipe already open when the editor starts follows it too
+
+- **Comments**: You can now choose whether the comments of a recipe (`// like this`) are shown or left out, in every view:
+
+  - The renderer takes a new `comments: "show" | "hide"` option (default `"show"`) that the recipe views, the print and the run sheet follow; hiding leaves no empty notes section behind
+  - `gram export`, `gram print` and `gram plan` accept `--comments <show|hide>`, and the editor has a new `gram.comments` setting for the preview and the run sheet; the playground gets a **Display** section with a switch
+  - In the run sheet, a note alone on a line sits under its step in small muted text, and one at the end of a line stays in the sentence, between parentheses
+
+- **Renderer / HTML recipe**: The HTML recipe has a new design, and the printed recipe follows it:
+
+  - A better organized header (title, description, author, source, tags), a summary bar with the portions, the yield, the mass and the energy, and a bar for the times
+  - Tooltips that stay readable wherever they open in the window, with more practical information: quantity, weight and how it was estimated, preparation, what a part is taken from
+  - A more interactive recipe: hover an ingredient or a piece of cookware to see the steps that use it, tick the steps off, and follow what a step makes to the steps that use it
+  - The printed recipe (`gram print`, `gram export --format html`) now looks like the one on screen, in black and white, with boxes to tick
+  - Each view keeps its own styles (`@gram-lang/renderer/gram.css` is imported as before and relies on the CSS `@scope` rule, supported by every current browser), so one view can no longer change another
+
+  **Deprecated**
+
+  - Renderer: the `interactiveScaling` option of `toHTML()`, and the `decreasePortions`, `increasePortions` and `editPortions` strings of `@gram-lang/i18n`, removed in 2.0.0. The portions stepper they draw only works where the page around the recipe handles its buttons, so it did nothing in an exported file or an editor preview. Scale the recipe before rendering it instead (`applyScale()` of `@gram-lang/kitchen`): the recipe then shows its portions and its scale factor by itself. The option keeps working until 2.0.0
+
+- **Renderer / Nutrition**: The nutrition of the HTML recipe is now a compact table, like a European food label, and easy to reach from the top of the recipe:
+
+  - One column per basis, side by side (per 100 g, then per portion), with the energy as the first row in kJ and kcal and the whole recipe underneath; no more switching between bases
+  - A `%RI` column gives each nutrient's share of the reference intake of an average adult (8,400 kJ / 2,000 kcal), per portion
+  - The hero bar shows the energy (`493 kcal per portion`, or per 100 g when the recipe declares no portions); clicking it jumps to the table
+  - Sodium is now shown as salt, in grams (sodium × 2.5), and calories as energy, in every view and every language
+  - With the `nutritionBasis` setting set to one basis, the table and the hero bar show that basis alone
+  - The Markdown and plain text recipes show the same table by default, instead of the values per portion only
+
+  **Deprecated**
+
+  - Renderer: the `interactiveNutrition` option no longer has any effect, since every basis is shown at once, and is removed in 2.0.0. Remove it from your calls
+
+- **VS Code / Views**: Unified view panels and new developer inspectors:
+
+  - A new `Gram: Show View...` command lists all available views and opens the selected one: recipe preview, run sheet, and developer inspectors (composed AST and compiled JSON, as source text or an interactive tree). `Gram: Live Preview`, `Gram: Run Sheet` and `Gram: Macros` remain available as direct shortcuts
+  - Open panels follow the active `.gram` editor tab, refresh when brought back into focus, and the language server computes only the panels that are visible
+  - When a recipe contains errors, panels keep their last valid rendering, dimmed beneath a banner with a button that jumps to the error, instead of going blank
+  - The live preview always shows the nutrition summary, as the playground does: the **Macros** button is gone, and `Gram: Macros` scrolls to the table
+  - The **Scale and stock** section has a **Portions** field, shown when the recipe states its portions, that scales the recipe when you change it
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @gram-lang/renderer@1.4.0
+  - @gram-lang/language-server@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes

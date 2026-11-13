@@ -1,5 +1,45 @@
 # @gram-lang/kitchen
 
+## 1.4.0
+
+### Minor Changes
+
+- **Scheduler**: The planning engine now lives in its own package, `@gram-lang/scheduler`, which `@gram-lang/kitchen` uses. Compiled recipes keep every field published in 1.3.0, and everything `@gram-lang/kitchen` exported before is still exported from it:
+
+  - `layout(tasks, { miseEnPlace, rests })` lays a recipe's list of tasks out on a timeline, for any mise en place plan and any choice of waits, and reports what cannot work (a time paradox, a track contention, a working day pushed before its 24 hours)
+  - `project(recipes, context)` places a recipe on the calendar from a serving time, a time zone and when the cook is available; it stretches or shortens the waits written as a range so the cook's own work avoids the night, and reports what it could not fix
+  - `runSheet(plan)` groups a plan into the days of the recipe, the visits to the kitchen (with the sections each one cooks and how early it could be done) and the waits that go on without the cook
+  - `findServeTimes()` ranks the serving times that work over a range of days, with the reasons of the others, and `earliestServe()` gives the first one that works if the cook starts now
+  - `parseAvailability()`, `parseMealTimes()` and the other readers of a project's settings (`08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none`) are shared by the CLI and the editor
+
+- **Kitchen**: Recipes now know when each part of the mise en place should happen:
+
+  - New fields on the compiled recipe: `miseEnPlace` (how long each section's own preparation takes), `tasks` (the list of tasks and what each one waits for), `schedule` (a default timeline, with the preparation right before each section and the shortest rests), `days` (the working days of a timeline) and `generator` (the version that compiled it). A recipe with no step at all now has a preparation time of 0
+  - Any other timeline comes from the same list, without compiling again: all the preparation at the start (`upfront`) or at the start of each working day (`perDay`), with the shortest, middle or longest of every rest written as a range (new `layout()`, from `@gram-lang/scheduler`)
+  - A timer is exact (`~_{12h}` lasts exactly 12 hours); a rest written as a range (`~_{12-24h}`) is planned on its shortest figure unless you pick another, and an active timer written as a range (`~{20-25min}`) on its longest, so dinner is never late. Only an anchor in days (`~{-1d}`) opens a working day
+  - New warnings: `DAY_OVERFLOW` flags a working day pushed before its 24 hours by a long rest, `DURATION_OUT_OF_RANGE` flags a duration over 1000 years (capped, instead of breaking the timeline with `0`, `Infinity` or `NaN`), and a `PASSIVE_OVERLAP_SAME_COOKWARE` notice flags two passive timers that overlap on the same cookware with no named track in common
+  - An intermediate (`&dough`) is gathered in the section that uses it, and JSON compiled before 1.4.0 still gets a total and idle time in the renderer outputs, the editor hint and `gram diff`
+
+  **Deprecated**
+
+  - Kitchen: `steps[].timings` and `steps[].backgroundTasks`, removed in 2.0.0. Read the `step` and `passive` blocks of `schedule.blocks` instead
+  - Kitchen: `metrics.totalTime` and `metrics.idleTime`, removed in 2.0.0. Read `schedule.totalTime` and `schedule.idleTime` instead (the old `metrics.totalTime` is the total with every preparation first: `layout(tasks, { miseEnPlace: "upfront" })` gives the same number unless the recipe has intermediates, which it prepares once they exist)
+  - Kitchen: `metrics.activeTime`, removed in 2.0.0. Read `schedule.activeTime` instead (a timer written as a range counts as its average in `metrics.activeTime`, and as its longest figure in the schedule)
+  - Kitchen: `metrics.activeBreakdown`, `metrics.prepBreakdown` and `metrics.totalBreakdown`, removed in 2.0.0. Use `miseEnPlace` and `schedule` instead
+  - Kitchen: the `breakdown` returned by `calculatePreparationTime`, removed in 2.0.0 (the function then returns `{ total }`, so code reading `total` is unaffected). Read the `items` of `computeMiseEnPlace()` instead
+  - Kitchen: reading the old `metrics` fields when compiled JSON has no `tasks` (JSON compiled before 1.4.0), removed in 2.0.0. Compile your recipes again with 1.4.0 or later
+  - Everything above keeps working, with the same values, until 2.0.0. The Deprecated features page shows what to change for each of them: https://gram-lang.org/docs/how-to/deprecations/
+
+### Patch Changes
+
+- **Kitchen**: Scaling an already compiled recipe (`applyScale`) now also scales the quantity a step quotes for an intermediate (`Use &dough{100g}`), so it gives the same result as compiling the recipe with that scale factor
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @gram-lang/scheduler@1.4.0
+  - @gram-lang/i18n@1.4.0
+  - @gram-lang/parser@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes

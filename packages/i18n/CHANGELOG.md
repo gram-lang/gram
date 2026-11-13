@@ -1,5 +1,16 @@
 # @gram-lang/i18n
 
+## 1.4.0
+
+### Minor Changes
+
+- **Renderer / Durations**: Durations read more naturally, in the reader's language:
+
+  - A duration of a day or more is written in days and hours (a recipe of 25 hours shows `1d 1h`, `1j 1h` in French), and minutes are written `min` (`1h 30min`), in every view; the total time tooltip ends on the exact total (`= 25h 6min`)
+  - `formatDuration()` takes the language as an optional second argument and `{ days: false }` as a third, and a new `durationUnits` entry of `@gram-lang/i18n` holds the units of each language
+
+- **I18n**: A new `fillTemplate(template, values)` fills the `{name}` placeholders of a dictionary string (`"Serve at {time}"` becomes `"Serve at 20:00"`), leaving a name with no value as written.
+
 ## 1.3.0
 
 ### Minor Changes
