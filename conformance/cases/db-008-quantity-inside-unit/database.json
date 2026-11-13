@@ -1,0 +1,10 @@
+{
+  "tomates": {
+    "name": "Tomates",
+    "physical": { "unit_weight": 100 }
+  },
+  "ail": {
+    "name": "Ail",
+    "physical": { "unit_weight": 5 }
+  }
+}

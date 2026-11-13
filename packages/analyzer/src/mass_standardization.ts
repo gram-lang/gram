@@ -1,6 +1,10 @@
 import { slugify, round2 } from "@gram-lang/kitchen";
 import type { Meta } from "@gram-lang/parser";
-import { normalizeUnit, UNIT_CONVERSIONS } from "@gram-lang/i18n";
+import {
+	normalizeUnit,
+	UNIT_CONVERSIONS,
+	unitContainsQuantity,
+} from "@gram-lang/i18n";
 
 import { getIngredientData } from "./ingredient_db";
 import type { IngredientData } from "./types";
@@ -176,6 +180,14 @@ export function standardizeMass(
 
 	// 3. Fallback: Treat unknown units as Count/Unit units
 	// e.g. "clove", "head", "stick", "slice" -> treated as "1 unit" multiplier
+	//
+	// Not a unit that holds a quantity of its own (`1 boîte de 400 g`,
+	// `2 8oz tins`): one tin is not one piece of the ingredient, and its unit
+	// weight gave a wrong mass in silence (1 tin of 400 g counted 100 g),
+	// summed as such into the shopping list. Its mass stays unknown until Gram
+	// reads the quantity inside the unit (see the roadmap).
+	if (unitContainsQuantity(unit, lang)) return null;
+
 	if (ingredientName) {
 		// Check overrides first
 		const slug = slugify(ingredientName);

@@ -1,0 +1,287 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "tomates": {
+        "id": "tomates",
+        "name": "tomates",
+        "default_unit": "boîte de 400 g"
+      },
+      "ail": {
+        "id": "ail",
+        "name": "ail",
+        "default_unit": "gousses"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "tomates",
+      "name": "Tomates",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 1,
+      "unit": "boîte de 400 g",
+      "multiUnit": true
+    },
+    {
+      "id": "tomates",
+      "name": "Tomates",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "multiUnit": true,
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "ail",
+      "name": "Ail",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 2,
+      "unit": "gousses",
+      "normalizedMass": 10,
+      "isEstimate": true,
+      "conversionMethod": "estimate"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Sauce",
+      "ingredients": [
+        {
+          "id": "tomates",
+          "_usageId": "1",
+          "qty": 1,
+          "unit": "boîte de 400 g"
+        },
+        {
+          "id": "tomates",
+          "_usageId": "2",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "id": "ail",
+          "_usageId": "3",
+          "qty": 2,
+          "unit": "gousses",
+          "conversionMethod": "unit_weight",
+          "isEstimate": true,
+          "normalizedMass": 10
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Verser ",
+            {
+              "id": "tomates",
+              "_usageId": "1",
+              "qty": 1,
+              "unit": "boîte de 400 g"
+            },
+            "et ",
+            {
+              "id": "tomates",
+              "_usageId": "2",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            ", puis ",
+            {
+              "id": "ail",
+              "_usageId": "3",
+              "qty": 2,
+              "unit": "gousses",
+              "normalizedMass": 10,
+              "conversionMethod": "unit_weight",
+              "isEstimate": true
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 210,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "tomates"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"tomates\" — omitted from nutritional totals."
+    },
+    {
+      "code": "MISSING_MACROS",
+      "message": "Ingredient \"tomates\" has no macronutrient data in database — nutritional totals are partial."
+    },
+    {
+      "code": "MISSING_MACROS",
+      "message": "Ingredient \"ail\" has no macronutrient data in database — nutritional totals are partial."
+    }
+  ],
+  "metrics": {
+    "totalTime": 4,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Sauce",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Sauce",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 2,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 2
+      }
+    ],
+    "totalMass": 210,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "tomates"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": true,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"tomates\" — omitted from nutritional totals."
+        },
+        {
+          "code": "MISSING_MACROS",
+          "message": "Ingredient \"tomates\" has no macronutrient data in database — nutritional totals are partial."
+        },
+        {
+          "code": "MISSING_MACROS",
+          "message": "Ingredient \"ail\" has no macronutrient data in database — nutritional totals are partial."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 4,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 4
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 4,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}

@@ -185,3 +185,22 @@ describe("applyYield", () => {
 		expect(applyYield(150, "physical", -0.5)).toEqual({ normalizedMass: 150 });
 	});
 });
+
+describe("standardizeMass, a unit that holds a quantity of its own", () => {
+	const pantry: Record<string, IngredientData> = {
+		tomatoes: { name: "Tomatoes", physical: { unit_weight: 100 } },
+		garlic: { name: "Garlic", physical: { unit_weight: 5 } },
+	};
+
+	it("does not count a tin of 400 g as one piece: its mass stays unknown", () => {
+		expect(standardizeMass(1, "boîte de 400 g", pantry, "tomatoes")).toBeNull();
+		expect(standardizeMass(2, "8oz tins", pantry, "tomatoes")).toBeNull();
+		expect(
+			standardizeMass(1, "tin of 400 g", pantry, "tomatoes", { tomatoes: 100 }),
+		).toBeNull();
+	});
+
+	it("still weighs a counted unit with the unit weight (2 cloves)", () => {
+		expect(standardizeMass(2, "cloves", pantry, "garlic")?.mass).toBe(10);
+	});
+});

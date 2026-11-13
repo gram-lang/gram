@@ -1,0 +1,105 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Pâte",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mélanger ",
+              "loc": {
+                "start": 9,
+                "end": 18
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "farine",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "cup 5 tbsp",
+                "fixed": false,
+                "loc": {
+                  "start": 26,
+                  "end": 38
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 18,
+                "end": 39
+              }
+            },
+            {
+              "type": "Text",
+              "value": "et ",
+              "loc": {
+                "start": 40,
+                "end": 43
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "tomates",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "boîte de 400 g",
+                "fixed": false,
+                "loc": {
+                  "start": 52,
+                  "end": 68
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 43,
+                "end": 69
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 69,
+                "end": 70
+              }
+            }
+          ],
+          "loc": {
+            "start": 9,
+            "end": 71
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 71
+      }
+    }
+  ]
+}
