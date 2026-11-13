@@ -33,3 +33,24 @@ describe("a unit that reads as two quantities", () => {
 		}
 	});
 });
+
+describe("a unit that hides a quantity", () => {
+	it("is flagged when there is no number in front but one inside (about 200g)", () => {
+		for (const quantity of ["about 200g", "environ 200 g", "about 2 cups"]) {
+			const warnings = unitWarnings(quantity);
+			expect(warnings).toHaveLength(1);
+			expect(warnings[0]?.message).toContain("hides a quantity");
+		}
+	});
+
+	it("is not flagged for words a cook means as such, with no number", () => {
+		for (const quantity of ["une pincée", "to taste", "a few"]) {
+			expect(unitWarnings(quantity)).toHaveLength(0);
+		}
+	});
+
+	it("leaves a counted unit described by a weight alone (2 8oz tins)", () => {
+		expect(unitWarnings("2 8oz tins")).toHaveLength(0);
+		expect(unitWarnings("1 boîte de 400 g")).toHaveLength(0);
+	});
+});

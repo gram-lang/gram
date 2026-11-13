@@ -168,6 +168,22 @@ export function looksLikeTwoQuantities(unit: string): boolean {
 	return false;
 }
 
+/**
+ * `{about 200g}`: with no number in front, the whole text is read as a unit,
+ * so the quantity hides inside it (a number, then a known unit). Unflagged, it
+ * had no mass and vanished from a scaled recipe. `{une pincée}` or
+ * `{to taste}`, with no number, are words a cook means as such.
+ */
+export function hidesAQuantity(unit: string): boolean {
+	const words = unit.trim().split(/\s+/);
+	return words.some((word, i) => {
+		const number = word.match(/^\d+(?:[.,/]\d+)?(.*)$/);
+		if (!number) return false;
+		const next = number[1] || words[i + 1];
+		return !!next && isKnownMeasure(next);
+	});
+}
+
 function processIngredient(
 	item: IngredientAST,
 	ctx: ProcessorContext,
@@ -179,13 +195,28 @@ function processIngredient(
 	const defaultUnit =
 		(item.quantity && "unit" in item.quantity && item.quantity.unit) ||
 		undefined;
-	if (typeof defaultUnit === "string" && looksLikeTwoQuantities(defaultUnit)) {
-		pushWarning(ctx, WarningCode.INVALID_UNIT, {
-			type: "Ingredient",
-			value: defaultUnit,
-			item: item.name,
-			loc: item.loc,
-		});
+	if (typeof defaultUnit === "string") {
+		const hasNumber =
+			item.quantity &&
+			"value" in item.quantity &&
+			item.quantity.value !== null &&
+			item.quantity.value !== undefined;
+		const reason = !hasNumber
+			? hidesAQuantity(defaultUnit)
+				? "hiddenQuantity"
+				: undefined
+			: looksLikeTwoQuantities(defaultUnit)
+				? "twoQuantities"
+				: undefined;
+		if (reason) {
+			pushWarning(ctx, WarningCode.INVALID_UNIT, {
+				type: "Ingredient",
+				value: defaultUnit,
+				item: item.name,
+				reason,
+				loc: item.loc,
+			});
+		}
 	}
 	const id = registry.registerIngredient(
 		item.name,
