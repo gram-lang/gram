@@ -8,6 +8,7 @@ Gram est profondément ancré dans la réalité physique. Contrairement aux *par
 Cette page explique le moteur physique derrière les calculs de masse et de rendement de Gram.
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 ## Les trois piliers de la physique
 
@@ -34,7 +35,7 @@ Lorsque l'Analyseur rencontre un ingrédient, il le passe par un algorithme de p
 1. **Masse Précise** : Si vous avez écrit `@farine{200 g}` ou `@boeuf{1 kg}`, l'Analyseur n'a rien à faire. Il convertit simplement cela en grammes.
 2. **Surcharge Utilisateur** : Si vous avez fourni une surcharge de densité spécifique dans le frontmatter YAML de la recette (ex : `densities: { farine: 0.55 }`), il utilise cette valeur explicite pour convertir le volume demandé en masse.
 3. **Densité de la Base de Données** : Si vous avez demandé un volume connu (`ml`, `tasse`, `c.à.s`, `c.à.c`) et que votre `ingredients.yaml` contient un champ `density` pour cet ingrédient, il calcule `Volume * Densité = Masse`.
-4. **Poids Unitaire de la Base de Données** : Si vous avez demandé un nombre (`@oeuf{3}` ou `@ail{2 gousses}`) et que votre base de données contient un champ `unit_weight`, il calcule `Nombre * Poids Unitaire = Masse`.
+4. **Poids Unitaire de la Base de Données** : Si vous avez demandé un nombre (`@oeuf{3}` ou `@ail{2 gousses}`) et que votre base de données contient un champ `unit_weight`, il calcule `Nombre * Poids Unitaire = Masse`. <Since v="1.4.1" type="changed" /> Sauf quand l'unité contient elle-même une quantité, comme dans `@tomates{1 boîte de 400 g}` ou `@tomates{2 8oz tins}` : une boîte n'est pas une tomate, et le poids unitaire donnait une masse fausse. Gram ne lit pas encore la quantité contenue dans une unité : la masse reste donc incomplète (étape suivante) plutôt que fausse.
 5. **Incomplet** : Lorsqu'un volume n'a aucune densité disponible (ni surcharge, ni entrée en BDD) ou qu'un nombre n'a pas de `unit_weight`, l'Analyseur refuse d'effectuer une estimation arbitraire. Il ne supposera **pas** une densité par défaut (comme traiter tout liquide comme de l'eau), ce qui fausserait silencieusement la liste de courses. Le calcul échoue, l'ingrédient est marqué comme *incomplet*, et il reste listé dans son unité brute non convertie.
 </Steps>
 

@@ -8,6 +8,7 @@ Gram is deeply rooted in physical reality. Unlike basic markdown parsers that ju
 This page explains the physics engine behind Gram's mass and yield calculations.
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../components/Since.astro';
 
 ## The three pillars of physics
 
@@ -34,7 +35,7 @@ When the Analyzer encounters an ingredient, it runs it through a strict priority
 1. **Precise Mass**: If you wrote `@flour{200g}` or `@beef{1kg}`, the Analyzer does no work. It simply converts it to grams.
 2. **User Override**: If you provided a specific density override in the recipe's YAML frontmatter (e.g., `densities: { flour: 0.55 }`), it uses this explicit value to convert the volume you requested into mass.
 3. **Database Density**: If you requested a known volume (`ml`, `cup`, `tbsp`, `tsp`) and your `ingredients.yaml` has a `density` field for that ingredient, it calculates `Volume * Density = Mass`.
-4. **Database Unit Weight**: If you requested a count (`@egg{3}` or `@garlic{2 cloves}`) and your database has a `unit_weight` field, it calculates `Count * Unit Weight = Mass`.
+4. **Database Unit Weight**: If you requested a count (`@egg{3}` or `@garlic{2 cloves}`) and your database has a `unit_weight` field, it calculates `Count * Unit Weight = Mass`. <Since v="1.4.1" type="changed" /> Not when the unit holds a quantity of its own, as in `@tomatoes{1 tin of 400 g}` or `@tomatoes{2 8oz tins}`: a tin is not one tomato, and the unit weight gave a wrong mass. Gram does not read the quantity inside a unit yet, so the mass stays incomplete (next step) rather than wrong.
 5. **Incomplete**: If a volume has no density available (no override, no database entry) or a count has no `unit_weight`, the Analyzer refuses to guess. It will **not** assume a default density (e.g. treating everything as water) — doing so would silently corrupt shopping-list totals. The mass calculation fails, the ingredient is marked as "incomplete", and it is listed in its raw, unconverted unit.
 </Steps>
 
