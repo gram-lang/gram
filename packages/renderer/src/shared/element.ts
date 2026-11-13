@@ -6,9 +6,10 @@ import {
 	formatQuantityValue,
 	formatDecimalToFraction,
 	largerAmount,
+	type NumberStyle,
 	round1,
 } from "./utils";
-import { getDictionary, isMetricMassUnit } from "@gram-lang/i18n";
+import { formatNumber, getDictionary, isMetricMassUnit } from "@gram-lang/i18n";
 
 import { DEFAULT_ICONS } from "./icons";
 import { type TooltipRow, tooltipCardAttrs } from "./tooltip-card";
@@ -58,11 +59,17 @@ function massMethodLabel(
 	return undefined;
 }
 
+/** How the numbers of a view are written: its language, its `formatFraction`. */
+function numberStyle(context: RenderContext): NumberStyle {
+	return { lang: context.lang, formatFraction: context.formatFraction };
+}
+
 /** A quantity as written: "2 tbsp", "1/2 tsp", "6". Empty without one. */
-function writtenQty(item: any): string {
-	const qty = getQty(item);
+function writtenQty(item: any, style: NumberStyle): string {
+	const qty = getQty(item, style);
 	if (!qty) return "";
-	const value = qty.text || formatDecimalToFraction(qty.value, item.unit);
+	const value =
+		qty.text || formatDecimalToFraction(qty.value, item.unit, style);
 	return `${value}${item.unit ? ` ${item.unit}` : ""}`;
 }
 
@@ -94,11 +101,13 @@ function ingredientTooltip(
 		if (item.bakersPercentage !== undefined) {
 			rows.push({
 				label: t.renderer.tooltipBakers,
-				value: `${item.bakersPercentage}%`,
+				value: `${formatNumber(item.bakersPercentage, context.lang, 1)}%`,
 			});
 			const absolute =
 				f.originalQtyStr ||
-				(f.normalizedMass !== null ? `${f.normalizedMass} g` : "");
+				(f.normalizedMass !== null
+					? `${formatNumber(f.normalizedMass, context.lang, 1)} g`
+					: "");
 			if (!context.bakersMathOnly && absolute) {
 				rows.push({ label: t.renderer.quantity, value: absolute });
 			}
@@ -110,7 +119,7 @@ function ingredientTooltip(
 	if (f.massAddsInfo && f.normalizedMass !== null && (hidden || f.isEstimate)) {
 		rows.push({
 			label: t.renderer.tooltipMass,
-			value: `${f.isEstimate ? "~" : ""}${f.normalizedMass} g`,
+			value: `${f.isEstimate ? "~" : ""}${formatNumber(f.normalizedMass, context.lang, 1)} g`,
 			detail: f.isEstimate ? massMethodLabel(f.conversionMethod, t) : undefined,
 		});
 	}
@@ -187,7 +196,8 @@ const strategies: Record<
 			}
 		}
 
-		const qty = getQty(item);
+		const style = numberStyle(context);
+		const qty = getQty(item, style);
 
 		const prep = item.preparation || "";
 		const isOptional = item.modifiers?.includes("optional");
@@ -200,6 +210,11 @@ const strategies: Record<
 			isEstimate = !!item.isEstimate;
 			conversionMethod = item.conversionMethod || "";
 		}
+		// The standardized mass as shown: one decimal, in the reader's language.
+		const grams =
+			normalizedMass !== null
+				? formatNumber(normalizedMass, context.lang, 1)
+				: "";
 
 		// A shopping list is what you buy: 1000 g or more in kg, 1000 ml or
 		// more in l. Elsewhere a quantity is what you weigh, and stays as is.
@@ -211,14 +226,14 @@ const strategies: Record<
 				(buying &&
 					typeof qty.value === "number" &&
 					largerAmount(qty.value, item.unit, context.lang)) ||
-				(qty.text || formatDecimalToFraction(qty.value, item.unit)) +
+				(qty.text || formatDecimalToFraction(qty.value, item.unit, style)) +
 					(item.unit ? ` ${item.unit}` : "");
 		}
 
 		if (item.bakersPercentage !== undefined) {
-			const perc = `${item.bakersPercentage}%`;
+			const perc = `${formatNumber(item.bakersPercentage, context.lang, 1)}%`;
 			let absMass = "";
-			if (normalizedMass !== null) absMass = `${normalizedMass}g`;
+			if (normalizedMass !== null) absMass = `${grams}g`;
 			else absMass = originalQtyStr;
 			plainQty = context.bakersMathOnly ? perc : `${perc} (${absMass})`;
 		} else {
@@ -252,7 +267,7 @@ const strategies: Record<
 						(buying &&
 							normalizedMass !== null &&
 							largerAmount(normalizedMass, "g", context.lang)) ||
-						`${normalizedMass} g`
+						`${grams} g`
 					}`
 				: "";
 		// The quantity written in a sentence or a Markdown list: as written,
@@ -263,13 +278,12 @@ const strategies: Record<
 		let htmlBakersBadge = "";
 
 		if (format === "html" && item.bakersPercentage !== undefined) {
-			const perc = `${item.bakersPercentage}%`;
+			const perc = `${formatNumber(item.bakersPercentage, context.lang, 1)}%`;
 			if (context.bakersMathOnly) {
 				htmlQty = perc;
 			} else {
 				htmlQty =
-					originalQtyStr ||
-					(normalizedMass !== null ? `${normalizedMass}g` : "");
+					originalQtyStr || (normalizedMass !== null ? `${grams}g` : "");
 				const bpClass = context.classes?.bakersBadge || "bakers-badge";
 				htmlBakersBadge = ` <span class="${bpClass}" data-tooltip="${escapeHtml(t.renderer.bakersPercentage)}">${perc}</span>`;
 			}
@@ -317,10 +331,10 @@ const strategies: Record<
 				}
 
 				if (massAddsInfo) {
-					let display = `${normalizedMass}g`;
+					let display = `${grams}g`;
 					if (isEstimate) display = `~${display}`;
 					const badgeClass = context.classes?.massBadge || "mass-badge";
-					html += ` <span class="${badgeClass}" data-tooltip="${escapeHtml(t.renderer.standardizedMass)}: ${normalizedMass}g">${display}</span>`;
+					html += ` <span class="${badgeClass}" data-tooltip="${escapeHtml(t.renderer.standardizedMass)}: ${grams}g">${display}</span>`;
 				}
 
 				if (prep && mode !== "shopping-list") {
@@ -440,7 +454,7 @@ const strategies: Record<
 
 	timer: (item, format, context) => {
 		const q = item.quantity || { value: "" };
-		const qVal = formatQuantityValue(q);
+		const qVal = formatQuantityValue(q, context.lang);
 		// item.quantity can be a bare string (a rejected/free-text timer
 		// value — see processor.ts's INVALID_UNIT handling for TextQuantity),
 		// which has no `.value` of its own; the string itself *is* the value.
@@ -486,7 +500,7 @@ const strategies: Record<
 		if (format === "text") {
 			const value = item.text
 				? String(item.text)
-				: `${formatQuantityValue(item.quantity || { value: "" })}${item.unit ? ` ${item.unit}` : ""}`;
+				: `${formatQuantityValue(item.quantity || { value: "" }, context.lang)}${item.unit ? ` ${item.unit}` : ""}`;
 			return styled(context, "timer", value);
 		}
 		if (item.text) {
@@ -498,7 +512,7 @@ const strategies: Record<
 			}
 		} else {
 			const q = item.quantity || { value: "" };
-			const qVal = formatQuantityValue(q);
+			const qVal = formatQuantityValue(q, context.lang);
 			const unitStr = item.unit ? ` ${item.unit}` : "";
 			if (format === "html") {
 				return `<span class="${className}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || "")}">${termIcon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
@@ -514,7 +528,8 @@ const strategies: Record<
 		const ingredients = registry.ingredients || {};
 		const def = ingredients[item.id];
 		const name = def ? def.name : item.id || t.renderer.unknownReference;
-		const qty = getQty(item);
+		const style = numberStyle(context);
+		const qty = getQty(item, style);
 
 		if (format === "html") {
 			const caretIcon =
@@ -526,7 +541,10 @@ const strategies: Record<
 
 			if (mode === "inline") {
 				const qtyParts = qty
-					? [writtenQty(item), ...(item.variable_entries ?? [])]
+					? [
+							writtenQty(item, numberStyle(context)),
+							...(item.variable_entries ?? []),
+						]
 					: [];
 				const tip = tooltipCardAttrs(
 					{
@@ -545,7 +563,7 @@ const strategies: Record<
 				if (qty) {
 					const parts = [];
 					const baseQty =
-						qty.text || formatDecimalToFraction(qty.value, item.unit);
+						qty.text || formatDecimalToFraction(qty.value, item.unit, style);
 					let first = escapeHtml(baseQty);
 					if (item.unit)
 						first += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
@@ -562,7 +580,7 @@ const strategies: Record<
 			let detail = "";
 			if (qty) {
 				const parts = [
-					`${qty.text || formatDecimalToFraction(qty.value, item.unit)}${item.unit ? ` ${item.unit}` : ""}`,
+					`${qty.text || formatDecimalToFraction(qty.value, item.unit, style)}${item.unit ? ` ${item.unit}` : ""}`,
 					...(item.variable_entries ?? []),
 				];
 				detail = parts.join(" + ");
@@ -579,7 +597,7 @@ const strategies: Record<
 			if (qty) {
 				const parts = [];
 				const qtyVal =
-					qty.text || formatDecimalToFraction(qty.value, item.unit);
+					qty.text || formatDecimalToFraction(qty.value, item.unit, style);
 				let first = String(qtyVal);
 				if (item.unit) first += ` ${item.unit}`;
 				parts.push(first);
@@ -670,7 +688,7 @@ const strategies: Record<
 							opt.id ||
 							"",
 					),
-					value: writtenQty(opt),
+					value: writtenQty(opt, numberStyle(context)),
 					detail: opt.preparation || undefined,
 				}));
 

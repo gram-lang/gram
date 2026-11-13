@@ -12,6 +12,7 @@ import {
 	escapeHtml,
 	escapeMarkdownHtml,
 	formatDecimalToFraction,
+	formatGrams,
 	getQty,
 	joinStepTokens,
 	nobr,
@@ -136,7 +137,7 @@ export function kitIngredients(
 					line.masses.push(usage.normalizedMass);
 				}
 			} else {
-				const qty = getQty(usage);
+				const qty = getQty(usage, { lang: options.lang });
 				lines.push({
 					id,
 					unit,
@@ -153,7 +154,7 @@ export function kitIngredients(
 		const total = line.numbers.reduce((sum, n) => sum + n, 0);
 		const hasNumbers = line.numbers.length > 0;
 		const quantity = hasNumbers
-			? `${formatDecimalToFraction(total, line.unit)}${unitSuffix(line.unit)}`
+			? `${formatDecimalToFraction(total, line.unit, { lang: options.lang })}${unitSuffix(line.unit)}`
 			: line.text !== undefined
 				? `${line.text}${unitSuffix(line.unit)}`
 				: undefined;
@@ -170,10 +171,13 @@ export function kitIngredients(
 			kind: "ingredient",
 			name,
 			...(quantity !== undefined && { quantity }),
-			...(mass !== undefined && mass > 0 && { mass: `${mass} g` }),
+			...(mass !== undefined &&
+				mass > 0 && { mass: formatGrams(mass, options.lang) }),
 			...(many && {
 				detail: line.numbers
-					.map((n) => formatDecimalToFraction(n, line.unit))
+					.map((n) =>
+						formatDecimalToFraction(n, line.unit, { lang: options.lang }),
+					)
 					.join(" + "),
 			}),
 			...(entry?.is_module_synthetic && { note: t.runSheetInStock }),

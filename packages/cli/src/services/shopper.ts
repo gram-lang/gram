@@ -3,6 +3,7 @@ import { basename } from "node:path";
 import {
 	normalizeUnit,
 	isCoarseUnit,
+	toKitchenFraction,
 	toLargerMetricUnit,
 	getDefaultCategories,
 	getCategoryLabels,
@@ -45,12 +46,21 @@ interface CollectedItem {
  * 1000 ml or more in l, as the renderer's shopping list says it
  * (`toLargerMetricUnit`).
  */
-function formatAmount(value: number, unit: string, decimals = 2): string {
+function formatAmount(
+	value: number,
+	unit: string,
+	lang: string,
+	decimals = 2,
+): string {
 	const larger = toLargerMetricUnit(value, unit);
-	if (larger.unit !== unit) return `${fmtNumber(larger.value)} ${larger.unit}`;
+	if (larger.unit !== unit)
+		return `${fmtNumber(larger.value, 2, lang)} ${larger.unit}`;
+	// A spoon, a cup, an imperial measure: `2 3/4 cup`, as the recipe view.
+	const fraction = toKitchenFraction(value, unit, lang);
+	if (fraction) return `${fraction} ${unit}`;
 	return unit
-		? `${fmtNumber(value, decimals)} ${unit}`
-		: fmtNumber(value, decimals);
+		? `${fmtNumber(value, decimals, lang)} ${unit}`
+		: fmtNumber(value, decimals, lang);
 }
 
 // This used to be its own hardcoded list that didn't match the canonical
@@ -188,7 +198,7 @@ export async function buildShoppingList(
 				);
 				fullyAggregated = true;
 				finalEntry = {
-					displayQty: formatAmount(Math.round(totalMass), "g", 0),
+					displayQty: formatAmount(Math.round(totalMass), "g", lang, 0),
 					isEstimate: massItems.some((i) => i.isEstimate),
 				};
 			}
@@ -202,7 +212,7 @@ export async function buildShoppingList(
 				fullyAggregated = true;
 				const decimals = unit && isCoarseUnit(unit) ? 1 : 2;
 				finalEntry = {
-					displayQty: formatAmount(total, unit, decimals),
+					displayQty: formatAmount(total, unit, lang, decimals),
 					isEstimate: false,
 				};
 			}

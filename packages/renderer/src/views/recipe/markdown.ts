@@ -13,8 +13,8 @@ import {
 	joinStepTokens,
 	groupMultiUnitEntries,
 	escapeMarkdownHtml,
+	formatGrams,
 	largerAmount,
-	round1,
 } from "../../shared/utils";
 import {
 	getMetrics,
@@ -30,7 +30,7 @@ import { portionsLabel } from "../../shared/portions";
 import { formatElement } from "../../shared/element";
 import { moduleLabel } from "./module-label";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
-import { getDictionary } from "@gram-lang/i18n";
+import { formatNumber, getDictionary } from "@gram-lang/i18n";
 
 export const markdownBackend: RenderBackend = {
 	buildContext(data, options) {
@@ -128,7 +128,8 @@ export const markdownBackend: RenderBackend = {
 						largerAmount(item.purchasingMass, "g", options.lang)?.replace(
 							" ",
 							"",
-						) ?? `${round1(item.purchasingMass)}g`;
+						) ??
+						formatGrams(item.purchasingMass, options.lang).replace(" ", "");
 					suffix = ` _(${gross} ${t.renderer.gross})_`;
 				}
 				md += `- ${formatElement(item, "md", { ...context, formatMode: "shopping-list" })}${suffix}\n`;
@@ -295,7 +296,9 @@ export const markdownBackend: RenderBackend = {
 				`${indent}${escapeMarkdownHtml(row.label)}`,
 				...rowsByColumn.map((rows) => {
 					const cell = rows.find((r) => r.key === row.key);
-					return cell ? `${cell.value} ${cell.unit}` : "";
+					return cell
+						? `${formatNumber(cell.value, options.lang)} ${cell.unit}`
+						: "";
 				}),
 				...riCell(row.key),
 			]);
