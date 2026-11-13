@@ -353,6 +353,69 @@ describe("section retro-planning", () => {
 	});
 });
 
+describe("text left after a section header's anchor / intermediate", () => {
+	// Before 1.4.1 any text after `~{...}` / `->&name` made the header rule fail:
+	// the `##` line fell back to a step, so the section vanished silently, or its
+	// `~{-10h}` anchor surfaced as a misleading "Invalid quantity for timer".
+	function parseError(source: string): GramParseError {
+		try {
+			getAST(source);
+		} catch (e) {
+			expect(e).toBeInstanceOf(GramParseError);
+			return e as GramParseError;
+		}
+		throw new Error("expected a GramParseError");
+	}
+
+	const MULTI_WORD =
+		/Intermediate name 'rhubarbe laquée' .* ->&rhubarbe laquée\{\}/;
+
+	it.each([
+		["anchor first", "## Garniture ~{-10h} ->&rhubarbe laquée\n\nStep.\n", 21],
+		["anchor last", "## Garniture ->&rhubarbe laquée ~{-10h}\n\nStep.\n", 13],
+		["no anchor", "## Garniture ->&rhubarbe laquée\n\nStep.\n", 13],
+		["end of file", "## Garniture ->&rhubarbe laquée", 13],
+	])("asks for braces on a multi-word intermediate (%s)", (_label, source, offset) => {
+		const err = parseError(source);
+		expect(err.message).toMatch(MULTI_WORD);
+		expect(err.offset).toBe(offset);
+	});
+
+	it.each([
+		[
+			"text after the anchor",
+			"## Garniture ~{-10h} au frais\n\nStep.\n",
+			"au frais",
+		],
+		["two intermediates", "## Garniture ->&a ->&b\n\nStep.\n", "->&b"],
+	])("rejects any other leftover text (%s)", (_label, source, leftover) => {
+		expect(parseError(source).message).toContain(
+			`Unexpected text '${leftover}' in a section header`,
+		);
+	});
+
+	it("still accepts braces, trailing spaces and either order", () => {
+		for (const header of [
+			"## Garniture ->&rhubarbe laquée{} ~{-10h}",
+			"## Garniture ~{-10h} ->&rhubarbe laquée{}  ",
+		]) {
+			const section = getAST(`${header}\n\nStep.\n`).children[0] as any;
+			expect(section.type).toBe(ASTNodeType.Section);
+			expect(section.retroPlanning.raw).toBe("-10h");
+			expect(section.intermediateDecl.name).toBe("rhubarbe laquée");
+		}
+	});
+
+	it("keeps a header written on the last line, without a final newline", () => {
+		const section = getAST("Step.\n\n## Mousse ->&mousse ~{-1d}").children.at(
+			-1,
+		) as any;
+		expect(section.type).toBe(ASTNodeType.Section);
+		expect(section.retroPlanning.raw).toBe("-1d");
+		expect(section.intermediateDecl.name).toBe("mousse");
+	});
+});
+
 describe("known hard error", () => {
 	it("throws a descriptive syntax error for a space before the composite `<` sigil", () => {
 		expect(() => getAST("## Section\n@ <@parent\n")).toThrow(/composite/i);

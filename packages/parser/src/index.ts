@@ -219,7 +219,28 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	header(_1, _2, title, extension, _3, _4): HeaderResult {
+	header_trailing(_1, _2, _title, extension, _sp, trailing, _end): never {
+		const text = trailing.sourceString.trimEnd();
+		// `->&rhubarbe laquée`: the bare form keeps one word, so the next word
+		// lands here. Point at the braces rather than at the leftover text.
+		const bareDecl = extension.sourceString.trimEnd().match(/->&([^\s{}]+)$/);
+		const nextWords = (text.split("~{")[0] ?? "").trim();
+		if (bareDecl && /^[\p{L}\p{N}]/u.test(nextWords)) {
+			const example = `->&${bareDecl[1]} ${nextWords}{}`;
+			throw new GramParseError(
+				`Gram Syntax Error: Intermediate name '${bareDecl[1]} ${nextWords}' in a section header has several words and must end with braces, e.g. ${example}.`,
+				extension.source.startIdx + (bareDecl.index ?? 0),
+				`a multi-word intermediate name ending with braces, e.g. ${example}`,
+			);
+		}
+		throw new GramParseError(
+			`Gram Syntax Error: Unexpected text '${text}' in a section header. A header ends with its anchor '~{...}' and its intermediate '->&name', with nothing after them.`,
+			trailing.source.startIdx,
+			"the end of the section header",
+		);
+	},
+
+	header_ok(_1, _2, title, extension, _3, _4): HeaderResult {
 		let retroPlanning = null;
 		let intermediateDecl = null;
 

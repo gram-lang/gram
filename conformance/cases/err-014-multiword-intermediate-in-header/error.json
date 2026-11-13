@@ -1,0 +1,7 @@
+{
+  "message": "Gram Syntax Error: Intermediate name 'rhubarbe laquée' in a section header has several words and must end with braces, e.g. ->&rhubarbe laquée{}.",
+  "offset": 30,
+  "expected": "a multi-word intermediate name ending with braces, e.g. ->&rhubarbe laquée{}",
+  "code": null,
+  "file": null
+}
