@@ -106,7 +106,13 @@ export default defineCommand({
 				factor,
 				scheduleTimes(original).totalTime,
 			);
-			renderScaleResult(original.title, factor, items, warnings);
+			renderScaleResult(
+				original.title,
+				factor,
+				items,
+				warnings,
+				config.language,
+			);
 		} catch (err) {
 			s.stop("Failed.");
 			reportError(err);

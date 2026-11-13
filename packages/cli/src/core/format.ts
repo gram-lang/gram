@@ -1,12 +1,13 @@
-const systemLocale =
-	typeof Intl !== "undefined"
-		? Intl.DateTimeFormat().resolvedOptions().locale
-		: "en";
+import { formatNumber } from "@gram-lang/i18n";
 
-export function fmtNumber(n: number, maxDecimals = 2): string {
-	return new Intl.NumberFormat(systemLocale, {
-		maximumFractionDigits: maxDecimals,
-	}).format(n);
+/**
+ * A number as the CLI shows it: in the project's language (`lang`, its
+ * `language` setting) when the output speaks it, else in English, like the
+ * messages around it; no thousands separator, as a recipe writes `1500 g`.
+ * The same rule as the renderer's views (`formatNumber` of `@gram-lang/i18n`).
+ */
+export function fmtNumber(n: number, maxDecimals = 2, lang?: string): string {
+	return formatNumber(n, lang, maxDecimals);
 }
 
 /**

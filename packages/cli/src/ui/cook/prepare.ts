@@ -4,17 +4,22 @@ import {
 	aggregateSectionIngredients,
 } from "@gram-lang/kitchen";
 import { isMetricMassUnit } from "@gram-lang/i18n";
+import { formatDecimalToFraction } from "@gram-lang/renderer";
 import { splitDuration } from "../../core/format";
 import { passiveTimers } from "../../core/schedule";
 import type { RecipeData, FlatStep, CookTimer } from "./types";
 
 // Shared quantity formatter: preserves fraction text ('1/2', '2/3') and adds space before unit
+/**
+ * A quantity as the recipe view writes it: `1 3/4 cup`, `1/2 tsp`, `1.5 kg`
+ * (`formatDecimalToFraction`). In English, as the rest of `gram cook`.
+ */
 export function fmtQty(item: { qty?: any; unit?: string | null }): string {
 	if (item.qty == null) return "";
 	const q = item.qty;
 	let display: string;
 	if (typeof q === "number") {
-		display = String(q);
+		display = formatDecimalToFraction(q, item.unit ?? undefined);
 	} else if (typeof q === "object" && q !== null) {
 		display = q.text ?? (q.value != null ? String(q.value) : "");
 	} else {

@@ -38,6 +38,35 @@ describe("buildShoppingList", () => {
 		expect(result.items.find((i) => i.id === "milk")?.displayQty).toBe("2 l");
 	});
 
+	it("writes decimals in the project's language, not the machine's", async () => {
+		const a = await tmp("## Prep\n[Mix] Add @flour{1950g} and @milk{1.5l}.\n");
+		const b = await tmp("## Prep\n[Mix] Add @flour{1950g} and @milk{1.25l}.\n");
+		const fr = await buildShoppingList([a, b], { lang: "fr" });
+		expect(fr.items.find((i) => i.id === "flour")?.displayQty).toBe("3,9 kg");
+		expect(fr.items.find((i) => i.id === "milk")?.displayQty).toBe("2,8 l");
+		const en = await buildShoppingList([a, b], { lang: "en" });
+		expect(en.items.find((i) => i.id === "flour")?.displayQty).toBe("3.9 kg");
+	});
+
+	it("writes cups and spoons in fractions, whether written 1 3/4 or 1.75", async () => {
+		const a = await tmp(
+			"## Prep\n[Mix] Add @flour{1 3/4 cup} and @sugar{1.75 cup}.\n",
+		);
+		const b = await tmp(
+			"## Prep\n[Mix] Add @flour{1 cup} and @salt{1.5 tsp}.\n",
+		);
+		const result = await buildShoppingList([a, b]);
+		expect(result.items.find((i) => i.id === "flour")?.displayQty).toBe(
+			"2 3/4 cup",
+		);
+		expect(result.items.find((i) => i.id === "sugar")?.displayQty).toBe(
+			"1 3/4 cup",
+		);
+		expect(result.items.find((i) => i.id === "salt")?.displayQty).toBe(
+			"1 1/2 tsp",
+		);
+	});
+
 	it("lists an ingredient with no quantity as '-'", async () => {
 		const a = await tmp("## Prep\n[Season] Add @salt{} to taste.\n");
 		const result = await buildShoppingList([a]);

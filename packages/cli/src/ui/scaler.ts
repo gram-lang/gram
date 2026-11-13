@@ -1,18 +1,24 @@
 import chalk from "chalk";
 import { log } from "@clack/prompts";
 import { fmtNumber } from "../core/format";
-import { isCoarseUnit } from "@gram-lang/i18n";
+import { isCoarseUnit, toKitchenFraction } from "@gram-lang/i18n";
 import type { ScaledItem } from "../services/scaler";
 
-function fmtQty(qty: number, unit: string | null): string {
+function fmtQty(qty: number, unit: string | null, lang?: string): string {
+	// A spoon, a cup, an imperial measure: `1 3/4cup`, as the recipe view.
+	const fraction =
+		Math.abs(qty - Math.round(qty)) < 0.005
+			? undefined
+			: toKitchenFraction(qty, unit, lang);
+	if (fraction) return `${fraction}${unit}`;
 	const decimals = isCoarseUnit(unit) ? 1 : 2;
 	const rounded =
 		Math.abs(qty - Math.round(qty)) < 0.005
 			? Math.round(qty)
 			: parseFloat(qty.toFixed(decimals));
 	return unit
-		? `${fmtNumber(rounded, decimals)}${unit}`
-		: fmtNumber(rounded, 1);
+		? `${fmtNumber(rounded, decimals, lang)}${unit}`
+		: fmtNumber(rounded, 1, lang);
 }
 
 export function renderScaleResult(
@@ -20,9 +26,9 @@ export function renderScaleResult(
 	factor: number,
 	items: ScaledItem[],
 	warnings: string[],
+	lang?: string,
 ): void {
-	const factorStr =
-		factor === Math.round(factor) ? `×${factor}` : `×${factor.toFixed(2)}`;
+	const factorStr = `×${fmtNumber(factor, 2, lang)}`;
 	const header = title ? `${title} — ${factorStr}` : factorStr;
 
 	const scalable = items.filter((i) => !i.nonScalable);
@@ -44,10 +50,10 @@ export function renderScaleResult(
 		for (const item of scalable) {
 			const name = (item.name || item.id).slice(0, COL_NAME).padEnd(COL_NAME);
 			const orig = chalk.dim(
-				fmtQty(item.originalQty!, item.unit ?? null).padStart(COL_QTY),
+				fmtQty(item.originalQty!, item.unit ?? null, lang).padStart(COL_QTY),
 			);
 			const scaled = chalk.green(
-				fmtQty(item.scaledQty!, item.unit ?? null).padStart(COL_QTY),
+				fmtQty(item.scaledQty!, item.unit ?? null, lang).padStart(COL_QTY),
 			);
 			console.log(`  ${name} ${orig} ${scaled}`);
 		}
