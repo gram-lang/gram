@@ -19,6 +19,9 @@ import {
 	round1,
 	largerAmount,
 	getQty,
+	formatDecimalToFraction,
+	formatGrams,
+	type NumberStyle,
 	trimBeforeComments,
 } from "../../shared/utils";
 import {
@@ -49,7 +52,12 @@ import {
 	round2,
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
-import { fillTemplate, getDictionary, isMetricMassUnit } from "@gram-lang/i18n";
+import {
+	fillTemplate,
+	formatNumber,
+	getDictionary,
+	isMetricMassUnit,
+} from "@gram-lang/i18n";
 import {
 	resolveContributingUsage,
 	type AnalyzedUsage,
@@ -103,23 +111,25 @@ function kitQtyHtml(
 		showBareCount = false,
 		withBadges = true,
 		large = false,
-		lang,
+		style = {},
 	}: {
 		isCookware?: boolean;
 		showBareCount?: boolean;
 		withBadges?: boolean;
 		/** A shopping list: 1000 g or more in kg, 1000 ml or more in l. */
 		large?: boolean;
-		lang?: string;
+		/** The reader's language and the integrator's `formatFraction`. */
+		style?: NumberStyle;
 	} = {},
 ): string {
 	let html = "";
+	const { lang } = style;
 	const unit = item.unit ?? "";
 	const written = () =>
 		(large && typeof qty === "number" && largerAmount(qty, unit, lang)) ||
-		`${String(qty)}${unit ? ` ${unit}` : ""}`;
+		`${formatDecimalToFraction(qty, unit, style)}${unit ? ` ${unit}` : ""}`;
 	const grams = (mass: number) =>
-		(large && largerAmount(mass, "g", lang)) || `${round1(mass)} g`;
+		(large && largerAmount(mass, "g", lang)) || formatGrams(mass, lang);
 	// A quantity already in g, kg or mg is its own weight: the standardized
 	// mass would only say it again (3 kg, 3000 g).
 	const mass = isMetricMassUnit(unit, lang) ? undefined : item.normalizedMass;
@@ -134,7 +144,7 @@ function kitQtyHtml(
 	}
 	if (!withBadges) return html;
 	if (item.bakersPercentage !== undefined) {
-		html += ` <span class="bakers-badge">${round1(item.bakersPercentage)}%</span>`;
+		html += ` <span class="bakers-badge">${formatNumber(item.bakersPercentage, lang, 1)}%</span>`;
 	}
 	if (item.purchasingMass && item.purchasingMass !== item.normalizedMass) {
 		const gross = grams(item.purchasingMass).replace(" ", "");
@@ -181,7 +191,10 @@ function renderKitItem(
 		}
 	}
 
-	const q = getQty(item);
+	const q = getQty(item, {
+		lang: options.lang,
+		formatFraction: options.formatFraction,
+	});
 	const itemQty = q
 		? typeof q.value === "number"
 			? q.value
@@ -196,7 +209,10 @@ function renderKitItem(
 			: ""
 		: kitQtyHtml(item, itemQty, t, {
 				large: context.formatMode === "shopping-list",
-				lang: options.lang,
+				style: {
+					lang: options.lang,
+					formatFraction: options.formatFraction,
+				},
 			});
 
 	const itemTypeClass = isCookware
@@ -250,7 +266,10 @@ function renderKitAlternativeItem(
 				"";
 			const optName = rawName.replace(/-/g, " ");
 			const optPrep = opt.preparation || opt.note;
-			const q = getQty(opt);
+			const q = getQty(opt, {
+				lang: options.lang,
+				formatFraction: options.formatFraction,
+			});
 			const optQty = q
 				? q.text ||
 					(typeof q.value === "number"
@@ -280,7 +299,7 @@ function renderKitAlternativeItem(
 			isCookware,
 			withBadges: false,
 			large: context.formatMode === "shopping-list",
-			lang: options.lang,
+			style: { lang: options.lang, formatFraction: options.formatFraction },
 		});
 	}
 
@@ -324,7 +343,7 @@ function renderKitUsageItem(
 	const qtyContent = kitQtyHtml(child, childQty, t, {
 		showBareCount: true,
 		large: context.formatMode === "shopping-list",
-		lang: context.lang,
+		style: { lang: context.lang, formatFraction: context.formatFraction },
 	});
 
 	let html = `            <li class="kit-usage">`;
@@ -354,7 +373,7 @@ function renderKitCompositeItem(
 	const unitStr = item.unit ? ` ${escapeHtml(item.unit)}` : "";
 	const qtyContent =
 		typeof item.qty === "number" && item.qty
-			? `<span class="kit-mass">${escapeHtml(String(round1(item.qty)))}${unitStr}</span>`
+			? `<span class="kit-mass">${escapeHtml(formatDecimalToFraction(item.qty, item.unit, { lang: options.lang, formatFraction: options.formatFraction }))}${unitStr}</span>`
 			: "";
 
 	// No `list-item-group` here: the parent row lays out like any other line
@@ -479,7 +498,7 @@ function massTooltipHtml(
 		html += `\n      <div class="timing-divider"></div>`;
 		html += `\n${heading(t.renderer.massEstimated, t.renderer.massEstimatedDetail)}`;
 		for (const [name, { mass, methods }] of estimated) {
-			html += `\n${row(name, [...methods].join(", "), `~${round1(mass)} g`)}`;
+			html += `\n${row(name, [...methods].join(", "), `~${formatGrams(mass, context.lang)}`)}`;
 		}
 	}
 	if (missing.length > 0) {
@@ -545,10 +564,13 @@ function pillBasis(
 	);
 }
 
-/** A nutrient's value with its unit: "22.1 g", "520 kcal". */
-function nutrientValue(row: Pick<NutrientRow, "value" | "unit">): string {
+/** A nutrient's value with its unit: "22.1 g" ("22,1 g" in French), "520 kcal". */
+function nutrientValue(
+	row: Pick<NutrientRow, "value" | "unit">,
+	lang?: string,
+): string {
 	const value = row.unit === "kcal" ? Math.round(row.value) : row.value;
-	return `${value} ${row.unit}`;
+	return `${formatNumber(value, lang)} ${row.unit}`;
 }
 
 /** A basis label inside a sentence: "per portion", "pour 100 g". */
@@ -1379,7 +1401,7 @@ export const htmlBackend: RenderBackend = {
 			html += `      <tr${cls}><th scope="row">${escapeHtml(row.label)}</th>`;
 			for (const rows of rowsByColumn) {
 				const cell = rows.find((r) => r.key === row.key);
-				html += `<td>${cell ? escapeHtml(nutrientValue(cell)) : ""}</td>`;
+				html += `<td>${cell ? escapeHtml(nutrientValue(cell, options.lang)) : ""}</td>`;
 			}
 			html += riCell(row.key);
 			html += `</tr>\n`;

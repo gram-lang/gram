@@ -1,5 +1,5 @@
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
-import { getDictionary } from "@gram-lang/i18n";
+import { formatNumber, getDictionary } from "@gram-lang/i18n";
 import { formatElement } from "../../shared/element";
 import {
 	getMetrics,
@@ -18,8 +18,8 @@ import {
 	isAlternativeGroup,
 	isCompositeItem,
 	joinStepTokens,
+	formatGrams,
 	largerAmount,
-	round1,
 } from "../../shared/utils";
 import type {
 	RenderableCompilationResult,
@@ -206,7 +206,7 @@ export const textBackend: RenderBackend = {
 				) {
 					const mass =
 						largerAmount(item.purchasingMass, "g", options.lang) ??
-						`${round1(item.purchasingMass)} g`;
+						formatGrams(item.purchasingMass, options.lang);
 					gross = ` ${style(options, "dim", `(${mass} ${t.gross})`)}`;
 				}
 				lines.push(`  ${formatElement(item, "text", row)}${gross}`);
@@ -365,11 +365,6 @@ export const textBackend: RenderBackend = {
 		}
 		const riBasis = columns.find((c) => c.key === "perPortion");
 		const riRows = riBasis ? nutritionRows(riBasis.values, options.lang) : [];
-		// Two decimals, as `nutritionRows` rounds them: a pinch of salt would
-		// read 0 g at one.
-		const number = new Intl.NumberFormat(options.lang || "en", {
-			maximumFractionDigits: 2,
-		});
 		const kcalOf = (values: Record<string, number | undefined>) =>
 			Math.round(values.calories ?? 0);
 		const riOf = (key: string) => {
@@ -410,7 +405,11 @@ export const textBackend: RenderBackend = {
 				row.nested ? `  ${row.label}` : row.label,
 				...rowsByColumn.map((cells) => {
 					const cell = cells.find((r) => r.key === row.key);
-					return cell ? `${number.format(cell.value)} ${cell.unit}` : "";
+					// Two decimals, as `nutritionRows` rounds them: a pinch of
+					// salt would read 0 g at one.
+					return cell
+						? `${formatNumber(cell.value, options.lang)} ${cell.unit}`
+						: "";
 				}),
 				...(riBasis ? [riOf(row.key)] : []),
 			]);

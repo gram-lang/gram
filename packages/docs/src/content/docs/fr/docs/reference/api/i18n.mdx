@@ -6,6 +6,7 @@ description: "Normalisation partagée des unités et du temps, et chaînes UI lo
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
 import { unitsTable, timeUnitsTable, categoriesTable } from '../../../../../../data/api-reference';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 Ce package centralise la normalisation des unités, des durées et les dictionnaires de chaînes d'interface, exploités en interne par tout le pipeline (le parseur ne normalise pas les unités : cette étape a lieu lors du redimensionnement dans `@gram-lang/kitchen` et de la standardisation des masses dans `@gram-lang/analyzer`). Le but : que `"càs"`, `"tbsp"` et `"cuillère à soupe"` soient toujours reconnus comme la même unité, quelle que soit la langue de rédaction de la recette ou de la base de données.
 
@@ -77,6 +78,35 @@ import { UNIT_CONVERSIONS, TIME_TO_MINUTES } from '@gram-lang/i18n';
 UNIT_CONVERSIONS.mass.map.kg; // 1000 (grammes)
 UNIT_CONVERSIONS.volume.map.tbsp; // 14.7868 (mL)
 TIME_TO_MINUTES.h; // 60 (minutes)
+```
+
+### Les nombres dans la langue du lecteur
+
+<Since v="1.4.1" />
+
+`formatNumber` écrit un nombre comme un lecteur de la langue l'écrit (`1.5` en anglais, `1,5` en français), arrondi par défaut à deux décimales et sans séparateur de milliers, comme une recette écrit `1500 g`. `localizeDecimals` fait de même pour une quantité déjà écrite en texte (une fourchette, un minuteur), et `decimalSeparator` donne le séparateur lui-même. Toutes les vues et le CLI écrivent les nombres qu'ils affichent avec ces fonctions ; un nombre relu par un script ou un fichier (un attribut `data-*`, du JSON, la source `.gram`) garde son point.
+
+```typescript
+import { formatNumber, localizeDecimals, decimalSeparator } from '@gram-lang/i18n';
+
+formatNumber(1.5, 'fr');          // "1,5"
+formatNumber(147.46, 'fr', 1);    // "147,5"
+formatNumber(1500, 'en');         // "1500"
+localizeDecimals('1.5-2', 'fr');  // "1,5-2"
+decimalSeparator('fr');           // ","
+```
+
+Les cuillères, les tasses et les mesures impériales (tsp, tbsp, cup, tasse, oz, lb, pt...) se lisent en fractions : `toKitchenFraction` écrit une telle quantité sous la forme d'un entier suivi d'une fraction courante, comme l'écrit un cuisinier, si bien que `1.75 cup` et `1 3/4 cup` s'affichent tous deux `1 3/4 cup`. La fonction renvoie `undefined` quand aucune fraction courante n'est proche (`1.6`) et pour toute autre unité : les unités métriques et les quantités sans unité gardent leurs décimales. `isFractionUnit` indique si une unité en fait partie, `commonFraction` donne la fraction d'une valeur inférieure à 1.
+
+```typescript
+import { toKitchenFraction, isFractionUnit, commonFraction } from '@gram-lang/i18n';
+
+toKitchenFraction(1.75, 'cup');   // "1 3/4"
+toKitchenFraction(0.5, 'tsp');    // "1/2"
+toKitchenFraction(1.6, 'cup');    // undefined
+toKitchenFraction(1.5, 'kg');     // undefined
+isFractionUnit('tasse', 'fr');    // true
+commonFraction(0.25);             // "1/4"
 ```
 
 ### Grandes quantités et poids métriques
