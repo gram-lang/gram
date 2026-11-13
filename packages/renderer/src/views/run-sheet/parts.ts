@@ -1,4 +1,4 @@
-import { getDictionary } from "@gram-lang/i18n";
+import { getDictionary, isMetricMassUnit } from "@gram-lang/i18n";
 import type { StepToken } from "@gram-lang/kitchen";
 import { formatElement } from "../../shared/element";
 import { stripTooltips } from "../../shared/tooltip-card";
@@ -83,9 +83,6 @@ export interface VisitKitOptions {
 
 const SUM_EPS = 1e-9;
 
-/** Units that already are a weight: the standardized mass would only repeat them. */
-const MASS_UNITS = new Set(["g", "kg", "mg"]);
-
 const unitSuffix = (unit?: string | null) => (unit ? ` ${unit}` : "");
 
 const sortedSections = (sections: Iterable<number>) =>
@@ -166,7 +163,7 @@ export function kitIngredients(
 		const mass =
 			hasNumbers &&
 			line.masses.length === line.numbers.length &&
-			!MASS_UNITS.has(line.unit.toLowerCase())
+			!isMetricMassUnit(line.unit, options.lang)
 				? round1(line.masses.reduce((sum, n) => sum + n, 0))
 				: undefined;
 		return {

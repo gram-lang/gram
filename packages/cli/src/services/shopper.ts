@@ -3,6 +3,7 @@ import { basename } from "node:path";
 import {
 	normalizeUnit,
 	isCoarseUnit,
+	toLargerMetricUnit,
 	getDefaultCategories,
 	getCategoryLabels,
 	isCategoryKey,
@@ -39,9 +40,17 @@ interface CollectedItem {
 	recipe: string;
 }
 
-function formatMass(grams: number): string {
-	if (grams >= 1000) return `${fmtNumber(grams / 1000)} kg`;
-	return `${fmtNumber(Math.round(grams), 0)} g`;
+/**
+ * An amount on the shopping list: what you buy, so 1000 g or more in kg and
+ * 1000 ml or more in l, as the renderer's shopping list says it
+ * (`toLargerMetricUnit`).
+ */
+function formatAmount(value: number, unit: string, decimals = 2): string {
+	const larger = toLargerMetricUnit(value, unit);
+	if (larger.unit !== unit) return `${fmtNumber(larger.value)} ${larger.unit}`;
+	return unit
+		? `${fmtNumber(value, decimals)} ${unit}`
+		: fmtNumber(value, decimals);
 }
 
 // This used to be its own hardcoded list that didn't match the canonical
@@ -179,7 +188,7 @@ export async function buildShoppingList(
 				);
 				fullyAggregated = true;
 				finalEntry = {
-					displayQty: formatMass(totalMass),
+					displayQty: formatAmount(Math.round(totalMass), "g", 0),
 					isEstimate: massItems.some((i) => i.isEstimate),
 				};
 			}
@@ -193,9 +202,7 @@ export async function buildShoppingList(
 				fullyAggregated = true;
 				const decimals = unit && isCoarseUnit(unit) ? 1 : 2;
 				finalEntry = {
-					displayQty: unit
-						? `${fmtNumber(total, decimals)} ${unit}`
-						: fmtNumber(total, decimals),
+					displayQty: formatAmount(total, unit, decimals),
 					isEstimate: false,
 				};
 			}

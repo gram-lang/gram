@@ -13,6 +13,7 @@ import {
 	joinStepTokens,
 	groupMultiUnitEntries,
 	escapeMarkdownHtml,
+	largerAmount,
 	round1,
 } from "../../shared/utils";
 import {
@@ -123,8 +124,12 @@ export const markdownBackend: RenderBackend = {
 					item.purchasingMass &&
 					item.purchasingMass !== item.normalizedMass
 				) {
-					const gross = round1(item.purchasingMass);
-					suffix = ` _(${gross}g ${t.renderer.gross})_`;
+					const gross =
+						largerAmount(item.purchasingMass, "g", options.lang)?.replace(
+							" ",
+							"",
+						) ?? `${round1(item.purchasingMass)}g`;
+					suffix = ` _(${gross} ${t.renderer.gross})_`;
 				}
 				md += `- ${formatElement(item, "md", { ...context, formatMode: "shopping-list" })}${suffix}\n`;
 			}

@@ -26,6 +26,18 @@ describe("buildShoppingList", () => {
 		expect(result.recipeCount).toBe(2);
 	});
 
+	it("writes 1000 g or more in kg and 1000 ml or more in l, as the recipe view does", async () => {
+		const a = await tmp(
+			"## Prep\n[Mix] Add @flour{1500g} and @milk{1000ml}.\n",
+		);
+		const b = await tmp(
+			"## Prep\n[Mix] Add @flour{1500g} and @milk{1000ml}.\n",
+		);
+		const result = await buildShoppingList([a, b]);
+		expect(result.items.find((i) => i.id === "flour")?.displayQty).toBe("3 kg");
+		expect(result.items.find((i) => i.id === "milk")?.displayQty).toBe("2 l");
+	});
+
 	it("lists an ingredient with no quantity as '-'", async () => {
 		const a = await tmp("## Prep\n[Season] Add @salt{} to taste.\n");
 		const result = await buildShoppingList([a]);
