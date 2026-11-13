@@ -60,6 +60,8 @@ Either a `Timer` was given a non-numeric (text) quantity, or a `Temperature` was
 
 <Since v="1.4.1" type="changed" /> It also flags an ingredient whose unit reads as two quantities: a known unit, a number and another known unit, as in `@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`. Gram does not add quantities, so the whole `cup 5 tbsp` was taken as one unknown unit: no mass, and a scaled recipe read `2 cup 5 tbsp`. **Fix**: write the total in one unit (`@flour{1.2 kg}`). A number that only describes the unit, as in `@tomatoes{1 tin of 400 g}`, raises nothing: scaling the number of tins stays right.
 
+It flags as well a unit that hides a quantity, as in `@flour{about 200g}`: a quantity starts with its number, so with words in front the whole text was read as a unit, with no mass, and the quantity vanished from a scaled recipe. **Fix**: write the quantity alone (`@flour{200g}`), and the "about" in the step if it matters. Words with no number, such as `{a pinch}` or `{to taste}`, raise nothing.
+
 ### `DURATION_OUT_OF_RANGE`
 <Since v="1.4.0" />
 
