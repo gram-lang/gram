@@ -51,7 +51,7 @@ All four formatters use the same underlying traversal (`RenderBackend`). This gu
 |---|---|---|
 | `icons` | `RendererIcons` | Overrides default icons (see `DEFAULT_ICONS` below). |
 | `classes` | `RendererClasses` | Overrides CSS class names applied to generated HTML elements (HTML/print only). |
-| `formatFraction` | `(value: number) => string` | Custom decimal-to-fraction formatter (defaults to common kitchen fractions, e.g. `0.5` → `"1/2"`). |
+| `formatFraction` | `(value: number) => string` | <Since v="1.4.1" type="changed" /> Writes every numeric quantity of the recipe views (steps, section ingredients, shopping list) in place of the default: a whole number, a common kitchen fraction (`0.5` → `"1/2"`) or a decimal in the `lang` of the options (`1.5` → `"1,5"` in French). It receives the number only, so it handles the language itself. Standardized masses, kilograms of the shopping list, nutrition values and the run sheet keep the default. Declared since 1.0, it was only read from 1.4.1 on. |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter (defaults to e.g. `90` → `"1h 30min"`, in the `lang` of the options). |
 | `hideStepQty` | `boolean` | Omits ingredient quantities from the step text (shopping and section ingredient lists retain them). By default, <Since v="1.4.0" /> all formats display the quantity immediately after each ingredient, alongside its standardized mass when available: `flour (250 ml, ~148 g)`. In HTML, this is rendered as a `<span class="step-quantity">` (`classes.stepQuantity`), with detailed conversion info in its tooltip. |
 | `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | <Since v="1.4.0" /> Scheduling strategy followed by the document: preparation immediately before each section (`'perSection'`, default), grouped upfront at recipe start (`'upfront'`), or at the start of each working day (`'perDay'`). Determines the total time displayed in the header. The recipe instructions show no temporal schedule: the detailed timeline and required equipment list reside in the <Term id="runSheet" /> (`runSheet`). The timeline is computed on the fly from the `tasks` graph. |
@@ -154,9 +154,9 @@ const html = toHTML(compiled, {
 Low-level utilities used internally by formatters are exported to support building custom renderers adhering to language conventions:
 
 ```typescript
-function formatDecimalToFraction(value: unknown): string   // 0.5 -> "1/2"
-function getQty(item: Record<string, unknown>): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
-function formatQuantityValue(q: any): string                // Timer/temperature quantity -> display string
+function formatDecimalToFraction(value: unknown, unit?: string, style?: { lang?: string; formatFraction?: (value: number) => string }): string   // 0.5 -> "1/2", 1.5 -> "1,5" with lang "fr"
+function getQty(item: Record<string, unknown>, style?: { lang?: string; formatFraction?: (value: number) => string }): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
+function formatQuantityValue(q: any, lang?: string): string                // Timer/temperature quantity -> display string, decimals in `lang`
 function formatDuration(minutes: number, lang?: string): string // 90 -> "1h 30min"; seconds below 1h (0.33 -> "20s"), minutes up to a day (64.5 -> "1h 5min"), hours from a day up (1506 -> "1d 1h", "1j 1h" in French)
 function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h"
 function toCommonFraction(value: number): string | undefined   // 0.25 -> "1/4", 0.3 -> undefined

@@ -6,6 +6,7 @@ description: "Shared unit and time normalization plus localized UI strings used 
 import GeneratedTable from '../../../../../components/GeneratedTable.astro';
 import { unitsTable, timeUnitsTable, categoriesTable } from '../../../../../data/api-reference';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 Shared unit/time normalization and UI-string dictionaries, used internally across the pipeline (the parser doesn't normalize units — that happens in `@gram-lang/kitchen`'s scaling engine and `@gram-lang/analyzer`'s mass standardization) so `"càs"`, `"tbsp"`, and `"cuillère à soupe"` are all recognized as the same unit regardless of which locale a recipe or a database entry was written in.
 
@@ -76,6 +77,35 @@ import { UNIT_CONVERSIONS, TIME_TO_MINUTES } from '@gram-lang/i18n';
 UNIT_CONVERSIONS.mass.map.kg; // 1000 (grams)
 UNIT_CONVERSIONS.volume.map.tbsp; // 14.7868 (mL)
 TIME_TO_MINUTES.h; // 60 (minutes)
+```
+
+### Numbers in the reader's language
+
+<Since v="1.4.1" />
+
+`formatNumber` writes a number as a reader of the language does (`1.5` in English, `1,5` in French), rounded to two decimals by default and with no thousands separator, as a recipe writes `1500 g`. `localizeDecimals` does the same for a quantity already written as text (a range, a timer), and `decimalSeparator` gives the separator itself. Every view and the CLI write the numbers they show through these; a number read back by a script or a file (a `data-*` attribute, JSON, `.gram` source) keeps its point.
+
+```typescript
+import { formatNumber, localizeDecimals, decimalSeparator } from '@gram-lang/i18n';
+
+formatNumber(1.5, 'fr');          // "1,5"
+formatNumber(147.46, 'fr', 1);    // "147,5"
+formatNumber(1500, 'en');         // "1500"
+localizeDecimals('1.5-2', 'fr');  // "1,5-2"
+decimalSeparator('fr');           // ","
+```
+
+Spoons, cups and imperial measures (tsp, tbsp, cup, tasse, oz, lb, pt...) are read in fractions: `toKitchenFraction` writes such a quantity as a whole number and a common fraction, as a cook writes it, so `1.75 cup` and `1 3/4 cup` both show `1 3/4 cup`. It returns `undefined` when no common fraction is near (`1.6`) and for any other unit: metric units and counts keep decimals. `isFractionUnit` tells whether a unit is one of them, `commonFraction` gives the fraction of a value below 1.
+
+```typescript
+import { toKitchenFraction, isFractionUnit, commonFraction } from '@gram-lang/i18n';
+
+toKitchenFraction(1.75, 'cup');   // "1 3/4"
+toKitchenFraction(0.5, 'tsp');    // "1/2"
+toKitchenFraction(1.6, 'cup');    // undefined
+toKitchenFraction(1.5, 'kg');     // undefined
+isFractionUnit('tasse', 'fr');    // true
+commonFraction(0.25);             // "1/4"
 ```
 
 ### Large amounts and metric weights
