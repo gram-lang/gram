@@ -63,9 +63,9 @@ import {
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
 import {
-	normalizeUnit,
+	isMeasureUnit,
 	resolveTimeUnit,
-	UNIT_CONVERSIONS,
+	unitContainsQuantity,
 } from "@gram-lang/i18n";
 import { type Warning, WarningCode, pushWarning } from "./warnings";
 import { detectIntermediateCycles } from "./graph";
@@ -140,15 +140,6 @@ function checkModifiers(
 
 export type ProcessedBlockResult = StepToken;
 
-/** True for a unit of mass or volume Gram knows (g, kg, cup, tbsp, c.à.s...). */
-function isKnownMeasure(unit: string): boolean {
-	const canonical = normalizeUnit(unit);
-	return (
-		UNIT_CONVERSIONS.mass.map[canonical] !== undefined ||
-		UNIT_CONVERSIONS.volume.map[canonical] !== undefined
-	);
-}
-
 /**
  * `{1 cup 5 tbsp}`: a unit made of a known unit, a number and another known
  * unit reads as two quantities, which Gram does not add. Unflagged, the whole
@@ -163,7 +154,7 @@ export function looksLikeTwoQuantities(unit: string): boolean {
 		if (!number) continue;
 		const first = words.slice(0, i).join(" ");
 		const second = [number[1], ...words.slice(i + 1)].join(" ").trim();
-		if (second && isKnownMeasure(first) && isKnownMeasure(second)) return true;
+		if (second && isMeasureUnit(first) && isMeasureUnit(second)) return true;
 	}
 	return false;
 }
@@ -175,13 +166,7 @@ export function looksLikeTwoQuantities(unit: string): boolean {
  * `{to taste}`, with no number, are words a cook means as such.
  */
 export function hidesAQuantity(unit: string): boolean {
-	const words = unit.trim().split(/\s+/);
-	return words.some((word, i) => {
-		const number = word.match(/^\d+(?:[.,/]\d+)?(.*)$/);
-		if (!number) return false;
-		const next = number[1] || words[i + 1];
-		return !!next && isKnownMeasure(next);
-	});
+	return unitContainsQuantity(unit);
 }
 
 function processIngredient(

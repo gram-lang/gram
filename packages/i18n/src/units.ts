@@ -257,3 +257,33 @@ export function toLargerMetricUnit(
 	}
 	return { value, unit };
 }
+
+/** True for a unit of mass or volume Gram knows (g, kg, cup, tbsp, c.à.s...). */
+export function isMeasureUnit(
+	rawUnit: string | undefined | null,
+	lang?: string,
+): boolean {
+	const canonical = normalizeUnit(rawUnit, lang);
+	return (
+		UNIT_CONVERSIONS.mass.map[canonical] !== undefined ||
+		UNIT_CONVERSIONS.volume.map[canonical] !== undefined
+	);
+}
+
+/**
+ * True when a unit holds a quantity of its own: a number followed by a known
+ * unit, glued or not (`about 200g`, `boîte de 400 g`, `8oz tins`). A unit such
+ * as `gousse` or `tranche` holds none.
+ */
+export function unitContainsQuantity(
+	rawUnit: string | undefined | null,
+	lang?: string,
+): boolean {
+	const words = (rawUnit ?? "").trim().split(/\s+/);
+	return words.some((word, i) => {
+		const number = word.match(/^\d+(?:[.,/]\d+)?(.*)$/);
+		if (!number) return false;
+		const next = number[1] || words[i + 1];
+		return !!next && isMeasureUnit(next, lang);
+	});
+}

@@ -1,0 +1,139 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Sauce",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Verser ",
+              "loc": {
+                "start": 10,
+                "end": 17
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "tomates",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "boîte de 400 g",
+                "fixed": false,
+                "loc": {
+                  "start": 26,
+                  "end": 42
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 17,
+                "end": 43
+              }
+            },
+            {
+              "type": "Text",
+              "value": "et ",
+              "loc": {
+                "start": 44,
+                "end": 47
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "tomates",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 56,
+                  "end": 61
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 47,
+                "end": 62
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", puis ",
+              "loc": {
+                "start": 62,
+                "end": 69
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "ail",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": "gousses",
+                "fixed": false,
+                "loc": {
+                  "start": 74,
+                  "end": 83
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 69,
+                "end": 84
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 84,
+                "end": 85
+              }
+            }
+          ],
+          "loc": {
+            "start": 10,
+            "end": 86
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 86
+      }
+    }
+  ]
+}
