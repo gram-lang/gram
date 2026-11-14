@@ -115,7 +115,7 @@ You can assign a preparation timeframe to a `## Section` by adding a `~timer`-li
 ## Puff Pastry ~{-2d}
 ```
 This tells the compiler that the "Puff Pastry" `## Section` should be prepared **2 days in advance**.
-Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes) — free text (e.g. `~{the day before}`) is not valid here and is flagged by the compiler.
+The offset is a negative duration in days, hours and minutes, written like a timer (`~{-2d}`, `~{-12h}`, `~{-1h30}`, `~{-1d 12h}`) — free text (e.g. `~{the day before}`) is not valid here and is flagged by the compiler.
 
 *See [Times & Scheduling](/docs/reference/syntax/times#section-retro-planning) for the full syntax rules and error handling.*
 
