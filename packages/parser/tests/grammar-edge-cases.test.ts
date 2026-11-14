@@ -568,7 +568,7 @@ describe("malformed quantity braces are errors, not silent drops (issue #24)", (
 		["#casserole{2 l}", "cookware 'casserole'", 10],
 		["@farine{200g}<@pâte{x/y}", "composite parent 'pâte'", 19],
 		["&dough{1 /}", "reference 'dough'", 6],
-		["~repos{1 /}", "timer 'repos'", 6],
+		["~repos{10 min", "missing '}'", 6],
 	];
 
 	for (const [src, fragment, col] of cases) {
@@ -590,6 +590,58 @@ describe("malformed quantity braces are errors, not silent drops (issue #24)", (
 		expect(() =>
 			getAST("## T\n\nPréchauffer ^four{thermostat 6/7}\n"),
 		).not.toThrow();
+	});
+});
+
+describe("natural timers keep what was written in raw", () => {
+	const timers = (src: string): any[] => {
+		const ast = getAST(`## T\n\n${src}\n`);
+		const section = ast.children[0] as { children: { children: any[] }[] };
+		return section.children[0].children.filter(
+			(c: any) => c.type === ASTNodeType.Timer,
+		);
+	};
+
+	it("fills raw for a timer read as a quantity", () => {
+		const [timer] = timers("Cuire ~{ 10 min }.");
+		expect(timer.raw).toBe("10 min");
+		expect(timer.quantity.unit).toBe("min");
+	});
+
+	it("keeps the quantity branch for 1h30, whose unit is h30", () => {
+		const [timer] = timers("Cuire ~{1h30}.");
+		expect(timer.raw).toBe("1h30");
+		expect(timer.quantity.unit).toBe("h30");
+	});
+
+	it.each([
+		["~{1:30 h}", "1:30 h"],
+		["~{5'30\"}", "5'30\""],
+		["~{1h + 30min}", "1h + 30min"],
+		["~{1h30-2h}", "1h30-2h"],
+		["~{1:30}", "1:30"],
+		["~four{0:04:30}", "0:04:30"],
+		["~_{45 min – 1 h}", "45 min – 1 h"],
+		["~repos{1 /}", "1 /"],
+	])("parses %s as text instead of failing", (src, raw) => {
+		const [timer] = timers(`Cuire ${src}.`);
+		expect(timer.raw).toBe(raw);
+		expect(timer.quantity).toMatchObject({
+			type: ASTNodeType.TextQuantity,
+			value: raw,
+		});
+	});
+
+	it("keeps the name and the passive marker on a text timer", () => {
+		const [timer] = timers("Laisser lever ~_pousse{1:30 h}.");
+		expect(timer.name).toBe("pousse");
+		expect(timer.isPassive).toBe(true);
+	});
+
+	it("stops a text timer at the end of the line", () => {
+		expect(() => getAST("## T\n\nCuire ~{1:30 h\nsuite}.\n")).toThrow(
+			GramParseError,
+		);
 	});
 });
 

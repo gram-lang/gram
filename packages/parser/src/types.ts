@@ -241,6 +241,16 @@ export interface ReferenceAST extends NodeAST {
 export interface TimerAST extends NodeAST {
 	type: ASTNodeType.Timer;
 	name?: string | null;
+	/**
+	 * The text between the braces, trimmed (`1h30`, `1:30 h`, `5'30"`). The
+	 * compiler reads the duration from it; `quantity` stays for compatibility.
+	 */
+	raw: string;
+	/**
+	 * How the grammar cut the braces: a quantity for `10 min` (and `1h30`, read
+	 * as 1 + unit `h30`), the text for anything else (`1:30 h`). Not a duration:
+	 * read `raw` with `parseDuration` (@gram-lang/i18n).
+	 */
 	quantity: QuantityAST | TextQuantityAST;
 	isPassive: boolean;
 }

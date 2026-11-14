@@ -188,12 +188,14 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "2h",
               "quantity": {
                 "type": "single",
                 "value": 2,
                 "text": "2"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 120
             },
             "."
           ],
@@ -313,12 +315,14 @@
             ", then bake for ",
             {
               "type": "timer",
+              "raw": "25min",
               "quantity": {
                 "type": "single",
                 "value": 25,
                 "text": "25"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 25
             },
             "."
           ],

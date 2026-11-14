@@ -1,0 +1,161 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Timer Clock"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake for ",
+              "loc": {
+                "start": 37,
+                "end": 46
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1:30 h",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "1:30 h",
+                "loc": {
+                  "start": 47,
+                  "end": 55
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 46,
+                "end": 55
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then ",
+              "loc": {
+                "start": 55,
+                "end": 62
+              }
+            },
+            {
+              "type": "Timer",
+              "name": "four",
+              "raw": "0:04:30",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "0:04:30",
+                "loc": {
+                  "start": 67,
+                  "end": 76
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 62,
+                "end": 76
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 77,
+                "end": 81
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "4:30 min",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "4:30 min",
+                "loc": {
+                  "start": 82,
+                  "end": 92
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 81,
+                "end": 92
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 92,
+                "end": 93
+              }
+            }
+          ],
+          "loc": {
+            "start": 37,
+            "end": 95
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Rest ",
+              "loc": {
+                "start": 95,
+                "end": 100
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1:30:00",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "1:30:00",
+                "loc": {
+                  "start": 102,
+                  "end": 111
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 100,
+                "end": 111
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 111,
+                "end": 112
+              }
+            }
+          ],
+          "loc": {
+            "start": 95,
+            "end": 113
+          }
+        }
+      ],
+      "loc": {
+        "start": 28,
+        "end": 113
+      }
+    }
+  ]
+}

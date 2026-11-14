@@ -129,12 +129,14 @@
             ", then knead for ",
             {
               "type": "timer",
+              "raw": "10min",
               "quantity": {
                 "type": "single",
                 "value": 10,
                 "text": "10"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 10
             },
             "."
           ],
@@ -152,6 +154,7 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "12-24h",
               "quantity": {
                 "type": "range",
                 "value": 18,
@@ -161,7 +164,8 @@
                 },
                 "text": "12-24"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 1080
             },
             "."
           ],
@@ -233,6 +237,7 @@
             "for ",
             {
               "type": "timer",
+              "raw": "20-25min",
               "quantity": {
                 "type": "range",
                 "value": 22.5,
@@ -242,7 +247,8 @@
                 },
                 "text": "20-25"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 22.5
             },
             "."
           ],

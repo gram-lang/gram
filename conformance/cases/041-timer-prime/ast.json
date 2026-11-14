@@ -1,0 +1,161 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Timer Prime"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Pasta",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Cook the pasta ",
+              "loc": {
+                "start": 38,
+                "end": 53
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "10'",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "10'",
+                "loc": {
+                  "start": 54,
+                  "end": 59
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 53,
+                "end": 59
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", the sauce ",
+              "loc": {
+                "start": 59,
+                "end": 71
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "5'30\"",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "5'30\"",
+                "loc": {
+                  "start": 72,
+                  "end": 79
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 71,
+                "end": 79
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and the garlic ",
+              "loc": {
+                "start": 80,
+                "end": 95
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "45\"",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "45\"",
+                "loc": {
+                  "start": 96,
+                  "end": 101
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 95,
+                "end": 101
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 101,
+                "end": 102
+              }
+            }
+          ],
+          "loc": {
+            "start": 38,
+            "end": 104
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Rest ",
+              "loc": {
+                "start": 104,
+                "end": 109
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "5–7'",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "5–7'",
+                "loc": {
+                  "start": 111,
+                  "end": 117
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 109,
+                "end": 117
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 117,
+                "end": 118
+              }
+            }
+          ],
+          "loc": {
+            "start": 104,
+            "end": 119
+          }
+        }
+      ],
+      "loc": {
+        "start": 28,
+        "end": 119
+      }
+    }
+  ]
+}

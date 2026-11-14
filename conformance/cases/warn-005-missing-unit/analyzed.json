@@ -22,7 +22,8 @@
             "Wait for ",
             {
               "type": "timer",
-              "name": "timer"
+              "name": "timer",
+              "raw": "10"
             },
             "."
           ],

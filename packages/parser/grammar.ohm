@@ -175,9 +175,18 @@ GRAM {
   cookwareQuantity = "{" space* number? space* "}"
 
   // Timer
+  // `ingredientQuantity` comes first (PEG order) so a plain timer keeps its
+  // AST: `~{10 min}`, and also `~{1h30}`, read as 1 + unit "h30". Anything
+  // else closed on the same line (`1:30 h`, `5'30"`, `1h + 30min`, `1h30-2h`)
+  // is kept as text. Either way the AST carries `raw`, the text between the
+  // braces, and the compiler reads the duration from it (`parseDuration` in
+  // @gram-lang/i18n), never from the quantity. Only an unclosed brace is
+  // still a syntax error.
   Timer =
     | "~" "_"? name? ingredientQuantity -- full
+    | "~" "_"? name? timerText          -- text
     | "~" "_"? name? malformedBraces    -- malformed
+  timerText = "{" (~("}" | nl) any)* "}"
   
   // Temperature
   Temperature = "^" name? (ingredientQuantity | textQuantity)

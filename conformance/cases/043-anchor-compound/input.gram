@@ -1,0 +1,19 @@
+---
+title: Anchor Compound
+---
+
+## Brine ~{-1j 12h}
+
+Brine the @chicken{1}.
+
+## Dough ~{-1h30}
+
+Mix @flour{500 g}.
+
+## Sauce ~{-1:30 h}
+
+Reduce @wine{20 cl}.
+
+## Cook
+
+Roast for ~{1h}.

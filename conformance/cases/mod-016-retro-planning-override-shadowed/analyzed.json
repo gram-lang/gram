@@ -103,12 +103,14 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "24h",
               "quantity": {
                 "type": "single",
                 "value": 24,
                 "text": "24"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 1440
             },
             "."
           ],

@@ -2128,6 +2128,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `PASSIVE_OVERLAP_SAME_COOKWARE` | info | `Two passive timers overlap and both use #{cookware}: {item} and {other}. If one is meant to follow the other, give them the same named track, for example ~_{cookware}{…}, so they take turns.` |
 | `DURATION_OUT_OF_RANGE` | warning | `Timer "{item}" is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.` |
 | `AMBIGUOUS_NUMBER` | warning | `"{value}" on "{item}" was read as {read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write {suggestion} if that is the number you meant.` |
+| `INVALID_DURATION` | warning | `Timer duration "{value}" on "{item}" is not read: {reason} It is not counted in the total time.` |
 | `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
 | `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
 | `MODULE_CYCLE` | error | `Circular module import detected: {chain}.` |

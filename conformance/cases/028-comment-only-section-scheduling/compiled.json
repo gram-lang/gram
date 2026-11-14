@@ -22,12 +22,14 @@
             "Wait ",
             {
               "type": "timer",
+              "raw": "60min",
               "quantity": {
                 "type": "single",
                 "value": 60,
                 "text": "60"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 60
             },
             "."
           ],

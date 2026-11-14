@@ -1,0 +1,135 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Timer Range Compound"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Stew",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Simmer ",
+              "loc": {
+                "start": 46,
+                "end": 53
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1h30-2h",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "1h30-2h",
+                "loc": {
+                  "start": 55,
+                  "end": 64
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 53,
+                "end": 64
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then ",
+              "loc": {
+                "start": 64,
+                "end": 71
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "45 min - 1 h",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "45 min - 1 h",
+                "loc": {
+                  "start": 72,
+                  "end": 86
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 71,
+                "end": 86
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 86,
+                "end": 87
+              }
+            }
+          ],
+          "loc": {
+            "start": 46,
+            "end": 89
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake ",
+              "loc": {
+                "start": 89,
+                "end": 94
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1:30-2:00 h",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "1:30-2:00 h",
+                "loc": {
+                  "start": 95,
+                  "end": 108
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 94,
+                "end": 108
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 108,
+                "end": 109
+              }
+            }
+          ],
+          "loc": {
+            "start": 89,
+            "end": 110
+          }
+        }
+      ],
+      "loc": {
+        "start": 37,
+        "end": 110
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+---
+title: Warn Invalid Duration
+---
+
+## Dough ~{-1-2d}
+
+Knead ~{1:30}.
+
+## Bake
+
+Bake ~{1h75}, then ~{1-2h30}.

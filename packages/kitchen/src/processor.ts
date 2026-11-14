@@ -65,10 +65,10 @@ import type { RecipeRegistry } from "./registry";
 import {
 	isMeasureUnit,
 	looksLikeThousands,
-	resolveTimeUnit,
 	unitContainsQuantity,
 } from "@gram-lang/i18n";
 import { type Warning, WarningCode, pushWarning } from "./warnings";
+import { type DurationProblem, readAnchor, readTimer } from "./durations";
 import { detectIntermediateCycles } from "./graph";
 import { calculatePreparationTime } from "./metrics";
 import { analyzeMiseEnPlace } from "./mise-en-place";
@@ -76,20 +76,6 @@ import { analyzeMiseEnPlace } from "./mise-en-place";
 export interface ProcessorContext extends Context {
 	options?: CompilerOptions;
 }
-
-// Canonical i18n time-unit keys (see @gram-lang/i18n's resolveTimeUnit),
-// mapped to the display unit used in compiled output. Shared between ~timer
-// and retro-planning (audit 2026-07-22, finding F-005) so a display value
-// change or a `resolveTimeUnit` alias addition can't drift between the two —
-// previously ~timer normalized "m"/"minutes" to "min" by hand and left every
-// other alias (mins, h, heures, ...) untouched, producing up to 4 different
-// display strings for 2 physical units in the same compiled document.
-const TIME_UNIT_DISPLAY: Record<string, "d" | "h" | "min" | "s"> = {
-	d: "d",
-	h: "h",
-	m: "min",
-	s: "s",
-};
 
 function checkModifiers(
 	ctx: ProcessorContext,
@@ -590,62 +576,75 @@ function processTimer(
 	const obj: ProcessedTimer = { type: "timer" };
 	if (item.name) obj.name = item.name;
 	if (item.isPassive) obj.isPassive = true;
-	if (item.quantity) {
-		const q = item.quantity;
-		if (q.type === ASTNodeType.Quantity) {
-			if (!q.unit) {
-				pushWarning(ctx, WarningCode.MISSING_UNIT, {
-					type: "Timer",
-					item: item.name || "Timer",
-					loc: item.loc,
-				});
-			} else {
-				const unit = TIME_UNIT_DISPLAY[resolveTimeUnit(q.unit)];
-				if (!unit) {
-					// An unrecognized unit (e.g. "3 bananas") used to fall
-					// through
-					// quantityToMinutes' d/h/m/s checks and be silently
-					// treated as plain minutes. Emitting INVALID_UNIT
-					// (matching processTemperature/processRetroPlanning) and
-					// leaving `quantity`/`unit` unset means this timer
-					// contributes zero duration instead of a fabricated one —
-					// the same "degrade to nothing, never guess" choice
-					// processRetroPlanning already makes.
-					pushWarning(ctx, WarningCode.INVALID_UNIT, {
-						type: "Timer",
-						value: q.unit,
-						loc: item.loc,
-					});
-				} else {
-					if (q.value) obj.quantity = q.value;
-					obj.unit = unit;
-					// Written back capped, so the quantity kept in the JSON agrees
-					// with the duration the schedule was built on.
-					if (isDurationTooLong({ value: obj.quantity, unit })) {
-						pushWarning(ctx, WarningCode.DURATION_OUT_OF_RANGE, {
-							type: "Timer",
-							item: item.name || "Timer",
-							loc: item.loc,
-						});
-						obj.quantity = maxDurationIn(unit);
-					}
-				}
-			}
-		} else if (q.type === ASTNodeType.TextQuantity) {
-			pushWarning(ctx, WarningCode.INVALID_UNIT, {
-				type: "Timer",
-				value: q.value,
-				loc: item.loc,
-			});
-			// A plain string, not a fake QuantityValueAST-shaped object —
-			// ProcessedTimer.quantity already has a `string` arm for exactly
-			// this case (audit 2026-07-22, parser finding I4: QuantityValueAST
-			// becoming a real discriminated union stopped this ad-hoc
-			// `{type:"text", value}` object from structurally qualifying).
-			obj.quantity = q.value;
-		}
+	obj.raw = item.raw;
+
+	const name = item.name || "Timer";
+	// The duration always comes from what was written. The grammar's quantity
+	// is only kept when it already was a duration (`10 min`, `1-2 h`), so
+	// those timers compile exactly as before.
+	const kept =
+		item.quantity.type === ASTNodeType.Quantity ? item.quantity : undefined;
+	const reading = readTimer(item.raw, kept);
+	if (!reading.ok) {
+		// Refused: only `raw` is kept, and the timer counts for nothing,
+		// never for a guessed or a zero duration given without a word.
+		pushDurationProblem(
+			ctx,
+			reading.problem,
+			"Timer",
+			name,
+			item.raw,
+			item.loc,
+		);
+		return obj;
 	}
+
+	obj.quantity = reading.quantity;
+	obj.unit = reading.unit;
+	// Written back capped, so the quantity kept in the JSON agrees with the
+	// duration the schedule was built on.
+	if (isDurationTooLong({ value: obj.quantity, unit: obj.unit })) {
+		pushWarning(ctx, WarningCode.DURATION_OUT_OF_RANGE, {
+			type: "Timer",
+			item: name,
+			loc: item.loc,
+		});
+		obj.quantity = maxDurationIn(obj.unit);
+	}
+	obj.minutes = quantityToMinutes({ value: obj.quantity, unit: obj.unit });
 	return obj;
+}
+
+/** The warning for a duration Gram does not read (see `durations.ts`). */
+function pushDurationProblem(
+	ctx: ProcessorContext,
+	problem: DurationProblem,
+	type: "Timer" | "RetroPlanning",
+	item: string,
+	raw: string,
+	loc?: Location,
+) {
+	switch (problem.code) {
+		case "MISSING_UNIT":
+			pushWarning(ctx, WarningCode.MISSING_UNIT, { type, item, loc });
+			return;
+		case "INVALID_UNIT":
+			pushWarning(ctx, WarningCode.INVALID_UNIT, {
+				type,
+				value: problem.unit,
+				loc,
+			});
+			return;
+		case "INVALID_DURATION":
+			pushWarning(ctx, WarningCode.INVALID_DURATION, {
+				type,
+				value: raw,
+				reason: problem.reason,
+				item,
+				loc,
+			});
+			return;
+	}
 }
 
 /**
@@ -693,13 +692,6 @@ function processTemperature(
 	return obj;
 }
 
-// Retro-planning accepts the same units as ~timer (see TIME_UNIT_DISPLAY)
-// except seconds, which don't make sense for a section scheduling offset.
-const RETRO_PLANNING_UNIT_DISPLAY: Record<string, "d" | "h" | "min"> =
-	Object.fromEntries(
-		Object.entries(TIME_UNIT_DISPLAY).filter(([, v]) => v !== "s"),
-	) as Record<string, "d" | "h" | "min">;
-
 function processRetroPlanning(
 	section: SectionAST,
 	ctx: ProcessorContext,
@@ -710,56 +702,49 @@ function processRetroPlanning(
 	const item = section.title || "Section";
 
 	// Retro-planning only makes sense as anticipation ("prepare N time before
-	// the rest") — a zero or positive offset has no clear meaning here, unlike
-	// ~timer where a plain duration is the whole point. So instead of a
-	// separate check per failure shape, everything that isn't a strictly
-	// negative signed duration collapses into the same MISSING_UNIT warning.
-	if (rp.value === null || rp.value === 0 || rp.sign !== -1 || !rp.unit) {
-		pushWarning(ctx, WarningCode.MISSING_UNIT, {
-			type: "RetroPlanning",
+	// the rest"): a zero or positive offset has no clear meaning here, unlike
+	// ~timer where a plain duration is the whole point. `readAnchor` refuses
+	// both with MISSING_UNIT, as before.
+	const reading = readAnchor(rp.raw);
+	if (!reading.ok) {
+		pushDurationProblem(
+			ctx,
+			reading.problem,
+			"RetroPlanning",
 			item,
-			loc: section.loc,
-		});
+			rp.raw,
+			section.loc,
+		);
 		return { raw: rp.raw };
 	}
 
-	const resolved = resolveTimeUnit(rp.unit);
-	const unit = RETRO_PLANNING_UNIT_DISPLAY[resolved];
-	if (!unit) {
-		pushWarning(ctx, WarningCode.INVALID_UNIT, {
-			type: "RetroPlanning",
-			value: rp.unit,
-			loc: section.loc,
-		});
-		return { raw: rp.raw };
-	}
-
-	// Only an anchor that is kept: a dropped one (MISSING_UNIT, INVALID_UNIT)
-	// was read as nothing, so how its number was read does not matter yet.
+	// Only an anchor that is kept: a dropped one was read as nothing, so how
+	// its number was read does not matter yet.
 	checkAmbiguousText(
 		ctx,
-		rp.raw.match(/\d+(?:[.,]\d+)?/)?.[0],
-		String(rp.value),
+		reading.text,
+		String(reading.value),
 		item,
 		section.loc,
 	);
 
-	let value = rp.value;
-	if (isDurationTooLong({ value, unit: resolved })) {
+	let value = reading.value;
+	const { unit } = reading;
+	if (isDurationTooLong({ value, unit })) {
 		pushWarning(ctx, WarningCode.DURATION_OUT_OF_RANGE, {
 			type: "RetroPlanning",
 			item,
 			loc: section.loc,
 		});
-		value = maxDurationIn(resolved);
+		value = maxDurationIn(unit);
 	}
 
 	return {
 		raw: rp.raw,
-		sign: rp.sign,
+		sign: -1,
 		value,
 		unit,
-		minutes: quantityToMinutes({ value, unit: resolved }) * rp.sign,
+		minutes: -quantityToMinutes({ value, unit }),
 	};
 }
 

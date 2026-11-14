@@ -1,0 +1,228 @@
+{
+  "title": "Timer Range Compound",
+  "slug": "timer-range-compound",
+  "meta": {
+    "title": "Timer Range Compound"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Stew",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Simmer ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "raw": "1h30-2h",
+              "quantity": {
+                "type": "range",
+                "value": 105,
+                "range": {
+                  "min": 90,
+                  "max": 120
+                }
+              },
+              "unit": "min",
+              "minutes": 105
+            },
+            ", then ",
+            {
+              "type": "timer",
+              "raw": "45 min - 1 h",
+              "quantity": {
+                "type": "range",
+                "value": 52.5,
+                "range": {
+                  "min": 45,
+                  "max": 60
+                }
+              },
+              "unit": "min",
+              "minutes": 52.5
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 52.5,
+            "activeDuration": 52.5
+          },
+          "backgroundTasks": [
+            {
+              "duration": 105,
+              "startOffset": 0
+            }
+          ]
+        },
+        {
+          "type": "step",
+          "content": [
+            "Bake ",
+            {
+              "type": "timer",
+              "raw": "1:30-2:00 h",
+              "quantity": {
+                "type": "range",
+                "value": 105,
+                "range": {
+                  "min": 90,
+                  "max": 120
+                }
+              },
+              "unit": "min",
+              "minutes": 105
+            },
+            "."
+          ],
+          "timings": {
+            "start": 52.5,
+            "end": 157.5,
+            "activeDuration": 105
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 157.5,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Stew",
+        "duration": 105
+      },
+      {
+        "label": "timer_passive",
+        "duration": 52.5
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 157.5,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Stew",
+        "duration": 157.5
+      }
+    ],
+    "preparationTime": 0,
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0
+    }
+  },
+  "miseEnPlace": [],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 60
+        },
+        "after": []
+      },
+      {
+        "id": "s0.0.t0",
+        "kind": "passive",
+        "section": 0,
+        "step": 0,
+        "offset": 0,
+        "duration": {
+          "nominal": 90,
+          "min": 90,
+          "max": 120
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 120
+        },
+        "after": [
+          "s0.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 180,
+    "activeTime": 180,
+    "preparationTime": 0,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 0,
+        "end": 60
+      },
+      {
+        "kind": "passive",
+        "task": "s0.0.t0",
+        "section": 0,
+        "step": 0,
+        "start": 0,
+        "end": 90
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 60,
+        "end": 180
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 180,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}

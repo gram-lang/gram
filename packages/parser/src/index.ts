@@ -790,7 +790,26 @@ semantics.addOperation("toAST", {
 		return {
 			type: ASTNodeType.Timer,
 			name: n,
+			raw: clean(qty.sourceString.slice(1, -1)),
 			quantity: qty.toAST(),
+			isPassive: passiveMod.children.length > 0,
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	Timer_text(_1, passiveMod, name, text): TimerAST {
+		const child = name.children[0];
+		const n = child ? clean(child.sourceString) : null;
+		const raw = clean(text.sourceString.slice(1, -1));
+		return {
+			type: ASTNodeType.Timer,
+			name: n,
+			raw,
+			quantity: {
+				type: ASTNodeType.TextQuantity,
+				value: raw,
+				loc: { start: text.source.startIdx, end: text.source.endIdx },
+			},
 			isPassive: passiveMod.children.length > 0,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};

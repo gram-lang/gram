@@ -278,12 +278,14 @@
             "and rest ",
             {
               "type": "timer",
+              "raw": "1,5 h",
               "quantity": {
                 "type": "single",
                 "value": 1.5,
                 "text": "1,5"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 90
             },
             "."
           ],
@@ -345,12 +347,14 @@
             "for ",
             {
               "type": "timer",
+              "raw": "2,25 h",
               "quantity": {
                 "type": "single",
                 "value": 2.25,
                 "text": "2,25"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 135
             },
             "."
           ],
