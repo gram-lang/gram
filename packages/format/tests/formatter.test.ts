@@ -43,6 +43,21 @@ describe("formatGram", () => {
 		expect(changes.trailingZeros).toBe(2);
 	});
 
+	it("removes trailing decimal zeros after a decimal comma, keeping the comma", () => {
+		const { content, changes } = formatGram(
+			"Add @flour{500,0g} and @egg{1,50}.\n",
+		);
+		expect(content).toBe("Add @flour{500g} and @egg{1,5}.\n");
+		expect(changes.trailingZeros).toBe(2);
+	});
+
+	it("leaves a comma followed by three digits as written ({1,000g} may mean a thousand)", () => {
+		const src = "Add @flour{1,000g} and @salt{2,500g}.\n";
+		const { content, changes } = formatGram(src);
+		expect(content).toBe(src);
+		expect(changes.trailingZeros).toBe(0);
+	});
+
 	it("does not touch quantities without trailing zeros", () => {
 		const { content, changes } = formatGram(
 			"Add @flour{500g} and @egg{1.25}.\n",

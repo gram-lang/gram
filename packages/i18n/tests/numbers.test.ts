@@ -4,6 +4,7 @@ import {
 	decimalSeparator,
 	formatNumber,
 	localizeDecimals,
+	looksLikeThousands,
 	toKitchenFraction,
 } from "../src/numbers";
 
@@ -43,6 +44,35 @@ describe("localizeDecimals", () => {
 		expect(localizeDecimals("1/2", "fr")).toBe("1/2");
 		expect(localizeDecimals("2 c.à.s", "fr")).toBe("2 c.à.s");
 		expect(localizeDecimals("1.5", "en")).toBe("1.5");
+	});
+
+	it("writes a decimal comma of the source in the reader's language too", () => {
+		expect(localizeDecimals("1,5", "en")).toBe("1.5");
+		expect(localizeDecimals("1,5-2,5", "en")).toBe("1.5-2.5");
+		expect(localizeDecimals("1,5", "fr")).toBe("1,5");
+	});
+});
+
+describe("looksLikeThousands", () => {
+	it("flags a comma followed by exactly three digits after a non-zero whole part", () => {
+		for (const text of ["1,000", "12,500", "250,000", "1,000-2,000"]) {
+			expect(looksLikeThousands(text)).toBe(true);
+		}
+	});
+
+	it("leaves a decimal that cannot be a thousands separator alone", () => {
+		for (const text of [
+			"0,125",
+			"1,5",
+			"1,25",
+			"1,2500",
+			"1234,567",
+			"1.000",
+			"0.125",
+			"1000",
+		]) {
+			expect(looksLikeThousands(text)).toBe(false);
+		}
 	});
 });
 

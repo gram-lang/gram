@@ -263,7 +263,7 @@
       "patterns": [
         {
           "comment": "Numeric value + a recognized unit (C/F, °C/°F, case-insensitive) — matches the compiler's own whitelist.",
-          "match": "(\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?)\\s*(°?[CFcf])\\b",
+          "match": "(\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?)\\s*(°?[CFcf])\\b",
           "captures": {
             "1": { "name": "constant.numeric.gram" },
             "2": { "name": "keyword.other.unit.gram" }
@@ -271,14 +271,14 @@
         },
         {
           "comment": "Numeric value + anything else — same INVALID_UNIT case the compiler warns on.",
-          "match": "(\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?)\\s*([^\\d\\}]+)",
+          "match": "(\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?)\\s*([^\\d\\}]+)",
           "captures": {
             "1": { "name": "constant.numeric.gram" },
             "2": { "name": "invalid.illegal.unit.gram" }
           }
         },
         {
-          "match": "\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?",
+          "match": "\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?",
           "name": "constant.numeric.gram"
         },
         {
@@ -291,7 +291,7 @@
     "quantity-content": {
       "patterns": [
         {
-           "match": "\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?",
+           "match": "\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?",
            "name": "constant.numeric.gram" 
         },
         {

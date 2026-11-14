@@ -514,6 +514,19 @@ Add @flour{1 1/2 cups}.
 Add @butter{1½ sticks}.
 ```
 
+### Decimal numbers
+*(since v1.5.0)*
+
+A decimal number takes a point or a comma, whichever you are used to: `{1.5 kg}` and `{1,5 kg}` are the same quantity. This holds for every number in braces: ingredients, ranges (`{0,5-0,75 l}`), relative quantities (`{12,5% &dough}`), cookware, temperatures (`^{37,5°C}`), timers and section anchors.
+
+```gram
+Add @flour{1,5 kg} and @salt{0.125 kg}.
+
+Pour @milk{0,5-0,75 l}.
+```
+
+Gram has no thousands separator: write `{1500 g}`, never `{1,500 g}`. A comma followed by exactly three digits is read as a decimal like any other (`{1,000 g}` is 1 g), but since a reader could mean a thousand, the compiler warns `AMBIGUOUS_NUMBER` and says how it read the number. A point keeps the meaning it has always had: `{1.000 kg}` is 1 kg, with no warning.
+
 ## Error handling
 
 Some syntax errors stop the recipe from being read before it is even compiled: an unreadable quantity in braces (`@salt{1 g/l}`), a brace that is never closed. The message points at the exact spot to fix, and the editor underlines it.
@@ -525,6 +538,7 @@ The compiler checks for semantic errors in your `@ingredient` declarations and w
 - **Database Missing**: If you compile with a database and the `@ingredient` is not found, it warns `MISSING_INGREDIENT`.
 - **Missing Macros**: If the database lacks nutritional information for the `@ingredient`, it warns `MISSING_MACROS`.
 - **Unknown Mass**: If it cannot convert a volume or count into grams to estimate nutrition, it warns `UNKNOWN_MASS`.
+- **Ambiguous Number**: If a comma is followed by exactly three digits (`{1,000 g}`), it reads a decimal and warns `AMBIGUOUS_NUMBER`, in case a thousand was meant.
 
 ## Related resources
 
@@ -678,6 +692,12 @@ Bake for ~{25min}.
 
 :::note
 Shorthand `m` or the word `minutes` are automatically normalized to `min` by the compiler.
+:::
+
+A duration can be a decimal, with a point or a comma (`~{1.5 h}`, `~{1,5 h}`; see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
+
+:::caution
+A decimal is a fraction of the unit, not minutes: `~{1.30 h}` (or `~{1,30 h}`) is 1 hour 18 minutes, not 1 hour 30. Write `~{90min}` or `~{1.5 h}` for an hour and a half.
 :::
 
 These units are resolved through Gram's multi-language time dictionary: localized aliases below are recognized natively regardless of the recipe language (e.g. in a French recipe, `~{2j}` resolves identically to `~{2d}`).
@@ -2106,6 +2126,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `DAY_OVERFLOW` | warning | `Working day {day} (from section '{section}') starts NaN h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-{day}1d}, or shorten the rest.` |
 | `PASSIVE_OVERLAP_SAME_COOKWARE` | info | `Two passive timers overlap and both use #{cookware}: {item} and {other}. If one is meant to follow the other, give them the same named track, for example ~_{cookware}{…}, so they take turns.` |
 | `DURATION_OUT_OF_RANGE` | warning | `Timer "{item}" is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.` |
+| `AMBIGUOUS_NUMBER` | warning | `"{value}" on "{item}" was read as {read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write {suggestion} if that is the number you meant.` |
 | `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
 | `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
 | `MODULE_CYCLE` | error | `Circular module import detected: {chain}.` |
@@ -2155,6 +2176,11 @@ It flags as well a unit that hides a quantity, as in `@flour{about 200g}`: a qua
 *(since v1.4.0)*
 
 A timer or a section's retro-planning offset lasts longer than 1000 years. **Fix**: check the number, often a stray digit or a missing unit letter (`~{-3000d}` is eight years, `~{-3000000000d}` is not a recipe). The duration is capped at 1000 years, so the timeline stays finite instead of coming out as `0`, `Infinity` or `NaN`. That limit is a technical bound, not a judgement on recipes: anything up to it, a solera that runs for decades included, is planned as written and raises nothing.
+
+### `AMBIGUOUS_NUMBER`
+*(since v1.5.0)*
+
+A comma followed by exactly three digits, after a whole part of one to three digits, as in `@flour{1,000 g}` or `@flour{12,500 g}`. Gram reads a comma between two digits as a decimal and has no thousands separator, so this is 1 g (and 12.5 g); the warning says how the number was read, because an English reader would see a thousand. The quantity stays usable either way. **Fix**: write `{1000 g}` if a thousand was meant, or `{1 g}` otherwise. A number that cannot be a thousands separator, such as `{0,125 kg}` or `{1,25 kg}`, raises nothing, and neither does a point: `{1.000 kg}` has always meant 1 kg.
 
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`>> name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.

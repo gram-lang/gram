@@ -51,6 +51,15 @@ export function unicodeFractionValue(glyph: string): [number, number] {
  * `null` anyway — reject it here instead of constructing a node that lies
  * about having a usable numeric value).
  */
+/**
+ * A plain number as the grammar's `plainNumber` accepts it, "." or "," as its
+ * decimal separator: `readDecimal("1,5")` is 1.5. `parseFloat` alone stops at
+ * the comma and reads 1.
+ */
+export function readDecimal(text: string): number {
+	return parseFloat(text.replace(",", "."));
+}
+
 export function parseNumber(n: string): QuantityValueAST | null {
 	if (!n) return null;
 	const parts = n.split("/");
@@ -61,8 +70,8 @@ export function parseNumber(n: string): QuantityValueAST | null {
 		// (`plainNumber = digit+ ("." digit+)? ("/" digit+)?`), but this used
 		// `parseInt`, which truncates — "1.5/2" silently became 1/2 (0.5)
 		// instead of 0.75.
-		const num = parseFloat(numStr);
-		const den = parseFloat(denStr);
+		const num = readDecimal(numStr);
+		const den = readDecimal(denStr);
 		if (den === 0) return null;
 		return {
 			type: "fraction",
@@ -72,7 +81,7 @@ export function parseNumber(n: string): QuantityValueAST | null {
 			text: n,
 		};
 	}
-	return { type: "single", value: parseFloat(n), text: n };
+	return { type: "single", value: readDecimal(n), text: n };
 }
 
 /**

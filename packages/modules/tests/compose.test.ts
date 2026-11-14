@@ -692,6 +692,25 @@ Mix in the &levain{200g}.
 		);
 		expect(result.sections[0]?.retro_planning?.raw).toBe("-2d");
 	});
+
+	it("flags a host clause whose comma could be a thousands separator", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./pate.gram" as &pate ~{-1,000h}
+
+## Montage
+
+Use &pate{200g}.
+`,
+			"/pate.gram": "## Pate ->&pate\n\nMix @flour{200g}.\n",
+		});
+
+		const warnings = result.warnings.filter(
+			(w) => w.code === "AMBIGUOUS_NUMBER",
+		);
+		expect(warnings).toHaveLength(1);
+		expect(warnings[0]?.item).toBe("Pate");
+		expect(result.sections[0]?.retro_planning?.minutes).toBe(-60);
+	});
 });
 
 // Issue #26: composition scope-qualifies a module's private intermediates

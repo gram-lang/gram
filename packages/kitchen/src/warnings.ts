@@ -23,6 +23,7 @@ export enum WarningCode {
 	DAY_OVERFLOW = "DAY_OVERFLOW",
 	PASSIVE_OVERLAP_SAME_COOKWARE = "PASSIVE_OVERLAP_SAME_COOKWARE",
 	DURATION_OUT_OF_RANGE = "DURATION_OUT_OF_RANGE",
+	AMBIGUOUS_NUMBER = "AMBIGUOUS_NUMBER",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
 	// Phase E). The only module-related code kitchen raises itself, in the
 	// no-resolution-happened degraded path (§C.4) — every other module-only
@@ -77,6 +78,16 @@ export interface WarningPayloads {
 	};
 	[WarningCode.DURATION_OUT_OF_RANGE]: {
 		type: "Timer" | "RetroPlanning";
+		item: string;
+		loc?: Location;
+	};
+	[WarningCode.AMBIGUOUS_NUMBER]: {
+		/** The number as written, e.g. `1,000` or `1,000-2,000`. */
+		value: string;
+		/** How Gram read it, e.g. `1` or `1-2`. */
+		read: string;
+		/** The number without its comma, e.g. `1000`. */
+		suggestion: string;
 		item: string;
 		loc?: Location;
 	};
@@ -163,6 +174,8 @@ export const warningTemplates: {
 					: `Invalid unit "${p.value}" for ${p.type}.`,
 	[WarningCode.DURATION_OUT_OF_RANGE]: (p) =>
 		`${p.type === "RetroPlanning" ? `Retro-planning offset for "${p.item}"` : `Timer "${p.item}"`} is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.`,
+	[WarningCode.AMBIGUOUS_NUMBER]: (p) =>
+		`"${p.value}" on "${p.item}" was read as ${p.read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write ${p.suggestion} if that is the number you meant.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
 		`Intermediate variable '&${p.varName}' is redefined; variable names must be unique across the recipe.`,
 	[WarningCode.MISSING_INGREDIENT]: (p) =>
@@ -238,6 +251,7 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.MISSING_UNIT]: "warning",
 	[WarningCode.INVALID_UNIT]: "warning",
 	[WarningCode.DURATION_OUT_OF_RANGE]: "warning",
+	[WarningCode.AMBIGUOUS_NUMBER]: "warning",
 	[WarningCode.SCOPE_CONFLICT]: "error",
 	[WarningCode.MISSING_INGREDIENT]: "warning",
 	[WarningCode.MISSING_MACROS]: "info",

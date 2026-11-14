@@ -161,15 +161,28 @@ export function formatGram(source: string): {
 		return `{${trimmed}}`;
 	});
 
-	// Rule 4: Remove trailing decimal zeros in quantities ({500.0g} → {500g}, {1.50g} → {1.5g})
-	body = body.replace(/\{(\d+)\.0+([a-zA-Z°%]*)\}/g, (_, n, u) => {
-		changes.trailingZeros++;
-		return `{${n}${u}}`;
-	});
-	body = body.replace(/\{(\d+\.\d*[1-9])0+([a-zA-Z°%]*)\}/g, (_, n, u) => {
-		changes.trailingZeros++;
-		return `{${n}${u}}`;
-	});
+	// Rule 4: Remove trailing decimal zeros in quantities ({500.0g} → {500g}, {1.50g} → {1.5g}),
+	// after a point or a comma ({1,50} → {1,5}). A comma followed by exactly three
+	// digits ({1,000}) is left as written: it may be a thousands separator, which
+	// the compiler flags (AMBIGUOUS_NUMBER), and stripping it would hide the question.
+	const looksLikeThousands = (sep: string, decimals: string) =>
+		sep === "," && decimals.length === 3;
+	body = body.replace(
+		/\{(\d+)([.,])(0+)([a-zA-Z°%]*)\}/g,
+		(match, n, sep, zeros, u) => {
+			if (looksLikeThousands(sep, zeros)) return match;
+			changes.trailingZeros++;
+			return `{${n}${u}}`;
+		},
+	);
+	body = body.replace(
+		/\{(\d+)([.,])(\d*[1-9])(0+)([a-zA-Z°%]*)\}/g,
+		(match, n, sep, digits, zeros, u) => {
+			if (looksLikeThousands(sep, digits + zeros)) return match;
+			changes.trailingZeros++;
+			return `{${n}${sep}${digits}${u}}`;
+		},
+	);
 
 	// Rule 5: Remove space before ° in temperature quantities (handles multiple temps per brace)
 	body = body.replace(/\{([^}]*)\}/g, (_, inner) => {

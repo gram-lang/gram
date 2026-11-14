@@ -29,6 +29,12 @@ Bake for ~{25min}.
 Shorthand `m` or the word `minutes` are automatically normalized to `min` by the compiler.
 :::
 
+A duration can be a decimal, with a point or a comma (`~{1.5 h}`, `~{1,5 h}`; see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
+
+:::caution
+A decimal is a fraction of the unit, not minutes: `~{1.30 h}` (or `~{1,30 h}`) is 1 hour 18 minutes, not 1 hour 30. Write `~{90min}` or `~{1.5 h}` for an hour and a half.
+:::
+
 These units are resolved through Gram's multi-language time dictionary: localized aliases below are recognized natively regardless of the recipe language (e.g. in a French recipe, `~{2j}` resolves identically to `~{2d}`).
 
 <GeneratedTable table={timeUnitsTable("en")} />
@@ -208,6 +214,7 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (`~timer`): Unrecognized units (e.g. `~{30 lightyears}`) trigger `INVALID_UNIT`.
 - **Missing Unit** (section retro-planning): `~{-2}`, free text, positive (`~{2h}`), or zero values (`~{0h}`) trigger `MISSING_UNIT`.
 - **Invalid Unit** (section retro-planning): Unrecognized units trigger `INVALID_UNIT`.
+- **Ambiguous Number** *(Since 1.5.0)*: A comma followed by exactly three digits (`~{1,000 min}`, `~{-1,000h}`) is read as a decimal, one minute or one hour, and triggers `AMBIGUOUS_NUMBER` in case a thousand was meant.
 - **Time Paradox**: Anchors conflicting with dependency order (e.g. an ingredient anchored at `-10 min` needed by a section anchored at `-1 h`) trigger `TIME_PARADOX`.
 - **Track Contention**: Concurrent passive timers delayed on the same named track trigger `TRACK_CONTENTION`.
 - **Day overflow** *(Since 1.4.0)*: Passive durations pushing working day tasks beyond the 24-hour window trigger `DAY_OVERFLOW`.

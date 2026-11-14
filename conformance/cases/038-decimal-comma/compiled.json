@@ -1,0 +1,559 @@
+{
+  "title": "Decimal Comma",
+  "slug": "decimal-comma",
+  "meta": {
+    "title": "Decimal Comma",
+    "portions": "4"
+  },
+  "registry": {
+    "ingredients": {
+      "dough": {
+        "id": "dough",
+        "name": "dough",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "kg"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt",
+        "default_unit": "kg"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "kg"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "l"
+      },
+      "water": {
+        "id": "water",
+        "name": "water"
+      }
+    },
+    "cookware": {
+      "board": {
+        "id": "board",
+        "name": "board"
+      }
+    }
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 1.5,
+      "unit": "kg"
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 0.13,
+      "unit": "kg"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 1,
+      "unit": "kg"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 0.63,
+      "unit": "l"
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "5"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "12.5% of flour"
+      ]
+    }
+  ],
+  "cookware": [
+    {
+      "id": "board",
+      "_usageId": "6",
+      "qty": 1,
+      "fixed": false
+    }
+  ],
+  "sections": [
+    {
+      "title": "Dough",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 1.5,
+          "unit": "kg"
+        },
+        {
+          "id": "salt",
+          "_usageId": "2",
+          "qty": 0.125,
+          "unit": "kg"
+        },
+        {
+          "id": "butter",
+          "_usageId": "3",
+          "qty": 1,
+          "unit": "kg"
+        },
+        {
+          "id": "milk",
+          "_usageId": "4",
+          "qty": {
+            "type": "range",
+            "value": 0.625,
+            "range": {
+              "min": 0.5,
+              "max": 0.75
+            },
+            "text": "0,5-0,75"
+          },
+          "unit": "l"
+        },
+        {
+          "id": "water",
+          "_usageId": "5",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 12.5,
+            "target": "flour",
+            "referenceType": "ingredient",
+            "loc": {
+              "start": 160,
+              "end": 173
+            }
+          },
+          "dependencies": [
+            "flour"
+          ],
+          "formula": {
+            "raw": "12.5% of flour",
+            "target": "flour",
+            "percent": 12.5,
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [
+        {
+          "id": "board",
+          "_usageId": "6",
+          "qty": 1,
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 1.5,
+              "unit": "kg"
+            },
+            ", ",
+            {
+              "id": "salt",
+              "_usageId": "2",
+              "qty": 0.125,
+              "unit": "kg"
+            },
+            ", ",
+            {
+              "id": "butter",
+              "_usageId": "3",
+              "qty": 1,
+              "unit": "kg"
+            },
+            "and ",
+            {
+              "id": "milk",
+              "_usageId": "4",
+              "qty": {
+                "type": "range",
+                "value": 0.625,
+                "range": {
+                  "min": 0.5,
+                  "max": 0.75
+                },
+                "text": "0,5-0,75"
+              },
+              "unit": "l"
+            },
+            ", then ",
+            {
+              "id": "water",
+              "_usageId": "5",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 12.5,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 160,
+                  "end": 173
+                }
+              },
+              "dependencies": [
+                "flour"
+              ],
+              "formula": {
+                "raw": "12.5% of flour",
+                "target": "flour",
+                "percent": 12.5,
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Knead on ",
+            {
+              "id": "board",
+              "_usageId": "6",
+              "qty": 1,
+              "fixed": false
+            },
+            "and rest ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 1.5,
+                "text": "1,5"
+              },
+              "unit": "h"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 92,
+            "activeDuration": 90
+          }
+        }
+      ],
+      "intermediate_preparation": "dough",
+      "retro_planning": {
+        "raw": "-4,5h",
+        "sign": -1,
+        "value": 4.5,
+        "unit": "h",
+        "minutes": -270
+      }
+    },
+    {
+      "title": "Bake",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "dough",
+          "name": "dough",
+          "_usageId": "7"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Bake ",
+            {
+              "type": "reference",
+              "id": "dough",
+              "name": "dough",
+              "_usageId": "7"
+            },
+            "at ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 180.5,
+                "text": "180,5"
+              },
+              "unit": "°C"
+            },
+            "for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 2.25,
+                "text": "2,25"
+              },
+              "unit": "h"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 227,
+            "end": 362,
+            "activeDuration": 135
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 369,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 92
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 135
+      }
+    ],
+    "idleTime": 135,
+    "activeTime": 227,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 92
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 135
+      }
+    ],
+    "preparationTime": 7,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 6
+      },
+      {
+        "label": "cookware_overhead",
+        "duration": 1
+      }
+    ]
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 6,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 5,
+          "duration": 5
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 1,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 6
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 5,
+            "duration": 5
+          },
+          {
+            "kind": "gather",
+            "target": "cookware",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 90
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.prep.dough",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "dough",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 135
+        },
+        "consumes": [
+          "dough"
+        ],
+        "after": [
+          "s0.1"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0,
+        "deadline": 270,
+        "intermediate": "dough"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 368,
+    "activeTime": 227,
+    "preparationTime": 7,
+    "idleTime": 134,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 6
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 6,
+        "end": 8
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 8,
+        "end": 98
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep.dough",
+        "section": 1,
+        "start": 232,
+        "end": 233
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 233,
+        "end": 368
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 368,
+        "sections": [
+          0,
+          1
+        ]
+      }
+    ]
+  }
+}

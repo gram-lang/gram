@@ -30,6 +30,7 @@
               "quantity": {
                 "type": "RelativeQuantity",
                 "percent": 2,
+                "text": "2",
                 "target": "dough",
                 "referenceType": "variable",
                 "loc": {
