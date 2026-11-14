@@ -1,5 +1,29 @@
 # @gram-lang/cli
 
+## 1.4.1
+
+### Patch Changes
+
+- e68828e: **CLI / Cook**: The countdown of a timer in `gram cook` now lasts as long as the recipe says: `~{1h}` used to count down 1 minute and `~{30 s}` 30 minutes, because every timer was read as minutes whatever its unit.
+- 7fbd5c6: **Renderer & CLI**: Totals where you buy or read an overview (shopping list, recipe/section weight, nutrition base, `gram shop`) convert metric amounts from 1000 g/ml up to `kg` or `l` (`3.9 kg` instead of `3900 g`), while steps, section ingredients, the run sheet, and `gram cook` keep grams for weighing (API helpers: `toLargerMetricUnit`, `isMetricMassUnit` in `@gram-lang/i18n`).
+- 2327de6: **Renderer & CLI**: Numbers follow the recipe's language (`lang` / project `language`, with decimal commas in French and no thousands separators in `gram shop`/`gram scale`), and spoons, cups, and imperial measures display as fractions (`1 3/4 cup`) across views and CLI commands while keeping machine attributes unchanged (API helpers: `formatNumber`, `localizeDecimals`, `toKitchenFraction` in `@gram-lang/i18n`).
+- Updated dependencies [2327de6]
+- Updated dependencies [7de7b3f]
+- Updated dependencies [7fbd5c6]
+- Updated dependencies [2327de6]
+- Updated dependencies [7fbd5c6]
+- Updated dependencies [d946b46]
+- Updated dependencies [4608f96]
+- Updated dependencies [efbb381]
+  - @gram-lang/renderer@1.4.1
+  - @gram-lang/i18n@1.4.1
+  - @gram-lang/analyzer@1.4.1
+  - @gram-lang/parser@1.4.1
+  - @gram-lang/kitchen@1.4.1
+  - @gram-lang/modules@1.4.1
+  - @gram-lang/format@1.4.1
+  - @gram-lang/scheduler@1.4.1
+
 ## 1.4.0
 
 ### Minor Changes

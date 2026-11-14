@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.1](https://git.gram-lang.org/gram-lang/gram/compare/v.1.4.0...v.1.4.1) - 2026-11-14
+
+### Bug fixes and improvements
+- **Parser**: Section headers with leftover text after an anchor or intermediate (such as a multi-word `->&glazed rhubarb` missing braces) now raise a clear error instead of blaming the timer or turning the section into a step, and a section header on the last line with no trailing newline is now recognized.
+- **Kitchen**: Split quantities across two units (`@flour{1 cup 5 tbsp}`) or prefixed with words (`@flour{about 200g}`) now raise an `INVALID_UNIT` warning instead of being misread or dropped when scaling (while unit-only descriptors like `{1 tin of 400 g}` or `{a pinch}` remain valid).
+- **Analyzer**: An ingredient whose unit holds a quantity of its own (`@tomatoes{1 tin of 400 g}`) no longer falls back to the database's per-piece weight (which counted one tin as one tomato); its mass is reported as unknown until Gram parses the inner quantity.
+- **Renderer**: Hovering a preparation (`&dough`) in HTML now highlights the entire section that makes it, `formatFraction` is now applied to ingredient quantities across recipe views, and ingredients written in `kg` or `mg` no longer repeat their standardized mass next to them.
+- **Renderer & CLI**: Totals where you buy or read an overview (shopping list, recipe/section weight, nutrition base, `gram shop`) convert metric amounts from 1000 g/ml up to `kg` or `l` (`3.9 kg` instead of `3900 g`), while steps, section ingredients, the run sheet, and `gram cook` keep grams for weighing (API helpers: `toLargerMetricUnit`, `isMetricMassUnit` in `@gram-lang/i18n`).
+- **Renderer & CLI**: Numbers follow the recipe's language (`lang` / project `language`, with decimal commas in French and no thousands separators in `gram shop`/`gram scale`), and spoons, cups, and imperial measures display as fractions (`1 3/4 cup`) across views and CLI commands while keeping machine attributes unchanged (API helpers: `formatNumber`, `localizeDecimals`, `toKitchenFraction` in `@gram-lang/i18n`).
+- **CLI / Cook**: Timer countdowns in `gram cook` now honor the unit written in the recipe (`~{1h}` counts down 1 hour and `~{30 s}` 30 seconds, instead of treating every timer as minutes).
+
+---
+
 ## [1.4.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.3.0...v.1.4.0) - 2026-11-13
 
 ### New features
