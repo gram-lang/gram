@@ -617,6 +617,7 @@ semantics.addOperation("toAST", {
 			percent:
 				(val.toAST() as QuantityValueAST | null)?.value ??
 				readDecimal(val.sourceString),
+			text: val.sourceString,
 			target: clean(name.sourceString),
 			referenceType: marker.sourceString === "&" ? "variable" : "ingredient",
 			loc: { start: this.source.startIdx, end: this.source.endIdx },

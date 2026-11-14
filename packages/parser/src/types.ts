@@ -169,6 +169,8 @@ export type QuantityValueAST =
 export interface RelativeQuantityAST extends NodeAST {
 	type: ASTNodeType.RelativeQuantity;
 	percent: number;
+	/** The percentage as written, e.g. `12,5` (so a comma can be told from a point). */
+	text?: string;
 	target: string;
 	referenceType: "variable" | "ingredient";
 }

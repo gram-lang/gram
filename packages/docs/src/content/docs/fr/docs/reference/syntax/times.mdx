@@ -214,6 +214,7 @@ Pour garantir un ordonnancement déterministe, le compilateur valide minutieusem
 - **Unité invalide (*Invalid Unit*)** (`~minuteur`) : Si l'unité ne figure pas dans le dictionnaire temporel (ex. : `~{30 années-lumière}`), il émet `INVALID_UNIT`.
 - **Unité manquante (*Missing Unit*)** (rétroplanning de section) : Les mentions telles que `~{-2}`, `~{la veille}`, `~{2h}` ou `~{0h}` déclenchent `MISSING_UNIT`.
 - **Unité invalide (*Invalid Unit*)** (rétroplanning de section) : Une unité non reconnue déclenche `INVALID_UNIT`.
+- **Nombre ambigu (*Ambiguous Number*)** *(Depuis la 1.5.0)* : Une virgule suivie d'exactement trois chiffres (`~{1,000 min}`, `~{-1,000h}`) se lit comme une décimale, soit une minute ou une heure, et déclenche `AMBIGUOUS_NUMBER` au cas où mille était voulu.
 - **Paradoxe temporel (*Time Paradox*)** : Si une ancre de rétroplanning entre en contradiction avec l'ordre logique d'une dépendance (ex. : une section ancrée à `-10 min` requise par une section ancrée à `-1 h`), le compilateur émet `TIME_PARADOX`.
 - **Embouteillage (*Track Contention*)** : Si des minuteurs passifs concurrents sur une même piste nommée ne peuvent être ordonnancés sans décalage temporel, le compilateur prévient de ce réaménagement via `TRACK_CONTENTION`.
 - **Journée qui déborde (*Day overflow*)** *(Depuis la 1.4.0)* : Si un long temps passif repousse le travail d'une journée au-delà de sa fenêtre maximale de 24 heures, le compilateur signale un `DAY_OVERFLOW` (suggérant d'ancrer la section un jour plus tôt ou d'ajuster la durée).

@@ -162,11 +162,25 @@ function checkAmbiguousNumber(
 	item: string,
 	loc?: Location,
 ) {
-	const text = value?.text;
-	if (!value || !text || !looksLikeThousands(text)) return;
+	if (value) checkAmbiguousText(ctx, value.text, readAs(value), item, loc);
+}
+
+/**
+ * The same check on a number known only by its text and its value: a
+ * percentage (`{1,000% &dough}`), a section anchor (`~{-1,000h}`). `text` is
+ * the bare number, without sign, unit or `%`.
+ */
+function checkAmbiguousText(
+	ctx: ProcessorContext,
+	text: string | undefined,
+	read: string,
+	item: string,
+	loc?: Location,
+) {
+	if (!text || !looksLikeThousands(text)) return;
 	pushWarning(ctx, WarningCode.AMBIGUOUS_NUMBER, {
 		value: text,
-		read: readAs(value),
+		read,
 		suggestion: text.replace(/(\d),(\d{3})(?!\d)/g, "$1$2"),
 		item,
 		loc,
@@ -197,6 +211,15 @@ function checkAmbiguousNumbers(
 				item.name,
 				item.loc,
 			);
+			if (item.quantity?.type === ASTNodeType.RelativeQuantity) {
+				checkAmbiguousText(
+					ctx,
+					item.quantity.text,
+					String(item.quantity.percent),
+					item.name,
+					item.loc,
+				);
+			}
 			checkAmbiguousNumber(
 				ctx,
 				quantityValue(item.composite?.quantity),
@@ -368,7 +391,10 @@ function processIngredient(
 		}
 
 		const usage = createCleanUsage(item, id, ctx.usageCounter, ctx.options);
-		usage.qty = item.quantity; // Defer evaluation to analyzer
+		// Defer evaluation to analyzer. The percentage's `text` stays in the
+		// AST: the compiled JSON keeps the shape 1.3.0 published.
+		const { text: _text, ...qty } = item.quantity;
+		usage.qty = qty;
 		usage.unit = null;
 
 		if (targetId === id) {
@@ -707,6 +733,16 @@ function processRetroPlanning(
 		});
 		return { raw: rp.raw };
 	}
+
+	// Only an anchor that is kept: a dropped one (MISSING_UNIT, INVALID_UNIT)
+	// was read as nothing, so how its number was read does not matter yet.
+	checkAmbiguousText(
+		ctx,
+		rp.raw.match(/\d+(?:[.,]\d+)?/)?.[0],
+		String(rp.value),
+		item,
+		section.loc,
+	);
 
 	let value = rp.value;
 	if (isDurationTooLong({ value, unit: resolved })) {

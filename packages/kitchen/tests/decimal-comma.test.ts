@@ -68,6 +68,45 @@ describe("a comma that could be a thousands separator (1,000)", () => {
 		}
 	});
 
+	it("is flagged in a percentage, read as written", () => {
+		const result = compile(
+			getAST(
+				"## Dough ->&dough\n\nMix @flour{500 g}.\n\n## Glaze\n\nAdd @salt{1,000% &dough}.\n",
+			),
+		);
+		const warnings = result.warnings.filter(
+			(w) => w.code === WarningCode.AMBIGUOUS_NUMBER,
+		);
+		expect(warnings).toHaveLength(1);
+		expect(warnings[0]?.item).toBe("salt");
+		expect(warnings[0]?.message).toBe(
+			'"1,000" on "salt" was read as 1: Gram reads a comma between two digits as a decimal and has no thousands separator. Write 1000 if that is the number you meant.',
+		);
+	});
+
+	it("is flagged in a section anchor, without its sign or unit", () => {
+		const result = compile(
+			getAST("## Dough ~{-1,000h}\n\nMix @flour{500 g}.\n"),
+		);
+		expect(result.warnings.map((w) => w.code)).toEqual([
+			WarningCode.AMBIGUOUS_NUMBER,
+		]);
+		expect(result.warnings[0]?.item).toBe("Dough");
+		expect(result.warnings[0]?.message).toContain('"1,000" on "Dough"');
+		expect(result.warnings[0]?.message).toContain("Write 1000 ");
+		expect(result.sections[0]?.retro_planning?.minutes).toBe(-60);
+	});
+
+	it("is not flagged on an anchor that is dropped anyway", () => {
+		for (const anchor of ["~{1,000h}", "~{-1,000}", "~{-1,000 years}"]) {
+			const codes = compile(
+				getAST(`## Dough ${anchor}\n\nMix @flour{500 g}.\n`),
+			).warnings.map((w) => w.code);
+			expect(codes).not.toContain(WarningCode.AMBIGUOUS_NUMBER);
+			expect(codes).toHaveLength(1);
+		}
+	});
+
 	it("is not flagged for a decimal that cannot be one, or a point", () => {
 		for (const step of [
 			"Add @flour{0,125 kg}.",

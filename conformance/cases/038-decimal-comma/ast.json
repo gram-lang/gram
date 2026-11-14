@@ -183,6 +183,7 @@
               "quantity": {
                 "type": "RelativeQuantity",
                 "percent": 12.5,
+                "text": "12,5",
                 "target": "flour",
                 "referenceType": "ingredient",
                 "loc": {

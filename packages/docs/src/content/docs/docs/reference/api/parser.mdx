@@ -136,6 +136,7 @@ interface QuantityAST {
 interface RelativeQuantityAST {
   type: ASTNodeType.RelativeQuantity;
   percent: number;
+  text?: string;          // the percentage as written, e.g. "12,5"
   target: string;
   referenceType: "variable" | "ingredient"; // "&name" vs "@name"
 }
