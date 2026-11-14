@@ -153,6 +153,11 @@ export const en = {
 		runSheetInStock: "in stock",
 		runSheetProgramStep: "step {n}",
 		runSheetProgramSteps: "steps {from} to {to}",
+		/**
+		 * @deprecated Since 1.5.0, will be removed in 2.0.0. (Ref: i18n-run-sheet-range)
+		 * The run sheet writes a range with `formatDurationRange` (`8–16 h`), as the steps do.
+		 */
+		// @remove-in: 2.0.0 [i18n-run-sheet-range]
 		runSheetRange: "{min} to {max}",
 		runSheetPossibleFrom: "Possible from {time}.",
 		runSheetFixedService:

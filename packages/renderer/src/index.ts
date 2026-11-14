@@ -137,11 +137,14 @@ export {
 	formatQuantityValue,
 	formatDuration,
 	formatTimer,
+	formatTimerDuration,
+	formatDurationRange,
 	toCommonFraction,
 	escapeHtml,
 	escapeMarkdownHtml,
 	joinStepTokens,
 } from "./shared/utils";
+export type { DurationFormatOptions } from "./shared/utils";
 export {
 	toGanttHTML,
 	attachGanttInteractivity,

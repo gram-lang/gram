@@ -52,7 +52,7 @@ Ces quatre formateurs partagent la même architecture de traversée (`RenderBack
 | `icons` | `RendererIcons` | Surcharge tout ou partie des icônes par défaut (voir `DEFAULT_ICONS` ci-dessous). |
 | `classes` | `RendererClasses` | Surcharge les noms de classes CSS appliquées aux éléments générés (HTML/print uniquement). |
 | `formatFraction` | `(value: number) => string` | <Since v="1.4.1" type="changed" /> Écrit toutes les quantités numériques des vues recette (étapes, ingrédients de section, liste de courses) à la place du comportement par défaut : un entier, une fraction courante en cuisine (`0.5` → `"1/2"`) ou un nombre décimal dans la `lang` des options (`1.5` → `"1,5"` en français). La fonction ne reçoit que le nombre : c'est à elle de gérer la langue. Les masses standardisées, les kilos de la liste de courses, les valeurs nutritionnelles et le plan de marche gardent le comportement par défaut. Déclarée depuis la 1.0, l'option n'est réellement lue qu'à partir de la 1.4.1. |
-| `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut, ex. : `90` → `"1h 30min"`, dans la `lang` des options). |
+| `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut, ex. : `90` → `"1 h 30 min"`, dans la `lang` des options). |
 | `hideStepQty` | `boolean` | Masque les quantités au sein du texte narratif des étapes (la liste de courses et les listes d'ingrédients de section restent intactes). Par défaut, <Since v="1.4.0" /> tous les formats affichent la quantité immédiatement après chaque ingrédient, accompagnée de sa masse standardisée quand elle apporte une précision utile : `farine (250 ml, ~148 g)`. En HTML, elle est balisée par un `<span class="step-quantity">` (`classes.stepQuantity`), l'infobulle détaillant les conversions. |
 | `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | <Since v="1.4.0" /> Stratégie d'ordonnancement suivie par le document : préparation immédiatement avant chaque section (`'perSection'`, par défaut), regroupée tout au début de la recette (`'upfront'`) ou au début de chaque journée de travail (`'perDay'`). Détermine le temps total affiché en en-tête. Le texte de la recette n'expose aucun ordonnancement temporel : la planification détaillée et la liste des éléments à mobiliser figurent dans le <Term id="runSheet" /> (`runSheet`). La chronologie est déduite à la volée depuis le graphe `tasks`. |
 | `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Élasticité appliquée aux minuteurs passifs définis par un intervalle (`~_{12-24h}`) : borne la plus courte (`'shortest'`, par défaut), médiane (`'balanced'`) ou borne la plus longue (`'longest'`). Les minuteurs passifs à durée fixe et les minuteurs actifs ne sont pas affectés. Pilote les mêmes durées que `miseEnPlace`. |
@@ -157,8 +157,10 @@ Une série d'utilitaires de bas niveau (exploités en interne par les moteurs de
 function formatDecimalToFraction(value: unknown, unit?: string, style?: { lang?: string; formatFraction?: (value: number) => string }): string   // 0.5 -> "1/2", 1.5 -> "1,5" avec lang "fr"
 function getQty(item: Record<string, unknown>, style?: { lang?: string; formatFraction?: (value: number) => string }): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
 function formatQuantityValue(q: any, lang?: string): string                // Quantité de minuteur/température -> chaîne d'affichage, décimales dans `lang`
-function formatDuration(minutes: number, lang?: string): string // 90 -> "1h 30min" ; à la seconde sous 1h (0.33 -> "20s"), à la minute jusqu'à un jour (64.5 -> "1h 5min"), à l'heure au-delà (1506 -> "1j 1h", "1d 1h" en anglais)
-function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h"
+function formatDuration(minutes: number, lang?: string, options?: { days?: boolean }): string // 90 -> "1 h 30 min" (espace insécable entre le nombre et l'unité) ; à la seconde sous 1h (0.33 -> "20 s"), à la minute jusqu'à un jour (64.5 -> "1 h 5 min"), à l'heure au-delà (1506 -> "1 j 1 h", "1 d 1 h" en anglais)
+function formatDurationRange(min: number, max: number, lang?: string, options?: { days?: boolean }): string // (45, 60) -> "45 min – 1 h", (60, 120) -> "1–2 h" ; Gram sait le relire
+function formatTimerDuration(timer: { raw?: string; quantity?: unknown; unit?: string | null; minutes?: number }, lang?: string, format?: (minutes: number) => string): string // un minuteur compilé tel que les vues l'affichent : { minutes: 90 } -> "1 h 30 min", tel qu'écrit s'il est refusé ({ raw: "1:30" } -> "1:30") ; avec `format` (ton formatDuration), chaque bout d'une fourchette en entier
+function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h" (le minuteur tel qu'écrit ; les vues passent par formatTimerDuration)
 function toCommonFraction(value: number): string | undefined   // 0.25 -> "1/4", 0.3 -> undefined
 function escapeHtml(unsafe: string | null | undefined): string
 function escapeMarkdownHtml(unsafe: string | null | undefined): string   // neutralise `<`/`&` pour un rendu Markdown vers HTML sûr en aval
@@ -222,7 +224,7 @@ visitKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
 sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): SectionProgram | undefined
 // { section, title, origin?, from, to }
 
-sectionSteps(compiled, section: number, stepIndexes: number[], { lang? }): ProgramStep[]
+sectionSteps(compiled, section: number, stepIndexes: number[], { lang?, comments?, formatDuration? }): ProgramStep[]
 // { number?, action?, comment?, html, md, text } : une étape numérotée comme dans la vue Recette, ou une note isolée
 ```
 

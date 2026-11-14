@@ -3,10 +3,7 @@ import type {
 	ProcessedTimer,
 	RestChoice,
 } from "@gram-lang/kitchen";
-import {
-	quantityToMinutes,
-	aggregateSectionIngredients,
-} from "@gram-lang/kitchen";
+import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { isMetricMassUnit } from "@gram-lang/i18n";
 import { formatDecimalToFraction } from "@gram-lang/renderer";
 import { splitDuration } from "../../core/format";
@@ -54,11 +51,12 @@ export function fmtMass(g: number): string {
 	return `${+g.toFixed(1)} g`;
 }
 
-/** A compiled timer's length: its quantity read in its own unit (`h`, `s`…). */
+/**
+ * A compiled timer's length: the minutes the schedule counts (the middle of
+ * a range), whatever the writing. A refused timer has none, and runs no clock.
+ */
 function timerToMs(timer: ProcessedTimer): number {
-	return (
-		quantityToMinutes({ value: timer.quantity, unit: timer.unit }) * 60_000
-	);
+	return (timer.minutes ?? 0) * 60_000;
 }
 
 function extractTimers(

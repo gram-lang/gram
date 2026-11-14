@@ -581,12 +581,11 @@ function inlineBasisLabel(basis: ResolvedBasis, lang?: string): string {
 export const htmlBackend: RenderBackend = {
 	buildContext(data, options) {
 		const registry = data.registry || { ingredients: {}, cookware: {} };
-		const formatDuration = durationFormatter(options);
 		return {
 			registry,
 			icons: options.icons,
 			classes: options.classes,
-			formatDuration,
+			formatDuration: options.formatDuration,
 			formatFraction: options.formatFraction,
 			bakersMathOnly: options.bakersMathOnly,
 			interactiveScaling: options.interactiveScaling,

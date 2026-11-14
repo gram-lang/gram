@@ -1,7 +1,11 @@
 import { fillTemplate, getDictionary } from "@gram-lang/i18n";
 import type { RunSheetDay, RunSheetThread } from "@gram-lang/scheduler";
 import { workingDayLabel } from "../../shared/mise-en-place";
-import { durationFormatter } from "../../shared/utils";
+import {
+	durationFormatter,
+	formatDurationRange,
+	joinDurationRange,
+} from "../../shared/utils";
 import type { RenderableCompilationResult } from "../../types";
 import type { RunSheetRenderOptions } from "./model";
 
@@ -96,8 +100,12 @@ export function runSheetWords(
 			? { min, max }
 			: undefined;
 	};
+	// A range reads as in the steps (`8–16 h`), never with a word, so the
+	// sheet writes it one way; the caller's format gives each end in full.
 	const rangeText = (r: { min: number; max: number }) =>
-		fillTemplate(t.runSheetRange, { min: fmt(r.min), max: fmt(r.max) });
+		options.formatDuration
+			? joinDurationRange(r.min, r.max, options.formatDuration)
+			: formatDurationRange(r.min, r.max, options.lang);
 
 	const threadParts = (
 		th: RunSheetThread,

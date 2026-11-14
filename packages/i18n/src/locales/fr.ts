@@ -136,6 +136,7 @@ export const fr: GramLocale = {
 		runSheetInStock: "en stock",
 		runSheetProgramStep: "étape {n}",
 		runSheetProgramSteps: "étapes {from} à {to}",
+		// @remove-in: 2.0.0 [i18n-run-sheet-range]
 		runSheetRange: "{min} à {max}",
 		runSheetPossibleFrom: "Possible dès {time}.",
 		runSheetFixedService:

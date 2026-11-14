@@ -58,7 +58,7 @@ describe("gram plan --comments", () => {
 		for (const extra of [[], ["--comments", "show"]]) {
 			const { code, out } = gram(...PLAN, ...extra);
 			expect(code).toBe(0);
-			expect(out).toContain("Mix flour (keep it cold) and stir 5 min.");
+			expect(out).toContain("Mix flour (keep it cold) and stir 5\u00A0min.");
 			expect(out).toContain("(Do not overmix.)");
 		}
 	});

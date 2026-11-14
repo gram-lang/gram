@@ -218,19 +218,19 @@ describe("view, export and print follow --mise-en-place", () => {
 		expect(times(up.text)).toBe(times(per.text));
 	});
 
-	it("shows a step's background timer as written in the view", async () => {
+	it("shows a step's background timer in the view", async () => {
 		const path = await tmp(REST);
 		const { text } = await viewRecipe(path);
-		expect(text).toContain("[Rest] Let it rest 45 min.");
+		expect(text).toContain("[Rest] Let it rest 45\u00A0min.");
 	});
 
-	it("follows --rests in the times of the view, and writes a ranged rest as the recipe does", async () => {
+	it("follows --rests in the times of the view, and shows a ranged rest as a range", async () => {
 		const path = await tmp(RANGED_REST);
 		const shortest = await viewRecipe(path);
 		const longest = await viewRecipe(path, { settings: { rests: "longest" } });
 		// What the recipe says stays what it says; the planning follows `rests`.
-		expect(shortest.text).toContain("12-24 h");
-		expect(longest.text).toContain("12-24 h");
+		expect(shortest.text).toContain("12–24\u00A0h");
+		expect(longest.text).toContain("12–24\u00A0h");
 		expect(longest.totalMinutes - shortest.totalMinutes).toBe(12 * 60);
 	});
 

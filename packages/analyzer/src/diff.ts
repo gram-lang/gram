@@ -198,8 +198,14 @@ function flattenShoppingItems(items: ShoppingItem[]): SimpleShoppingItem[] {
 const numericQty = (item: ShoppingItem): number | null =>
 	getNumericQty(item.qty);
 
-function fmtTimerQty(qty: ProcessedTimer["quantity"], unit?: string): string {
+function fmtTimerQty(
+	qty: ProcessedTimer["quantity"],
+	unit?: string,
+	raw?: string,
+): string {
 	const u = unit ? ` ${unit}` : "";
+	// A refused timer has no quantity, only what the author wrote.
+	if ((qty === undefined || qty === null) && raw) return raw.trim();
 	if (qty === undefined || qty === null) return `?${u}`;
 	if (typeof qty === "number") return `${qty}${u}`;
 	if (typeof qty === "string") return `${qty}${u}`;
@@ -599,7 +605,7 @@ function diffTimers(
 					section: sectionTitle,
 					name: b.name,
 					change: "added",
-					to: fmtTimerQty(b.quantity, b.unit),
+					to: fmtTimerQty(b.quantity, b.unit, b.raw),
 				});
 				continue;
 			}
@@ -608,13 +614,13 @@ function diffTimers(
 					section: sectionTitle,
 					name: a.name,
 					change: "removed",
-					from: fmtTimerQty(a.quantity, a.unit),
+					from: fmtTimerQty(a.quantity, a.unit, a.raw),
 				});
 				continue;
 			}
 			if (a && b) {
-				const from = fmtTimerQty(a.quantity, a.unit);
-				const to = fmtTimerQty(b.quantity, b.unit);
+				const from = fmtTimerQty(a.quantity, a.unit, a.raw);
+				const to = fmtTimerQty(b.quantity, b.unit, b.raw);
 				const nameChanged = (a.name ?? null) !== (b.name ?? null);
 				if (nameChanged || from !== to) {
 					deltas.push({

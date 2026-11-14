@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Text } from "ink";
 import chalk from "chalk";
-import { formatTimer } from "@gram-lang/renderer";
+import { formatTimerDuration } from "@gram-lang/renderer";
 import type { ActiveTimer, FlatStep } from "./types";
 import type { CompilationResult } from "@gram-lang/kitchen";
 import { fmtQty, fmtMass, fmtCountdown, shouldShowMass } from "./prepare";
@@ -21,8 +21,9 @@ function getTempDisplay(token: any): string {
 	return `${getQtyText(token.quantity)}${token.unit ?? "°"}`;
 }
 
-function getTimerDisplay(token: any): string {
-	return formatTimer(token, " ");
+/** A timer as the views show it (`1 h 30 min`, `1–2 h`), or as written when refused. */
+export function getTimerDisplay(token: any): string {
+	return formatTimerDuration(token);
 }
 
 // Strip ANSI escape codes to get visible text (used for smart-join boundary checks)
@@ -48,7 +49,7 @@ function buildInstruction(
 		if (token.type === "comment" || token.type === "declaration") continue;
 
 		if (token.type === "timer") {
-			parts.push(chalk.yellow(formatTimer(token, " ")));
+			parts.push(chalk.yellow(getTimerDisplay(token)));
 			continue;
 		}
 

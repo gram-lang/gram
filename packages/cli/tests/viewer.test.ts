@@ -112,23 +112,19 @@ describe("viewRecipe", () => {
 		expect(out).toMatch(/• flour +400 g/);
 	});
 
-	it("keeps each timer's own unit in the step text", async () => {
+	it("reads each timer in its own unit, and shows it as the views do", async () => {
 		const out = await text(
 			"## T\n\nA ~{20s} B ~{20 s} C ~{90s} D ~{2min} E ~{1h}\n",
 		);
-		expect(out).toContain("20 s");
-		expect(out).toContain("90 s");
-		expect(out).toContain("2 min");
-		expect(out).toContain("1 h");
-		expect(out).not.toContain("20 min");
-		expect(out).not.toContain("1 min");
+		expect(out).toMatch(/A 20\ss B 20\ss C 1\smin 30\ss D 2\smin E 1\sh/);
+		expect(out).not.toMatch(/20\smin/);
 	});
 
 	it("counts the resting time in the total, with no idle time of its own", async () => {
 		const out = await text(
 			"## T\n\nMix @flour{200g}. ~_{30min}\n\nBake it ~{10min}.\n",
 		);
-		expect(out).toMatch(/Total time: 3\dm/);
+		expect(out).toMatch(/Total time: 3\d\smin/);
 		expect(out).not.toContain("Idle time");
 	});
 

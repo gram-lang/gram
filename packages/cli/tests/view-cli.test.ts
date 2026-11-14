@@ -92,7 +92,7 @@ describe("gram view", () => {
 		expect(out).toContain("─── Dough ");
 		expect(out).toContain("─── Bake ");
 		expect(out).toContain(
-			" 1. [Mix] Mix flour (500 g) with water (350 g) in a bowl, knead 20 min. [1]",
+			" 1. [Mix] Mix flour (500 g) with water (350 g) in a bowl, knead 20\u00A0min. [1]",
 		);
 		// The steps are numbered in each section.
 		expect(out).toMatch(/─── Bake .*\n {3}1\. \[Bake\]/);

@@ -103,14 +103,19 @@ describe("the model of the run sheet", () => {
 		expect(model.title).toBe("Run sheet — Country bread");
 		expect(model.subtitle).toBe("For Sunday, October 11 at 13:00 · 4 portions");
 		expect(model.summary).toBe(
-			"2 days · 2 visits to the kitchen · 55min of work in all",
+			"2 days · 2 visits to the kitchen · 55\u00A0min of work in all",
 		);
 	});
 
 	it("lists a row per visit, the waits that go on without the cook, and the service", () => {
 		expect(model.schedule.map((r) => [r.kind, r.day, r.time, r.text])).toEqual([
 			["visit", "SAT 10", "21:40 – 22:00", "Dough"],
-			["thread", undefined, undefined, "Dough : Rise 14h 30min (8h to 16h)"],
+			[
+				"thread",
+				undefined,
+				undefined,
+				"Dough : Rise 14\u00A0h 30\u00A0min (8–16\u00A0h)",
+			],
 			["visit", "SUN 11", "12:30 – 13:00", "Bake"],
 			["serve", undefined, "13:00", "Serve"],
 		]);
@@ -138,7 +143,7 @@ describe("the model of the run sheet", () => {
 	it("says what continues and when to come back", () => {
 		const [saturday, sunday] = model.days;
 		expect(saturday!.visits[0]!.leaving).toEqual([
-			"Dough : Rise 14h 30min (8h to 16h)",
+			"Dough : Rise 14\u00A0h 30\u00A0min (8–16\u00A0h)",
 			"Next visit: Sunday 12:30",
 		]);
 		expect(sunday!.visits[0]!.leaving).toEqual(["Serve at 13:00"]);
@@ -146,7 +151,7 @@ describe("the model of the run sheet", () => {
 
 	it("tells a rest the plan stretched, on the day it starts", () => {
 		expect(model.days[0]!.notices).toEqual([
-			"Dough : Rise extended to 14h 30min (planned 8h to 16h) so the work falls within your availability.",
+			"Dough : Rise extended to 14\u00A0h 30\u00A0min (planned 8–16\u00A0h) so the work falls within your availability.",
 		]);
 	});
 
@@ -183,7 +188,7 @@ describe("a plan of several days", () => {
 		expect(first!.visits[0]!.margin).toBe("Possible from 08:00.");
 		const [, , saturday] = model.days;
 		expect(saturday!.visits[0]!.margin).toBe(
-			"Can't start earlier: the “Cool” wait (Glaze) can't be longer than 1h 30min and must be over before Finish.",
+			"Can't start earlier: the “Cool” wait (Glaze) can't be longer than 1\u00A0h 30\u00A0min and must be over before Finish.",
 		);
 	});
 
@@ -214,7 +219,7 @@ describe("a plan of several days", () => {
 			"D-1",
 			"Day D",
 		]);
-		expect(relative.days[0]!.slot).toBe("~ 5min");
+		expect(relative.days[0]!.slot).toBe("~ 5\u00A0min");
 		expect(relative.days.every((d) => d.visits.every((p) => !p.margin))).toBe(
 			true,
 		);
@@ -298,9 +303,9 @@ describe("runSheetToText", () => {
 		expect(text).toContain("DOUGH (Start: 21:40)");
 		expect(text).toContain("    Mise en place\n      [ ] flour 500 g");
 		expect(text).toContain(
-			"      1. [Mix] Mix flour with water and knead 20 min.",
+			"      1. [Mix] Mix flour with water and knead 20\u00A0min.",
 		);
-		expect(text).toContain("      2. [Rise] Let it rise 8-16 h.");
+		expect(text).toContain("      2. [Rise] Let it rise 8–16\u00A0h.");
 		expect(text).toContain("BEFORE LEAVING");
 		expect(text).toContain("Next visit: Sunday 12:30");
 	});
@@ -389,7 +394,7 @@ describe("what could not be fixed", () => {
 			long,
 		);
 		expect(out).toContain(
-			"Roast takes 3h 1min without a break, more than your longest availability (2h)",
+			"Roast takes 3\u00A0h 1\u00A0min without a break, more than your longest availability (2\u00A0h)",
 		);
 	});
 
@@ -427,7 +432,7 @@ describe("runSheetToMarkdown", () => {
 	});
 
 	it("puts the adjustment under its day", () => {
-		expect(md).toContain("> ⚠️ Dough : Rise extended to 14h 30min");
+		expect(md).toContain("> ⚠️ Dough : Rise extended to 14\u00A0h 30\u00A0min");
 	});
 });
 
@@ -708,13 +713,13 @@ describe("the run sheet carries the steps of the recipe", () => {
 		expect(line!.steps.map((x) => [x.number, x.comment, x.text])).toEqual([
 			[1, undefined, "Mix flour."],
 			[undefined, true, "Do not overmix."],
-			[2, undefined, "Bake 20 min."],
+			[2, undefined, "Bake 20\u00A0min."],
 		]);
 		const html = runSheetToHTML(planOf(noted), noted);
 		expect(html).toContain('<li class="step-comment">Do not overmix.</li>');
 		expect(html).toContain('<li value="2">');
 		expect(runSheetToText(planOf(noted), noted)).toContain(
-			"      1. [Mix] Mix flour.\n        (Do not overmix.)\n      2. [Bake] Bake 20 min.",
+			"      1. [Mix] Mix flour.\n        (Do not overmix.)\n      2. [Bake] Bake 20\u00A0min.",
 		);
 		expect(runSheetToMarkdown(planOf(noted), noted)).toContain(
 			"1. **[Mix]** Mix **flour**.\n> *Do not overmix.*\n\n2. **[Bake]**",
@@ -734,10 +739,10 @@ describe("the run sheet carries the steps of the recipe", () => {
 		// The preparation used by a step is still named: only the one it makes is left out.
 		expect(html).toContain('<span class="reference"');
 		const [a] = describeRunSheet(sheetOf, made).days[0]!.visits[0]!.program;
-		expect(a!.steps[0]!.text).toBe("Mix flour for 5 min.");
+		expect(a!.steps[0]!.text).toBe("Mix flour for 5\u00A0min.");
 		expect(a!.steps[0]!.md).not.toContain("batter");
 		expect(runSheetToText(sheetOf, made)).toContain(
-			"1. [Mix] Mix flour for 5 min.\n",
+			"1. [Mix] Mix flour for 5\u00A0min.\n",
 		);
 	});
 
@@ -991,6 +996,34 @@ describe("the weight and the cookware of the mise en place", () => {
 		const bare = compile(getAST("## A\n\nHeat the #pan{}.\n"));
 		expect(runSheetToHTML(planOf(bare), bare)).toContain(
 			'<li class="kit-cookware"><label><input type="checkbox"><span><span class="kit-name">pan</span></span></label></li>',
+		);
+	});
+});
+
+// The run sheet writes a range one way, in the steps and in the waits, and
+// with the caller's duration format when it gives one.
+describe("durations in the run sheet", () => {
+	it("writes the range of a wait as the step does", () => {
+		const text = runSheetToText(sheet, compiled);
+		expect(text).toContain("Let it rise 8–16\u00A0h.");
+		expect(text).toContain("Rise 14\u00A0h 30\u00A0min (8–16\u00A0h)");
+		expect(text).not.toMatch(/\d\sh to \d/);
+	});
+
+	it("follows the caller's duration format, in the steps and in the waits", () => {
+		const formatDuration = (m: number) => `${Math.round(m)} minutes`;
+		const model = describeRunSheet(sheet, compiled, { formatDuration });
+		const steps = model.days.flatMap((d) =>
+			d.visits.flatMap((v) => v.program.flatMap((l) => l.steps)),
+		);
+		expect(steps.map((s) => s.text)).toContain(
+			"Mix flour with water and knead 20 minutes.",
+		);
+		expect(steps.map((s) => s.text)).toContain(
+			"Let it rise 480 minutes\u00A0– 960 minutes.",
+		);
+		expect(model.schedule.map((r) => r.text)).toContain(
+			"Dough : Rise 870 minutes (480 minutes\u00A0– 960 minutes)",
 		);
 	});
 });
