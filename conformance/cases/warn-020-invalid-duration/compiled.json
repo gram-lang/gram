@@ -72,8 +72,8 @@
       "message": "Retro-planning offset \"-1-2d\" on \"Dough\" is not read: a section anchor is one duration, not a range: write e.g. -1d. The section is not anchored.",
       "item": "Dough",
       "loc": {
-        "start": 38,
-        "end": 73
+        "start": 47,
+        "end": 55
       }
     },
     {

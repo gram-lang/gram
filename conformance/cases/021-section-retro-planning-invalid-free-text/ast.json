@@ -12,7 +12,11 @@
         "raw": "the day before",
         "sign": 1,
         "value": null,
-        "unit": null
+        "unit": null,
+        "loc": {
+          "start": 72,
+          "end": 89
+        }
       },
       "intermediateDecl": null,
       "children": [

@@ -82,6 +82,8 @@ export interface RetroPlanningAST {
 	sign: 1 | -1;
 	value: number | null;
 	unit: string | null;
+	/** Where the anchor is written, braces included (`~{-1h30}`). Since 1.5.0. */
+	loc?: Location;
 }
 
 export interface SectionAST extends NodeAST {

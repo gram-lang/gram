@@ -271,7 +271,10 @@ semantics.addOperation("toAST", {
 	},
 
 	retroPlanning(_1, content, _2): RetroPlanningAST {
-		return parseRetroPlanning(clean(content.sourceString));
+		return {
+			...parseRetroPlanning(clean(content.sourceString)),
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
 	},
 
 	// --- Module imports ---

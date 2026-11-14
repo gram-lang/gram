@@ -13,7 +13,11 @@
         "raw": "-4,5h",
         "sign": -1,
         "value": 4.5,
-        "unit": "h"
+        "unit": "h",
+        "loc": {
+          "start": 51,
+          "end": 59
+        }
       },
       "intermediateDecl": {
         "type": "IntermediateDecl",

@@ -12,7 +12,11 @@
         "raw": "-1j 12h",
         "sign": 1,
         "value": null,
-        "unit": null
+        "unit": null,
+        "loc": {
+          "start": 41,
+          "end": 51
+        }
       },
       "intermediateDecl": null,
       "children": [
@@ -81,7 +85,11 @@
         "raw": "-1h30",
         "sign": 1,
         "value": null,
-        "unit": null
+        "unit": null,
+        "loc": {
+          "start": 86,
+          "end": 94
+        }
       },
       "intermediateDecl": null,
       "children": [
@@ -150,7 +158,11 @@
         "raw": "-1:30 h",
         "sign": 1,
         "value": null,
-        "unit": null
+        "unit": null,
+        "loc": {
+          "start": 125,
+          "end": 135
+        }
       },
       "intermediateDecl": null,
       "children": [
