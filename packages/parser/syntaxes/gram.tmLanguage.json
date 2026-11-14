@@ -184,7 +184,34 @@
       "endCaptures": {
         "1": { "name": "punctuation.section.embedded.end.gram" }
       },
-      "patterns": [ { "include": "#quantity-content" } ]
+      "patterns": [ { "include": "#timer-content" } ]
+    },
+    "timer-content": {
+      "comment": "A duration as written: 1h30, 1 hr 30 mins, 1:30 h, 5'30\", 45 min - 1 h. Mirrors tokenizeDuration (@gram-lang/i18n): numbers, units in any script, primes, and the : + - signs.",
+      "patterns": [
+        {
+          "match": "\\d+(?:[.,]\\d+)?(?:/\\d+)?|[\u00bc-\u00be\u2150-\u215e]",
+          "name": "constant.numeric.gram"
+        },
+        {
+          "comment": "Primes: ' ’ ′ for minutes, \" ” ″ or '' for seconds.",
+          "match": "''|[\"\u201d\u2033'\u2019\u2032]",
+          "name": "keyword.other.unit.gram"
+        },
+        {
+          "comment": "A unit, in any script, with the dot of an abbreviation (hr., Std.).",
+          "match": "\\p{L}+\\.?",
+          "name": "keyword.other.unit.gram"
+        },
+        {
+          "match": ":",
+          "name": "punctuation.separator.duration.gram"
+        },
+        {
+          "match": "[+\\-\u2013]",
+          "name": "keyword.operator.duration.gram"
+        }
+      ]
     },
     "temperatures": {
       "name": "meta.temperature.gram",
