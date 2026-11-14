@@ -1,9 +1,9 @@
 import { formatDuration } from "@gram-lang/renderer";
 
 /**
- * A change of duration, signed: `+1h 30min`, `-45min`. The words come from the
+ * A change of duration, signed: `+1 h 30 min`, `-45 min`. The words come from the
  * renderer's `formatDuration`, so the CLI reads like the views; only the sign
- * is the CLI's. No change is unsigned, as the renderer writes it (`0min`).
+ * is the CLI's. No change is unsigned, as the renderer writes it (`0 min`).
  */
 export function formatDurationDelta(minutes: number): string {
 	const magnitude = formatDuration(Math.abs(minutes));
@@ -14,7 +14,7 @@ export function formatDurationDelta(minutes: number): string {
 /**
  * Time elapsed in a cooking session, from milliseconds. Rounded to the minute:
  * seconds are noise after forty minutes in the kitchen. Under a minute the
- * seconds stay, so a very short session never reads `0min`.
+ * seconds stay, so a very short session never reads `0 min`.
  */
 export function formatElapsed(ms: number): string {
 	const minutes = ms / 60_000;

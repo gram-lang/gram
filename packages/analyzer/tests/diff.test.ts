@@ -140,6 +140,20 @@ describe("diffRecipes — same-named tokens within a single section (finding B3)
 	});
 });
 
+// A refused timer (`~{1:30}`) keeps only what was written: the diff shows
+// that writing, never "?".
+describe("diffRecipes — refused timers", () => {
+	it("shows the writing of a refused timer", () => {
+		const a = compileRecipe("Bake ~oven{1:30}.\n");
+		const b = compileRecipe("Bake ~oven{1:30 h}.\n");
+
+		const { timers } = diffRecipes(a, b);
+		expect(timers).toHaveLength(1);
+		expect(timers[0]?.from).toBe("1:30");
+		expect(timers[0]?.to).toBe("90 min");
+	});
+});
+
 // Generative-style sweep for the audit's stated closure criterion (2026-07-22,
 // §4.1 finding 6-bis): "a test that mutates a random field in the compiled
 // JSON and requires hasChanges === true" — enumerated here over every shape

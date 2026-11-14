@@ -234,6 +234,11 @@ export interface RenderContext {
 	icons?: RendererIcons;
 	classes?: RendererClasses;
 	formatFraction?: (value: number) => string;
+	/**
+	 * The caller's duration format, absent when Gram writes the durations
+	 * itself: a timer then keeps the exact, ranged writing of
+	 * `formatTimerDuration` that a plain formatter could not give.
+	 */
 	formatDuration?: (minutes: number) => string;
 	/** Set to true when formatting step tokens to suppress quantity display. */
 	hideIngredientQty?: boolean;

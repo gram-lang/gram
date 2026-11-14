@@ -7,6 +7,8 @@ import {
 	getDictionary,
 	isCoarseUnit,
 	localizeDecimals,
+	resolveTimeUnit,
+	TIME_TO_MINUTES,
 	toKitchenFraction,
 	toLargerMetricUnit,
 } from "@gram-lang/i18n";
@@ -210,23 +212,166 @@ const MINUTES_PER_DAY = 24 * 60;
 export function formatDuration(
 	minutes: number,
 	lang?: string,
-	{ days = true }: { days?: boolean } = {},
+	options: DurationFormatOptions = {},
 ): string {
+	return writeTerms(durationTerms(minutes, lang, options));
+}
+
+/** Options of `formatDuration` and `formatDurationRange`. */
+export interface DurationFormatOptions {
+	/** `false` keeps hours and minutes however long the duration. */
+	days?: boolean;
+}
+
+/** One term of a displayed duration: `1` and `"h"`. */
+interface DurationTerm {
+	value: number;
+	unit: string;
+}
+
+/**
+ * Between a number and its unit, a non-breaking space (`10 min`, the
+ * international format): the line never breaks inside a term.
+ */
+const NBSP = " ";
+
+const writeTerms = (terms: DurationTerm[]): string =>
+	terms.map((t) => `${t.value}${NBSP}${t.unit}`).join(" ");
+
+/** The terms `formatDuration` writes (one or two, never zero). */
+function durationTerms(
+	minutes: number,
+	lang: string | undefined,
+	{ days = true }: DurationFormatOptions,
+): DurationTerm[] {
 	const u = getDictionary(lang).renderer.durationUnits;
-	if (!Number.isFinite(minutes) || minutes <= 0) return `0${u.minute}`;
-	const join = (a: number, ua: string, b: number, ub: string) =>
-		b > 0 ? (a > 0 ? `${a}${ua} ${b}${ub}` : `${b}${ub}`) : `${a}${ua}`;
+	if (!Number.isFinite(minutes) || minutes <= 0)
+		return [{ value: 0, unit: u.minute }];
+	const pair = (
+		a: number,
+		ua: string,
+		b: number,
+		ub: string,
+	): DurationTerm[] =>
+		b > 0
+			? a > 0
+				? [
+						{ value: a, unit: ua },
+						{ value: b, unit: ub },
+					]
+				: [{ value: b, unit: ub }]
+			: [{ value: a, unit: ua }];
 	if (days && Math.round(minutes) >= MINUTES_PER_DAY) {
 		const hours = Math.round(minutes / 60);
-		return join(Math.floor(hours / 24), u.day, hours % 24, u.hour);
+		return pair(Math.floor(hours / 24), u.day, hours % 24, u.hour);
 	}
 	if (Math.round(minutes * 60) >= 3600) {
 		const total = Math.round(minutes);
-		return join(Math.floor(total / 60), u.hour, total % 60, u.minute);
+		return pair(Math.floor(total / 60), u.hour, total % 60, u.minute);
 	}
 	const totalSeconds = Math.round(minutes * 60);
 	const m = Math.floor(totalSeconds / 60);
-	return join(m, u.minute, totalSeconds % 60, u.second);
+	return pair(m, u.minute, totalSeconds % 60, u.second);
+}
+
+/**
+ * Formats a range of durations, with an en dash and no word, so that every
+ * language reads it the same way and Gram reads it back: `45 min – 1 h`,
+ * `1 h 30 min – 2 h`. When both sides are one term in the same unit, the
+ * unit is written once: `1–2 h`. A range counts in days only when both
+ * sides reach a day, so that both read in the same scale (`12–24 h`, not
+ * `12 h – 1 d`). A non-breaking space before the dash keeps a line from
+ * starting with it.
+ */
+export function formatDurationRange(
+	min: number,
+	max: number,
+	lang?: string,
+	options: DurationFormatOptions = {},
+): string {
+	const sameScale = {
+		...options,
+		days: options.days !== false && Math.round(min) >= MINUTES_PER_DAY,
+	};
+	const a = durationTerms(min, lang, sameScale);
+	const b = durationTerms(max, lang, sameScale);
+	const [ta] = a;
+	const [tb] = b;
+	if (a.length === 1 && b.length === 1 && ta && tb && ta.unit === tb.unit)
+		return `${ta.value}–${tb.value}${NBSP}${tb.unit}`;
+	return `${writeTerms(a)}${NBSP}– ${writeTerms(b)}`;
+}
+
+/**
+ * A range written with a caller's duration format, which Gram cannot split
+ * into terms: each end in full, joined as `formatDurationRange` joins two
+ * different sides (`480 minutes – 960 minutes`).
+ */
+export function joinDurationRange(
+	min: number,
+	max: number,
+	format: (minutes: number) => string,
+): string {
+	return `${format(min)}${NBSP}– ${format(max)}`;
+}
+
+/**
+ * Displays a compiled timer the way Gram displays every time (`formatDuration`,
+ * `formatDurationRange`), from its minutes. A timer is exact where a computed
+ * time is not: past a day, one whose minutes the count in days would round
+ * away stays in hours (`26 h 30 min`, not `1 d 3 h`). A refused timer has no
+ * minutes: it keeps what the author wrote (`raw`). A timer compiled before
+ * `minutes` existed falls back on its quantity and unit.
+ *
+ * `format` is the caller's duration format (the `formatDuration` option of a
+ * render), so that its timers read like its other times; a range then gives
+ * each end in full.
+ */
+export function formatTimerDuration(
+	item: {
+		raw?: string;
+		quantity?: unknown;
+		unit?: string | null;
+		minutes?: number;
+	},
+	lang?: string,
+	format?: (minutes: number) => string,
+): string {
+	if (typeof item.minutes !== "number" || !Number.isFinite(item.minutes)) {
+		if (typeof item.raw === "string" && item.quantity === undefined)
+			return item.raw.trim();
+		const value = formatQuantityValue(item.quantity ?? "", lang);
+		return item.unit ? `${value} ${item.unit}` : value;
+	}
+	const range = timerRangeMinutes(item);
+	if (format)
+		return range
+			? joinDurationRange(range.min, range.max, format)
+			: format(item.minutes);
+	const sides = range ? [range.min, range.max] : [item.minutes];
+	// Whole hours (or less than a day) lose nothing in the count in days.
+	const exactInDays = sides.every(
+		(m) => Math.round(m) < MINUTES_PER_DAY || Number.isInteger(m / 60),
+	);
+	const options = { days: exactInDays };
+	return range
+		? formatDurationRange(range.min, range.max, lang, options)
+		: formatDuration(item.minutes, lang, options);
+}
+
+/** The two ends of a range timer, in minutes (its range is kept in `unit`). */
+function timerRangeMinutes(item: {
+	quantity?: unknown;
+	unit?: string | null;
+}): { min: number; max: number } | undefined {
+	const q = item.quantity as
+		| { type?: string; range?: { min?: unknown; max?: unknown } }
+		| undefined;
+	if (!q || typeof q !== "object" || q.type !== "range" || !q.range) return;
+	const factor = TIME_TO_MINUTES[resolveTimeUnit(item.unit)];
+	const { min, max } = q.range;
+	if (!factor || typeof min !== "number" || typeof max !== "number") return;
+	return { min: min * factor, max: max * factor };
 }
 
 /**

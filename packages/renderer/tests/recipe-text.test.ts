@@ -90,9 +90,9 @@ describe("recipe view, text format", () => {
 		expect(out).toContain("COOKWARE\n  bowl");
 		expect(out).toMatch(/─── Dough ─+\n {2}• flour +500 g\n/);
 		expect(out).toContain(
-			" 1. [Mix] Mix flour (500 g) with milk (250 ml, ≈257.5 g) in a bowl, knead 20 min. [1]",
+			" 1. [Mix] Mix flour (500 g) with milk (250 ml, ≈257.5 g) in a bowl, knead 20\u00A0min. [1]",
 		);
-		expect(out).toContain(" 2. [Rise] Let it rise 8-16 h.");
+		expect(out).toContain(" 2. [Rise] Let it rise 8–16\u00A0h.");
 	});
 
 	it("puts the parts of a composite ingredient under it", () => {
@@ -176,7 +176,7 @@ describe("recipe view, text format", () => {
 		);
 		expect(out).toContain("<h>SHOPPING LIST</h>");
 		expect(out).toContain("<a>[Mix]</a> Mix <i>flour</i> (500 g)");
-		expect(out).toContain("in a <c>bowl</c>, knead <tm>20 min</tm>.");
+		expect(out).toContain("in a <c>bowl</c>, knead <tm>20\u00A0min</tm>.");
 		// The quantities still line up: the name is measured before it is styled.
 		expect(out).toMatch(/• <i>flour<\/i> {16}500 g/);
 		expect(text()).not.toContain("<");

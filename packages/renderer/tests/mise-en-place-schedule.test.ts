@@ -142,7 +142,7 @@ describe("backend parity", () => {
 		it(`${name}: the two schedules differ by time only, never by an ingredient list`, () => {
 			const strip = (out: string) =>
 				out
-					.replace(/\d+h( \d+m)?|\d+m\b/g, "T")
+					.replace(/\d+\sh( \d+\smin)?|\d+\smin\b/g, "T")
 					.replace(
 						/<section class="mise-en-place-session">[\s\S]*?<\/section>\s*/g,
 						"",
@@ -290,8 +290,9 @@ describe("data without schedules", () => {
 function fmt(minutes: number): string {
 	const h = Math.floor(minutes / 60);
 	const m = Math.round(minutes % 60);
-	if (h > 0) return m > 0 ? `${h}h ${m}m` : `${h}h`;
-	return `${m}m`;
+	// A non-breaking space between each number and its unit.
+	if (h > 0) return m > 0 ? `${h}\u00A0h ${m}\u00A0min` : `${h}\u00A0h`;
+	return `${m}\u00A0min`;
 }
 
 describe("mise en place wording", () => {
@@ -306,7 +307,7 @@ describe("mise en place wording", () => {
 	it("still gives it where there is no column, in the Gantt block's tooltip", () => {
 		const tooltips = toGanttHTML(compiled).match(/data-tooltip="[^"]*"/g) ?? [];
 		expect(
-			tooltips.some((t) => t.includes("Preparation: onions (+ 2min)")),
+			tooltips.some((t) => t.includes("Preparation: onions (+ 2\u00A0min)")),
 		).toBe(true);
 	});
 
@@ -346,12 +347,12 @@ Bake ~{60min}.
 		(m) => m[1]!,
 	);
 	const minutes = (text: string) =>
-		Number(/(\d+)h/.exec(text)?.[1] ?? 0) * 60 +
-		Number(/(\d+)min/.exec(text)?.[1] ?? 0);
+		Number(/(\d+)\sh\b/.exec(text)?.[1] ?? 0) * 60 +
+		Number(/(\d+)\smin/.exec(text)?.[1] ?? 0);
 
 	it("shows the pill in days, the breakdown in hours and minutes", () => {
-		expect(html).toMatch(/<span class="timing-text">1d( \dh)?<\/span>/);
-		expect(tooltip).not.toMatch(/\dd\b/);
+		expect(html).toMatch(/<span class="timing-text">1\sd( \d\sh)?<\/span>/);
+		expect(tooltip).not.toMatch(/\d\sd\b/);
 	});
 
 	it("adds its parts up to the total it ends on", () => {

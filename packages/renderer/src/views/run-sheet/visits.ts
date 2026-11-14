@@ -167,6 +167,7 @@ function describeProgram(pass: VisitPass, p: RunSheetVisit) {
 			steps: sectionSteps(data, s, indexes, {
 				lang,
 				comments: options.comments,
+				formatDuration: options.formatDuration,
 			}),
 		};
 		program.push(entry);

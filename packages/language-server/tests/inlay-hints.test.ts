@@ -66,7 +66,7 @@ describe("provideInlayHints follows the choice of rests", () => {
 			label(provideInlayHints(state, undefined, rests));
 		expect(hint()).toBe(hint("shortest"));
 		expect(hint("longest")).not.toBe(hint("shortest"));
-		const hours = (text: string) => Number(/(\d+)h/.exec(text)?.[1]);
+		const hours = (text: string) => Number(/(\d+)\sh\b/.exec(text)?.[1]);
 		expect(hours(hint("longest")) - hours(hint("shortest"))).toBe(8);
 	});
 });

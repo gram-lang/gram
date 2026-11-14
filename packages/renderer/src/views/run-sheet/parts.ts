@@ -375,13 +375,16 @@ const entities: Record<string, string> = {
 	"&#039;": "'",
 };
 
-/** The text of an HTML fragment this renderer wrote: tags dropped, entities back, spaces folded. */
+/**
+ * The text of an HTML fragment this renderer wrote: tags dropped, entities
+ * back, spaces folded, but the non-breaking ones kept (`10 min`).
+ */
 const htmlToText = (html: string) =>
 	html
 		.replace(/<[^>]*>/g, "")
 		.replace(/&(?:amp|lt|gt|quot|#039);/g, (m) => entities[m] ?? m)
-		.replace(/\s+/g, " ")
-		.replace(/\s+([.,!?:;)])/g, "$1")
+		.replace(/[^\S\u00A0]+/g, " ")
+		.replace(/[^\S\u00A0]+([.,!?:;)])/g, "$1")
 		.trim();
 
 /**
@@ -400,7 +403,12 @@ export function sectionSteps(
 	data: RenderableCompilationResult,
 	section: number,
 	stepIndexes: number[],
-	options: { lang?: string; comments?: CommentsMode } = {},
+	options: {
+		lang?: string;
+		comments?: CommentsMode;
+		/** The caller's duration format, for the timers of the steps. */
+		formatDuration?: (minutes: number) => string;
+	} = {},
 ): ProgramStep[] {
 	const source = data.sections?.[section];
 	if (!source) return [];
@@ -409,6 +417,7 @@ export function sectionSteps(
 	const context: RenderContext = {
 		lang: options.lang,
 		registry: data.registry,
+		formatDuration: options.formatDuration,
 		hideIngredientQty: true,
 		icons: {
 			timer: "",

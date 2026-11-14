@@ -69,7 +69,7 @@ describe("gram plan", () => {
 	it("stretches the rest to keep the kneading out of the night, and says so", () => {
 		const { out } = gram(...PLAN, "--available", "08:00-22:00");
 		expect(out).toMatch(/SAT 10\s+▮ 21:\d\d – 22:\d\d\s+Dough/);
-		expect(out).toContain("Dough : Rise extended to 14h 30m");
+		expect(out).toMatch(/Dough : Rise extended to 14\sh 30\smin/);
 	});
 
 	it("starts in the night when nothing says otherwise, and does not stretch", () => {
@@ -127,8 +127,8 @@ describe("gram plan", () => {
 	it("follows --rests", () => {
 		const shortest = gram(...PLAN, "--rests", "shortest").out;
 		const longest = gram(...PLAN, "--rests", "longest").out;
-		expect(shortest).toMatch(/Dough : Rise 8h to 16h/);
-		expect(longest).toMatch(/Dough : Rise 16h \(8h to 16h\)/);
+		expect(shortest).toMatch(/Dough : Rise 8–16\sh/);
+		expect(longest).toMatch(/Dough : Rise 16\sh \(8–16\sh\)/);
 	});
 
 	it("writes a calendar, in UTC, stamped from --now, with the status on stderr", async () => {
@@ -252,7 +252,7 @@ describe("gram plan without a serving time", () => {
 		const { code, out } = gram(...RELATIVE);
 		expect(code).toBe(0);
 		expect(out).toContain("Run sheet — Country bread");
-		expect(out).toMatch(/Day D\s+▮ ~ \d+m/);
+		expect(out).toMatch(/Day D\s+▮ ~ \d+\smin/);
 		expect(out).not.toContain("For Sunday");
 		expect(out).toContain("Ready as early as");
 		expect(out).toContain("if you start now.");

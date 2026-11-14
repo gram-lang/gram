@@ -4,6 +4,7 @@ import {
 	escapeMarkdownHtml,
 	getQty,
 	formatQuantityValue,
+	formatTimerDuration,
 	formatDecimalToFraction,
 	largerAmount,
 	type NumberStyle,
@@ -453,14 +454,21 @@ const strategies: Record<
 	},
 
 	timer: (item, format, context) => {
-		const q = item.quantity || { value: "" };
-		const qVal = formatQuantityValue(q, context.lang);
-		// item.quantity can be a bare string (a rejected/free-text timer
-		// value — see processor.ts's INVALID_UNIT handling for TextQuantity),
-		// which has no `.value` of its own; the string itself *is* the value.
-		const dataValue = typeof q === "string" ? q : q.value;
-		const unitStr = item.unit ? ` ${item.unit}` : "";
+		// One writing of time in a page: the timer goes through formatDuration,
+		// like the computed times; a refused timer keeps what was written.
+		const shown = formatTimerDuration(
+			item,
+			context.lang,
+			context.formatDuration,
+		);
+		const q = item.quantity ?? "";
+		// A bare string quantity comes from a JSON compiled before 1.5.
+		const dataValue = typeof q === "object" ? q.value : q;
 		const isPassive = !!item.isPassive;
+		const minutesAttr =
+			typeof item.minutes === "number"
+				? ` data-minutes="${escapeHtml(String(item.minutes))}"`
+				: "";
 
 		if (format === "html") {
 			const t = getDictionary(context.lang);
@@ -471,9 +479,9 @@ const strategies: Record<
 			const tooltipStr = isPassive
 				? t.renderer.passiveTimeTooltip
 				: t.renderer.activeTimeTooltip;
-			return `<span class="${className}" data-tooltip="${tooltipStr}" data-value="${escapeHtml(dataValue)}" data-unit="${escapeHtml(item.unit || "")}">${icon} <span class="timer-text">${escapeHtml(qVal)}${escapeHtml(unitStr)}</span></span>`;
+			return `<span class="${className}" data-tooltip="${tooltipStr}" data-value="${escapeHtml(dataValue)}" data-unit="${escapeHtml(item.unit || "")}"${minutesAttr}>${icon} <span class="timer-text">${escapeHtml(shown)}</span></span>`;
 		} else if (format === "text") {
-			return styled(context, "timer", `${qVal}${unitStr}`);
+			return styled(context, "timer", shown);
 		} else {
 			const prefix =
 				context.icons?.hourglass !== undefined
@@ -486,7 +494,7 @@ const strategies: Record<
 			const suffix = isPassive
 				? ` (${getDictionary(context.lang).renderer.passive})`
 				: "";
-			return `${prefix}${escapeMarkdownHtml(qVal)}${escapeMarkdownHtml(unitStr)}${suffix}`;
+			return `${prefix}${escapeMarkdownHtml(shown)}${suffix}`;
 		}
 	},
 
