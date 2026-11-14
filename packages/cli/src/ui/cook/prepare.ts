@@ -1,4 +1,8 @@
-import type { CompilationResult, RestChoice } from "@gram-lang/kitchen";
+import type {
+	CompilationResult,
+	ProcessedTimer,
+	RestChoice,
+} from "@gram-lang/kitchen";
 import {
 	quantityToMinutes,
 	aggregateSectionIngredients,
@@ -50,8 +54,11 @@ export function fmtMass(g: number): string {
 	return `${+g.toFixed(1)} g`;
 }
 
-function quantityToMs(qty: any): number {
-	return quantityToMinutes(qty) * 60_000;
+/** A compiled timer's length: its quantity read in its own unit (`h`, `s`…). */
+function timerToMs(timer: ProcessedTimer): number {
+	return (
+		quantityToMinutes({ value: timer.quantity, unit: timer.unit }) * 60_000
+	);
 }
 
 function extractTimers(
@@ -87,7 +94,7 @@ function extractTimers(
 			if (seen.has(name)) return;
 			seen.add(name);
 			const id = `${sectionIdx}-${stepIdx}-inline-${i}`;
-			timers.push({ id, name, durationMs: quantityToMs(token.quantity) });
+			timers.push({ id, name, durationMs: timerToMs(token) });
 		});
 	}
 

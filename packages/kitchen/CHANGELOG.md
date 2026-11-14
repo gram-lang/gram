@@ -1,5 +1,17 @@
 # @gram-lang/kitchen
 
+## 1.4.1
+
+### Patch Changes
+
+- efbb381: **Kitchen**: Split quantities across two units (`@flour{1 cup 5 tbsp}`) or prefixed with words (`@flour{about 200g}`) now raise an `INVALID_UNIT` warning instead of being misread or dropped when scaling (while unit-only descriptors like `{1 tin of 400 g}` or `{a pinch}` remain valid).
+- Updated dependencies [7fbd5c6]
+- Updated dependencies [2327de6]
+- Updated dependencies [4608f96]
+  - @gram-lang/i18n@1.4.1
+  - @gram-lang/parser@1.4.1
+  - @gram-lang/scheduler@1.4.1
+
 ## 1.4.0
 
 ### Minor Changes
