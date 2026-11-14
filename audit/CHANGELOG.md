@@ -1,5 +1,17 @@
 # @gram-lang/audit
 
+## 1.4.1
+
+### Patch Changes
+
+- Updated dependencies [d946b46]
+- Updated dependencies [4608f96]
+- Updated dependencies [efbb381]
+  - @gram-lang/analyzer@1.4.1
+  - @gram-lang/parser@1.4.1
+  - @gram-lang/kitchen@1.4.1
+  - @gram-lang/format@1.4.1
+
 ## 1.4.0
 
 ### Patch Changes

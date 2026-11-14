@@ -1,5 +1,11 @@
 # @gram-lang/parser
 
+## 1.4.1
+
+### Patch Changes
+
+- 4608f96: **Parser**: Section headers with leftover text after an anchor or intermediate (such as a multi-word `->&glazed rhubarb` missing braces) now raise a clear error instead of blaming the timer or turning the section into a step, and a section header on the last line with no trailing newline is now recognized.
+
 ## 1.4.0
 
 No changes in this release.

@@ -155,6 +155,21 @@ describe("cook mode timers", () => {
 		const rise = data.steps[1];
 		expect(rise?.timers.map((t) => t.durationMs)).toEqual([24 * 60 * 60_000]);
 	});
+
+	it("counts an active timer in its own unit, not always in minutes", () => {
+		const data = prepareRecipeData(
+			compile(
+				getAST(
+					"## Stew\n\nSimmer ~{1h}.\n\nStir ~{30 s}.\n\nReduce ~{1.5 hours}.\n",
+				),
+			),
+		);
+		expect(data.steps.map((s) => s.timers.map((t) => t.durationMs))).toEqual([
+			[60 * 60_000],
+			[30_000],
+			[90 * 60_000],
+		]);
+	});
 });
 
 describe("view, export and print follow --mise-en-place", () => {

@@ -1,5 +1,12 @@
 # @gram-lang/i18n
 
+## 1.4.1
+
+### Patch Changes
+
+- 7fbd5c6: **Renderer & CLI**: Totals where you buy or read an overview (shopping list, recipe/section weight, nutrition base, `gram shop`) convert metric amounts from 1000 g/ml up to `kg` or `l` (`3.9 kg` instead of `3900 g`), while steps, section ingredients, the run sheet, and `gram cook` keep grams for weighing (API helpers: `toLargerMetricUnit`, `isMetricMassUnit` in `@gram-lang/i18n`).
+- 2327de6: **Renderer & CLI**: Numbers follow the recipe's language (`lang` / project `language`, with decimal commas in French and no thousands separators in `gram shop`/`gram scale`), and spoons, cups, and imperial measures display as fractions (`1 3/4 cup`) across views and CLI commands while keeping machine attributes unchanged (API helpers: `formatNumber`, `localizeDecimals`, `toKitchenFraction` in `@gram-lang/i18n`).
+
 ## 1.4.0
 
 ### Minor Changes
