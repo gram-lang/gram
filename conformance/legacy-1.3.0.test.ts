@@ -32,10 +32,16 @@ const ADDED_SINCE_1_3_0 = new Set([
 	"schedules",
 ]);
 
+// Added after 1.3.0 inside a step's timer token (1.5): what was written and
+// the duration in minutes.
+const TIMER_ADDED_SINCE_1_3_0 = new Set(["raw", "minutes"]);
+
 function canonical(value: unknown): string {
 	if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
 	if (value && typeof value === "object") {
+		const isTimer = (value as { type?: unknown }).type === "timer";
 		const entries = Object.entries(value as Record<string, unknown>)
+			.filter(([k]) => !(isTimer && TIMER_ADDED_SINCE_1_3_0.has(k)))
 			.sort(([a], [b]) => (a < b ? -1 : 1))
 			.map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`);
 		return `{${entries.join(",")}}`;

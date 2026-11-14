@@ -276,12 +276,14 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "24h",
               "quantity": {
                 "type": "single",
                 "value": 24,
                 "text": "24"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 1440
             },
             "."
           ],
@@ -371,12 +373,14 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "12h",
               "quantity": {
                 "type": "single",
                 "value": 12,
                 "text": "12"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 720
             },
             "."
           ],
@@ -543,12 +547,14 @@
             "for ",
             {
               "type": "timer",
+              "raw": "10min",
               "quantity": {
                 "type": "single",
                 "value": 10,
                 "text": "10"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 10
             },
             "."
           ],
@@ -672,12 +678,14 @@
             "for ",
             {
               "type": "timer",
+              "raw": "25min",
               "quantity": {
                 "type": "single",
                 "value": 25,
                 "text": "25"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 25
             },
             "at ",
             {

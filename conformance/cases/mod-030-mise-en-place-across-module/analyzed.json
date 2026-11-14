@@ -198,12 +198,14 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "1h",
               "quantity": {
                 "type": "single",
                 "value": 1,
                 "text": "1"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 60
             },
             "."
           ],
@@ -372,12 +374,14 @@
             "and bake for ",
             {
               "type": "timer",
+              "raw": "30min",
               "quantity": {
                 "type": "single",
                 "value": 30,
                 "text": "30"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 30
             },
             "."
           ],

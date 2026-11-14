@@ -157,12 +157,14 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "24h",
               "quantity": {
                 "type": "single",
                 "value": 24,
                 "text": "24"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 1440
             },
             "."
           ],
@@ -287,12 +289,14 @@
             "tin and bake ",
             {
               "type": "timer",
+              "raw": "40min",
               "quantity": {
                 "type": "single",
                 "value": 40,
                 "text": "40"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 40
             },
             "at ",
             {

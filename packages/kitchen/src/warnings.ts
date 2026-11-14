@@ -1,4 +1,5 @@
 import type { Location } from "@gram-lang/parser";
+import type { InvalidDurationReason } from "./durations";
 
 export enum WarningCode {
 	VARIABLE_NOT_FOUND = "VARIABLE_NOT_FOUND",
@@ -24,6 +25,7 @@ export enum WarningCode {
 	PASSIVE_OVERLAP_SAME_COOKWARE = "PASSIVE_OVERLAP_SAME_COOKWARE",
 	DURATION_OUT_OF_RANGE = "DURATION_OUT_OF_RANGE",
 	AMBIGUOUS_NUMBER = "AMBIGUOUS_NUMBER",
+	INVALID_DURATION = "INVALID_DURATION",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
 	// Phase E). The only module-related code kitchen raises itself, in the
 	// no-resolution-happened degraded path (§C.4) — every other module-only
@@ -78,6 +80,15 @@ export interface WarningPayloads {
 	};
 	[WarningCode.DURATION_OUT_OF_RANGE]: {
 		type: "Timer" | "RetroPlanning";
+		item: string;
+		loc?: Location;
+	};
+	[WarningCode.INVALID_DURATION]: {
+		type: "Timer" | "RetroPlanning";
+		/** The duration as written, e.g. `1:30` or `-1-2d`. */
+		value: string;
+		/** Why it is not read (see `InvalidDurationReason`). */
+		reason: InvalidDurationReason;
 		item: string;
 		loc?: Location;
 	};
@@ -147,6 +158,40 @@ const formatMinutes = (minutes: number): string =>
 		? `${minutes} min`
 		: `${parseFloat((minutes / 60).toFixed(1))} h`;
 
+/** What to write instead, for each reason a duration is refused. */
+const DURATION_HINTS: Record<InvalidDurationReason, string> = {
+	words:
+		"write it with numbers and units only, e.g. 1h30, 1 hr 30 min, 1:30 h or 5'30\".",
+	multiplication:
+		"Gram does not multiply durations (repetitions will come with [Repeat]): write the total, e.g. 4 min.",
+	iso8601:
+		"ISO 8601 is a notation for machines: write 1h30 rather than PT1H30M.",
+	unexpected:
+		"a character is out of place: write e.g. 1h30, 45 min - 1 h or 5'30\".",
+	ambiguousClock:
+		"a clock with two parts could be hours or minutes: write 1h30 or 1:30 min.",
+	clockFormat:
+		"a clock is h:mm:ss, or two parts followed by a unit (1:30 h, 4:30 min), with two digits after each colon.",
+	unitOrder:
+		"units go from the largest to the smallest, each once: write 1h 30min, not 30min 1h.",
+	duplicateUnit: "each unit appears once: write 3h, not 1h 2h.",
+	overflow60:
+		"minutes or seconds after a larger unit stay under 60: write 2h15, not 1h75.",
+	decimalInCompound:
+		"a decimal or a fraction only works alone: write 1.5 h or 1h30, not 1.5h30.",
+	decimalPrime: "primes take whole numbers: write 1 min 30 or 90\", not 1.5'.",
+	bareNumber:
+		"a number without a unit only follows hours (as minutes) or minutes (as seconds): write 1h30 or 2min30.",
+	reversedRange:
+		"a range starts with the shorter duration: write 1-2 h, not 2-1 h.",
+	emptyRange: "both ends of the range are the same: write a single duration.",
+	ambiguousRange:
+		"one side of the range has no clear unit: write both sides in full, e.g. 1h-2h30 rather than 1-2h30.",
+	anchorRange: "a section anchor is one duration, not a range: write e.g. -1d.",
+	anchorSeconds:
+		"a section anchor counts in days, hours and minutes: write e.g. -1h30 or -1:30 h.",
+};
+
 export const warningTemplates: {
 	[K in WarningCode]: (payload: WarningPayloads[K]) => string;
 } = {
@@ -174,6 +219,10 @@ export const warningTemplates: {
 					: `Invalid unit "${p.value}" for ${p.type}.`,
 	[WarningCode.DURATION_OUT_OF_RANGE]: (p) =>
 		`${p.type === "RetroPlanning" ? `Retro-planning offset for "${p.item}"` : `Timer "${p.item}"`} is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.`,
+	[WarningCode.INVALID_DURATION]: (p) =>
+		p.type === "RetroPlanning"
+			? `Retro-planning offset "${p.value}" on "${p.item}" is not read: ${DURATION_HINTS[p.reason] ?? p.reason} The section is not anchored.`
+			: `Timer duration "${p.value}"${p.item === "Timer" ? "" : ` on "${p.item}"`} is not read: ${DURATION_HINTS[p.reason] ?? p.reason} It is not counted in the total time.`,
 	[WarningCode.AMBIGUOUS_NUMBER]: (p) =>
 		`"${p.value}" on "${p.item}" was read as ${p.read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write ${p.suggestion} if that is the number you meant.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
@@ -252,6 +301,7 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.INVALID_UNIT]: "warning",
 	[WarningCode.DURATION_OUT_OF_RANGE]: "warning",
 	[WarningCode.AMBIGUOUS_NUMBER]: "warning",
+	[WarningCode.INVALID_DURATION]: "warning",
 	[WarningCode.SCOPE_CONFLICT]: "error",
 	[WarningCode.MISSING_INGREDIENT]: "warning",
 	[WarningCode.MISSING_MACROS]: "info",

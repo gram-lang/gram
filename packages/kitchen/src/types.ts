@@ -126,8 +126,17 @@ export interface ProcessedTimer {
 	type: "timer";
 	name?: string;
 	isPassive?: boolean;
+	/** The duration as written between the braces (`1h30`, `1:30 h`, `5'30"`). */
+	raw?: string;
+	/**
+	 * The duration in `unit`: as written for a single unit (`1.5 h`), in the
+	 * smallest unit written otherwise (`1h20` is `80 min`). Absent when the
+	 * duration is refused (only `raw` is kept, with a warning).
+	 */
 	quantity?: number | string | QuantityValueAST;
 	unit?: string;
+	/** The duration the schedule uses, in minutes (the middle of a range). */
+	minutes?: number;
 }
 
 export interface ProcessedTemperature {

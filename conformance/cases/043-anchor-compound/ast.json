@@ -1,0 +1,278 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Anchor Compound"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Brine",
+      "retroPlanning": {
+        "raw": "-1j 12h",
+        "sign": 1,
+        "value": null,
+        "unit": null
+      },
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Brine the ",
+              "loc": {
+                "start": 53,
+                "end": 63
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "chicken",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 72,
+                  "end": 73
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 63,
+                "end": 74
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 74,
+                "end": 75
+              }
+            }
+          ],
+          "loc": {
+            "start": 53,
+            "end": 77
+          }
+        }
+      ],
+      "loc": {
+        "start": 32,
+        "end": 77
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": {
+        "raw": "-1h30",
+        "sign": 1,
+        "value": null,
+        "unit": null
+      },
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 96,
+                "end": 100
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 107,
+                  "end": 112
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 100,
+                "end": 113
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 113,
+                "end": 114
+              }
+            }
+          ],
+          "loc": {
+            "start": 96,
+            "end": 116
+          }
+        }
+      ],
+      "loc": {
+        "start": 77,
+        "end": 116
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Sauce",
+      "retroPlanning": {
+        "raw": "-1:30 h",
+        "sign": 1,
+        "value": null,
+        "unit": null
+      },
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Reduce ",
+              "loc": {
+                "start": 137,
+                "end": 144
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "wine",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 20,
+                  "text": "20"
+                },
+                "unit": "cl",
+                "fixed": false,
+                "loc": {
+                  "start": 150,
+                  "end": 155
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 144,
+                "end": 156
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 156,
+                "end": 157
+              }
+            }
+          ],
+          "loc": {
+            "start": 137,
+            "end": 159
+          }
+        }
+      ],
+      "loc": {
+        "start": 116,
+        "end": 159
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Cook",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Roast for ",
+              "loc": {
+                "start": 168,
+                "end": 178
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1h",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 180,
+                  "end": 182
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 178,
+                "end": 183
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 183,
+                "end": 184
+              }
+            }
+          ],
+          "loc": {
+            "start": 168,
+            "end": 185
+          }
+        }
+      ],
+      "loc": {
+        "start": 159,
+        "end": 185
+      }
+    }
+  ]
+}

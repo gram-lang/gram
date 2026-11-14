@@ -95,12 +95,14 @@
             "for ",
             {
               "type": "timer",
+              "raw": "10min",
               "quantity": {
                 "type": "single",
                 "value": 10,
                 "text": "10"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 10
             },
             "."
           ],
@@ -161,12 +163,14 @@
             "for ",
             {
               "type": "timer",
+              "raw": "5min",
               "quantity": {
                 "type": "single",
                 "value": 5,
                 "text": "5"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 5
             },
             "."
           ],
@@ -227,12 +231,14 @@
             "for ",
             {
               "type": "timer",
+              "raw": "5min",
               "quantity": {
                 "type": "single",
                 "value": 5,
                 "text": "5"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 5
             },
             "."
           ],

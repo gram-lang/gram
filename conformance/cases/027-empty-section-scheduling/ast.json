@@ -26,6 +26,7 @@
             {
               "type": "Timer",
               "name": null,
+              "raw": "60min",
               "quantity": {
                 "type": "Quantity",
                 "value": {

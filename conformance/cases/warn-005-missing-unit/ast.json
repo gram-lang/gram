@@ -26,6 +26,7 @@
             {
               "type": "Timer",
               "name": "timer",
+              "raw": "10",
               "quantity": {
                 "type": "Quantity",
                 "value": {

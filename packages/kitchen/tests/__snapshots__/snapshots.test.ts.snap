@@ -384,6 +384,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
             "Timer missing unit: ",
             {
               "name": "timer",
+              "raw": "10",
               "type": "timer",
             },
           ],
@@ -1359,12 +1360,14 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "content": [
             "Let it rest ",
             {
+              "minutes": 60,
               "name": "rest",
               "quantity": {
                 "text": "1",
                 "type": "single",
                 "value": 1,
               },
+              "raw": "1h",
               "type": "timer",
               "unit": "h",
             },
@@ -1472,11 +1475,13 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             "for about ",
             {
               "isPassive": true,
+              "minutes": 2,
               "quantity": {
                 "text": "2",
                 "type": "single",
                 "value": 2,
               },
+              "raw": "2min",
               "type": "timer",
               "unit": "min",
             },

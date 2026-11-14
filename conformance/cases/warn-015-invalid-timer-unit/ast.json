@@ -26,6 +26,7 @@
             {
               "type": "Timer",
               "name": null,
+              "raw": "3 bananas",
               "quantity": {
                 "type": "Quantity",
                 "value": {
