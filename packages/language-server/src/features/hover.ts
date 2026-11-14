@@ -13,6 +13,7 @@ import {
 } from "../utils/ast-walker";
 import type { IngredientDB } from "../ingredient-loader";
 import { provideNutritionHover } from "./hover-nutrition";
+import { provideTimerHover } from "./hover-timer";
 
 export function provideHover(
 	state: DocumentState,
@@ -49,6 +50,10 @@ export function provideHover(
 		return { contents };
 	}
 
-	// 2. Hover on @ingredient → show nutrition + unit conversion
+	// 2. Hover on ~timer → the duration as Gram reads it
+	const timerHover = provideTimerHover(state, offset);
+	if (timerHover) return timerHover;
+
+	// 3. Hover on @ingredient → show nutrition + unit conversion
 	return provideNutritionHover(state, position, db);
 }

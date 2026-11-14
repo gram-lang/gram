@@ -5,7 +5,9 @@ import {
 	type IntermediateDecl,
 	type ReferenceAST,
 	type IngredientAST,
+	type TimerAST,
 	isIntermediateDecl,
+	isTimer,
 	isReference,
 	isIngredient,
 	isAlternative,
@@ -115,6 +117,14 @@ export function collectIngredients(ast: RecipeAST): IngredientAST[] {
 				}
 			}
 		}
+	}
+	return results;
+}
+
+export function collectTimers(ast: RecipeAST): TimerAST[] {
+	const results: TimerAST[] = [];
+	for (const step of iterAllSteps(ast)) {
+		for (const child of step.children) if (isTimer(child)) results.push(child);
 	}
 	return results;
 }
