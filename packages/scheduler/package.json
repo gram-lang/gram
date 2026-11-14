@@ -1,6 +1,6 @@
 {
   "name": "@gram-lang/scheduler",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Scheduling engine for Gram recipes: lays tasks out on a timeline from a neutral task description.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
