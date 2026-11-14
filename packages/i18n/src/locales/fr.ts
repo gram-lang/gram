@@ -476,4 +476,10 @@ export const fr: GramLocale = {
 		statusWarnings: "Avertissements",
 		copyBtn: "Copier dans le presse-papier",
 	},
+	languageServer: {
+		anchorReady: "Prête {duration} avant d'être utilisée.",
+		anchorInDays: "En jours : ouvre sa propre journée de travail.",
+		anchorInHours:
+			"En heures ou en minutes : une échéance dans la journée, sans journée de travail à part.",
+	},
 };
