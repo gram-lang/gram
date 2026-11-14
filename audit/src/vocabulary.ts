@@ -7,6 +7,8 @@
 // collection-specific (collectIngredients/collectReferences/...), not a
 // generic walk.
 
+import { parseDuration } from "@gram-lang/i18n";
+
 interface WalkContext {
 	inStepScope: boolean;
 }
@@ -18,6 +20,21 @@ function addModifierKeys(
 ): void {
 	if (!Array.isArray(modifiers)) return;
 	for (const m of modifiers) shapes.add(`${prefix}:modifier=${m}`);
+}
+
+// How a duration is written (`1h30` is compound, `1:30 h` a clock, `5'30"`
+// primes, `45 min - 1 h` a range), read by the same `parseDuration` as the
+// compiler, so a snippet using a form the syntax pages never show is flagged.
+// A refused duration adds nothing: its warning is the compiler's business.
+function addDurationShapes(raw: unknown, prefix: string, shapes: Set<string>): void {
+	if (typeof raw !== "string") return;
+	const duration = parseDuration(raw);
+	if (!duration.ok) return;
+	for (const side of duration.sides) {
+		shapes.add(`${prefix}:form=${side.form}`);
+		if (side.parts.length > 1) shapes.add(`${prefix}:compound`);
+	}
+	if (duration.range) shapes.add(`${prefix}:range`);
 }
 
 function walk(node: unknown, shapes: Set<string>, ctx: WalkContext): void {
@@ -54,6 +71,7 @@ function walk(node: unknown, shapes: Set<string>, ctx: WalkContext): void {
 		}
 		case "Timer":
 			shapes.add(`Timer:isPassive=${Boolean(record.isPassive)}`);
+			addDurationShapes(record.raw, "Timer", shapes);
 			break;
 		case "RelativeQuantity":
 			shapes.add(`RelativeQuantity:referenceType=${String(record.referenceType)}`);
@@ -61,9 +79,15 @@ function walk(node: unknown, shapes: Set<string>, ctx: WalkContext): void {
 		case "IntermediateDecl":
 			shapes.add(ctx.inStepScope ? "IntermediateDecl:step-level" : "IntermediateDecl:section-level");
 			break;
-		case "Section":
-			if (record.retroPlanning) shapes.add("Section:hasRetroPlanning");
+		case "Section": {
+			const anchor = record.retroPlanning as Record<string, unknown> | null | undefined;
+			if (anchor) {
+				shapes.add("Section:hasRetroPlanning");
+				if (typeof anchor.raw === "string")
+					addDurationShapes(anchor.raw.trim().replace(/^-/, ""), "Section:retroPlanning", shapes);
+			}
 			break;
+		}
 		default:
 			break;
 	}
