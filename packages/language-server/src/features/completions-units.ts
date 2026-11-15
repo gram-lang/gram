@@ -13,10 +13,18 @@ export function isInsideBraces(prefix: string): boolean {
 	return false;
 }
 
+/**
+ * True when the term the cursor is in starts with a number: the whole brace
+ * for `{200`, the term after the operator in a sum (`{1 cup + 2`,
+ * `{1 cup - 2`), so `{1 cup + ` waits for its number. A `-` between two
+ * numbers is a range (`{1-2`), not a new term.
+ */
 function hasNumberBeforeCursor(prefix: string): boolean {
 	const braceIdx = prefix.lastIndexOf("{");
 	if (braceIdx === -1) return false;
-	return /\d/.test(prefix.slice(braceIdx));
+	const inner = prefix.slice(braceIdx + 1);
+	const term = inner.split(/\+|(?<=[^\d\s.,/-])\s*-|\s-\s/).pop() ?? inner;
+	return /\d/.test(term);
 }
 
 /**

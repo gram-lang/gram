@@ -3,6 +3,7 @@ export interface FormatterChanges {
 	spacesBeforeBrace: number;
 	spacesInsideBraces: number;
 	trailingZeros: number;
+	quantityOperatorSpacing: number;
 	temperatureSpacing: number;
 	compositeSeparatorSpacing: number;
 	arrowDeclarationSpacing: number;
@@ -19,6 +20,7 @@ export function hasChanges(changes: FormatterChanges): boolean {
 		changes.spacesBeforeBrace > 0 ||
 		changes.spacesInsideBraces > 0 ||
 		changes.trailingZeros > 0 ||
+		changes.quantityOperatorSpacing > 0 ||
 		changes.temperatureSpacing > 0 ||
 		changes.compositeSeparatorSpacing > 0 ||
 		changes.arrowDeclarationSpacing > 0 ||
@@ -41,6 +43,8 @@ export function summarizeChanges(changes: FormatterChanges): string {
 		parts.push(`${p(changes.spacesInsideBraces, "brace")} interior trimmed`);
 	if (changes.trailingZeros > 0)
 		parts.push(`${p(changes.trailingZeros, "trailing zero")} removed`);
+	if (changes.quantityOperatorSpacing > 0)
+		parts.push(`${p(changes.quantityOperatorSpacing, "sum")} spacing fixed`);
 	if (changes.temperatureSpacing > 0)
 		parts.push(`${p(changes.temperatureSpacing, "temperature")} spacing fixed`);
 	if (changes.compositeSeparatorSpacing > 0)
@@ -105,6 +109,39 @@ function splitFrontmatter(source: string): {
 	return { frontmatter: "", body: source };
 }
 
+/** An operator between two terms of a sum, once spaced (` + `, ` - `). */
+const SUM_OPERATOR = / [+-] /;
+
+/** A term of a sum whose decimals end in zeros (`1.50 cup`, `2.0 tbsp`). */
+const TERM_TRAILING_ZEROS = /^(\d+)([.,])(\d*?)(0+)(\s*[\p{L}°%].*)?$/u;
+
+/**
+ * True when the brace at `offset` holds an ingredient's amount: the nearest
+ * sigil before it on its line is an `@` (an ingredient, a composite parent)
+ * or a `&` (a reference), not a `~` (a timer), a `^` (a temperature) or a
+ * `#` (cookware).
+ */
+function opensIngredientAmount(body: string, offset: number): boolean {
+	for (let i = offset - 1; i >= 0; i--) {
+		const c = body[i];
+		if (c === "\n" || c === "}" || c === "{") return false;
+		if (c === "@" || c === "&") return true;
+		if (c === "~" || c === "^" || c === "#") return false;
+	}
+	return false;
+}
+
+/**
+ * One space around each operator of a sum: a `+` between an amount and a
+ * number, a `-` only after a unit (`1 cup-2 tbsp`), never between two
+ * numbers, where it is a range (`1-2 cups`).
+ */
+function spaceSumOperators(inner: string): string {
+	return inner
+		.replace(/(?<=[\p{L}\d%.])\s*\+\s*(?=[\d\p{No}])/gu, " + ")
+		.replace(/(?<=[\p{L}%])\s*-\s*(?=[\d\p{No}])/gu, " - ");
+}
+
 /**
  * The CLI (`gram format`, 9 rules, whole-body regexes) and the
  * language server (`format on save`, ~6 rules, line-by-line) used to be two
@@ -123,6 +160,7 @@ export function formatGram(source: string): {
 		spacesBeforeBrace: 0,
 		spacesInsideBraces: 0,
 		trailingZeros: 0,
+		quantityOperatorSpacing: 0,
 		temperatureSpacing: 0,
 		compositeSeparatorSpacing: 0,
 		arrowDeclarationSpacing: 0,
@@ -183,6 +221,27 @@ export function formatGram(source: string): {
 			return `{${n}${sep}${digits}${u}}`;
 		},
 	);
+
+	// Rule 4b: A sum of quantities, in an ingredient's braces only (`@…{`,
+	// `<@…{`, `&…{`; never a timer's `~{1h30-2h}` nor a temperature's):
+	// one space around each operator, and rule 4 term by term.
+	body = body.replace(/\{([^{}\n]*)\}/g, (match, inner: string, offset) => {
+		if (!opensIngredientAmount(body, offset)) return match;
+		const spaced = spaceSumOperators(inner);
+		if (!SUM_OPERATOR.test(spaced)) return match;
+		if (spaced !== inner) changes.quantityOperatorSpacing++;
+		const terms = spaced.split(/( [+-] )/);
+		const trimmed = terms.map((term, i) => {
+			if (i % 2 === 1) return term;
+			const zeros = TERM_TRAILING_ZEROS.exec(term);
+			if (!zeros) return term;
+			const [, n, sep = "", digits = "", tail = "", unit = ""] = zeros;
+			if (looksLikeThousands(sep, digits + tail)) return term;
+			changes.trailingZeros++;
+			return digits ? `${n}${sep}${digits}${unit}` : `${n}${unit}`;
+		});
+		return `{${trimmed.join("")}}`;
+	});
 
 	// Rule 5: Remove space before ° in temperature quantities (handles multiple temps per brace)
 	body = body.replace(/\{([^}]*)\}/g, (_, inner) => {

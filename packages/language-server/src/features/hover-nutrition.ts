@@ -12,10 +12,21 @@ import {
 	lookupIngredient,
 	type IngredientEntry,
 } from "../ingredient-loader";
-import { normalizeUnit } from "@gram-lang/i18n";
-import { NUTRIENTS, standardizeMass } from "@gram-lang/analyzer";
-import { type QuantityAST, isQuantity } from "@gram-lang/parser";
-import { numericTotal, termsOfAst } from "@gram-lang/kitchen";
+import { formatTerms, normalizeUnit, termsTotal } from "@gram-lang/i18n";
+import { massOf, NUTRIENTS, standardizeMass } from "@gram-lang/analyzer";
+import {
+	type CompoundQuantityAST,
+	isCompoundQuantity,
+	isQuantity,
+	type QuantityAST,
+} from "@gram-lang/parser";
+import {
+	familyOf,
+	numericTotal,
+	readSum,
+	termsByFamily,
+	termsOfAst,
+} from "@gram-lang/kitchen";
 
 function buildConversionSection(
 	qty: QuantityAST,
@@ -46,6 +57,66 @@ function buildConversionSection(
 	return null;
 }
 
+/** What a family of amounts is called in a hover (`familyOf`). */
+function familyName(unit: string | null): string {
+	const family = familyOf(unit);
+	if (family === "mass") return "weight";
+	if (family === "volume") return "volume";
+	return unit ?? "count";
+}
+
+/**
+ * A sum of quantities (`{1 cup + 1 tbsp}`): what it adds up to (`17 tbsp`),
+ * or the kinds of amount it keeps apart (`1 cup + 20 g`: a volume and a
+ * weight), then what it weighs when every part can be weighed. Nothing for
+ * a sum Gram refuses: its warning says why.
+ */
+function buildSumSection(
+	node: CompoundQuantityAST,
+	entry: IngredientEntry | null,
+	db: IngredientDB,
+): string | null {
+	const sum = readSum(node, undefined);
+	if (sum.problems.length > 0 || sum.terms.length === 0) return null;
+	const written = formatTerms(sum.terms);
+	const lines: string[] = [];
+
+	const total = termsTotal(sum.terms);
+	if (total) {
+		lines.push(
+			`**Total**: ${written} = **${formatTerms([{ value: total.qty, unit: total.unit }])}**`,
+		);
+	} else {
+		const families = termsByFamily(sum.terms).map((group) =>
+			familyName(group[0]?.unit ?? null),
+		);
+		lines.push(
+			`**Total**: ${written} _(${families.join(" + ")}, counted apart)_`,
+		);
+	}
+
+	if (entry) {
+		const { known, unknown } = massOf(sum.terms, db, entry.name);
+		if (unknown.length === 0 && known.length > 0) {
+			const mass = known.reduce(
+				(acc, part) => acc + (part.term.minus ? -part.mass : part.mass),
+				0,
+			);
+			const exact = known.every((part) => part.method === "physical");
+			const density = known.some((part) => part.method === "density")
+				? entry.physical?.density
+				: undefined;
+			if (mass > 0) {
+				lines.push(
+					`**Conversion**: ${written} ${exact ? "=" : "≈"} **${Math.round(mass)} g**${density ? ` _(density: ${density} g/ml)_` : ""}`,
+				);
+			}
+		}
+	}
+
+	return lines.join("\n\n");
+}
+
 function buildNutritionSection(entry: IngredientEntry): string | null {
 	const n = entry.nutrition;
 	if (!n) return null;
@@ -74,7 +145,7 @@ export function provideNutritionHover(
 	position: Position,
 	db: IngredientDB,
 ): Hover | null {
-	if (!state.ast || Object.keys(db).length === 0) return null;
+	if (!state.ast) return null;
 
 	const offset = positionToOffset(state.lineStarts, position);
 	const ingredients = collectIngredients(state.ast);
@@ -83,19 +154,29 @@ export function provideNutritionHover(
 	);
 	if (!ingredient) return null;
 
-	const entry = lookupIngredient(ingredient.name, db);
-	if (!entry) return null;
+	const entry =
+		Object.keys(db).length > 0 ? lookupIngredient(ingredient.name, db) : null;
+	const sum = isCompoundQuantity(ingredient.quantity)
+		? buildSumSection(ingredient.quantity, entry ?? null, db)
+		: null;
+	// A sum shows its total even for an ingredient the database lacks.
+	if (!entry && !sum) return null;
 
-	const sections: string[] = [`**\`@${ingredient.name}\`** — _${entry.name}_`];
+	const sections: string[] = [
+		entry
+			? `**\`@${ingredient.name}\`** — _${entry.name}_`
+			: `**\`@${ingredient.name}\`**`,
+	];
 
-	const nutrition = buildNutritionSection(entry);
+	const nutrition = entry ? buildNutritionSection(entry) : null;
 	if (nutrition) sections.push(nutrition);
 
 	const qty = isQuantity(ingredient.quantity) ? ingredient.quantity : null;
-	if (qty?.unit) {
+	if (entry && qty?.unit) {
 		const conversion = buildConversionSection(qty, entry, qty.unit, db);
 		if (conversion) sections.push(conversion);
 	}
+	if (sum) sections.push(sum);
 
 	const contents: MarkupContent = {
 		kind: MarkupKind.Markdown,

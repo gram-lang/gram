@@ -1,4 +1,5 @@
 import { describe, it, expect } from "bun:test";
+import { getAST } from "@gram-lang/parser";
 import { formatGram, hasChanges, summarizeChanges } from "../src/index";
 
 const emptyChanges = {
@@ -6,6 +7,7 @@ const emptyChanges = {
 	spacesBeforeBrace: 0,
 	spacesInsideBraces: 0,
 	trailingZeros: 0,
+	quantityOperatorSpacing: 0,
 	temperatureSpacing: 0,
 	compositeSeparatorSpacing: 0,
 	arrowDeclarationSpacing: 0,
@@ -290,5 +292,103 @@ describe("summarizeChanges", () => {
 		expect(summary).toContain("1 declaration spacing fixed");
 		expect(summary).toContain("2 headers spacing normalized");
 		expect(summary).toContain("3 tabs converted to spaces");
+	});
+});
+
+describe("formatGram and sums of quantities", () => {
+	const format = (step: string) => formatGram(`${step}\n`);
+
+	it("puts one space around each operator of an ingredient's sum", () => {
+		const { content, changes } = format(
+			"Add @flour{1cup+1tbsp}, @sugar{1 cup-2 tbsp} and &dough{1 kg  +200 g}.",
+		);
+		expect(content).toBe(
+			"Add @flour{1cup + 1tbsp}, @sugar{1 cup - 2 tbsp} and &dough{1 kg + 200 g}.\n",
+		);
+		expect(changes.quantityOperatorSpacing).toBe(3);
+		expect(summarizeChanges(changes)).toContain("3 sums spacing fixed");
+	});
+
+	it("spaces a composite parent's sum too", () => {
+		expect(format("Juice @juice{100 ml}<@oranges{1 lb+4 oz}.").content).toBe(
+			"Juice @juice{100 ml}<@oranges{1 lb + 4 oz}.\n",
+		);
+	});
+
+	it("never takes a range for a sum", () => {
+		for (const step of [
+			"Add @apples{1-2 cups}.",
+			"Add @flour{1 cup + 1-2 tbsp}.",
+			"Add @water{1.5-2l}.",
+		]) {
+			const { content, changes } = format(step);
+			expect(content).toBe(`${step}\n`);
+			expect(changes.quantityOperatorSpacing).toBe(0);
+		}
+	});
+
+	it("leaves timers and temperatures alone", () => {
+		for (const step of [
+			"Bake ~{1h30-2h}.",
+			"Rest ~dough{45min-1h}.",
+			"Heat to ^{180°C+20°C}.",
+		]) {
+			expect(format(step).content).toBe(`${step}\n`);
+		}
+	});
+
+	it("removes trailing zeros term by term, not a thousands comma", () => {
+		const { content, changes } = format(
+			"Add @flour{1.50 cup + 2.0 tbsp} and @sugar{1,000 g + 1 kg}.",
+		);
+		expect(content).toBe(
+			"Add @flour{1.5 cup + 2 tbsp} and @sugar{1,000 g + 1 kg}.\n",
+		);
+		expect(changes.trailingZeros).toBe(2);
+	});
+
+	it("is idempotent", () => {
+		const first = format(
+			"Add @flour{1.50cup+2.0 tbsp} and @sugar{1 cup -2 tbsp}.",
+		);
+		const second = formatGram(first.content);
+		expect(second.content).toBe(first.content);
+		expect(hasChanges(second.changes)).toBe(false);
+	});
+
+	it("keeps the sum the parser reads, terms and signs", () => {
+		const source =
+			"## Section\n\nAdd @flour{1cup+1tbsp} and @sugar{1 cup-2 tbsp}.\n";
+		const quantities = (text: string) => {
+			const found: unknown[] = [];
+			const walk = (node: unknown): void => {
+				if (!node || typeof node !== "object") return;
+				if (Array.isArray(node)) {
+					node.forEach(walk);
+					return;
+				}
+				const record = node as Record<string, unknown>;
+				if (record.type === "CompoundQuantity") {
+					const terms = record.terms as {
+						minus?: boolean;
+						value: { value: number } | null;
+						unit: string | null;
+					}[];
+					found.push(
+						terms.map((t) => ({
+							minus: t.minus ?? false,
+							value: t.value?.value,
+							unit: t.unit,
+						})),
+					);
+				}
+				Object.values(record).forEach(walk);
+			};
+			walk(getAST(text));
+			return found;
+		};
+		const before = quantities(source);
+		expect(before).toHaveLength(2);
+		expect(quantities(formatGram(source).content)).toEqual(before);
 	});
 });

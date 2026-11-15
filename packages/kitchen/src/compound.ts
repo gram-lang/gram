@@ -64,15 +64,26 @@ const MULTIPLICATION = /^[x×*](?:\s|\d|$)/i;
  * its 400 g describes the tin, so scaling the number of tins stays right.
  */
 export function looksLikeTwoQuantities(unit: string): boolean {
+	return splitTwoQuantities(unit) !== null;
+}
+
+/**
+ * The two quantities a unit reads as (`looksLikeTwoQuantities`): `cup 5 tbsp`
+ * is `["cup", "5 tbsp"]`, what to write as `cup + 5 tbsp`. `null` when the
+ * unit is not two quantities.
+ */
+export function splitTwoQuantities(unit: string): [string, string] | null {
 	const words = unit.trim().split(/\s+/);
 	for (let i = 1; i < words.length; i++) {
 		const number = words[i]?.match(/^\d+(?:[.,/]\d+)?(.*)$/);
 		if (!number) continue;
 		const first = words.slice(0, i).join(" ");
 		const second = [number[1], ...words.slice(i + 1)].join(" ").trim();
-		if (second && isMeasureUnit(first) && isMeasureUnit(second)) return true;
+		if (second && isMeasureUnit(first) && isMeasureUnit(second)) {
+			return [first, words.slice(i).join(" ")];
+		}
 	}
-	return false;
+	return null;
 }
 
 /** Reads a sum: its terms and what is wrong with it (see `SumReading`). */

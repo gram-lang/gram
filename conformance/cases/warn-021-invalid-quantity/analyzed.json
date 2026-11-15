@@ -627,6 +627,10 @@
       "loc": {
         "start": 327,
         "end": 336
+      },
+      "data": {
+        "reason": "twoQuantities",
+        "suggestion": "lb + 4 oz"
       }
     },
     {

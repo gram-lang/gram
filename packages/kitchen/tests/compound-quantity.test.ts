@@ -185,6 +185,20 @@ describe("notes on a sum Gram reads", () => {
 	it("reads each term for two quantities in one unit", () => {
 		const [warning] = warnings("@beef{1 lb 4 oz + 2 oz}.", "INVALID_UNIT");
 		expect(warning?.message).toContain("lb 4 oz");
+		expect(warning?.data).toEqual({
+			reason: "twoQuantities",
+			suggestion: "lb + 4 oz",
+		});
+	});
+
+	it("carries the sum to write for two quantities in one unit, outside a sum too", () => {
+		const [warning] = warnings("@milk{1 cup 5 tbsp}.", "INVALID_UNIT");
+		expect(warning?.data).toEqual({
+			reason: "twoQuantities",
+			suggestion: "cup + 5 tbsp",
+		});
+		const [hidden] = warnings("@flour{about 200g}.", "INVALID_UNIT");
+		expect(hidden?.data).toEqual({ reason: "hiddenQuantity" });
 	});
 
 	it("reads each term for an ambiguous comma", () => {

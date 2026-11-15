@@ -1,5 +1,5 @@
 import type { Location } from "@gram-lang/parser";
-import type { InvalidQuantityReason } from "./compound";
+import { type InvalidQuantityReason, splitTwoQuantities } from "./compound";
 import type { InvalidDurationReason } from "./durations";
 
 export enum WarningCode {
@@ -333,13 +333,23 @@ export interface Warning {
  * not listed carries none: its compiled JSON stays as it was.
  */
 const warningData: {
-	[K in WarningCode]?: (payload: WarningPayloads[K]) => Record<string, unknown>;
+	[K in WarningCode]?: (
+		payload: WarningPayloads[K],
+	) => Record<string, unknown> | undefined;
 } = {
 	[WarningCode.INVALID_QUANTITY]: (p) =>
 		p.suggestion !== undefined
 			? { reason: p.reason, suggestion: p.suggestion }
 			: { reason: p.reason },
 	[WarningCode.OZ_AFTER_VOLUME]: (p) => ({ suggestion: p.suggestion }),
+	[WarningCode.INVALID_UNIT]: (p) => {
+		if (p.type !== "Ingredient" || !p.reason) return undefined;
+		const parts =
+			p.reason === "twoQuantities" ? splitTwoQuantities(p.value) : null;
+		return parts
+			? { reason: p.reason, suggestion: parts.join(" + ") }
+			: { reason: p.reason };
+	},
 };
 
 export type WarningSeverity = "error" | "warning" | "info";

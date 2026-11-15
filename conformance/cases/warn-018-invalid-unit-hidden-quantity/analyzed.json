@@ -91,6 +91,9 @@
       "loc": {
         "start": 18,
         "end": 39
+      },
+      "data": {
+        "reason": "hiddenQuantity"
       }
     }
   ],
