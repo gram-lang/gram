@@ -203,7 +203,7 @@
         {
           "id": "butter",
           "_usageId": "5",
-          "unit": "1 cup + 30 g - 2 tbsp",
+          "unit": "1 cup - 2 tbsp + 30 g",
           "parts": [
             {
               "qty": 1,
@@ -311,7 +311,7 @@
             {
               "id": "butter",
               "_usageId": "5",
-              "unit": "1 cup + 30 g - 2 tbsp",
+              "unit": "1 cup - 2 tbsp + 30 g",
               "parts": [
                 {
                   "qty": 1,

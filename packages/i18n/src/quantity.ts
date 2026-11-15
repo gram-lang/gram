@@ -15,8 +15,28 @@ import {
 	sameLadder,
 	toLargerMetricUnit,
 	UNIT_CONVERSIONS,
+	UNIT_DICTIONARIES,
 	unitSpelling,
 } from "./units";
+
+/**
+ * True when a written unit is spelled the way the reader's language spells it
+ * and English does not (`càs`, `cuillère à soupe` in French): a unit Gram
+ * brings in then takes the reader's spelling (`càc`). Otherwise (`cup`,
+ * `tbsp`, `tablespoons`) it takes Gram's own (`tsp`), never a mix of both.
+ */
+function localSpelling(unit: string | null, lang?: string): boolean {
+	const base = lang?.toLowerCase().split("-")[0];
+	if (!unit || !base || base === "en") return false;
+	const local = (UNIT_DICTIONARIES as Record<string, Record<string, string[]>>)[
+		base
+	];
+	if (!local) return false;
+	const written = unit.toLowerCase().trim();
+	const isIn = (dict: Record<string, string[]>) =>
+		Object.values(dict).some((aliases) => aliases.includes(written));
+	return isIn(local) && !isIn(UNIT_DICTIONARIES.en);
+}
 
 /**
  * A numeric value as the compiled recipe stores it: a plain number, or the
@@ -645,7 +665,10 @@ function computedGroup(
 	for (const t of group) if (size(t) > size(cap)) cap = t;
 	const capUnit = canonical(cap);
 	const spell = (unit: string): string =>
-		group.find((t) => canonical(t) === unit)?.unit ?? unitSpelling(unit, lang);
+		group.find((t) => canonical(t) === unit)?.unit ??
+		(group.some((t) => localSpelling(t.unit, lang))
+			? unitSpelling(unit, lang)
+			: unit);
 	const write = (value: number, unit: string): string =>
 		`${w.number(value, unit)} ${unit}`;
 	const span = (min: string, max: string, unit: string): string =>
@@ -700,21 +723,41 @@ function computedGroup(
 	}
 	if (!buying && measuredAsTheyAre(group, canonical, steps)) return asWritten();
 
-	const a = decompose(total.min, from, steps);
+	let a = decompose(total.min, from, steps);
 	let b = decompose(total.max, from, steps);
-	// A range keeps the shape of its low bound when the high one fits it
-	// (`2 cup + 2-4 tbsp`, not `2 cup + 2 tbsp – 2 1/4 cup`).
-	const lastLow = a[a.length - 1];
-	if (lastLow && total.max !== total.min) {
-		const prefix = a.slice(0, -1);
-		const used = prefix.reduce(
-			(n, p) => n + p.value * (steps[p.unit] as number),
-			0,
-		);
-		const rest = (total.max - used) / (steps[lastLow.unit] as number);
-		const fits = measured(rest, lastLow.unit);
-		if (fits !== undefined)
-			b = [...prefix, { value: fits, unit: lastLow.unit }];
+	// A range shares what both bounds have in common and puts the spread on
+	// one term (`2 cup + 2-4 tbsp`, not `2 cup + 2 tbsp – 2 1/4 cup`): the
+	// most precise term where both bounds are amounts its unit measures and
+	// the high one stays below the unit above (`1 cup + 3 1/2-5 tbsp`, never
+	// `1 cup + 3 tbsp + 1 3/4-6 1/4 tsp`).
+	if (total.max !== total.min) {
+		for (let cut = a.length - 1; cut >= 0; cut--) {
+			const prefix = a.slice(0, cut);
+			const unit = (a[cut] as { unit: string }).unit;
+			const size = steps[unit] as number;
+			const used = prefix.reduce(
+				(n, p) => n + p.value * (steps[p.unit] as number),
+				0,
+			);
+			// A scaled amount may be rounded to what the unit measures, as its
+			// last term is (`decompose`); an exact one must fall on it.
+			const fit = (value: number) =>
+				options.rounding === false
+					? measured(value, unit)
+					: value > 0
+						? nearestMeasured(value, unit)
+						: undefined;
+			const lo = fit((total.min - used) / size);
+			const hi = fit((total.max - used) / size);
+			const above =
+				cut > 0
+					? (steps[(prefix[cut - 1] as { unit: string }).unit] as number)
+					: Infinity;
+			if (lo === undefined || hi === undefined || hi * size >= above) continue;
+			a = [...prefix, { value: lo, unit }];
+			b = [...prefix, { value: hi, unit }];
+			break;
+		}
 	}
 	if (
 		options.rounding === false &&
@@ -769,8 +812,9 @@ function computedNumber(lang?: string) {
 }
 
 /**
- * The terms as text, terms added first (`1 cup + 1 tbsp`, `1 cup − 2 tbsp`).
- * A list that starts with a term taken away still writes it after the others.
+ * The terms as text, in their written order (`1 cup + 1 tbsp`,
+ * `1 cup − 2 tbsp + 30 g`); a list that would start with a term taken away
+ * writes the terms added first (`1 cup − 2 tbsp`, never `−2 tbsp + 1 cup`).
  *
  * `"written"` mode (the default) writes each term as the author wrote it.
  * `"computed"` mode writes an amount Gram worked out, ladder by ladder (two
@@ -802,12 +846,16 @@ export function formatTerms(
 			(computed ? computedNumber(options.lang) : RAW_WRITER.number),
 		text: options.text ?? RAW_WRITER.text,
 	};
+	// The written order is kept (`1 cup − 2 tbsp + 30 g`: the 2 tbsp come off
+	// the cup); terms added are only moved first when the amount would start
+	// with a term taken away (`−2 tbsp + 1 cup`).
+	const source = terms[0]?.minus ? addedFirst(terms) : terms;
 	const pieces: Piece[] = computed
-		? groupTerms(addedFirst(terms), "ladder").flatMap((group) =>
+		? groupTerms(source, "ladder").flatMap((group) =>
 				computedGroup(group, w, options),
 			)
-		: terms.map((term) => ({ text: writeTerm(term, w), minus: term.minus }));
-	return addedFirst(pieces)
+		: source.map((term) => ({ text: writeTerm(term, w), minus: term.minus }));
+	return (pieces[0]?.minus ? addedFirst(pieces) : pieces)
 		.map((piece, i) => {
 			if (i === 0)
 				return piece.minus ? `${minus.trimStart()}${piece.text}` : piece.text;
