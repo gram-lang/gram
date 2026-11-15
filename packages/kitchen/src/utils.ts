@@ -115,9 +115,11 @@ export const createCleanUsage = (
 			cleanQty = qtyNode.value;
 		} else if (qtyNode.type === ASTNodeType.Quantity) {
 			cleanQty = minifyQuantity(qtyNode.value || qtyNode);
-		} else {
+		} else if (qtyNode.type === ASTNodeType.RelativeQuantity) {
 			cleanQty = minifyQuantity(qtyNode);
 		}
+		// TODO(1.5): a sum of quantities (CompoundQuantity) is not compiled
+		// yet; it will be, from its terms (`termsOfAst`).
 	}
 
 	if (cleanQty !== undefined) obj.qty = cleanQty;
@@ -171,9 +173,13 @@ export const createCleanUsage = (
 		const comp: UsageComposite = { parent: item.composite.parent };
 		if (item.composite.quantity) {
 			const compQty = item.composite.quantity;
-			const minified = minifyQuantity(compQty);
-			if (minified !== undefined) comp.quantity = minified;
-			if (compQty.unit) comp.unit = compQty.unit;
+			// TODO(1.5): compile a sum of quantities (CompoundQuantity).
+			if (compQty.type !== ASTNodeType.CompoundQuantity) {
+				const minified = minifyQuantity(compQty);
+				if (minified !== undefined) comp.quantity = minified;
+				if (compQty.type === ASTNodeType.Quantity && compQty.unit)
+					comp.unit = compQty.unit;
+			}
 		}
 		if (item.composite.preparation)
 			comp.preparation = item.composite.preparation;

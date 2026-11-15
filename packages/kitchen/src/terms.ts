@@ -6,6 +6,7 @@
  */
 import {
 	ASTNodeType,
+	type CompoundQuantityAST,
 	type QuantityAST,
 	type RelativeQuantityAST,
 	type TextQuantityAST,
@@ -50,13 +51,33 @@ export function termsOfUsage(usage: QuantityHolder | null | undefined): Term[] {
 
 /**
  * The terms of a quantity node of the AST, read like `termsOfUsage` reads a
- * usage. The values keep their AST shape (`{ type: "single", … }`), so terms
- * scaled here can be written back into the node.
+ * usage: one per term of a sum (`{1 cup - 2 tbsp}`), in the order written.
+ * The values keep their AST shape (`{ type: "single", … }`), so terms scaled
+ * here can be written back into the node.
  */
 export function termsOfAst(
-	node: QuantityAST | RelativeQuantityAST | TextQuantityAST | null | undefined,
+	node:
+		| QuantityAST
+		| CompoundQuantityAST
+		| RelativeQuantityAST
+		| TextQuantityAST
+		| null
+		| undefined,
 ): Term[] {
-	if (!node || node.type !== ASTNodeType.Quantity) return [];
+	if (!node) return [];
+	if (node.type === ASTNodeType.CompoundQuantity) {
+		// A term with no value (`1/0`) is left out, as a quantity with none is.
+		return node.terms.flatMap((term) =>
+			isTermValue(term.value)
+				? [
+						term.minus
+							? { value: term.value, unit: term.unit, minus: true }
+							: { value: term.value, unit: term.unit },
+					]
+				: [],
+		);
+	}
+	if (node.type !== ASTNodeType.Quantity) return [];
 	return termsOfQuantity(node.value, node.unit);
 }
 

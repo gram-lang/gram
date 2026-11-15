@@ -12,6 +12,7 @@ import {
 	type StepAST,
 	type SectionAST,
 	type QuantityAST,
+	type CompoundQuantityAST,
 	type TextQuantityAST,
 	type RelativeQuantityAST,
 	type ImportDecl,
@@ -81,6 +82,7 @@ export function isImportDecl(
 
 type QuantityValueNode =
 	| QuantityAST
+	| CompoundQuantityAST
 	| RelativeQuantityAST
 	| TextQuantityAST
 	| null
@@ -88,6 +90,13 @@ type QuantityValueNode =
 
 export function isQuantity(node: QuantityValueNode): node is QuantityAST {
 	return node != null && node.type === ASTNodeType.Quantity;
+}
+
+/** A sum of quantities, `{1 cup + 1 tbsp}`. Since 1.5.0. */
+export function isCompoundQuantity(
+	node: QuantityValueNode,
+): node is CompoundQuantityAST {
+	return node != null && node.type === ASTNodeType.CompoundQuantity;
 }
 
 export function isTextQuantity(

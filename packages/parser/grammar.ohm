@@ -113,17 +113,32 @@ GRAM {
   // Rule: Quantity is mandatory unless it's a single word name
   // Uses refName (not name) so a bare @&chicken mention can't have its name
   // greedily swallow everything up to an unrelated later {...} that happens
-  // to close a valid ingredientQuantity -- e.g. "@&chicken for ~{3min}" must
+  // to close a valid ingredientAmount -- e.g. "@&chicken for ~{3min}" must
   // stop at "~" and fall back to the bare alternative, not consume "chicken
   // for ~" as a bogus multi-word name with the timer's quantity attached.
   simpleIngredient =
-    | "@" modifier* refName alias? ingredientQuantity preparation? composite? -- full
+    | "@" modifier* refName alias? ingredientAmount preparation? composite? -- full
     | "@" modifier* refName alias? malformedBraces -- malformed
     | "@" modifier* singleWordName alias? preparation? composite? -- bare
 
   modifier = "?" | "-" | "*" | "&" | "="
   alias = ":" refName
   ingredientQuantity = "{" space* (relativeQuantity | absoluteQuantity) space* "}"
+  // The amount of an ingredient, a composite parent or a reference: an
+  // ingredientQuantity, or a sum of quantities (`{1 cup + 1 tbsp}`,
+  // `{1 cup - 2 tbsp}`). Since 1.5.0. Timers and temperatures keep
+  // ingredientQuantity. PEG order matters: a choice that matches a prefix is
+  // final, so a plain quantity is only taken when the braces close right
+  // after it (`&`), otherwise it would take `1 cup` from `{1 cup + 1 tbsp}`
+  // and fail on the `+`. Tried before the sum, it also keeps its range
+  // (`{1 - 2 cup}` is one range, not 1 minus 2 cups) and its AST.
+  ingredientAmount = "{" space* (relativeQuantity | closedQuantity | compoundQuantity) space* "}"
+  closedQuantity = absoluteQuantity &(space* "}")
+  compoundQuantity = quantityTerm (space* compoundOp space* quantityTerm)+
+  // The unit is optional so `{1 + 1 cup}` reaches the compiler, which says
+  // what is wrong with it, instead of failing as a syntax error.
+  quantityTerm = (range | number) (space* unit)?
+  compoundOp = "+" | "-"
   relativeQuantity = number space* "%" space* ("@&" | "&") space* name
   absoluteQuantity = (range | number)? space* (unit space*)?
   textQuantity = "{" space* (~"}" any)+ space* "}"
@@ -153,7 +168,7 @@ GRAM {
   // ignored (see composite_full/composite_bare): "&" is redundant on a parent
   // because the MAX rule already collapses repeat draws into one purchase.
   composite =
-    | "<@" modifier* refName ingredientQuantity preparation? -- full
+    | "<@" modifier* refName ingredientAmount preparation? -- full
     | "<@" modifier* refName malformedBraces                 -- malformed
     | "<@" modifier* singleWordName preparation?             -- bare
 
@@ -220,7 +235,7 @@ GRAM {
   text = space* (~(elementStart | nl | "|") any)+
 
   Reference =
-    | "&" refName ingredientQuantity -- full
+    | "&" refName ingredientAmount -- full
     | "&" refName malformedBraces    -- malformed
     | "&" singleWordName             -- bare
 
