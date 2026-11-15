@@ -657,6 +657,8 @@
 		font-size: 0.8rem;
 		font-weight: 700;
 		white-space: nowrap;
+		/* A mono space is a whole character wide: `1 h 30 min` stays compact. */
+		word-spacing: -0.3em;
 	}
 
 	.step-content .temp {

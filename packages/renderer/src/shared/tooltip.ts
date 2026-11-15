@@ -8,7 +8,11 @@
  * - Ingredient & cookware cross-highlighting between shopping list, kits and steps.
  * - Step completion toggling by clicking on step numbers.
  * - Shopping list one-click copy with clipboard integration and visual feedback.
+ * - One layout per list: every amount under its name once one does not fit
+ *   (`watchListStacking`).
  */
+
+import { watchListStacking } from "./kit-stacking";
 
 export function attachTooltips(container?: HTMLElement | Document): () => void {
 	if (typeof document === "undefined" || typeof window === "undefined") {
@@ -515,8 +519,10 @@ export function attachTooltips(container?: HTMLElement | Document): () => void {
 	targetContainer.addEventListener("click", handleClick as EventListener, true);
 	window.addEventListener("scroll", onScroll, { passive: true });
 	window.addEventListener("resize", onScroll, { passive: true });
+	const stopStacking = watchListStacking(targetContainer);
 
 	return () => {
+		stopStacking();
 		targetContainer.removeEventListener(
 			"pointerover",
 			onPointerOver as EventListener,
@@ -825,4 +831,5 @@ export const TOOLTIP_SCRIPT = `(function() {
   }, true);
   window.addEventListener('scroll', function() { if (active) update(active); }, { passive: true });
   window.addEventListener('resize', function() { if (active) update(active); }, { passive: true });
+  (${watchListStacking.toString()})(document);
 })();`;

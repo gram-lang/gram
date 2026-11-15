@@ -96,6 +96,23 @@ type KitItem = {
 };
 
 /**
+ * An amount in a list line: each term unbreakable (`1 1/2 cup`), a line break
+ * allowed only between terms, so a long amount (`1 1/2 cup + 1 1/2-3 tbsp`)
+ * wraps in a narrow column instead of running under the name.
+ */
+function amountHtml(text: string): string {
+	const parts = text.split(/ ([+−–]) /);
+	if (parts.length === 1) return escapeHtml(text);
+	return parts
+		.map((part, i) =>
+			i % 2 === 1
+				? ` ${escapeHtml(part)} `
+				: `<span class="kit-term">${escapeHtml(part)}</span>`,
+		)
+		.join("");
+}
+
+/**
  * The quantity column of a kit line: the written quantity when it differs
  * from the standardized mass, the mass itself (or the written quantity when
  * there is no mass), then the baker's percentage and the gross mass.
@@ -146,15 +163,15 @@ function kitQtyHtml(
 		? undefined
 		: item.normalizedMass;
 	if (mass && shown && (round1(mass) !== qty || extra.length > 0)) {
-		html += `<span class="kit-orig">${escapeHtml(shown)}</span>`;
+		html += `<span class="kit-orig">${amountHtml(shown)}</span>`;
 	}
 	if (mass) {
 		const isEst = item.isEstimate ? "~" : "";
 		html += `<span class="kit-mass">${isEst}${escapeHtml(grams(mass))}</span>`;
 	} else if (extra.length > 0 && !isCookware) {
-		html += `<span class="kit-mass">${escapeHtml(shown)}</span>`;
+		html += `<span class="kit-mass">${amountHtml(shown)}</span>`;
 	} else if (shown && !isCookware && (item.unit || showBareCount)) {
-		html += `<span class="kit-mass">${escapeHtml(shown)}</span>`;
+		html += `<span class="kit-mass">${amountHtml(shown)}</span>`;
 	}
 	if (!withBadges) return html;
 	if (item.bakersPercentage !== undefined) {
@@ -392,7 +409,7 @@ function renderKitCompositeItem(
 			? formatUsageQuantity(item, quantityContext(context))
 			: "";
 	const qtyContent = amount
-		? `<span class="kit-mass">${escapeHtml(amount)}</span>`
+		? `<span class="kit-mass">${amountHtml(amount)}</span>`
 		: "";
 
 	// No `list-item-group` here: the parent row lays out like any other line
@@ -542,7 +559,8 @@ function renderKitMixedUnitsItem(
 	if (!first) return "";
 	const name = first.name || first.id || "";
 	let html = `        <li class="kit-ingredient list-item-group"><label><input type="checkbox"><span>`;
-	html += `<span class="kit-name-col"><span class="kit-name">${escapeHtml(name)}</span> <span class="mixed-units-badge" data-tooltip="${escapeHtml(t.renderer.mixedUnitsTooltip)}">⚠️ ${escapeHtml(t.renderer.mixedUnits)}</span></span>`;
+	const warningIcon = options.icons?.warning ?? DEFAULT_ICONS.html.warning;
+	html += `<span class="kit-name-col"><span class="kit-name">${escapeHtml(name)}</span> <span class="mixed-units-badge" data-tooltip="${escapeHtml(t.renderer.mixedUnitsTooltip)}">${warningIcon}<span class="mixed-units-label">${escapeHtml(t.renderer.mixedUnits)}</span></span></span>`;
 	html += `</span></label>`;
 	html += `          <ul class="kit-list sub-kit-list">\n`;
 	group.forEach((entry) => {
