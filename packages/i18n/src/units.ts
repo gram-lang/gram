@@ -167,6 +167,91 @@ export const UNIT_CONVERSIONS: { mass: UnitMap; volume: UnitMap } = {
 };
 
 /**
+ * A run of units of one measuring system whose sizes are exact whole-number
+ * multiples of each other: what a cook can add up without rounding
+ * (`1 cup + 1 tbsp` = `17 tbsp`). Each step is the unit's size counted in the
+ * ladder's smallest unit (1 cup = 48 tsp).
+ *
+ * `UNIT_CONVERSIONS` says how much a unit weighs or holds in grams or
+ * milliliters, with its factors rounded (`cup: 236.588`); a ladder only says
+ * how units of one system relate, exactly. The two agree to 0.01%
+ * (`units-ladders.test.ts`).
+ */
+export interface UnitLadder {
+	id: "usVolume" | "imperialMass" | "metricMass" | "metricVolume";
+	family: keyof typeof UNIT_CONVERSIONS;
+	/** Canonical unit → its size in the ladder's smallest unit. */
+	steps: Readonly<Record<string, number>>;
+}
+
+export const UNIT_LADDERS: readonly UnitLadder[] = [
+	{
+		id: "usVolume",
+		family: "volume",
+		steps: { tsp: 1, tbsp: 3, "fl oz": 6, cup: 48, pt: 96, qt: 192, gal: 768 },
+	},
+	{ id: "imperialMass", family: "mass", steps: { oz: 1, lb: 16 } },
+	{
+		id: "metricMass",
+		family: "mass",
+		// The French "livre" is the metric pound: exactly 500 g.
+		steps: { mg: 1, g: 1000, livre: 500_000, kg: 1_000_000 },
+	},
+	{
+		id: "metricVolume",
+		family: "volume",
+		// The French "tasse" holds exactly 250 ml.
+		steps: { ml: 1, cl: 10, dl: 100, tasse: 250, l: 1000 },
+	},
+];
+
+/** Where a unit stands on its ladder. */
+export interface LadderStep {
+	ladder: UnitLadder;
+	/** The canonical unit (`cup` for `cups`, `tbsp` for `càs`). */
+	unit: string;
+	/** Its size in the ladder's smallest unit. */
+	size: number;
+}
+
+/**
+ * The ladder a unit belongs to (any spelling: `cups`, `càs`, `kilo`), or
+ * `null` for a unit on no ladder (`pinch`, `gousse`, no unit at all).
+ */
+export function ladderOf(
+	rawUnit: string | undefined | null,
+	lang?: string,
+): LadderStep | null {
+	const unit = normalizeUnit(rawUnit, lang);
+	if (!unit) return null;
+	for (const ladder of UNIT_LADDERS) {
+		const size = ladder.steps[unit];
+		if (size !== undefined) return { ladder, unit, size };
+	}
+	return null;
+}
+
+/**
+ * True when every unit stands on one same ladder (`cup`, `tbsp`, `tsp`), so
+ * their amounts add up exactly. False for no unit at all, for a unit on no
+ * ladder, and across systems (`cup` and `ml`, `oz` and `g`).
+ */
+export function sameLadder(
+	rawUnits: readonly (string | undefined | null)[],
+	lang?: string,
+): boolean {
+	if (rawUnits.length === 0) return false;
+	let id: UnitLadder["id"] | undefined;
+	for (const raw of rawUnits) {
+		const step = ladderOf(raw, lang);
+		if (!step) return false;
+		if (id !== undefined && step.ladder.id !== id) return false;
+		id = step.ladder.id;
+	}
+	return true;
+}
+
+/**
  * Normalizes a raw string unit into a standard canon unit.
  * Examples: 'càs' -> 'tbsp', 'kilo' -> 'kg'.
  */
