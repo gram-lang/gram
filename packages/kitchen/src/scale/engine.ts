@@ -1,5 +1,6 @@
 import { normalizeUnit } from "@gram-lang/i18n";
 import { slugify, scaleQty, round2 } from "../utils";
+import { scaleUsageTerms, termsOfQuantity, termsOfUsage } from "../terms";
 import type { CompilationResult, Usage } from "../types";
 import type { ShoppingListItem, CompositeItem } from "../shopping";
 import {
@@ -186,19 +187,23 @@ function mutateUsage(
 	// guard it would be scaled twice (factor²) here.
 	const usage = item as Partial<Usage>;
 	if (usage.fixed) return; // @= modifier or TextQuantity — never scaled
-	if ("qty" in usage && usage.qty !== undefined) {
-		usage.qty = scaleQty(usage.qty, factor);
-	}
+	// Text (`{une pincée}`) and relative (`{10%}`) quantities have no terms:
+	// they are never scaled.
+	const total = scaleUsageTerms(termsOfUsage(usage), factor);
+	if (total) usage.qty = total.qty;
 	// A composite child's own record of how much of the parent it draws
 	// (`@egg-yolks{2}<@eggs{3}` -> composite.quantity 3) is a separate field
 	// from `.qty` — the shopping list's own aggregated composite total is
 	// scaled independently, further down, but this per-section copy wasn't.
 	const composite = usage.composite;
-	if (composite && composite.quantity !== undefined) {
-		composite.quantity = scaleQty(
-			composite.quantity,
+	if (composite) {
+		const parentTotal = scaleUsageTerms(
+			termsOfQuantity(composite.quantity, composite.unit),
 			factor,
-		) as typeof composite.quantity;
+		);
+		if (parentTotal) {
+			composite.quantity = parentTotal.qty as typeof composite.quantity;
+		}
 	}
 	scaled.add(item);
 }

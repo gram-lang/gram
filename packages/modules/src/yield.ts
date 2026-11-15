@@ -5,8 +5,9 @@ import {
 	type ImportDecl,
 } from "@gram-lang/parser";
 import {
-	getNumericQty,
+	numericTotal,
 	round2,
+	termsOfAst,
 	forEachStep,
 	type Warning,
 } from "@gram-lang/kitchen";
@@ -137,7 +138,7 @@ function collectReferenceQuantities(
 		if (ref.name !== name) return;
 		const q = ref.quantity;
 		if (!q || q.type !== ASTNodeType.Quantity) return;
-		const value = getNumericQty(q.value);
+		const value = numericTotal(termsOfAst(q));
 		if (value === null) return;
 		requests.push({ value, unit: q.unit ?? null });
 	}

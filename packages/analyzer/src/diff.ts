@@ -9,7 +9,12 @@ import type {
 	CompositeItem,
 } from "@gram-lang/kitchen";
 import { normalizeUnit } from "@gram-lang/i18n";
-import { getNumericQty, scheduleFor, scheduleTimes } from "@gram-lang/kitchen";
+import {
+	numericTotal,
+	scheduleFor,
+	scheduleTimes,
+	termsOfUsage,
+} from "@gram-lang/kitchen";
 
 // Structural, analyzer-local shapes for the module-composition metadata a
 // `CompilationResult` may carry when it actually came from
@@ -197,7 +202,7 @@ function flattenShoppingItems(items: ShoppingItem[]): SimpleShoppingItem[] {
 }
 
 const numericQty = (item: ShoppingItem): number | null =>
-	getNumericQty(item.qty);
+	numericTotal(termsOfUsage(item));
 
 function fmtTimerQty(
 	qty: ProcessedTimer["quantity"],

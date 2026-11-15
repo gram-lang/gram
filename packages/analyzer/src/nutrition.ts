@@ -1,5 +1,6 @@
 import {
-	getNumericQty,
+	numericTotal,
+	termsOfUsage,
 	WarningCode,
 	pushWarning,
 	type Warning,
@@ -116,7 +117,7 @@ export function calculateNutrition(
 			mass = item.normalizedMass;
 			if (item.isEstimate) isEst = true;
 		} else if (item.qty) {
-			const val = getNumericQty(item.qty);
+			const val = numericTotal(termsOfUsage(item));
 			if (val !== null) {
 				const unit = item.unit || "unit";
 

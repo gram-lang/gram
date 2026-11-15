@@ -7,6 +7,7 @@ export * from "./registry";
 export * from "./warnings";
 export * from "./types";
 export * from "./section";
+export * from "./terms";
 export * from "./scale";
 export * from "./graph";
 export * from "./schedule-mode";

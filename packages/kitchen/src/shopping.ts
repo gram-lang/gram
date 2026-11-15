@@ -1,7 +1,8 @@
-import { slugify, getNumericQty, round2 } from "./utils";
+import { slugify, round2 } from "./utils";
+import { numericTotal, termsOfQuantity, termsOfUsage } from "./terms";
 import { detectCycles } from "./graph";
 import { ASTNodeType } from "@gram-lang/parser";
-import { normalizeUnit } from "@gram-lang/i18n";
+import { normalizeUnit, type Term } from "@gram-lang/i18n";
 import type { ProcessedSection, Registry, Usage } from "./types";
 import type { CompilerOptions } from "./core";
 import { isPurchasableReference } from "./registry";
@@ -22,6 +23,8 @@ export interface ShoppingListItem {
 	multiUnit?: boolean;
 	modifiers?: string[];
 	// Internal fields for calculation
+	// No longer set: the sum is kept as terms, outside the item. Still declared
+	// so code that read it keeps type-checking.
 	otherUnits?: Record<string, number>;
 	variableParts?: string[];
 	_usageIds?: string[];
@@ -117,6 +120,9 @@ export function generateShoppingList(
 	_options?: CompilerOptions,
 ): (ShoppingListItem | CompositeItem | Usage)[] {
 	const listMap = new Map<string, ShoppingListItem>();
+	// The terms each entry of `listMap` adds up, by the same key: one unit
+	// (its spellings merged), so they always amount to a single number.
+	const termsByKey = new Map<string, Term[]>();
 	const compositeMap = new Map<string, CompositeAccumulator>();
 	const alternatives: Usage[] = [];
 
@@ -149,7 +155,9 @@ export function generateShoppingList(
 
 				let declParentQty = 1;
 				if (item.composite?.quantity) {
-					const numQ = getNumericQty(item.composite.quantity);
+					const numQ = numericTotal(
+						termsOfQuantity(item.composite.quantity, item.composite.unit),
+					);
 					if (numQ !== null) declParentQty = numQ;
 				}
 
@@ -175,7 +183,7 @@ export function generateShoppingList(
 				}
 				const uEntry = comp.usageAccumulator.get(uKey)!;
 
-				const numQ = getNumericQty(item.qty);
+				const numQ = numericTotal(termsOfUsage(item));
 				if (numQ !== null) {
 					uEntry.qty = (typeof uEntry.qty === "number" ? uEntry.qty : 0) + numQ;
 				}
@@ -184,21 +192,13 @@ export function generateShoppingList(
 
 			const id = item.id;
 
-			let numericQty: number | null = null;
 			const unit = item.unit || "";
-			let isGhost = false;
-
-			if (item.formula) {
-				if (item.formula.isGhost) {
-					isGhost = true;
-				} else {
-					const numQ = getNumericQty(item.qty);
-					if (numQ !== null) numericQty = numQ;
-				}
-			} else {
-				const numQ = getNumericQty(item.qty);
-				if (numQ !== null) numericQty = numQ;
-			}
+			const isGhost = item.formula?.isGhost === true;
+			// The usage's terms, kept only when they amount to a number: a
+			// ghost formula has none to add, and a term without a number goes
+			// to the variable parts below, as written.
+			const terms = isGhost ? [] : termsOfUsage(item);
+			const numericQty = numericTotal(terms);
 
 			// Group by ID AND unit (and ghost status) to prevent semantic data loss
 			// where secondary units were stringified into variable_entries. The
@@ -214,7 +214,6 @@ export function generateShoppingList(
 					id: id,
 					name: name,
 					unit: unit,
-					otherUnits: {},
 					variableParts: [],
 					_usageIds: [],
 				});
@@ -250,9 +249,9 @@ export function generateShoppingList(
 				const display = `${text} ❓`;
 				existing.variableParts!.push(`(${display})`);
 			} else if (numericQty !== null) {
-				const u = existing.unit ?? "";
-				if (!existing.otherUnits![u]) existing.otherUnits![u] = 0;
-				existing.otherUnits![u] += numericQty;
+				const entryTerms = termsByKey.get(key);
+				if (entryTerms) entryTerms.push(...terms);
+				else termsByKey.set(key, [...terms]);
 			} else {
 				if (item.qty) {
 					const qStr = formatQuantity(item.qty);
@@ -267,7 +266,7 @@ export function generateShoppingList(
 		});
 	});
 
-	const standardList = [...listMap.values()].map((item) => {
+	const standardList = [...listMap.entries()].map(([key, item]) => {
 		const res: ShoppingListItem = {
 			id: item.id,
 			name: item.name,
@@ -280,29 +279,15 @@ export function generateShoppingList(
 		if (item.modifierSet && item.modifierSet.size > 0)
 			res.modifiers = [...item.modifierSet];
 
-		const units = Object.keys(item.otherUnits!);
-		const primaryUnit = units[0];
-		if (primaryUnit !== undefined) {
-			res.qty = round2(item.otherUnits![primaryUnit] || 0);
-			res.unit = primaryUnit || null;
+		const terms = termsByKey.get(key);
+		if (terms) {
+			// A range adds up by its middle.
+			res.qty = round2(numericTotal(terms) ?? 0);
+			res.unit = item.unit || null;
 		}
 
-		const hasOther = Object.keys(item.otherUnits!).length > 0;
-
-		const extraEntries: string[] = [];
-		if (hasOther) {
-			const units = Object.keys(item.otherUnits!);
-			for (let i = 1; i < units.length; i++) {
-				const u = units[i];
-				if (u === undefined) continue;
-				const uStr = u ? ` ${u}` : "";
-				extraEntries.push(`${round2(item.otherUnits![u] || 0)}${uStr}`);
-			}
-		}
-
-		const allVars = [...extraEntries, ...(item.variableParts || [])];
-		if (allVars.length > 0) {
-			res.variable_entries = allVars;
+		if (item.variableParts && item.variableParts.length > 0) {
+			res.variable_entries = [...item.variableParts];
 		}
 
 		return res;

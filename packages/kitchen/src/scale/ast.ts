@@ -3,16 +3,18 @@ import {
 	type RecipeAST,
 	type StepAST,
 	type IngredientAST,
+	type QuantityAST,
 	type QuantityValueAST,
 } from "@gram-lang/parser";
-import { scaleQty } from "../utils";
+import { scaleUsageTerms, termsOfAst } from "../terms";
 
-function scaleQuantityValue(
-	value: QuantityValueAST | undefined,
-	factor: number,
-): QuantityValueAST | undefined {
-	if (!value) return value;
-	return scaleQty(value, factor) as QuantityValueAST;
+/**
+ * Scales a quantity node in place, through the same helper as `applyScale`
+ * (`scaleUsageTerms`), so the AST and the compiled recipe scale alike.
+ */
+function scaleQuantityNode(node: QuantityAST, factor: number): void {
+	const total = scaleUsageTerms(termsOfAst(node), factor);
+	if (total) node.value = total.qty as QuantityValueAST;
 }
 
 function scaleIngredient(ing: IngredientAST, factor: number): void {
@@ -21,11 +23,11 @@ function scaleIngredient(ing: IngredientAST, factor: number): void {
 		ing.quantity.type === ASTNodeType.Quantity &&
 		!ing.quantity.fixed
 	) {
-		ing.quantity.value = scaleQuantityValue(ing.quantity.value, factor);
+		scaleQuantityNode(ing.quantity, factor);
 	}
 	const compositeQty = ing.composite?.quantity;
 	if (compositeQty && !compositeQty.fixed) {
-		compositeQty.value = scaleQuantityValue(compositeQty.value, factor);
+		scaleQuantityNode(compositeQty, factor);
 	}
 }
 

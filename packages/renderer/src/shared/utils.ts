@@ -4,6 +4,8 @@ import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
 import {
 	commonFraction,
 	formatNumber,
+	formatTerm,
+	isTermValue,
 	getDictionary,
 	isCoarseUnit,
 	localizeDecimals,
@@ -61,10 +63,12 @@ export function aggToRendererItem(
 	}
 	if (rest.length > 0) {
 		base.variable_entries = rest.map((q) => {
+			if (isTermValue(q.qty)) {
+				return formatTerm({ value: q.qty, unit: q.unit ?? null });
+			}
+			// A text or relative quantity has no terms: written as it is.
 			const qty = q.qty as any;
-			const qStr =
-				qty?.text ??
-				(typeof qty === "number" ? String(qty) : String(qty?.value ?? qty));
+			const qStr = qty?.text ?? String(qty?.value ?? qty);
 			return q.unit ? `${qStr} ${q.unit}` : qStr;
 		});
 	}

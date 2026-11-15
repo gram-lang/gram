@@ -17,7 +17,7 @@ import { type IngredientDB, lookupIngredient } from "../ingredient-loader";
 import { normalizeUnit } from "@gram-lang/i18n";
 import { ASTNodeType, type QuantityAST } from "@gram-lang/parser";
 import { standardizeMass } from "@gram-lang/analyzer";
-import { getNumericQty } from "@gram-lang/kitchen";
+import { numericTotal, termsOfAst } from "@gram-lang/kitchen";
 
 export function provideCodeActions(
 	state: DocumentState,
@@ -248,7 +248,7 @@ export function provideCodeActions(
 					: null;
 
 			if (qty?.unit && qty.value && qty.loc) {
-				const amount = getNumericQty(qty.value);
+				const amount = numericTotal(termsOfAst(qty));
 				const canon = amount && amount > 0 ? normalizeUnit(qty.unit) : null;
 				if (canon) {
 					const norm = standardizeMass(amount!, canon, db, entry?.name);

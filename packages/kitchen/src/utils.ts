@@ -7,7 +7,15 @@ import {
 	ASTNodeType,
 } from "@gram-lang/parser";
 import type { Usage, UsageComposite } from "./types";
-import { resolveTimeUnit, TIME_TO_MINUTES } from "@gram-lang/i18n";
+import {
+	isTermValue,
+	QuantityOverflowError,
+	resolveTimeUnit,
+	round2,
+	scaleTermValue,
+	termValueNumber,
+	TIME_TO_MINUTES,
+} from "@gram-lang/i18n";
 import type { CompilerOptions } from "./core";
 // Imported from "./scale/types" (not the "./scale" barrel) to avoid a cycle:
 // "./scale" re-exports engine.ts, which itself imports from this file.
@@ -317,74 +325,31 @@ export const quantityToMinutes = (
  * Handles plain numbers, single/range/fraction QuantityValueAST objects.
  * String quantities (TextQuantity) and undefined values are left unchanged.
  *
- * `text`/`numerator`/`denominator` capture the original source string (e.g. "1/2")
- * and are only valid for the unscaled value, so they're cleared here rather than
- * carried over stale — display code must fall back to the scaled numeric `value`.
- *
- * The scale *factor* is validated (`isPositiveFinite` in scale/engine.ts,
- * `CompilerOptionsSchema`), but the *product* never was —
- * `scaleQty(500, 1e308)` silently produced `Infinity`,
- * which serializes to JSON `null`. Every multiplication here now goes through
- * `scaleValue`, which throws `InvalidFactorError` on overflow instead, and
- * applies `round2` uniformly so scaled quantities don't carry float noise
- * (`110.00000000000001`) — previously only `applyScale`'s `meta.portions`
- * was rounded, not the quantities themselves.
+ * The arithmetic lives in `@gram-lang/i18n` (`scaleTermValue`, the quantity
+ * model every amount goes through): rounded to 2 decimals, source text
+ * (`text`, a fraction's `numerator`/`denominator`) dropped, a scaled fraction
+ * turned into a single value. An overflow to a non-finite value throws
+ * `InvalidFactorError` instead of serializing as JSON `null`.
  */
 export const scaleQty = (qty: Usage["qty"], factor: number): Usage["qty"] => {
 	if (factor === 1) return qty;
-
-	const scaleValue = (value: number): number => {
-		const scaled = value * factor;
-		if (!Number.isFinite(scaled)) {
-			throw new InvalidFactorError(
-				factor,
-				`Scaling by a factor of ${factor} overflowed a quantity to a non-finite value.`,
-			);
+	if (!isTermValue(qty)) return qty;
+	try {
+		return scaleTermValue(qty, factor) as Usage["qty"];
+	} catch (error) {
+		if (error instanceof QuantityOverflowError) {
+			throw new InvalidFactorError(factor, error.message);
 		}
-		return round2(scaled);
-	};
-
-	if (typeof qty === "number") return scaleValue(qty);
-	if (!qty || typeof qty !== "object") return qty;
-
-	if (qty.type === "single" && typeof qty.value === "number") {
-		return { ...qty, value: scaleValue(qty.value), text: undefined };
+		throw error;
 	}
-	if (qty.type === "range") {
-		return {
-			...qty,
-			value: typeof qty.value === "number" ? scaleValue(qty.value) : qty.value,
-			range: qty.range
-				? { min: scaleValue(qty.range.min), max: scaleValue(qty.range.max) }
-				: qty.range,
-			text: undefined,
-		};
-	}
-	if (qty.type === "fraction" && typeof qty.value === "number") {
-		// `numerator`/`denominator` are required, non-optional fields on the
-		// "fraction" variant of QuantityValueAST — setting them `undefined`
-		// while keeping `type: "fraction"` produced a structurally malformed
-		// value (`{type:"fraction", value:1}`, no numerator/denominator).
-		// Scaling breaks the clean numerator/denominator relationship anyway
-		// (the doc comment above already says display must fall back to the
-		// scaled numeric `value`), so this becomes a "single" value instead —
-		// the type that actually matches what's left. Routed through
-		// `scaleValue` (not a raw multiply) for the same overflow/rounding
-		// protection as every other branch here (kitchen finding F-015).
-		return { type: "single", value: scaleValue(qty.value) };
-	}
-	return qty;
 };
 
 /**
- * Rounds a mass/quantity value to 2 decimal places, returning a `number`
- * (not a string). Centralizes the `parseFloat(x.toFixed(2))` idiom used
- * throughout kitchen/analyzer so there is a single, documented rounding rule
- * to port when the compiler is reimplemented in another language: `toFixed`
- * uses round-half-away-from-zero on the value's shortest decimal
- * representation, which differs from IEEE round-half-to-even on exact ties.
+ * Rounds a mass/quantity value to 2 decimal places (see `round2` in
+ * `@gram-lang/i18n`, where the rule is documented): re-exported here, where
+ * kitchen, analyzer and renderer have always imported it from.
  */
-export const round2 = (value: number): number => parseFloat(value.toFixed(2));
+export { round2 };
 
 // Lives in the scheduler, which builds the timeline breakdowns with it.
 export { addToBreakdown } from "@gram-lang/scheduler";
@@ -392,14 +357,9 @@ export { addToBreakdown } from "@gram-lang/scheduler";
 export const getNumericQty = (
 	q: Usage["qty"] | null | undefined,
 ): number | null => {
-	if (q === undefined || q === null) return null;
-	if (typeof q === "number") return q;
-	if (typeof q !== "object") return null; // string (TextQuantity's cleaned value)
-
-	// RelativeQuantityAST/TextQuantityAST have no "fraction"/"range"/"single"
-	// variant — only a real QuantityValueAST does.
-	if (q.type === "fraction" || q.type === "range" || q.type === "single") {
-		return q.value ?? null;
-	}
-	return null;
+	// A text (TextQuantity's cleaned string) or a RelativeQuantityAST /
+	// TextQuantityAST is not a term value: only a number or a real
+	// QuantityValueAST is. Kept as public API; kitchen itself reads amounts
+	// through `termsOfUsage` / `numericTotal` (terms.ts).
+	return isTermValue(q) ? termValueNumber(q) : null;
 };
