@@ -456,6 +456,48 @@ describe("formatTerms, computed", () => {
 	const t = (value: Term["value"], unit: string | null, minus?: true): Term =>
 		minus ? { value, unit, minus } : { value, unit };
 
+	it("brings in a unit spelled like the written ones, never a mix of both", () => {
+		const scaled = (terms: Term[]) =>
+			computed(scaleTerms(terms, 1.1), { lang: "fr", rounding: true });
+		// Written in cups and tbsp: Gram's own spelling, even for a French reader.
+		expect(scaled([t(1, "cup"), t(1, "tbsp")])).toBe(
+			"1 cup + 2 tbsp + 2 1/8 tsp",
+		);
+		// Written the French way: the French spelling.
+		expect(scaled([t(1, "cup"), t(1, "càs")])).toBe(
+			"1 cup + 2 càs + 2 1/8 càc",
+		);
+	});
+
+	it("puts a range on the most precise term that measures both bounds", () => {
+		const range = {
+			type: "range" as const,
+			value: 1.5,
+			range: { min: 1, max: 2 },
+		};
+		// 58.5-63 tsp: `1 cup + 3 1/2-5 tbsp`, never `… + 1 3/4-6 1/4 tsp`.
+		expect(
+			computed(scaleTerms([t(0.75, "cup"), t(range, "tbsp")], 1.5), {
+				rounding: true,
+			}),
+		).toBe("1 cup + 3 1/2-5 tbsp");
+		expect(computed(scaleTerms([t(1, "cup"), t(range, "tbsp")], 2))).toBe(
+			"2 cup + 2-4 tbsp",
+		);
+	});
+
+	it("keeps the written order, each kind taking away on its own", () => {
+		const sum = [t(1, "cup"), t(2, "tbsp", true), t(30, "g")];
+		expect(formatTerms(sum)).toBe("1 cup − 2 tbsp + 30 g");
+		expect(computed(scaleTerms(sum, 0.5), { rounding: true })).toBe(
+			"1/2 cup − 1 tbsp + 15 g",
+		);
+		// Never starts with a term taken away.
+		expect(formatTerms([t(2, "tbsp", true), t(1, "cup")])).toBe(
+			"1 cup − 2 tbsp",
+		);
+	});
+
 	it("recomposes a scaled sum term by term, never into a fraction no spoon measures", () => {
 		const doubled = scaleTerms([t(1, "cup"), t(1, "tbsp")], 2);
 		expect(computed(doubled)).toBe("2 cup + 2 tbsp");
