@@ -50,16 +50,20 @@ function renderMeta(d: MetaDelta): string {
 
 function renderIngredient(d: IngredientDelta): string {
 	const name = (d.name || d.id).padEnd(18);
+	// The amount as text when there is one (a range shows its bounds, not
+	// only its middle), else the number and unit.
+	const fromAmount = d.fromText ?? fmtQty(d.fromQty, d.fromUnit);
+	const toAmount = d.toText ?? fmtQty(d.toQty, d.toUnit);
 
 	if (d.change === "added") {
-		return `  ${chalk.green("+")} ${name} ${chalk.green(fmtQty(d.toQty, d.toUnit))}`;
+		return `  ${chalk.green("+")} ${name} ${chalk.green(toAmount)}`;
 	}
 	if (d.change === "removed") {
-		return `  ${chalk.red("-")} ${name} ${chalk.red(fmtQty(d.fromQty, d.fromUnit))}`;
+		return `  ${chalk.red("-")} ${name} ${chalk.red(fromAmount)}`;
 	}
 
-	const from = chalk.dim(fmtQty(d.fromQty, d.fromUnit));
-	const to = chalk.yellow(fmtQty(d.toQty, d.toUnit));
+	const from = chalk.dim(fromAmount);
+	const to = chalk.yellow(toAmount);
 	const pct =
 		d.percentChange !== undefined
 			? chalk.dim(` (${d.percentChange > 0 ? "+" : ""}${d.percentChange}%)`)

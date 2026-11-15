@@ -8,7 +8,7 @@ import type {
 	ShoppingListItem,
 	CompositeItem,
 } from "@gram-lang/kitchen";
-import { normalizeUnit } from "@gram-lang/i18n";
+import { formatTerms, normalizeUnit } from "@gram-lang/i18n";
 import {
 	numericTotal,
 	scheduleFor,
@@ -53,6 +53,12 @@ export interface IngredientDelta {
 	fromUnit?: string | null;
 	toQty?: number;
 	toUnit?: string | null;
+	/**
+	 * The amount as a reader sees it (`202-203 g`, `1 cup + 20 g`), where the
+	 * numbers above only give its middle or nothing. Since 1.5.0.
+	 */
+	fromText?: string;
+	toText?: string;
 	percentChange?: number;
 }
 
@@ -203,6 +209,28 @@ function flattenShoppingItems(items: ShoppingItem[]): SimpleShoppingItem[] {
 
 const numericQty = (item: ShoppingItem): number | null =>
 	numericTotal(termsOfUsage(item));
+
+/**
+ * The amount of an entry as text, its unit included (`2-3 g`), or
+ * `undefined` when it has no terms (a text quantity, no quantity).
+ */
+const amountText = (item: ShoppingItem): string | undefined => {
+	const terms = termsOfUsage(item);
+	return terms.length > 0 ? formatTerms(terms, { minus: " - " }) : undefined;
+};
+
+/** `fromText` / `toText` of a delta, each only when there is one. */
+function texts(
+	aItem: ShoppingItem | null,
+	bItem: ShoppingItem | null,
+): Pick<IngredientDelta, "fromText" | "toText"> {
+	const fromText = aItem ? amountText(aItem) : undefined;
+	const toText = bItem ? amountText(bItem) : undefined;
+	return {
+		...(fromText !== undefined && { fromText }),
+		...(toText !== undefined && { toText }),
+	};
+}
 
 function fmtTimerQty(
 	qty: ProcessedTimer["quantity"],
@@ -443,6 +471,7 @@ function diffIngredient(
 			change: "removed",
 			fromQty: numericQty(aItem) ?? undefined,
 			fromUnit: aItem.unit ?? null,
+			...texts(aItem, null),
 		};
 	}
 	if (!aItem && bItem) {
@@ -452,6 +481,7 @@ function diffIngredient(
 			change: "added",
 			toQty: numericQty(bItem) ?? undefined,
 			toUnit: bItem.unit ?? null,
+			...texts(null, bItem),
 		};
 	}
 	if (!aItem || !bItem) return null;
@@ -463,7 +493,13 @@ function diffIngredient(
 
 	const sameUnit = normalizeUnit(aUnit) === normalizeUnit(bUnit);
 
-	if (aQty === bQty && sameUnit) return null;
+	// Same middle, other bounds (`2-4 g` → `1-5 g`) is a change too.
+	const sameRange =
+		(aItem as ShoppingListItem).range?.min ===
+			(bItem as ShoppingListItem).range?.min &&
+		(aItem as ShoppingListItem).range?.max ===
+			(bItem as ShoppingListItem).range?.max;
+	if (aQty === bQty && sameUnit && sameRange) return null;
 
 	const delta: IngredientDelta = {
 		id,
@@ -473,6 +509,7 @@ function diffIngredient(
 		fromUnit: aUnit,
 		toQty: bQty ?? undefined,
 		toUnit: bUnit,
+		...texts(aItem, bItem),
 	};
 
 	if (aQty !== null && bQty !== null && sameUnit && aQty !== 0) {

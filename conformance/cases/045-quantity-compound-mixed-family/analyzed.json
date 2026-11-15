@@ -59,7 +59,7 @@
       "qty": 70,
       "unit": "g",
       "multiUnit": true,
-      "normalizedMass": 50,
+      "normalizedMass": 70,
       "isEstimate": false,
       "conversionMethod": "physical"
     },
@@ -121,7 +121,10 @@
       ],
       "qty": 30,
       "unit": "g",
-      "multiUnit": true
+      "multiUnit": true,
+      "normalizedMass": 30,
+      "isEstimate": false,
+      "conversionMethod": "physical"
     },
     {
       "type": "composite",
@@ -430,14 +433,6 @@
     },
     {
       "code": "UNKNOWN_MASS",
-      "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
-    },
-    {
-      "code": "UNKNOWN_MASS",
-      "message": "Cannot calculate mass for \"garlic\" — omitted from nutritional totals."
-    },
-    {
-      "code": "UNKNOWN_MASS",
       "message": "Cannot calculate mass for \"garlic\" — omitted from nutritional totals."
     },
     {
@@ -514,14 +509,6 @@
         {
           "code": "UNKNOWN_MASS",
           "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
-        },
-        {
-          "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
-        },
-        {
-          "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"garlic\" — omitted from nutritional totals."
         },
         {
           "code": "UNKNOWN_MASS",

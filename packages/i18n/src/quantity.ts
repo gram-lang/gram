@@ -351,10 +351,15 @@ export function scaleTerms(terms: readonly Term[], factor: number): Term[] {
 /** One term as written: its number (or source text) and its unit, without its sign. */
 export function formatTerm(term: Term): string {
 	const v = term.value;
+	// A range without its source text (added up, scaled) shows its bounds,
+	// never its middle.
 	const text =
 		typeof v === "number"
 			? String(v)
-			: (v.text ?? String((v as { value?: unknown }).value ?? v));
+			: (v.text ??
+				(v.type === "range" && v.range
+					? `${v.range.min}-${v.range.max}`
+					: String((v as { value?: unknown }).value ?? v)));
 	return term.unit ? `${text} ${term.unit}` : text;
 }
 

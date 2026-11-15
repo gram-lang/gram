@@ -1,12 +1,11 @@
 import {
-	numericTotal,
 	termsOfUsage,
 	WarningCode,
 	pushWarning,
 	type Warning,
 } from "@gram-lang/kitchen";
 import { getIngredientData } from "./ingredient_db";
-import { standardizeMass } from "./mass_standardization";
+import { weighAmount } from "./mass_standardization";
 import { NUTRIENTS, type Macros, type NutrientKey } from "./schemas";
 import { resolveContributingUsage } from "./usage_selection";
 import type {
@@ -74,6 +73,22 @@ export function calculateNutrition(
 	// can't disagree about composites, optional items or resolution order.
 	let accountedMass = 0;
 	const warnings: Warning[] = [];
+	// One warning per ingredient and code: an ingredient bought in two units
+	// (`1 head` and `2 cloves` of garlic, two shopping entries) is still one
+	// ingredient whose mass is unknown.
+	const warned = new Set<string>();
+	const warnOnce = (
+		code:
+			| WarningCode.MISSING_INGREDIENT
+			| WarningCode.MISSING_MACROS
+			| WarningCode.UNKNOWN_MASS,
+		id: string,
+	) => {
+		const key = `${code}::${id}`;
+		if (warned.has(key)) return;
+		warned.add(key);
+		pushWarning(warnings, code, { id });
+	};
 
 	// Flatten composite ingredients and alternatives
 	const flatList: NutritionItem[] = [];
@@ -105,7 +120,10 @@ export function calculateNutrition(
 
 		// Ingredients declared without a quantity (@salt{}, @oil) have negligible/trace mass.
 		// They are intentional "to taste" entries — skip silently, no warning, no coverage hit.
-		if (item.qty == null && !item.normalizedMass) return;
+		// A sum over several families (`{1 cup + 20 g}`) has terms but no `qty`;
+		// a refused sum has neither and counts for nothing, as written.
+		const terms = termsOfUsage(item);
+		if (item.qty == null && terms.length === 0 && !item.normalizedMass) return;
 
 		metricsCount++;
 
@@ -116,17 +134,12 @@ export function calculateNutrition(
 		if (item.normalizedMass) {
 			mass = item.normalizedMass;
 			if (item.isEstimate) isEst = true;
-		} else if (item.qty) {
-			const val = numericTotal(termsOfUsage(item));
-			if (val !== null) {
-				const unit = item.unit || "unit";
-
-				// item.name may be undefined for composite children (usage items only carry id+qty)
-				const norm = standardizeMass(val, unit, database, item.name || item.id);
-				if (norm) {
-					mass = norm.mass;
-					isEst = norm.isEstimate;
-				}
+		} else if (terms.length > 0) {
+			// item.name may be undefined for composite children (usage items only carry id+qty)
+			const weighed = weighAmount(terms, database, item.name || item.id);
+			if (weighed) {
+				mass = weighed.normalizedMass;
+				isEst = weighed.isEstimate;
 			}
 		}
 
@@ -135,7 +148,7 @@ export function calculateNutrition(
 		if (mass > 0) {
 			const data = getIngredientData(id, database);
 			if (!data) {
-				pushWarning(warnings, WarningCode.MISSING_INGREDIENT, { id });
+				warnOnce(WarningCode.MISSING_INGREDIENT, id);
 			} else if (data.nutrition) {
 				knownCount++;
 				accountedMass += mass;
@@ -149,10 +162,10 @@ export function calculateNutrition(
 					totals[n.key] = (totals[n.key] ?? 0) + value * factor;
 				}
 			} else {
-				pushWarning(warnings, WarningCode.MISSING_MACROS, { id });
+				warnOnce(WarningCode.MISSING_MACROS, id);
 			}
 		} else {
-			pushWarning(warnings, WarningCode.UNKNOWN_MASS, { id });
+			warnOnce(WarningCode.UNKNOWN_MASS, id);
 		}
 	});
 

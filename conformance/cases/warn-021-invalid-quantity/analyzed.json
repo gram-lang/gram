@@ -113,7 +113,10 @@
       ],
       "qty": 2,
       "unit": "oz",
-      "multiUnit": true
+      "multiUnit": true,
+      "normalizedMass": 56.7,
+      "isEstimate": false,
+      "conversionMethod": "physical"
     },
     {
       "id": "beef",
@@ -133,7 +136,10 @@
       ],
       "qty": 2,
       "unit": "oz",
-      "multiUnit": true
+      "multiUnit": true,
+      "normalizedMass": 56.7,
+      "isEstimate": false,
+      "conversionMethod": "physical"
     }
   ],
   "cookware": [],

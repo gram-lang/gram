@@ -79,7 +79,10 @@
       "fixed": true,
       "qty": 1.5,
       "unit": "g",
-      "multiUnit": true
+      "multiUnit": true,
+      "normalizedMass": 1.5,
+      "isEstimate": false,
+      "conversionMethod": "physical"
     },
     {
       "id": "salt",
