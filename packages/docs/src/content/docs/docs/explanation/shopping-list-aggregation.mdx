@@ -13,7 +13,7 @@ When a recipe (or a batch of multiple recipes) is passed to the Kitchen for shop
 
 ```mermaid
 flowchart TD
-    Raw["Raw Ingredients (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Group by Raw ID & Identical Units"]
+    Raw["Raw Ingredients (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Group by Raw ID & Unit Scale"]
     KitchenGroup --> HasDB{Ingredient DB Supplied?}
     
     HasDB -- Yes --> AliasRes["@gram-lang/analyzer<br/>Alias Resolution (e.g., beurre ➔ butter)"]
@@ -38,9 +38,15 @@ import Term from '../../../../components/Term.astro';
    Alias resolution happens one layer up, in `@gram-lang/analyzer`, which does have access to the ingredient database. If `beurre` is listed as an alias of `butter` in `ingredients.yaml`, the analyzer re-groups kitchen's raw entries by this canonical id, merging `@butter` and `@beurre` into a single `butter` entry. **This step only runs when an ingredient database is supplied** — without one (compiling with `@gram-lang/kitchen` alone, or a CLI command run without a database), aliases are not resolved and the two ingredients stay separate.
 
 2. ### Unit merging
-   If the grouped ingredients share the same unit (e.g., `100g` and `50g`), they are simply summed (`150g`) — this happens directly in `@gram-lang/kitchen`, no database needed.
+   `@gram-lang/kitchen` merges what it can add up exactly, with no database, at three levels:
 
-   If they have different units (e.g., `100g` and `1 cup`), summing them requires converting through mass, which — like aliasing — depends on the ingredient database and therefore happens in `@gram-lang/analyzer`. If every contributing quantity resolves to a mass (density known, from the database or a recipe-level override), the analyzer converts them all to grams and merges them into a single entry.
+   - **Same unit**: `100g` and `50g` are summed (`150g`). Spellings of one unit count as one (`cup` and `cups`, `tbsp` and `tablespoon`).
+   - <Since v="1.5.0" /> **Same scale**: units that convert by a whole ratio add up in the smallest unit written. US spoons and cups (`tsp`, `tbsp`, `fl oz`, `cup`, `pt`, `qt`, `gal`), ounces and pounds, grams and kilograms, milliliters and liters each form a scale: `1 cup` and `2 tbsp` give `18 tbsp` (shown as `1 cup + 2 tbsp`), `1 kg` and `200 g` give `1200 g` (shown as `1.2 kg`).
+   - **Different systems or kinds** (`cup` and `ml`, a volume and a weight): separate entries, flagged `multiUnit: true`. `pinch` and `dash` stay off every scale, since they are not exact measures.
+
+   <Since v="1.5.0" /> A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) counts as separate mentions: `@milk{1 cup + 50 ml}` is bought as `1 cup` and `50 ml`, exactly like `@milk{1 cup}` then `@&milk{50 ml}`, so the shopping list never depends on how the author grouped the amounts. Ranges add up bound by bound (`2-3 g` and `200 g` give `202-203 g`, no longer the middle `202.5 g`). A unit Gram doesn't know is kept as written: `clove` and `cloves` stay two entries.
+
+   Entries in different kinds of units (e.g., `100g` and `1 cup`) can only be summed converting through mass, which — like aliasing — depends on the ingredient database and therefore happens in `@gram-lang/analyzer`. If every contributing quantity resolves to a mass (density known, from the database or a recipe-level override), the analyzer converts them all to grams and merges them into a single entry.
 
    **Fallback: missing density.** If the density can't be resolved for at least one of the units involved, the analyzer can't produce a single reliable mass total. Rather than guessing, it keeps the entries separate, renames them to the canonical id, and flags all of them with `multiUnit: true`. Renderers use this flag to cluster the entries together under one heading (e.g. "⚠️ Mixed units") instead of scattering them across the list — making it clear to the cook that they're the same ingredient, without silently mis-adding incompatible units.
 

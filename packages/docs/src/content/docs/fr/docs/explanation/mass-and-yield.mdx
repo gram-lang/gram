@@ -39,6 +39,13 @@ Lorsque l'Analyseur rencontre un ingrédient, il le passe par un algorithme de p
 5. **Incomplet** : Lorsqu'un volume n'a aucune densité disponible (ni surcharge, ni entrée en BDD) ou qu'un nombre n'a pas de `unit_weight`, l'Analyseur refuse d'effectuer une estimation arbitraire. Il ne supposera **pas** une densité par défaut (comme traiter tout liquide comme de l'eau), ce qui fausserait silencieusement la liste de courses. Le calcul échoue, l'ingrédient est marqué comme *incomplet*, et il reste listé dans son unité brute non convertie.
 </Steps>
 
+### Peser une somme de quantités
+<Since v="1.5.0" />
+
+Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) se pèse nature par nature. Les termes d'une même nature sont d'abord additionnés, puis convertis selon l'algorithme ci-dessus : `@sucre{1 tasse - 2 càs}` pèse exactement le poids de la quantité totale, et `@beurre{1 tasse + 30 g}` ajoute le poids d'une tasse (via la densité) à 30 g. Le rendement s'applique lui aussi nature par nature, puisqu'un poids unitaire est une masse brute alors que les grammes écrits dans la recette sont nets.
+
+Si une des natures ne peut pas être pesée (`@riz{1 tasse + 20 g}` sans densité pour le riz), la somme entière n'a **aucune** masse plutôt qu'une masse partielle : la liste de courses fusionne les entrées par la masse, et une masse partielle vous ferait acheter 20 g de riz en oubliant la tasse. Les grammes comptent quand même là où ils s'achètent, dans leur propre entrée de la liste de courses. Une somme refusée par Gram (`INVALID_QUANTITY`) ne compte pas dans la nutrition, comme une quantité absente.
+
 ## Calcul du rendement (le facteur de déchet)
 
 Dans les cuisines professionnelles, il y a une différence fondamentale entre ce qui va *dans la casserole* et ce que vous *achetez au magasin*.

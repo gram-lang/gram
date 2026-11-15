@@ -55,6 +55,28 @@ function resolveScaleFactor(
 | `UNIT_MISMATCH` | Units belong to different physical families (mass vs. volume) and no density could be resolved | Add a density via `gram db enrich`, declare one in the recipe's `densities:` frontmatter, or match units |
 | `INVALID_FACTOR` | Non-positive, non-finite, zero-quantity reference, etc. | — |
 
+## Scaling sums of quantities
+<Since v="1.5.0" />
+
+A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) scales term by term: `applyScale` multiplies each of its `parts`, then works out the total again. Showing it is the renderer's job, and it follows one rule: an unscaled recipe shows each sum as written; once scaled, an amount is written the way a cook measures it.
+
+| Written | Scaled | Shown |
+| :--- | :--- | :--- |
+| `{1 cup + 1 tbsp}` | × 2 | `2 cup + 2 tbsp` (never `2 1/8 cup`) |
+| `{1 cup - 2 tbsp}` | × 2 | `1 3/4 cup` |
+| `{1 cup - 2 tbsp}` | × 0.5 | `1/2 cup − 1 tbsp` |
+| `{1 cup + 1-2 tbsp}` | × 2 | `2 cup + 2-4 tbsp` |
+| `{1 lb + 4 oz}` | × 1.5 | `1 1/2 lb + 6 oz` |
+| `{1 kg + 200 g}` | × 2 | `2.4 kg` |
+| `{1 cup + 50 ml}` | × 2 | `2 cup + 100 ml` |
+
+- **US and imperial units are recomposed** only when needed, into fractions a measuring cup or spoon actually has (¼, ⅓, ½, ⅔, ¾ of a cup; ½ tbsp; ⅛, ¼, ½ tsp…), never above the largest unit written, with spoons (`cup → tbsp → tsp`) and liquid measures (`gal → qt → pt → fl oz`) kept apart. Terms that can already be measured as they are stay.
+- **Metric units stay in the largest unit written**, in decimals: you weigh in grams, so `{800 g + 200 g}` reads `1000 g`, not `1 kg`. Only the shopping list moves up to the unit you buy in (`1500 g` → `1.5 kg`).
+- **A range** keeps the part both bounds share, and the spread goes on the last term.
+- **Two systems** (`cup` and `ml`) stay term by term.
+
+**Reverse scaling against a sum** (`--scale flour=500g`) uses its total when every term is of one kind; a volume next to a weight leaves two shopping-list entries, which raises `AMBIGUOUS_MULTI_UNIT`, as two separate mentions would.
+
 ## Immutability
 
 `applyScale(result, factor)` — the function that actually multiplies every quantity — is a pure function: it `structuredClone`s the input before mutating anything, and returns a new `CompilationResult`. Two things fall out of that for free:
@@ -85,6 +107,7 @@ When a recipe imports an external base via `@use` (such as `@use "./bases/crust.
 ## Consuming this from a new frontend
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../components/Since.astro';
 
 <Steps>
 

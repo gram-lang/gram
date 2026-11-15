@@ -203,6 +203,36 @@ Pour @milk{0,5-0,75 l}.
 
 Gram has no thousands separator: write `{1500 g}`, never `{1,500 g}`. A comma followed by exactly three digits is read as a decimal like any other (`{1,000 g}` is 1 g), but since a reader could mean a thousand, the compiler warns `AMBIGUOUS_NUMBER` and says how it read the number. A point keeps the meaning it has always had: `{1.000 kg}` is 1 kg, with no warning.
 
+### Sums of quantities
+<Since v="1.5.0" />
+
+A measure that doesn't fit one unit is written the way a recipe says it: terms joined by `+`, or `-` for an amount taken away.
+
+```gram
+Add @flour{1 cup + 1 tbsp} and @sugar{1 cup - 2 tbsp}.
+
+Pour @milk{1 cup + 1-2 tbsp}.
+
+Mix in @butter{2 1/2 tbsp + ½ tsp} and @rice{1 cup + 20 g}.
+```
+
+Each term is a number (or a range, or a fraction) with its unit. Gram keeps the terms as written and works out their total: `{1 cup + 1 tbsp}` is 17 tbsp, `{1 cup - 2 tbsp}` is 14 tbsp. The recipe shows the sum as you wrote it; once scaled, it is worked out again into amounts a cook can measure (`{1 cup + 1 tbsp}` doubled reads `2 cup + 2 tbsp`, never `2 1/8 cup`). The `=` modifier locks a sum like any other quantity (`@=salt{1,5 g + 1 pinch}`).
+
+A sum counts as **separate mentions** of the ingredient: `@rice{1 cup + 20 g}` goes into the shopping list exactly like `@rice{1 cup}` followed by `@&rice{20 g}`. Terms of the same kind of unit add up (cups and spoons, kilos and grams); a volume next to a weight, or two units Gram doesn't know (`{1 head + 2 cloves}`), stay side by side.
+
+A few rules keep a sum readable:
+
+- **Every term has its unit**: `{1 + 1 cup}` is refused.
+- **Only amounts**: no percentage (`{100 g + 10%}`, write `{110 g}`, or a [relative quantity](/docs/reference/syntax/relative-quantities/)), no multiplication (`{2 x 100 g + 50 g}`).
+- **Take away from the same kind**: `{1 cup - 2 tbsp}` works, `{1 cup - 20 g}` doesn't, and what is taken away must leave something (`{1 tbsp - 1 cup}` is refused).
+- **No range after `-`**: `{1 cup - 1-2 tbsp}` would swap its bounds; write the range on a term that is added.
+
+A refused sum compiles with an `INVALID_QUANTITY` warning that says why, and counts for nothing in the shopping list and the nutrition. Two quantities written side by side without an operator (`{1 cup 5 tbsp}`) raise `INVALID_UNIT`; the editor offers to insert the ` + `.
+
+:::caution[oz is a weight]
+In `{1 cup + 2 oz}`, `oz` is an ounce of weight, not of volume: Gram reads it as written and adds a note (`OZ_AFTER_VOLUME`). Write `fl oz` for a fluid ounce.
+:::
+
 ## Error handling
 
 Some syntax errors stop the recipe from being read before it is even compiled: an unreadable quantity in braces (`@salt{1 g/l}`), a brace that is never closed. The message points at the exact spot to fix, and the editor underlines it.
@@ -214,6 +244,7 @@ The compiler checks for semantic errors in your `@ingredient` declarations and w
 - **Database Missing**: If you compile with a database and the `@ingredient` is not found, it warns `MISSING_INGREDIENT`.
 - **Missing Macros**: If the database lacks nutritional information for the `@ingredient`, it warns `MISSING_MACROS`.
 - **Unknown Mass**: If it cannot convert a volume or count into grams to estimate nutrition, it warns `UNKNOWN_MASS`.
+- **Invalid Quantity**: If a sum of quantities can't be read (a term without a unit, a percentage, an amount taken away from another kind…), it warns `INVALID_QUANTITY` and gives the reason.
 - **Ambiguous Number**: If a comma is followed by exactly three digits (`{1,000 g}`), it reads a decimal and warns `AMBIGUOUS_NUMBER`, in case a thousand was meant.
 
 ## Related resources

@@ -39,6 +39,13 @@ When the Analyzer encounters an ingredient, it runs it through a strict priority
 5. **Incomplete**: If a volume has no density available (no override, no database entry) or a count has no `unit_weight`, the Analyzer refuses to guess. It will **not** assume a default density (e.g. treating everything as water) — doing so would silently corrupt shopping-list totals. The mass calculation fails, the ingredient is marked as "incomplete", and it is listed in its raw, unconverted unit.
 </Steps>
 
+### Weighing a sum of quantities
+<Since v="1.5.0" />
+
+A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) is weighed kind by kind. The terms of one kind are added up first, then converted with the algorithm above: `@sugar{1 cup - 2 tbsp}` weighs exactly what `@sugar{14 tbsp}` weighs, and `@butter{1 cup + 30 g}` adds the weight of a cup (through the density) to 30 g. The yield applies kind by kind too, since a unit weight is a gross mass and grams written in the recipe are net.
+
+If one kind can't be weighed (`@rice{1 cup + 20 g}` with no density for rice), the whole sum gets **no** mass rather than a partial one: the shopping list merges entries by mass, and a partial mass would have you buy 20 g of rice and forget the cup. The grams still count where they are bought, in their own shopping-list entry. A sum Gram refuses (`INVALID_QUANTITY`) counts for nothing in the nutrition, like a missing quantity.
+
 ## Yield calculation (the waste factor)
 
 In professional kitchens, there is a fundamental difference between what goes *into the pot* and what you *buy at the store*.

@@ -3,6 +3,8 @@ title: "Génération automatisée de Gram"
 description: "Comment générer des fichiers .gram par des scripts ou des modèles d'IA, avec une checklist de conversion étape par étape."
 ---
 
+import Since from '../../../../../../components/Since.astro';
+
 Cette page s'adresse aux outils qui *génèrent* des fichiers `.gram` (scripts d'import, scrapers, ou modèles d'IA convertissant une recette depuis un site web, un scan de livre, un JSON-LD), plutôt qu'aux humains qui les rédigent. La commande officielle `gram import` fournit d'ailleurs à son modèle d'IA un *prompt* système (`packages/cli/src/prompts/gram-spec.ts`), scrupuleusement synchronisé avec ces directives. Considérez donc cette page comme la version publique et humanisée de ces mêmes instructions.
 
 ## Restructurer, ne pas transposer mot à mot
@@ -68,6 +70,14 @@ Les accolades du `#matériel` n'acceptent que des nombres entiers. Dimensions, m
 ❌  ~{environ 10 minutes}  →   ✅  ~{10min}
 ```
 Les quantités et les minuteurs ont besoin d'un vrai nombre (ou d'accolades vides pour « au goût ») ; un texte flou ne se parse pas.
+
+### Une quantité donnée en plusieurs mesures
+<Since v="1.5.0" />
+
+```gram
+❌  @farine{1 kg 200 g}    →   ✅  @farine{1 kg + 200 g}
+```
+Une quantité que la recette donne en plusieurs mesures s'écrit en [somme](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités), telle que la source la formule : « 1 tasse plus 1 cuillère à soupe » donne `{1 cup + 1 tbsp}`, « 1 tasse moins 2 cuillères à soupe » donne `{1 cup - 2 tbsp}`, et un volume peut côtoyer une masse (`{1 cup + 20 g}`). Ne la convertissez pas non plus en un seul nombre (`{1.0625 cup}`, `{17 tbsp}`) : Gram additionne les termes lui-même et les affiche comme on les mesure. Chaque terme a son unité, et un terme n'est qu'une quantité : pas de pourcentage (`{100g + 10%}`), pas de multiplication (`{2 x 100g}`), pas de fourchette après un `-` (une fourchette peut être un terme ajouté : `{1 cup + 1-2 tbsp}`).
 
 ### Utiliser `@&` dès la première occurrence
 

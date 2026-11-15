@@ -32,17 +32,25 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 |---|---|
 | **Diagnostics** | Remontée en temps réel des erreurs de syntaxe, des incohérences structurelles (dépendances circulaires) et des avertissements d'ordonnancement (`DAY_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
 | **Semantic Tokens** | Coloration sémantique pilotée par l'AST, permettant de distinguer avec précision les modificateurs, unités, températures et ingrédients composites. |
-| **Completion** | Autocomplétion contextuelle pour les ingrédients de la base de données, les unités canoniques et les variables intermédiaires. Dans un minuteur (`~{…}`), seules les unités de temps sont proposées. |
-| **Hover** | Affiche la composition nutritionnelle et les conversions automatiques volume-masse au survol des ingrédients. Sur un minuteur, montre la durée telle que Gram la lit (`~{1h30}` → `1 h 30 min`) ; sur une ancre de section, l'avance prise par la section et si elle ouvre une journée de travail. |
+| **Completion** | Autocomplétion contextuelle pour les ingrédients de la base de données, les unités canoniques et les variables intermédiaires. Dans un minuteur (`~{…}`), seules les unités de temps sont proposées. Dans une somme de quantités, les unités reviennent après chaque `+ 2` ou `- 2`. |
+| **Hover** | Affiche la composition nutritionnelle et les conversions automatiques volume-masse au survol des ingrédients. Sur un minuteur, montre la durée telle que Gram la lit (`~{1h30}` → `1 h 30 min`) ; sur une ancre de section, l'avance prise par la section et si elle ouvre une journée de travail. Sur une somme de quantités, montre son total et sa masse. |
 | **Go to Definition** | Navigation directe depuis une référence intermédiaire (`&ref`) vers sa déclaration source (`->&ref`). |
 | **Find References** | Inventaire exhaustif de toutes les utilisations d'une variable intermédiaire donnée à travers la recette. |
 | **Rename** | Renommage atomique et sécurisé d'une variable intermédiaire sur l'ensemble du document. |
-| **Code Actions** | Suggestions de corrections rapides (*quick fixes* : déclaration d'une variable manquante, conversion d'un volume en masse). |
+| **Code Actions** | Suggestions de corrections rapides (*quick fixes* : déclaration d'une variable manquante, conversion d'un volume en masse, réparation d'une somme de quantités). |
 | **Document Formatting** | Normalisation syntaxique complète en appliquant les 13 règles canoniques via `@gram-lang/format`. |
 | **Inlay Hints** | Affiche la durée totale de la recette en fin de ligne `title:`, calculée selon le planning de mise en place et la résolution des temps passifs (réglages `gram.miseEnPlace` et `gram.rests`). |
 | **Code Lens** | Injecte des actions interactives contextuelles au-dessus du document (affichage du panneau nutritionnel). |
 | **Document Symbol** | Alimente la vue Plan (*Outline*) de l'éditeur pour une navigation fluide au sein des sections de la recette. |
 | **Folding Range** | Permet de replier proprement le frontmatter YAML et les blocs de sections `##`. |
+
+### Sommes de quantités
+
+<Since v="1.5.0" /> Sur une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités), l'éditeur aide de trois façons :
+
+- **Le survol** montre le total tel que Gram le lit (`{1 cup + 1 tbsp}` → `= 17 tbsp` ; un volume à côté d'une masse donne `volume + mass, counted apart`) et, quand la base d'ingrédients sait peser chaque terme, sa masse. Une somme refusée par Gram n'affiche rien de plus que son avertissement.
+- **Les Quick Fix** lisent le `data` de l'avertissement, transmis dans celui du diagnostic : insérer le ` + ` entre deux quantités écrites côte à côte (`{1 kg 200 g}`, `INVALID_UNIT`), écrire le résultat que Gram suggère (`{100 g + 10%}` → `{110 g}`, `INVALID_QUANTITY`), ou changer un `oz` placé après un volume en `fl oz` (`OZ_AFTER_VOLUME`).
+- **La complétion** propose les unités de chaque terme : après `{1 kg + 2`, les unités reviennent.
 
 ## Réglages
 

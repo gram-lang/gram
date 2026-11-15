@@ -37,6 +37,11 @@ export const SELF_TEST_CASES: SelfTestCase[] = [
 		good: "## Prep\n\nSeason with @salt{}.\n",
 	},
 	{
+		label: "two-quantities-without-operator",
+		bad: "## Prep\n\nAdd @flour{1 cup 5 tbsp} to the bowl.\n",
+		good: "## Prep\n\nAdd @flour{1 cup + 5 tbsp} to the bowl.\n",
+	},
+	{
 		label: "ampersand-on-first-occurrence",
 		bad: "## Prep\n\nMelt the @&butter{200g} in a pan.\n",
 		good: "## Prep\n\nMelt the @butter{200g} in a pan.\n",
@@ -86,7 +91,7 @@ export const SELF_TEST_CASES: SelfTestCase[] = [
 // Raw ❌ glyph count observed in the EN doc as of this transcription. If the
 // live count drifts, the doc likely gained (or lost) a mistake example that
 // nobody transcribed here yet — print an informational note, don't fail.
-const EXPECTED_BAD_GLYPH_COUNT = 20;
+const EXPECTED_BAD_GLYPH_COUNT = 22;
 
 export function extractSelfTestSnippets(): {
 	bad: Snippet[];

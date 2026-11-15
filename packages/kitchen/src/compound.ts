@@ -58,7 +58,7 @@ const MULTIPLICATION = /^[x×*](?:\s|\d|$)/i;
 
 /**
  * `{1 cup 5 tbsp}`: a unit made of a known unit, a number and another known
- * unit reads as two quantities, which Gram does not add. Unflagged, the whole
+ * unit reads as two quantities, to be written as a sum. Unflagged, the whole
  * "cup 5 tbsp" passed as one unknown unit: no mass, and a scaled recipe read
  * "2 cup 5 tbsp". `{1 boîte de 400 g}` is not one: "boîte de" is no unit, and
  * its 400 g describes the tin, so scaling the number of tins stays right.

@@ -32,17 +32,25 @@ The Gram Language Server implements the following standard capabilities:
 |---|---|
 | **Diagnostics** | Real-time reporting of syntax errors, structural defects (circular dependencies), and scheduling warnings (`DAY_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
 | **Semantic Tokens** | AST-driven highlighting for modifiers, units, temperatures, and composite ingredients. |
-| **Completion** | Contextual autocomplete for database ingredients, canonical units, and intermediate variables. Inside a timer (`~{…}`), only time units are offered. |
-| **Hover** | Displays nutritional breakdowns and real-time volume-to-mass conversions on ingredient hover. On a timer, shows the duration as Gram reads it (`~{1h30}` → `1 h 30 min`); on a section anchor, how long ahead the section starts and whether it opens a working day. |
+| **Completion** | Contextual autocomplete for database ingredients, canonical units, and intermediate variables. Inside a timer (`~{…}`), only time units are offered. In a sum of quantities, units are offered again after each `+ 2` or `- 2`. |
+| **Hover** | Displays nutritional breakdowns and real-time volume-to-mass conversions on ingredient hover. On a timer, shows the duration as Gram reads it (`~{1h30}` → `1 h 30 min`); on a section anchor, how long ahead the section starts and whether it opens a working day. On a sum of quantities, shows its total and its mass. |
 | **Go to Definition** | Direct navigation from an intermediate reference (`&ref`) to its original declaration (`->&ref`). |
 | **Find References** | Locates every usage of a specific intermediate variable across the document. |
 | **Rename** | Safely and atomically renames intermediate variables throughout the file. |
-| **Code Actions** | Quick fixes (declaring missing intermediate variables, converting volume to mass). |
+| **Code Actions** | Quick fixes (declaring missing intermediate variables, converting volume to mass, mending a sum of quantities). |
 | **Document Formatting** | Normalizes syntax in-place applying the 13 canonical formatting rules via `@gram-lang/format`. |
 | **Inlay Hints** | Displays the recipe's total time at the end of the `title:` line, following mise en place placement and passive timer resolution (the `gram.miseEnPlace` and `gram.rests` settings). |
 | **Code Lens** | Injects interactive action buttons above the document (such as nutrition calculation). |
 | **Document Symbol** | Populates the editor's Outline view for clean structural navigation across recipe sections. |
 | **Folding Range** | Enables folding of YAML frontmatter blocks and `##` section headings. |
+
+### Sums of quantities
+
+<Since v="1.5.0" /> On a [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities), the editor helps in three ways:
+
+- **Hover** shows the total as Gram reads it (`{1 cup + 1 tbsp}` → `= 17 tbsp`; a volume next to a weight reads `volume + mass, counted apart`) and, when the ingredient database can weigh every term, its mass. A sum Gram refuses shows nothing more than its warning.
+- **Quick Fixes** read the warning's `data`, passed on as the diagnostic's `data`: insert the ` + ` between two quantities written side by side (`{1 cup 5 tbsp}`, `INVALID_UNIT`), write the result Gram suggests (`{100 g + 10%}` → `{110 g}`, `INVALID_QUANTITY`), or turn `oz` after a volume into `fl oz` (`OZ_AFTER_VOLUME`).
+- **Completion** offers units for each term: after `{1 cup + 2`, the units come back.
 
 ## Settings
 

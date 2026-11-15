@@ -203,6 +203,36 @@ Verser le @lait{0,5-0,75 l}.
 
 Gram n'a pas de séparateur de milliers : écrivez `{1500 g}`, jamais `{1,500 g}`. Une virgule suivie d'exactement trois chiffres se lit comme une décimale, comme les autres (`{1,000 g}` fait 1 g). Mais comme un lecteur anglophone y verrait mille, le compilateur émet `AMBIGUOUS_NUMBER` et précise comment il a lu le nombre. Le point garde le sens qu'il a toujours eu : `{1.000 kg}` fait 1 kg, sans avertissement.
 
+### Sommes de quantités
+<Since v="1.5.0" />
+
+Quand une mesure ne tient pas dans une seule unité, on l'écrit comme le dirait la recette : des termes reliés par `+`, ou par `-` pour une quantité qu'on retire.
+
+```gram
+Ajouter la @farine{1 kg + 200 g} et le @lait{1 l - 10 cl}.
+
+Verser la @crème{20 cl + 1-2 càs}.
+
+Incorporer le @beurre{2 1/2 càs + ½ càc} et le @riz{1 tasse + 20 g}.
+```
+
+Chaque terme est un nombre (ou une fourchette, ou une fraction) suivi de son unité. Gram garde les termes tels qu'écrits et en calcule le total : `{1 kg + 200 g}` fait 1200 g, `{1 l - 10 cl}` fait 90 cl. La recette affiche la somme comme vous l'avez écrite ; une fois mise à l'échelle, elle est recalculée en quantités qu'on peut mesurer (`{1 kg + 200 g}` doublé donne `2,4 kg`, et `{1 cup + 1 tbsp}` doublé donne `2 cup + 2 tbsp`, pas `2 1/8 cup`). Le modificateur `=` fige une somme comme n'importe quelle quantité (`@=sel{1,5 g + 1 pincée}`).
+
+Une somme vaut **plusieurs mentions** de l'ingrédient : `@riz{1 tasse + 20 g}` arrive dans la liste de courses exactement comme `@riz{1 tasse}` suivi de `@&riz{20 g}`. Les termes de même nature s'additionnent (tasses et cuillères, kilos et grammes) ; un volume à côté d'une masse, ou deux unités que Gram ne connaît pas (`{1 tête + 2 gousses}`), restent côte à côte.
+
+Quelques règles gardent une somme lisible :
+
+- **Chaque terme a son unité** : `{1 + 1 tasse}` est refusé.
+- **Rien que des quantités** : pas de pourcentage (`{100 g + 10%}` ; écrivez `{110 g}`, ou une [quantité relative](/fr/docs/reference/syntax/relative-quantities/)), pas de multiplication (`{2 x 100 g + 50 g}`).
+- **On retire d'une quantité de même nature** : `{1 tasse - 2 càs}` passe, `{1 tasse - 20 g}` non, et il doit rester quelque chose (`{1 càs - 1 tasse}` est refusé).
+- **Pas de fourchette après un `-`** : `{1 tasse - 1-2 càs}` inverserait ses bornes ; mettez la fourchette sur un terme ajouté.
+
+Une somme refusée compile quand même, avec un avertissement `INVALID_QUANTITY` qui en donne la raison, et ne compte ni dans la liste de courses ni dans la nutrition. Deux quantités écrites côte à côte sans opérateur (`{1 kg 200 g}`) déclenchent `INVALID_UNIT` ; l'éditeur propose d'insérer le ` + `.
+
+:::caution[oz est une masse]
+Dans `{1 cup + 2 oz}`, `oz` désigne une once de poids, pas de volume : Gram le lit tel quel et ajoute une note (`OZ_AFTER_VOLUME`). Écrivez `fl oz` pour une once liquide.
+:::
+
 ## Gestion des erreurs
 
 Certaines erreurs de syntaxe arrêtent la lecture de la recette avant même la compilation : une quantité entre accolades illisible (`@sel{1 g/l}`), une accolade jamais refermée. Le message indique l'endroit exact à corriger, et l'éditeur le souligne.
@@ -214,6 +244,7 @@ Le compilateur vérifie les erreurs sémantiques dans vos déclarations d'`@ingr
 - **Base de Données Manquante** : Si vous compilez avec une base de données et que l'`@ingrédient` est introuvable, il avertit `MISSING_INGREDIENT`.
 - **Macros Manquants** : Si la base de données ne contient pas d'informations nutritionnelles pour l'`@ingrédient`, il avertit `MISSING_MACROS`.
 - **Masse Inconnue** : S'il ne peut pas convertir un volume ou une unité en grammes pour estimer la nutrition, il avertit `UNKNOWN_MASS`.
+- **Quantité invalide** : si une somme de quantités ne peut pas être lue (un terme sans unité, un pourcentage, une quantité retirée d'une autre nature…), il avertit `INVALID_QUANTITY` et en donne la raison.
 - **Nombre ambigu** : si une virgule est suivie d'exactement trois chiffres (`{1,000 g}`), il lit une décimale et avertit `AMBIGUOUS_NUMBER`, au cas où mille était voulu.
 
 ## Ressources associées

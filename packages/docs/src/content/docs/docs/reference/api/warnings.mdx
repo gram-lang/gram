@@ -19,10 +19,13 @@ interface Warning {
   item?: string;
   loc?: { start: number; end: number }; // character offsets into the source, when available
   section?: string | null;
+  data?: Record<string, unknown>; // since 1.5.0: what a tool needs to fix it (see below)
 }
 ```
 
 `compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
+
+<Since v="1.5.0" /> A few codes also carry `data`, the facts a tool needs to act on the warning without parsing `.message`: the language server passes it on as the diagnostic's `data`, and its Quick Fixes read it. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`) and an ingredient's `INVALID_UNIT` (`{ reason, suggestion? }`) set it; for the other codes it is absent.
 
 ## Severity & `--strict`
 
@@ -58,9 +61,31 @@ A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` in
 ### `INVALID_UNIT`
 Either the word right after a number in a `Timer` (or a section's anchor) is not a time unit, as in `~{3 bananas}`, or a `Temperature` was given a unit other than Celsius/Fahrenheit. **Fix**: use a recognized time unit for timers (`h`, `hr`, `min`, `heures`…); use `°C` or `°F` for temperatures.
 
-<Since v="1.4.1" type="changed" /> It also flags an ingredient whose unit reads as two quantities: a known unit, a number and another known unit, as in `@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`. Gram does not add quantities, so the whole `cup 5 tbsp` was taken as one unknown unit: no mass, and a scaled recipe read `2 cup 5 tbsp`. **Fix**: write the total in one unit (`@flour{1.2 kg}`). A number that only describes the unit, as in `@tomatoes{1 tin of 400 g}`, raises nothing: scaling the number of tins stays right.
+<Since v="1.4.1" type="changed" /> It also flags an ingredient whose unit reads as two quantities: a known unit, a number and another known unit, as in `@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`. The whole `cup 5 tbsp` is taken as one unknown unit: no mass, and a scaled recipe reads `2 cup 5 tbsp`. **Fix**: <Since v="1.5.0" type="changed" /> write the two quantities as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities), `@flour{1 cup + 5 tbsp}`; the editor offers this fix, and `data.suggestion` holds the unit to write (`cup + 5 tbsp`). A number that only describes the unit, as in `@tomatoes{1 tin of 400 g}`, raises nothing: scaling the number of tins stays right.
 
 It flags as well a unit that hides a quantity, as in `@flour{about 200g}`: a quantity starts with its number, so with words in front the whole text was read as a unit, with no mass, and the quantity vanished from a scaled recipe. **Fix**: write the quantity alone (`@flour{200g}`), and the "about" in the step if it matters. Words with no number, such as `{a pinch}` or `{to taste}`, raise nothing.
+
+### `INVALID_QUANTITY`
+<Since v="1.5.0" />
+
+A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) Gram refuses to add up. The recipe still compiles and the sum is shown as written, but it counts for nothing in the shopping list and the nutrition. The message and `data.reason` name the problem:
+
+| `reason` | Example | Fix |
+| :--- | :--- | :--- |
+| `unitlessTerm` | `{1 + 1 cup}` | Give every term its unit: `{1 cup + 1 tbsp}`. |
+| `percentTerm` | `{100 g + 10%}` | Write the result (`{110 g}`, given in `data.suggestion` and offered by the editor), or a relative quantity such as `{10% &flour}`. |
+| `expressionTerm` | `{2 x 100 g + 50 g}` | A sum only adds or takes away: write `{250 g}`. |
+| `quantityInUnit` | `{1 tin of 400 g + 50 g}` | Write the amount in one unit: `{450 g}`. |
+| `nonPositiveTotal` | `{1 tbsp - 1 cup}` | What is taken away is as much as what is added, or more: check the terms. |
+| `rangeAfterMinus` | `{1 cup - 1-2 tbsp}` | A range taken away would swap its bounds: put it on a term that is added, or write the total as a range. |
+| `minusAcrossFamilies` | `{1 cup - 20 g}` | Take an amount away from one of its kind only (a volume from a volume, a weight from a weight). |
+
+Subtraction is checked kind by kind, so `{1 cup - 2 tbsp + 30 g}` is fine.
+
+### `OZ_AFTER_VOLUME`
+<Since v="1.5.0" />
+
+Information: a sum puts `oz` after a volume, as in `@water{1 cup + 2 oz}`. `oz` is an ounce of weight, so Gram reads it as one: the sum is a volume plus a weight. **Fix**: write `fl oz` if a fluid ounce was meant (`data.suggestion`, offered by the editor); otherwise there's nothing to do.
 
 ### `DURATION_OUT_OF_RANGE`
 <Since v="1.4.0" />

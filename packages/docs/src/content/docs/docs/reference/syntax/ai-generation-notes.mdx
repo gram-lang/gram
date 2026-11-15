@@ -3,6 +3,8 @@ title: "Writing Gram programmatically"
 description: "How to programmatically generate .gram files from scripts or AI models, including a step-by-step conversion checklist."
 ---
 
+import Since from '../../../../../components/Since.astro';
+
 This page is for anything that *generates* `.gram` files rather than a person typing them by hand — an import script, a scraper, or an AI model converting an existing recipe (a website, a cookbook scan, a JSON-LD blob) into Gram. The official `gram import` command feeds the AI model it calls a system prompt (`packages/cli/src/prompts/gram-spec.ts`) that's kept manually in sync with this guidance, so treat this page as the published, human-readable version of that same knowledge.
 
 ## Restructure, don't transliterate
@@ -68,6 +70,14 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ❌  ~{about 10 minutes}    →   ✅  ~{10min}
 ```
 Quantities and timers need a real number (or empty braces for "to taste"); fuzzy text doesn't parse.
+
+### One amount given in several measures
+<Since v="1.5.0" />
+
+```gram
+❌  @flour{1 cup 5 tbsp}    →   ✅  @flour{1 cup + 5 tbsp}
+```
+Write an amount the recipe gives in several measures as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities), exactly as the source says it: "1 cup plus 1 tablespoon" is `{1 cup + 1 tbsp}`, "1 cup minus 2 tablespoons" is `{1 cup - 2 tbsp}`, and a volume next to a weight is fine (`{1 cup + 20 g}`). Don't work it out into one number either (`{1.0625 cup}`, `{17 tbsp}`): Gram adds the terms itself and shows them as the cook measures them. Every term needs its unit, and a term is only an amount: no percentage (`{100g + 10%}`), no multiplication (`{2 x 100g}`), no range after `-` (a range may be a term that is added: `{1 cup + 1-2 tbsp}`).
 
 ### Using `@&` on the first occurrence
 
