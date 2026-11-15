@@ -109,6 +109,8 @@ describe("buildScaleComparison", () => {
 				unit: "g",
 				originalQty: 200,
 				scaledQty: 400,
+				originalText: "200 g",
+				scaledText: "400 g",
 			},
 		]);
 	});
@@ -130,9 +132,47 @@ describe("buildScaleComparison", () => {
 				unit: "g",
 				originalQty: 500,
 				scaledQty: 1000,
+				originalText: "500 g",
+				scaledText: "1 kg",
 			},
-			{ id: "milk", name: "Milk", unit: "cup", originalQty: 2, scaledQty: 4 },
+			{
+				id: "milk",
+				name: "Milk",
+				unit: "cup",
+				originalQty: 2,
+				scaledQty: 4,
+				originalText: "2 cup",
+				scaledText: "4 cup",
+			},
 		]);
+	});
+
+	it("writes amounts as the shopping list does: recomposed, ranges by their bounds", () => {
+		const original = [
+			{ id: "flour", name: "Flour", unit: "tbsp", qty: 34 },
+			{
+				id: "sugar",
+				name: "Sugar",
+				unit: "tbsp",
+				qty: 13.5,
+				range: { min: 13, max: 14 },
+			},
+		];
+		const scaled = [
+			{ id: "flour", name: "Flour", unit: "tbsp", qty: 51 },
+			{
+				id: "sugar",
+				name: "Sugar",
+				unit: "tbsp",
+				qty: 27,
+				range: { min: 26, max: 28 },
+			},
+		];
+		const [flour, sugar] = buildScaleComparison(original, scaled);
+		expect(flour?.originalText).toBe("2 cup + 2 tbsp");
+		expect(flour?.scaledText).toBe("3 cup + 3 tbsp");
+		expect(sugar?.originalText).toBe("13-14 tbsp");
+		expect(sugar?.scaledText).toBe("1 cup + 10-12 tbsp");
 	});
 
 	it("marks items without a numeric quantity as nonScalable", () => {

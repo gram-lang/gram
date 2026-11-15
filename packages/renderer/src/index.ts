@@ -82,6 +82,10 @@ export type {
 } from "./shared/nutrition";
 export { type ElementFormat, formatElement } from "./shared/element";
 export {
+	formatUsageQuantity,
+	type QuantityContext,
+} from "./shared/quantity";
+export {
 	DEFAULT_ICONS,
 	HTML_ICONS,
 	MD_ICONS,

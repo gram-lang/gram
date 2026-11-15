@@ -479,14 +479,25 @@ function measured(value: number, unit: string): number | undefined {
 	);
 }
 
-/** The amount `unit` measures nearest `value`, never below its smallest fraction. */
+/**
+ * The amount `unit` measures nearest `value`, never below its smallest
+ * fraction. The last term of a recomposed amount can be measured with
+ * several spoons, so any multiple of the smallest fraction counts
+ * (`3/4 tsp` is `1/2 tsp` and `1/4 tsp`, never rounded down to `1/2 tsp`).
+ */
 function nearestMeasured(value: number, unit: string): number {
+	const smallest = Math.min(...(MEASURED_FRACTIONS[unit] ?? [1]));
+	const whole = Math.floor(value);
+	const multiples = Array.from(
+		{ length: Math.round(1 / smallest) + 1 },
+		(_, k) => whole + k * smallest,
+	);
 	let best = 0;
-	for (const c of measuredCandidates(value, unit)) {
-		if (Math.abs(value - c) < Math.abs(value - best)) best = c;
+	for (const c of [...measuredCandidates(value, unit), ...multiples]) {
+		if (Math.abs(value - c) < Math.abs(value - best) - 1e-9) best = c;
 	}
 	if (best > 0) return best;
-	return Math.min(...(MEASURED_FRACTIONS[unit] ?? [1]));
+	return smallest;
 }
 
 /**
