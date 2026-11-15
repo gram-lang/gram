@@ -33,6 +33,60 @@ describe("diffRecipes — temperature ranges", () => {
 	});
 });
 
+// An ingredient bought in two units is two shopping entries of one id: the
+// diff kept only the last one, and missed a change to the other.
+describe("diffRecipes — an ingredient in two units", () => {
+	const source = (grams: string, cups: string) =>
+		`## Section\n\nMix @flour{${grams} g} and @flour{${cups} cups}.\n`;
+
+	it("sees a change to the first unit", () => {
+		const { ingredients } = diffRecipes(
+			compileRecipe(source("100", "1")),
+			compileRecipe(source("150", "1")),
+		);
+		expect(ingredients).toHaveLength(1);
+		expect(ingredients[0]).toMatchObject({
+			id: "flour",
+			change: "changed",
+			fromQty: 100,
+			toQty: 150,
+			fromUnit: "g",
+			toUnit: "g",
+			percentChange: 50,
+		});
+	});
+
+	it("reports nothing when only the spelling of a unit changed", () => {
+		const a = compileRecipe("## Section\n\nMix @flour{2 cups}.\n");
+		const b = compileRecipe("## Section\n\nMix @flour{2 cup}.\n");
+		expect(diffRecipes(a, b).ingredients).toEqual([]);
+	});
+
+	it("still reports a change of unit as a change, not a removal", () => {
+		const a = compileRecipe("## Section\n\nMix @flour{200 g}.\n");
+		const b = compileRecipe("## Section\n\nMix @flour{1 cup}.\n");
+		const { ingredients } = diffRecipes(a, b);
+		expect(ingredients).toHaveLength(1);
+		expect(ingredients[0]).toMatchObject({
+			change: "changed",
+			fromUnit: "g",
+			toUnit: "cup",
+		});
+	});
+
+	it("reports a unit only one side has as added", () => {
+		const a = compileRecipe("## Section\n\nMix @flour{100 g}.\n");
+		const b = compileRecipe(source("100", "1"));
+		const { ingredients } = diffRecipes(a, b);
+		expect(ingredients).toHaveLength(1);
+		expect(ingredients[0]).toMatchObject({
+			change: "added",
+			toQty: 1,
+			toUnit: "cups",
+		});
+	});
+});
+
 describe("diffRecipes — duplicate section titles", () => {
 	it("does not lose the first section's tokens when two sections share a title", () => {
 		const a = compileRecipe(
