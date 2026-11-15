@@ -32,11 +32,25 @@ export function isInsideTimer(prefix: string): boolean {
 }
 
 /**
- * Time units, from `TIME_DICTIONARIES`: the canonical ones first (`min`
- * stands for the key `m`, which reads too but is not how Gram writes a
- * minute), then every abbreviation of every language.
+ * The languages of a unit dictionary in the order completion ranks their
+ * aliases: French first (Gram's primary locale), then English, then any
+ * other, so time and quantity units rank the same way.
  */
-function timeUnitCompletions(): CompletionItem[] {
+function byLanguage<T>(dicts: Record<string, T>): T[] {
+	const first = ["fr", "en"].filter((lang) => lang in dicts);
+	const rest = Object.keys(dicts).filter((lang) => !first.includes(lang));
+	return [...first, ...rest].map((lang) => dicts[lang] as T);
+}
+
+/**
+ * Unit completions: the canonical labels first (rank 0), then the aliases of
+ * each language in turn (rank 1, 2, …), each label offered once.
+ */
+function unitCompletions(
+	canonicals: string[],
+	dicts: Record<string, Record<string, string[]>>,
+	canonicalLabel: (key: string) => string = (key) => key,
+): CompletionItem[] {
 	const items: CompletionItem[] = [];
 	const seen = new Set<string>();
 	const add = (label: string, canonical: string, rank: number) => {
@@ -49,50 +63,29 @@ function timeUnitCompletions(): CompletionItem[] {
 			sortText: `${rank}${label}`,
 		});
 	};
-	const canonicalLabel = (key: string) => (key === "m" ? "min" : key);
-	for (const key of Object.keys(TIME_DICTIONARIES.en))
+	for (const key of canonicals)
 		add(canonicalLabel(key), canonicalLabel(key), 0);
-	let rank = 1;
-	for (const dict of Object.values(TIME_DICTIONARIES)) {
+	byLanguage(dicts).forEach((dict, i) => {
 		for (const [key, aliases] of Object.entries(dict))
-			for (const alias of aliases) add(alias, canonicalLabel(key), rank);
-		rank++;
-	}
+			for (const alias of aliases) add(alias, canonicalLabel(key), i + 1);
+	});
 	return items;
 }
+
+/**
+ * Time units, from `TIME_DICTIONARIES`: the canonical ones first (`min`
+ * stands for the key `m`, which reads too but is not how Gram writes a
+ * minute), then every abbreviation of every language.
+ */
+const timeUnitCompletions = (): CompletionItem[] =>
+	unitCompletions(
+		Object.keys(TIME_DICTIONARIES.en),
+		TIME_DICTIONARIES,
+		(key) => (key === "m" ? "min" : key),
+	);
 
 export function provideUnitCompletions(prefix: string): CompletionItem[] {
 	if (!hasNumberBeforeCursor(prefix)) return [];
 	if (isInsideTimer(prefix)) return timeUnitCompletions();
-
-	const items: CompletionItem[] = [];
-	const seen = new Set<string>();
-
-	function add(label: string, canonical: string, sortPrefix: string) {
-		if (seen.has(label)) return;
-		seen.add(label);
-		items.push({
-			label,
-			kind: CompletionItemKind.Unit,
-			detail: canonical !== label ? `→ ${canonical}` : undefined,
-			sortText: sortPrefix + label,
-		});
-	}
-
-	// Canonical unit labels (from dictionary keys) — highest priority
-	for (const canon of Object.keys(UNIT_DICTIONARIES.en)) {
-		add(canon, canon, "0");
-	}
-
-	// FR aliases first (primary locale in Gram)
-	for (const [canon, aliases] of Object.entries(UNIT_DICTIONARIES.fr)) {
-		for (const alias of aliases) add(alias, canon, "1");
-	}
-
-	// EN aliases
-	for (const [canon, aliases] of Object.entries(UNIT_DICTIONARIES.en)) {
-		for (const alias of aliases) add(alias, canon, "2");
-	}
-
-	return items;
+	return unitCompletions(Object.keys(UNIT_DICTIONARIES.en), UNIT_DICTIONARIES);
 }

@@ -286,6 +286,11 @@
              "2": { "name": "entity.name.tag.intermediate.gram" }
          }
     },
+    "number": {
+      "comment": "A number on its own: digits, a decimal point or comma between two digits, a fraction. Patterns that capture a number and its unit together (#temperature-content) keep their own copy: a TextMate regex cannot include another.",
+      "match": "\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?",
+      "name": "constant.numeric.gram"
+    },
     "temperature-content": {
       "patterns": [
         {
@@ -304,10 +309,7 @@
             "2": { "name": "invalid.illegal.unit.gram" }
           }
         },
-        {
-          "match": "\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?",
-          "name": "constant.numeric.gram"
-        },
+        { "include": "#number" },
         {
           "comment": "No leading digit — a semantic/qualitative temperature (e.g. 'medium heat'), not a unit.",
           "match": "[^\\d\\}]+",
@@ -317,10 +319,7 @@
     },
     "quantity-content": {
       "patterns": [
-        {
-           "match": "\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?",
-           "name": "constant.numeric.gram" 
-        },
+        { "include": "#number" },
         {
            "match": "(%)",
            "name": "keyword.operator.percent.gram"

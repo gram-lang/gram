@@ -167,8 +167,13 @@ export function readAnchor(raw: string): AnchorReading {
 
 	const [side] = parsed.sides;
 	if (side.form === "prime" || side.parts.some((p) => p.unit === "s")) {
-		// `-30s`: a unit written out keeps the INVALID_UNIT it always gave.
-		const word = side.form === "units" ? LAST_WORD.exec(body)?.[1] : undefined;
+		// `-30s`: seconds alone, written out, keep the INVALID_UNIT they always
+		// gave. Seconds in a longer anchor (`-1min 30s`) are a shape an anchor
+		// does not take: INVALID_DURATION says how to write it.
+		const word =
+			side.form === "units" && side.parts.length === 1
+				? LAST_WORD.exec(body)?.[1]
+				: undefined;
 		if (word && resolveTimeUnit(word) === "s") {
 			return { ok: false, problem: { code: "INVALID_UNIT", unit: word } };
 		}

@@ -27,6 +27,15 @@ describe("hover on a section anchor", () => {
 		expect(value).toContain("working day");
 	});
 
+	it("shows an anchor in days to the minute, as it is planned", () => {
+		const value = hoverAt(
+			"## Brioche ~{-1d 2h 30min}\n\nKnead.\n\n## Serve\n\nServe.\n",
+			"~{",
+		);
+		expect(value).toContain(`1${NBSP}d 2${NBSP}h 30${NBSP}min`);
+		expect(value).toContain("working day");
+	});
+
 	it("keeps an anchor in hours in hours, as a deadline within the day", () => {
 		const value = hoverAt(
 			"## Dough ~{-36h}\n\nKnead.\n\n## Serve\n\nServe.\n",

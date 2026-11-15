@@ -18,6 +18,27 @@ function recipeLang(state: DocumentState): string | undefined {
 	return typeof meta === "string" ? meta : undefined;
 }
 
+const MINUTES_PER_DAY = 24 * 60;
+
+/**
+ * An anchor as it is planned, to the minute. `formatDuration` rounds to the
+ * hour from a day up, which would show `~{-1d 2h 30min}` as `1 d 3 h`; an
+ * anchor in days keeps its days (it opens a working day) and writes the rest
+ * in full: `1 d 2 h 30 min`.
+ */
+function anchorDuration(
+	minutes: number,
+	inDays: boolean,
+	lang: string | undefined,
+): string {
+	const total = Math.round(minutes);
+	const days = Math.floor(total / MINUTES_PER_DAY);
+	const rest = total - days * MINUTES_PER_DAY;
+	if (!inDays || days === 0 || rest % 60 === 0)
+		return formatDuration(total, lang, { days: inDays });
+	return `${formatDuration(days * MINUTES_PER_DAY, lang)} ${formatDuration(rest, lang, { days: false })}`;
+}
+
 function markdown(value: string): Hover {
 	return { contents: { kind: MarkupKind.Markdown, value } };
 }
@@ -88,7 +109,7 @@ export function provideAnchorHover(
 	const inDays = reading.unit === "d";
 	const minutes =
 		reading.value * (TIME_TO_MINUTES[resolveTimeUnit(reading.unit)] ?? 1);
-	const duration = formatDuration(minutes, lang, { days: inDays });
+	const duration = anchorDuration(minutes, inDays, lang);
 	const written = state.text.slice(anchor.loc.start, anchor.loc.end);
 	return markdown(
 		[

@@ -97,6 +97,20 @@ describe("a comma that could be a thousands separator (1,000)", () => {
 		expect(result.sections[0]?.retro_planning?.minutes).toBe(-60);
 	});
 
+	it("is flagged in a timer written in full on each side of a range", () => {
+		const warnings = ambiguous("Bake ~{45 min - 1,000 h}.");
+		expect(warnings).toHaveLength(1);
+		expect(warnings[0]?.item).toBe("Timer");
+		expect(warnings[0]?.message).toContain('"1,000" on "Timer" was read as 1');
+	});
+
+	it("is not flagged on a timer that is not read anyway", () => {
+		const codes = compileStep("Bake ~{1,000 min + 30 s}.").warnings.map(
+			(w) => w.code,
+		);
+		expect(codes).toEqual([WarningCode.INVALID_DURATION]);
+	});
+
 	it("is not flagged on an anchor that is dropped anyway", () => {
 		for (const anchor of ["~{1,000h}", "~{-1,000}", "~{-1,000 years}"]) {
 			const codes = compile(

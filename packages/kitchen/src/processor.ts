@@ -65,6 +65,7 @@ import type { RecipeRegistry } from "./registry";
 import {
 	isMeasureUnit,
 	looksLikeThousands,
+	parseDuration,
 	unitContainsQuantity,
 } from "@gram-lang/i18n";
 import { type Warning, WarningCode, pushWarning } from "./warnings";
@@ -223,12 +224,26 @@ function checkAmbiguousNumbers(
 			);
 			return;
 		case ASTNodeType.Timer:
-			checkAmbiguousNumber(
-				ctx,
-				quantityValue(item.quantity),
-				item.name || "Timer",
-				item.loc,
-			);
+			if (item.quantity?.type === ASTNodeType.Quantity) {
+				checkAmbiguousNumber(
+					ctx,
+					quantityValue(item.quantity),
+					item.name || "Timer",
+					item.loc,
+				);
+			} else if (parseDuration(item.raw).ok) {
+				// A natural timer the grammar keeps as text (`45 min - 1,000 h`):
+				// its numbers are only in what was written. One that is not read
+				// already says why (INVALID_DURATION).
+				for (const text of item.raw.match(/\d+(?:[.,]\d+)?/g) ?? [])
+					checkAmbiguousText(
+						ctx,
+						text,
+						String(Number(text.replace(",", "."))),
+						item.name || "Timer",
+						item.loc,
+					);
+			}
 			return;
 		case ASTNodeType.Temperature:
 			checkAmbiguousNumber(
