@@ -1,0 +1,17 @@
+---
+title: Warn Invalid Quantity
+---
+
+## Sums Gram refuses
+
+Add @flour{100 g + 10%} and @sugar{2 x 100 g + 50 g}.
+
+Add @milk{1 + 1 cup} and @tomatoes{1 tin of 400 g + 50 g}.
+
+Add @butter{1 tbsp - 1 cup} and @cream{1 cup - 1-2 tbsp}.
+
+Add @oil{1 cup - 20 g}.
+
+## Sums Gram reads, with a note
+
+Add @water{1 cup + 2 oz} and @beef{1 lb 4 oz + 2 oz}.

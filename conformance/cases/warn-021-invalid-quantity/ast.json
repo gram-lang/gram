@@ -1,0 +1,625 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Invalid Quantity"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Sums Gram refuses",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 60,
+                "end": 64
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 100,
+                      "text": "100"
+                    },
+                    "unit": "g",
+                    "loc": {
+                      "start": 71,
+                      "end": 76
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 10,
+                      "text": "10"
+                    },
+                    "unit": "%",
+                    "loc": {
+                      "start": 79,
+                      "end": 82
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "100 g + 10%",
+                "loc": {
+                  "start": 71,
+                  "end": 82
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 64,
+                "end": 83
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 84,
+                "end": 88
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 2,
+                      "text": "2"
+                    },
+                    "unit": "x 100 g",
+                    "loc": {
+                      "start": 95,
+                      "end": 104
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 50,
+                      "text": "50"
+                    },
+                    "unit": "g",
+                    "loc": {
+                      "start": 107,
+                      "end": 111
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "2 x 100 g + 50 g",
+                "loc": {
+                  "start": 95,
+                  "end": 111
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 88,
+                "end": 112
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 112,
+                "end": 113
+              }
+            }
+          ],
+          "loc": {
+            "start": 60,
+            "end": 115
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 115,
+                "end": 119
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": null,
+                    "loc": {
+                      "start": 125,
+                      "end": 126
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "cup",
+                    "loc": {
+                      "start": 129,
+                      "end": 134
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 + 1 cup",
+                "loc": {
+                  "start": 125,
+                  "end": 134
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 119,
+                "end": 135
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 136,
+                "end": 140
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "tomatoes",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "tin of 400 g",
+                    "loc": {
+                      "start": 150,
+                      "end": 164
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 50,
+                      "text": "50"
+                    },
+                    "unit": "g",
+                    "loc": {
+                      "start": 167,
+                      "end": 171
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 tin of 400 g + 50 g",
+                "loc": {
+                  "start": 150,
+                  "end": 171
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 140,
+                "end": 172
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 172,
+                "end": 173
+              }
+            }
+          ],
+          "loc": {
+            "start": 115,
+            "end": 175
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 175,
+                "end": 179
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "tbsp",
+                    "loc": {
+                      "start": 187,
+                      "end": 193
+                    }
+                  },
+                  {
+                    "minus": true,
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "cup",
+                    "loc": {
+                      "start": 196,
+                      "end": 201
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 tbsp - 1 cup",
+                "loc": {
+                  "start": 187,
+                  "end": 201
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 179,
+                "end": 202
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 203,
+                "end": 207
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "cream",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "cup",
+                    "loc": {
+                      "start": 214,
+                      "end": 219
+                    }
+                  },
+                  {
+                    "minus": true,
+                    "value": {
+                      "type": "range",
+                      "value": 1.5,
+                      "range": {
+                        "min": 1,
+                        "max": 2
+                      },
+                      "text": "1-2"
+                    },
+                    "unit": "tbsp",
+                    "loc": {
+                      "start": 222,
+                      "end": 230
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 cup - 1-2 tbsp",
+                "loc": {
+                  "start": 214,
+                  "end": 230
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 207,
+                "end": 231
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 231,
+                "end": 232
+              }
+            }
+          ],
+          "loc": {
+            "start": 175,
+            "end": 234
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 234,
+                "end": 238
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "oil",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "cup",
+                    "loc": {
+                      "start": 243,
+                      "end": 248
+                    }
+                  },
+                  {
+                    "minus": true,
+                    "value": {
+                      "type": "single",
+                      "value": 20,
+                      "text": "20"
+                    },
+                    "unit": "g",
+                    "loc": {
+                      "start": 251,
+                      "end": 255
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 cup - 20 g",
+                "loc": {
+                  "start": 243,
+                  "end": 255
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 238,
+                "end": 256
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 256,
+                "end": 257
+              }
+            }
+          ],
+          "loc": {
+            "start": 234,
+            "end": 259
+          }
+        }
+      ],
+      "loc": {
+        "start": 38,
+        "end": 259
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Sums Gram reads, with a note",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 292,
+                "end": 296
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "cup",
+                    "loc": {
+                      "start": 303,
+                      "end": 308
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 2,
+                      "text": "2"
+                    },
+                    "unit": "oz",
+                    "loc": {
+                      "start": 311,
+                      "end": 315
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 cup + 2 oz",
+                "loc": {
+                  "start": 303,
+                  "end": 315
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 296,
+                "end": 316
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 317,
+                "end": 321
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "beef",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "lb 4 oz",
+                    "loc": {
+                      "start": 327,
+                      "end": 336
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 2,
+                      "text": "2"
+                    },
+                    "unit": "oz",
+                    "loc": {
+                      "start": 339,
+                      "end": 343
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 lb 4 oz + 2 oz",
+                "loc": {
+                  "start": 327,
+                  "end": 343
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 321,
+                "end": 344
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 344,
+                "end": 345
+              }
+            }
+          ],
+          "loc": {
+            "start": 292,
+            "end": 346
+          }
+        }
+      ],
+      "loc": {
+        "start": 259,
+        "end": 346
+      }
+    }
+  ]
+}

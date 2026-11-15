@@ -20,6 +20,8 @@ import type { CompilerOptions } from "./core";
 // Imported from "./scale/types" (not the "./scale" barrel) to avoid a cycle:
 // "./scale" re-exports engine.ts, which itself imports from this file.
 import { InvalidFactorError } from "./scale/types";
+import { readSum } from "./compound";
+import { writeSum } from "./terms";
 
 /**
  * Deterministic short hash (djb2), used as a slug fallback when a name has no
@@ -117,9 +119,12 @@ export const createCleanUsage = (
 			cleanQty = minifyQuantity(qtyNode.value || qtyNode);
 		} else if (qtyNode.type === ASTNodeType.RelativeQuantity) {
 			cleanQty = minifyQuantity(qtyNode);
+		} else if (qtyNode.type === ASTNodeType.CompoundQuantity) {
+			// A sum: its terms, and what they amount to (the processor says
+			// why when it is refused).
+			const sum = readSum(qtyNode, item.loc);
+			writeSum(obj, sum.terms, sum.problems.length > 0);
 		}
-		// TODO(1.5): a sum of quantities (CompoundQuantity) is not compiled
-		// yet; it will be, from its terms (`termsOfAst`).
 	}
 
 	if (cleanQty !== undefined) obj.qty = cleanQty;
@@ -155,7 +160,8 @@ export const createCleanUsage = (
 	if (
 		item.type !== ASTNodeType.Cookware &&
 		qtyNode &&
-		qtyNode.type === ASTNodeType.Quantity &&
+		(qtyNode.type === ASTNodeType.Quantity ||
+			qtyNode.type === ASTNodeType.CompoundQuantity) &&
 		qtyNode.fixed === true
 	) {
 		obj.fixed = true;
@@ -173,8 +179,10 @@ export const createCleanUsage = (
 		const comp: UsageComposite = { parent: item.composite.parent };
 		if (item.composite.quantity) {
 			const compQty = item.composite.quantity;
-			// TODO(1.5): compile a sum of quantities (CompoundQuantity).
-			if (compQty.type !== ASTNodeType.CompoundQuantity) {
+			if (compQty.type === ASTNodeType.CompoundQuantity) {
+				const sum = readSum(compQty, item.loc);
+				writeSum(comp, sum.terms, sum.problems.length > 0, "quantity");
+			} else {
 				const minified = minifyQuantity(compQty);
 				if (minified !== undefined) comp.quantity = minified;
 				if (compQty.type === ASTNodeType.Quantity && compQty.unit)

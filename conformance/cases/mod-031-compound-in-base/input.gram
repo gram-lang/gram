@@ -1,0 +1,9 @@
+---
+title: Mod Compound In Base
+---
+
+@use "./bases/pate.gram" as &pate
+
+## Montage
+
+[Foncer] avec &pate{400 g + 100 g}.

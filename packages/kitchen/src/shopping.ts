@@ -1,5 +1,11 @@
 import { slugify, round2 } from "./utils";
-import { numericTotal, termsOfQuantity, termsOfUsage } from "./terms";
+import {
+	amountsOfUsage,
+	numericTotal,
+	termsOfComposite,
+	termsOfUsage,
+	writeSum,
+} from "./terms";
 import { detectCycles } from "./graph";
 import { ASTNodeType } from "@gram-lang/parser";
 import { normalizeUnit, type Term } from "@gram-lang/i18n";
@@ -110,6 +116,17 @@ interface CompositeAccumulator {
 }
 
 /**
+ * A usage as the shopping list adds it up: itself, or, for a sum of several
+ * families (`{1 cup + 20 g}`), one copy per family, each holding the terms
+ * of that family and what they amount to.
+ */
+function byFamily(item: Usage): Usage[] {
+	const amounts = amountsOfUsage(item);
+	if (amounts.length <= 1) return [item];
+	return amounts.map((amount) => writeSum({ ...item }, amount.terms));
+}
+
+/**
  * Main entry point for shopping list generation.
  * Iterates through all compiled sections and merges identical ingredients by ID,
  * aggregates compatible quantities, handles composite/parent sub-recipes, and flags circular references.
@@ -125,6 +142,8 @@ export function generateShoppingList(
 	const termsByKey = new Map<string, Term[]>();
 	const compositeMap = new Map<string, CompositeAccumulator>();
 	const alternatives: Usage[] = [];
+	// The usages whose share of a composite parent is already counted.
+	const sharedParent = new Set<string>();
 
 	const circularIds = detectCycles(sections);
 
@@ -142,129 +161,137 @@ export function generateShoppingList(
 			if (!isPurchasableReference(item.type, registry.ingredients.get(item.id)))
 				return;
 
-			if (item.composite) {
-				const parentId = slugify(item.composite.parent);
-				if (!compositeMap.has(parentId)) {
-					compositeMap.set(parentId, {
-						id: parentId,
-						subUsageMap: new Map(),
-						usageAccumulator: new Map(),
-					});
-				}
-				const comp = compositeMap.get(parentId)!;
-
-				let declParentQty = 1;
-				if (item.composite?.quantity) {
-					const numQ = numericTotal(
-						termsOfQuantity(item.composite.quantity, item.composite.unit),
-					);
-					if (numQ !== null) declParentQty = numQ;
-				}
-
-				const subId = item.id;
-				const currentParentTotal = comp.subUsageMap.get(subId) || 0;
-				comp.subUsageMap.set(subId, currentParentTotal + declParentQty);
-
-				// Spellings of one unit (`cup` / `cups`, `c.à.s` / `tbsp`) share an
-				// entry, shown with the first spelling met.
-				const uKey = `${subId}::${normalizeUnit(item.unit)}`;
-
-				if (!comp.usageAccumulator.has(uKey)) {
-					comp.usageAccumulator.set(uKey, {
-						id: subId,
-						unit: item.unit,
-						// Left undefined (not 0) until a measured usage is seen, so a
-						// composite child written bare (e.g. `@jus<@citron{1/2}`, no
-						// quantity of its own) doesn't display as "(0)" — it stays
-						// unmeasured, like any other bare ingredient.
-						qty: undefined,
-						alias: item.alias,
-					});
-				}
-				const uEntry = comp.usageAccumulator.get(uKey)!;
-
-				const numQ = numericTotal(termsOfUsage(item));
-				if (numQ !== null) {
-					uEntry.qty = (typeof uEntry.qty === "number" ? uEntry.qty : 0) + numQ;
-				}
-				return;
-			}
-
-			const id = item.id;
-
-			const unit = item.unit || "";
-			const isGhost = item.formula?.isGhost === true;
-			// The usage's terms, kept only when they amount to a number: a
-			// ghost formula has none to add, and a term without a number goes
-			// to the variable parts below, as written.
-			const terms = isGhost ? [] : termsOfUsage(item);
-			const numericQty = numericTotal(terms);
-
-			// Group by ID AND unit (and ghost status) to prevent semantic data loss
-			// where secondary units were stringified into variable_entries. The
-			// unit is normalized, so the spellings of one unit (`cup` / `cups`,
-			// `c.à.s` / `tbsp`) add up in one entry, shown with the first
-			// spelling met.
-			const key = `${id}::${normalizeUnit(unit)}::${isGhost ? "ghost" : "real"}`;
-
-			if (!listMap.has(key)) {
-				const name = registry.ingredients.get(id)?.name || item.name;
-
-				listMap.set(key, {
-					id: id,
-					name: name,
-					unit: unit,
-					variableParts: [],
-					_usageIds: [],
-				});
-			}
-
-			const existing = listMap.get(key)!;
-			if (item._usageId) {
-				existing._usageIds!.push(item._usageId);
-			}
-
-			// Track whether every contributing usage is protected (@= or a
-			// TextQuantity like "a pinch"), and whether any is a relative
-			// (formula-derived) quantity — both disqualify this ingredient
-			// as a --scale reference target (see @gram-lang/kitchen's ScaleEngine).
-			existing.allFixed = item.fixed ? (existing.allFixed ?? true) : false;
-			if (item.formula) existing.isRelative = true;
-			// Propagate modifiers (e.g. the `*` baker's-percentage reference marker)
-			// so consumers reading the shopping list — not just per-usage AST nodes —
-			// can find it too.
-			if (item.modifiers && item.modifiers.length > 0) {
-				if (!existing.modifierSet) existing.modifierSet = new Set();
-				item.modifiers.forEach((m: string) => {
-					existing.modifierSet?.add(m);
-				});
-			}
-
-			if (isGhost) {
-				// isGhost is only ever set from `item.formula.isGhost` above, so
-				// `item.formula` is always truthy here — the `.qty`/`.value`
-				// fallback below it was dead code (also, `.value` doesn't exist
-				// on every Usage["qty"] variant, e.g. RelativeQuantityAST).
-				const text = item.formula?.raw ?? "";
-				const display = `${text} ❓`;
-				existing.variableParts!.push(`(${display})`);
-			} else if (numericQty !== null) {
-				const entryTerms = termsByKey.get(key);
-				if (entryTerms) entryTerms.push(...terms);
-				else termsByKey.set(key, [...terms]);
-			} else {
-				if (item.qty) {
-					const qStr = formatQuantity(item.qty);
-					const uStr = unit ? ` ${unit}` : "";
-					existing.variableParts!.push(`${qStr}${uStr}`);
-				}
-			}
-
-			if (!isGhost && item.isCircular) {
-				existing.variableParts!.push("⚠️ Circular Ref.");
-			}
+			// A sum of several families (`{1 cup + 20 g}`) is bought as one
+			// amount per family, as if they had been written apart.
+			byFamily(item).forEach(addToList);
 		});
 	});
+
+	function addToList(item: Usage) {
+		if (item.composite) {
+			const parentId = slugify(item.composite.parent);
+			if (!compositeMap.has(parentId)) {
+				compositeMap.set(parentId, {
+					id: parentId,
+					subUsageMap: new Map(),
+					usageAccumulator: new Map(),
+				});
+			}
+			const comp = compositeMap.get(parentId)!;
+
+			let declParentQty = 1;
+			if (item.composite?.quantity || item.composite?.parts) {
+				const numQ = numericTotal(termsOfComposite(item.composite));
+				if (numQ !== null) declParentQty = numQ;
+			}
+
+			const subId = item.id;
+			// A child split by family (`byFamily`) draws on its parent once.
+			if (!item._usageId || !sharedParent.has(item._usageId)) {
+				if (item._usageId) sharedParent.add(item._usageId);
+				const currentParentTotal = comp.subUsageMap.get(subId) || 0;
+				comp.subUsageMap.set(subId, currentParentTotal + declParentQty);
+			}
+
+			// Spellings of one unit (`cup` / `cups`, `c.à.s` / `tbsp`) share an
+			// entry, shown with the first spelling met.
+			const uKey = `${subId}::${normalizeUnit(item.unit)}`;
+
+			if (!comp.usageAccumulator.has(uKey)) {
+				comp.usageAccumulator.set(uKey, {
+					id: subId,
+					unit: item.unit,
+					// Left undefined (not 0) until a measured usage is seen, so a
+					// composite child written bare (e.g. `@jus<@citron{1/2}`, no
+					// quantity of its own) doesn't display as "(0)" — it stays
+					// unmeasured, like any other bare ingredient.
+					qty: undefined,
+					alias: item.alias,
+				});
+			}
+			const uEntry = comp.usageAccumulator.get(uKey)!;
+
+			const numQ = numericTotal(termsOfUsage(item));
+			if (numQ !== null) {
+				uEntry.qty = (typeof uEntry.qty === "number" ? uEntry.qty : 0) + numQ;
+			}
+			return;
+		}
+
+		const id = item.id;
+
+		const unit = item.unit || "";
+		const isGhost = item.formula?.isGhost === true;
+		// The usage's terms, kept only when they amount to a number: a
+		// ghost formula has none to add, and a term without a number goes
+		// to the variable parts below, as written.
+		const terms = isGhost ? [] : termsOfUsage(item);
+		const numericQty = numericTotal(terms);
+
+		// Group by ID AND unit (and ghost status) to prevent semantic data loss
+		// where secondary units were stringified into variable_entries. The
+		// unit is normalized, so the spellings of one unit (`cup` / `cups`,
+		// `c.à.s` / `tbsp`) add up in one entry, shown with the first
+		// spelling met.
+		const key = `${id}::${normalizeUnit(unit)}::${isGhost ? "ghost" : "real"}`;
+
+		if (!listMap.has(key)) {
+			const name = registry.ingredients.get(id)?.name || item.name;
+
+			listMap.set(key, {
+				id: id,
+				name: name,
+				unit: unit,
+				variableParts: [],
+				_usageIds: [],
+			});
+		}
+
+		const existing = listMap.get(key)!;
+		if (item._usageId) {
+			existing._usageIds!.push(item._usageId);
+		}
+
+		// Track whether every contributing usage is protected (@= or a
+		// TextQuantity like "a pinch"), and whether any is a relative
+		// (formula-derived) quantity — both disqualify this ingredient
+		// as a --scale reference target (see @gram-lang/kitchen's ScaleEngine).
+		existing.allFixed = item.fixed ? (existing.allFixed ?? true) : false;
+		if (item.formula) existing.isRelative = true;
+		// Propagate modifiers (e.g. the `*` baker's-percentage reference marker)
+		// so consumers reading the shopping list — not just per-usage AST nodes —
+		// can find it too.
+		if (item.modifiers && item.modifiers.length > 0) {
+			if (!existing.modifierSet) existing.modifierSet = new Set();
+			item.modifiers.forEach((m: string) => {
+				existing.modifierSet?.add(m);
+			});
+		}
+
+		if (isGhost) {
+			// isGhost is only ever set from `item.formula.isGhost` above, so
+			// `item.formula` is always truthy here — the `.qty`/`.value`
+			// fallback below it was dead code (also, `.value` doesn't exist
+			// on every Usage["qty"] variant, e.g. RelativeQuantityAST).
+			const text = item.formula?.raw ?? "";
+			const display = `${text} ❓`;
+			existing.variableParts!.push(`(${display})`);
+		} else if (numericQty !== null) {
+			const entryTerms = termsByKey.get(key);
+			if (entryTerms) entryTerms.push(...terms);
+			else termsByKey.set(key, [...terms]);
+		} else {
+			if (item.qty) {
+				const qStr = formatQuantity(item.qty);
+				const uStr = unit ? ` ${unit}` : "";
+				existing.variableParts!.push(`${qStr}${uStr}`);
+			}
+		}
+
+		if (!isGhost && item.isCircular) {
+			existing.variableParts!.push("⚠️ Circular Ref.");
+		}
+	}
 
 	const standardList = [...listMap.entries()].map(([key, item]) => {
 		const res: ShoppingListItem = {

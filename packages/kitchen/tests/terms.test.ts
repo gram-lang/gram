@@ -6,6 +6,8 @@ import {
 	termsOfAst,
 	termsOfUsage,
 	usageFromTerms,
+	writeSum,
+	familyTotals,
 } from "../src/terms";
 import { InvalidFactorError } from "../src/scale/types";
 
@@ -124,5 +126,52 @@ describe("numericTotal and scaleUsageTerms", () => {
 		expect(() => scaleUsageTerms([{ value: 500, unit: "g" }], 1e308)).toThrow(
 			InvalidFactorError,
 		);
+	});
+});
+
+describe("parts", () => {
+	const parts = [
+		{ qty: 1, unit: "cup" },
+		{ qty: 2, unit: "tbsp", minus: true as const },
+	];
+
+	it("are read before qty / unit", () => {
+		expect(termsOfUsage({ qty: 14, unit: "tbsp", parts })).toEqual([
+			{ value: 1, unit: "cup" },
+			{ value: 2, unit: "tbsp", minus: true },
+		]);
+	});
+
+	it("never take the text of several families for a unit", () => {
+		const usage = {
+			unit: "1 cup + 20 g",
+			parts: [parts[0]!, { qty: 20, unit: "g" }],
+		};
+		expect(termsOfUsage(usage).map((t) => t.unit)).toEqual(["cup", "g"]);
+	});
+
+	it("of a refused sum count for nothing", () => {
+		expect(termsOfUsage({ parts })).toEqual([]);
+	});
+
+	it("are written with what they amount to", () => {
+		const usage = writeSum({ id: "sugar" }, termsOfUsage({ parts, unit: "x" }));
+		expect(usage).toEqual({ id: "sugar", qty: 14, unit: "tbsp", parts });
+		expect(writeSum({}, termsOfUsage({ parts, unit: "x" }), true)).toEqual({
+			parts,
+		});
+	});
+
+	it("add up one family at a time", () => {
+		expect(
+			familyTotals([
+				{ value: 1, unit: "kg" },
+				{ value: 200, unit: "g" },
+				{ value: 1, unit: "cup" },
+			]),
+		).toEqual([
+			{ value: 1200, unit: "g" },
+			{ value: 1, unit: "cup" },
+		]);
 	});
 });

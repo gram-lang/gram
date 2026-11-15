@@ -7,6 +7,7 @@ import type {
 } from "@gram-lang/parser";
 import type { Warning } from "./warnings";
 import type { ShoppingListItem, CompositeItem } from "./shopping";
+import type { QuantityPart } from "./terms";
 
 // The compiled-JSON shape kept on a Usage for its composite-child info
 // (`@juice{150ml}<@lemon{1}`) — deliberately narrower than the parser's
@@ -20,6 +21,8 @@ export interface UsageComposite {
 	parent: string;
 	quantity?: number | QuantityValueAST;
 	unit?: string;
+	/** The terms of a sum (`<@eggs{1 lb + 4 oz}`), like `Usage.parts`. Since 1.5.0. */
+	parts?: QuantityPart[];
 	preparation?: string;
 }
 
@@ -83,6 +86,14 @@ export interface Usage {
 		| RelativeQuantityAST
 		| TextQuantityAST;
 	unit?: string | null;
+	/**
+	 * The terms of a sum (`{1 cup - 2 tbsp}`), as written, `qty` / `unit`
+	 * being what they amount to (`14 tbsp`). A sum of several families
+	 * (`{1 cup + 20 g}`) has no `qty` and keeps its text in `unit`; a sum
+	 * Gram refused (`INVALID_QUANTITY`) has `parts` only. Absent for a
+	 * single quantity. Since 1.5.0.
+	 */
+	parts?: QuantityPart[];
 	modifiers?: string[];
 	fixed?: boolean;
 	alias?: string | null;

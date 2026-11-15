@@ -1,0 +1,919 @@
+{
+  "title": "Warn Invalid Quantity",
+  "slug": "warn-invalid-quantity",
+  "meta": {
+    "title": "Warn Invalid Quantity"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk"
+      },
+      "tomatoes": {
+        "id": "tomatoes",
+        "name": "tomatoes"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter"
+      },
+      "cream": {
+        "id": "cream",
+        "name": "cream"
+      },
+      "oil": {
+        "id": "oil",
+        "name": "oil"
+      },
+      "water": {
+        "id": "water",
+        "name": "water"
+      },
+      "beef": {
+        "id": "beef",
+        "name": "beef"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ]
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2"
+      ]
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "3"
+      ]
+    },
+    {
+      "id": "tomatoes",
+      "name": "tomatoes",
+      "_usageIds": [
+        "4"
+      ]
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "5"
+      ]
+    },
+    {
+      "id": "cream",
+      "name": "cream",
+      "_usageIds": [
+        "6"
+      ]
+    },
+    {
+      "id": "oil",
+      "name": "oil",
+      "_usageIds": [
+        "7"
+      ]
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "8"
+      ],
+      "qty": 1,
+      "unit": "cup",
+      "multiUnit": true
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "8"
+      ],
+      "qty": 2,
+      "unit": "oz",
+      "multiUnit": true
+    },
+    {
+      "id": "beef",
+      "name": "beef",
+      "_usageIds": [
+        "9"
+      ],
+      "qty": 1,
+      "unit": "lb 4 oz",
+      "multiUnit": true
+    },
+    {
+      "id": "beef",
+      "name": "beef",
+      "_usageIds": [
+        "9"
+      ],
+      "qty": 2,
+      "unit": "oz",
+      "multiUnit": true
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Sums Gram refuses",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "parts": [
+            {
+              "qty": 100,
+              "unit": "g"
+            },
+            {
+              "qty": 10,
+              "unit": "%"
+            }
+          ]
+        },
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "parts": [
+            {
+              "qty": 2,
+              "unit": "x 100 g"
+            },
+            {
+              "qty": 50,
+              "unit": "g"
+            }
+          ]
+        },
+        {
+          "id": "milk",
+          "_usageId": "3",
+          "parts": [
+            {
+              "qty": 1
+            },
+            {
+              "qty": 1,
+              "unit": "cup"
+            }
+          ]
+        },
+        {
+          "id": "tomatoes",
+          "_usageId": "4",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "tin of 400 g"
+            },
+            {
+              "qty": 50,
+              "unit": "g"
+            }
+          ]
+        },
+        {
+          "id": "butter",
+          "_usageId": "5",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "tbsp"
+            },
+            {
+              "qty": 1,
+              "unit": "cup",
+              "minus": true
+            }
+          ]
+        },
+        {
+          "id": "cream",
+          "_usageId": "6",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": {
+                "type": "range",
+                "value": 1.5,
+                "range": {
+                  "min": 1,
+                  "max": 2
+                },
+                "text": "1-2"
+              },
+              "unit": "tbsp",
+              "minus": true
+            }
+          ]
+        },
+        {
+          "id": "oil",
+          "_usageId": "7",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 20,
+              "unit": "g",
+              "minus": true
+            }
+          ]
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "parts": [
+                {
+                  "qty": 100,
+                  "unit": "g"
+                },
+                {
+                  "qty": 10,
+                  "unit": "%"
+                }
+              ]
+            },
+            "and ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "parts": [
+                {
+                  "qty": 2,
+                  "unit": "x 100 g"
+                },
+                {
+                  "qty": 50,
+                  "unit": "g"
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "milk",
+              "_usageId": "3",
+              "parts": [
+                {
+                  "qty": 1
+                },
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                }
+              ]
+            },
+            "and ",
+            {
+              "id": "tomatoes",
+              "_usageId": "4",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "tin of 400 g"
+                },
+                {
+                  "qty": 50,
+                  "unit": "g"
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "butter",
+              "_usageId": "5",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "tbsp"
+                },
+                {
+                  "qty": 1,
+                  "unit": "cup",
+                  "minus": true
+                }
+              ]
+            },
+            "and ",
+            {
+              "id": "cream",
+              "_usageId": "6",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": {
+                    "type": "range",
+                    "value": 1.5,
+                    "range": {
+                      "min": 1,
+                      "max": 2
+                    },
+                    "text": "1-2"
+                  },
+                  "unit": "tbsp",
+                  "minus": true
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "oil",
+              "_usageId": "7",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 20,
+                  "unit": "g",
+                  "minus": true
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "flour",
+          "sugar",
+          "milk",
+          "tomatoes",
+          "butter",
+          "cream",
+          "oil"
+        ]
+      }
+    },
+    {
+      "title": "Sums Gram reads, with a note",
+      "ingredients": [
+        {
+          "id": "water",
+          "_usageId": "8",
+          "unit": "1 cup + 2 oz",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 2,
+              "unit": "oz"
+            }
+          ]
+        },
+        {
+          "id": "beef",
+          "_usageId": "9",
+          "unit": "1 lb 4 oz + 2 oz",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "lb 4 oz"
+            },
+            {
+              "qty": 2,
+              "unit": "oz"
+            }
+          ]
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "water",
+              "_usageId": "8",
+              "unit": "1 cup + 2 oz",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 2,
+                  "unit": "oz"
+                }
+              ]
+            },
+            "and ",
+            {
+              "id": "beef",
+              "_usageId": "9",
+              "unit": "1 lb 4 oz + 2 oz",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "lb 4 oz"
+                },
+                {
+                  "qty": 2,
+                  "unit": "oz"
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 8,
+            "end": 10,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "water",
+          "beef"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Quantity \"10%\" of \"flour\" is not read: a percentage is not an amount Gram can add. Write the result, or a relative quantity such as {10% &flour} for a share of another ingredient. Did you mean {110 g}? It is not counted in the shopping list or the nutrition.",
+      "item": "flour",
+      "loc": {
+        "start": 79,
+        "end": 82
+      },
+      "data": {
+        "reason": "percentTerm",
+        "suggestion": "110 g"
+      }
+    },
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Quantity \"2 x 100 g\" of \"sugar\" is not read: a sum only adds or takes away amounts: write the result (e.g. {250 g} rather than {2 x 100 g + 50 g}). It is not counted in the shopping list or the nutrition.",
+      "item": "sugar",
+      "loc": {
+        "start": 95,
+        "end": 104
+      },
+      "data": {
+        "reason": "expressionTerm"
+      }
+    },
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Quantity \"1\" of \"milk\" is not read: every term of a sum needs its unit (e.g. {1 cup + 1 tbsp}, not {1 + 1 tbsp}). It is not counted in the shopping list or the nutrition.",
+      "item": "milk",
+      "loc": {
+        "start": 125,
+        "end": 126
+      },
+      "data": {
+        "reason": "unitlessTerm"
+      }
+    },
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Quantity \"1 tin of 400 g\" of \"tomatoes\" is not read: this term's unit holds a quantity of its own: write the amount in one unit (e.g. {450 g} rather than {1 tin of 400 g + 50 g}). It is not counted in the shopping list or the nutrition.",
+      "item": "tomatoes",
+      "loc": {
+        "start": 150,
+        "end": 164
+      },
+      "data": {
+        "reason": "quantityInUnit"
+      }
+    },
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Quantity \"1 tbsp - 1 cup\" of \"butter\" is not read: what is taken away is as much as what is added, or more: the sum comes to nothing. It is not counted in the shopping list or the nutrition.",
+      "item": "butter",
+      "loc": {
+        "start": 187,
+        "end": 201
+      },
+      "data": {
+        "reason": "nonPositiveTotal"
+      }
+    },
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Quantity \"1-2 tbsp\" of \"cream\" is not read: a range cannot be taken away (its bounds would swap): write the range on a term that is added, or the total as a range. It is not counted in the shopping list or the nutrition.",
+      "item": "cream",
+      "loc": {
+        "start": 222,
+        "end": 230
+      },
+      "data": {
+        "reason": "rangeAfterMinus"
+      }
+    },
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Quantity \"1 cup - 20 g\" of \"oil\" is not read: an amount is only taken away from one of its kind (a volume from a volume, a weight from a weight): Gram cannot check the rest is left above zero. It is not counted in the shopping list or the nutrition.",
+      "item": "oil",
+      "loc": {
+        "start": 243,
+        "end": 255
+      },
+      "data": {
+        "reason": "minusAcrossFamilies"
+      }
+    },
+    {
+      "code": "OZ_AFTER_VOLUME",
+      "message": "\"2 oz\" of \"water\" is a weight: oz weighs, fl oz measures a volume. Write fl oz if a volume is meant.",
+      "item": "water",
+      "loc": {
+        "start": 311,
+        "end": 315
+      },
+      "data": {
+        "suggestion": "fl oz"
+      }
+    },
+    {
+      "code": "INVALID_UNIT",
+      "message": "Unit \"lb 4 oz\" of \"beef\" reads as two quantities, which Gram does not add: write the total in one unit (e.g. {1.2 kg} rather than {1 kg 200 g}).",
+      "item": "beef",
+      "loc": {
+        "start": 327,
+        "end": 336
+      }
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"water\" — omitted from nutritional totals."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"water\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"beef\" — omitted from nutritional totals."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"beef\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 19,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Sums Gram refuses",
+        "duration": 8
+      },
+      {
+        "label": "section_active:Sums Gram reads, with a note",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 10,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Sums Gram refuses",
+        "duration": 8
+      },
+      {
+        "label": "section_active:Sums Gram reads, with a note",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 9,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 9
+      }
+    ],
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "flour",
+      "sugar",
+      "milk",
+      "tomatoes",
+      "butter",
+      "cream",
+      "oil",
+      "water",
+      "beef"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"water\" — omitted from nutritional totals."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"water\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"beef\" — omitted from nutritional totals."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"beef\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 7,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 7,
+          "duration": 7
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 7
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 7,
+            "duration": 7
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s0.3",
+        "kind": "step",
+        "section": 0,
+        "step": 3,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.2"
+        ]
+      },
+      {
+        "id": "s1.prep",
+        "kind": "prep",
+        "section": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 19,
+    "activeTime": 10,
+    "preparationTime": 9,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 7
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 7,
+        "end": 9
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 9,
+        "end": 11
+      },
+      {
+        "kind": "step",
+        "task": "s0.2",
+        "section": 0,
+        "step": 2,
+        "start": 11,
+        "end": 13
+      },
+      {
+        "kind": "step",
+        "task": "s0.3",
+        "section": 0,
+        "step": 3,
+        "start": 13,
+        "end": 15
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep",
+        "section": 1,
+        "start": 15,
+        "end": 17
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 17,
+        "end": 19
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 19,
+        "sections": [
+          0,
+          1
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,443 @@
+{
+  "title": "Mod Compound In Base",
+  "slug": "mod-compound-in-base",
+  "meta": {
+    "title": "Mod Compound In Base"
+  },
+  "registry": {
+    "ingredients": {
+      "pate": {
+        "id": "pate",
+        "name": "pate",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 400,
+      "unit": "g",
+      "normalizedMass": 400,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Pate",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 400,
+          "unit": "g",
+          "parts": [
+            {
+              "qty": 300,
+              "unit": "g"
+            },
+            {
+              "qty": 100,
+              "unit": "g"
+            }
+          ],
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 400
+        },
+        {
+          "id": "butter",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 400,
+              "unit": "g",
+              "parts": [
+                {
+                  "qty": 300,
+                  "unit": "g"
+                },
+                {
+                  "qty": 100,
+                  "unit": "g"
+                }
+              ],
+              "normalizedMass": 400,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "with ",
+            {
+              "id": "butter",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "pate",
+      "module": {
+        "binding": "pate",
+        "uri": "bases/pate.gram",
+        "title": "Pate",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 500,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Montage",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "3",
+          "qty": 500,
+          "unit": "g",
+          "parts": [
+            {
+              "qty": 400,
+              "unit": "g"
+            },
+            {
+              "qty": 100,
+              "unit": "g"
+            }
+          ],
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 500
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "avec ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "3",
+              "qty": 500,
+              "unit": "g",
+              "parts": [
+                {
+                  "qty": 400,
+                  "unit": "g"
+                },
+                {
+                  "qty": 100,
+                  "unit": "g"
+                }
+              ],
+              "normalizedMass": 500,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          },
+          "action": "Foncer"
+        }
+      ],
+      "metrics": {
+        "totalMass": 500,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 7,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Pate",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Pate",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
+    "totalMass": 500,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 1,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s1.prep.pate",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "pate",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "consumes": [
+          "pate"
+        ],
+        "after": [
+          "s0.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0,
+        "intermediate": "pate"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 7,
+    "activeTime": 4,
+    "preparationTime": 3,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 4
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep.pate",
+        "section": 1,
+        "start": 4,
+        "end": 5
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 5,
+        "end": 7
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 7,
+        "sections": [
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "bases/pate.gram",
+      "title": "Pate",
+      "meta": {
+        "title": "Pate"
+      },
+      "scaleFactor": 2,
+      "mode": "inline"
+    }
+  ]
+}

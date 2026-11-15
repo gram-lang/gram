@@ -5,8 +5,9 @@ import {
 	type IngredientAST,
 	type QuantityAST,
 	type QuantityValueAST,
+	type CompoundQuantityAST,
 } from "@gram-lang/parser";
-import { scaleUsageTerms, termsOfAst } from "../terms";
+import { scaleTermsChecked, scaleUsageTerms, termsOfAst } from "../terms";
 
 /**
  * Scales a quantity node in place, through the same helper as `applyScale`
@@ -17,19 +18,35 @@ function scaleQuantityNode(node: QuantityAST, factor: number): void {
 	if (total) node.value = total.qty as QuantityValueAST;
 }
 
+/**
+ * Scales a sum in place, term by term, through the same `scaleTerms` as
+ * `applyScale`: compiled afterwards, its parts and total come out as the
+ * compiled recipe scaled.
+ */
+function scaleSumNode(node: CompoundQuantityAST, factor: number): void {
+	for (const term of node.terms) {
+		if (!term.value) continue;
+		const [scaled] = scaleTermsChecked(
+			[{ value: term.value, unit: term.unit }],
+			factor,
+		);
+		if (scaled) term.value = scaled.value as QuantityValueAST;
+	}
+}
+
+function scaleNode(
+	node: IngredientAST["quantity"] | undefined,
+	factor: number,
+): void {
+	if (!node || !("fixed" in node) || node.fixed) return;
+	if (node.type === ASTNodeType.Quantity) scaleQuantityNode(node, factor);
+	else if (node.type === ASTNodeType.CompoundQuantity)
+		scaleSumNode(node, factor);
+}
+
 function scaleIngredient(ing: IngredientAST, factor: number): void {
-	if (
-		ing.quantity &&
-		ing.quantity.type === ASTNodeType.Quantity &&
-		!ing.quantity.fixed
-	) {
-		scaleQuantityNode(ing.quantity, factor);
-	}
-	const compositeQty = ing.composite?.quantity;
-	// TODO(1.5): scale a sum of quantities (CompoundQuantity), term by term.
-	if (compositeQty?.type === ASTNodeType.Quantity && !compositeQty.fixed) {
-		scaleQuantityNode(compositeQty, factor);
-	}
+	scaleNode(ing.quantity, factor);
+	scaleNode(ing.composite?.quantity, factor);
 }
 
 function scaleStep(step: StepAST, factor: number): void {
