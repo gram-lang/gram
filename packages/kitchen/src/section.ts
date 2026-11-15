@@ -1,4 +1,6 @@
 import type { StepToken, Usage } from "./types";
+import { mergeTerms } from "@gram-lang/i18n";
+import { termsOfUsage } from "./terms";
 import { round2 } from "./utils";
 
 export interface AggregatedIngredient {
@@ -51,6 +53,23 @@ function createBaseEntry(
 }
 
 /**
+ * The quantities one occurrence adds to its entry: its terms, put together
+ * by `mergeTerms` (terms added before terms taken away), or the quantity as
+ * written when it has no terms (a text such as `{une pincée}`, a relative
+ * quantity), which a section still lists.
+ */
+function occurrenceQuantities(
+	ing: Usage,
+): NonNullable<AggregatedIngredient["quantities"]> {
+	const terms = termsOfUsage(ing);
+	if (terms.length === 0) return [{ qty: ing.qty!, unit: ing.unit ?? null }];
+	return mergeTerms(terms, "unit").map((term) => ({
+		qty: term.value,
+		unit: term.unit,
+	}));
+}
+
+/**
  * Aggregates a flat list of section Usage items into display-ready entries:
  *
  *   Rule 1 — Addition:    measured + measured → one entry, quantities joined with '+'
@@ -94,7 +113,7 @@ export function aggregateSectionIngredients(
 		if (hasMeasuredQty) {
 			const existing = measuredByKey.get(key);
 			if (existing) {
-				existing.quantities!.push({ qty: ing.qty!, unit: ing.unit ?? null });
+				existing.quantities!.push(...occurrenceQuantities(ing));
 				if (ing.normalizedMass) {
 					existing.normalizedMass =
 						(existing.normalizedMass || 0) + ing.normalizedMass;
@@ -111,7 +130,7 @@ export function aggregateSectionIngredients(
 			} else {
 				const entry: AggregatedIngredient = {
 					...createBaseEntry(ing, name),
-					quantities: [{ qty: ing.qty!, unit: ing.unit ?? null }],
+					quantities: occurrenceQuantities(ing),
 					normalizedMass: ing.normalizedMass,
 					conversionMethod: ing.conversionMethod,
 					isEstimate: ing.isEstimate,

@@ -15,7 +15,7 @@ import {
 import { normalizeUnit } from "@gram-lang/i18n";
 import { NUTRIENTS, standardizeMass } from "@gram-lang/analyzer";
 import { type QuantityAST, isQuantity } from "@gram-lang/parser";
-import { getNumericQty } from "@gram-lang/kitchen";
+import { numericTotal, termsOfAst } from "@gram-lang/kitchen";
 
 function buildConversionSection(
 	qty: QuantityAST,
@@ -29,9 +29,7 @@ function buildConversionSection(
 	const canon = normalizeUnit(rawUnit);
 	if (!canon) return null;
 
-	const qtyValue = qty.value;
-	if (!qtyValue) return null;
-	const amount = getNumericQty(qtyValue);
+	const amount = numericTotal(termsOfAst(qty));
 	if (amount === null || amount <= 0) return null;
 
 	const norm = standardizeMass(amount, canon, db, entry.name);

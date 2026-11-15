@@ -19,7 +19,8 @@ import type {
 	RegistryEntry,
 } from "@gram-lang/kitchen";
 import {
-	getNumericQty,
+	numericTotal,
+	termsOfUsage,
 	WarningCode,
 	round2,
 	isPurchasableReference,
@@ -107,7 +108,7 @@ function standardizeUsageMass(
 	enableYieldCalculation: boolean,
 	lang?: string,
 ): void {
-	const numericQty = getNumericQty(usage.qty);
+	const numericQty = numericTotal(termsOfUsage(usage));
 	if (numericQty === null) return;
 
 	const norm = standardizeMass(
