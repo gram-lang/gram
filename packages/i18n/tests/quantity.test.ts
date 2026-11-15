@@ -488,6 +488,16 @@ describe("formatTerms, computed", () => {
 		expect(computed([t(0.7, "tsp")], { rounding: true })).toBe("3/4 tsp");
 	});
 
+	it("starts from the largest fraction the largest unit measures, not whole units", () => {
+		expect(computed([t(25.5, "tbsp")], { buying: true })).toBe(
+			"1 1/2 cup + 1 1/2 tbsp",
+		);
+		expect(computed([t(21, "tbsp")], { buying: true })).toBe(
+			"1 1/4 cup + 1 tbsp",
+		);
+		expect(computed([t(22, "oz")], { buying: true })).toBe("1 1/4 lb + 2 oz");
+	});
+
 	it("never climbs above the largest unit written in a step", () => {
 		expect(computed([t(34, "tbsp")])).toBe("34 tbsp");
 	});

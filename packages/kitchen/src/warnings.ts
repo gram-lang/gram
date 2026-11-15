@@ -224,11 +224,11 @@ const QUANTITY_HINTS: Record<InvalidQuantityReason, string> = {
 	quantityInUnit:
 		"this term's unit holds a quantity of its own: write the amount in one unit (e.g. {450 g} rather than {1 tin of 400 g + 50 g}).",
 	nonPositiveTotal:
-		"what is taken away is as much as what is added, or more: the sum comes to nothing.",
+		"what is taken away is as much as what is added, or more, so the sum comes to nothing. Each kind of amount is counted on its own: in {1 cup - 2 tbsp + 30 g}, the 2 tbsp come off the cup only.",
 	rangeAfterMinus:
 		"a range cannot be taken away (its bounds would swap): write the range on a term that is added, or the total as a range.",
 	minusAcrossFamilies:
-		"an amount is only taken away from one of its kind (a volume from a volume, a weight from a weight): Gram cannot check the rest is left above zero.",
+		"an amount is only taken away from one of its kind: a volume from a volume, a weight from a weight. Here nothing of its kind is added to take it from. {1 cup - 2 tbsp + 30 g} works (the 2 tbsp come off the cup); {1 cup - 20 g} does not.",
 };
 
 export const warningTemplates: {

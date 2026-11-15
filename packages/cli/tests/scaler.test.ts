@@ -172,7 +172,7 @@ describe("buildScaleComparison", () => {
 		expect(flour?.originalText).toBe("2 cup + 2 tbsp");
 		expect(flour?.scaledText).toBe("3 cup + 3 tbsp");
 		expect(sugar?.originalText).toBe("13-14 tbsp");
-		expect(sugar?.scaledText).toBe("1 cup + 10-12 tbsp");
+		expect(sugar?.scaledText).toBe("1 1/2 cup + 2-4 tbsp");
 	});
 
 	it("marks items without a numeric quantity as nonScalable", () => {

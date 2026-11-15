@@ -48,7 +48,7 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 
 <Since v="1.5.0" /> Sur une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités), l'éditeur aide de trois façons :
 
-- **Le survol** montre le total tel que Gram le lit (`{1 cup + 1 tbsp}` → `= 17 tbsp` ; un volume à côté d'une masse donne `volume + mass, counted apart`) et, quand la base d'ingrédients sait peser chaque terme, sa masse. Une somme refusée par Gram n'affiche rien de plus que son avertissement.
+- **Le survol** montre le total tel que Gram le lit (`{1 cup + 1 tbsp}` → `= 17 tbsp` ; une somme de plusieurs natures montre ce que donne chacune, `{1 cup - 2 tbsp + 30 g}` → `= 14 tbsp (volume) + 30 g (weight), counted apart`) et, quand la base d'ingrédients sait peser chaque terme, sa masse. Une somme refusée par Gram n'affiche rien de plus que son avertissement.
 - **Les Quick Fix** lisent le `data` de l'avertissement, transmis dans celui du diagnostic : insérer le ` + ` entre deux quantités écrites côte à côte (`{1 kg 200 g}`, `INVALID_UNIT`), écrire le résultat que Gram suggère (`{100 g + 10%}` → `{110 g}`, `INVALID_QUANTITY`), ou changer un `oz` placé après un volume en `fl oz` (`OZ_AFTER_VOLUME`).
 - **La complétion** propose les unités de chaque terme : après `{1 kg + 2`, les unités reviennent.
 
