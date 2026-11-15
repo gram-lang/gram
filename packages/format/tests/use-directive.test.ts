@@ -44,9 +44,13 @@ describe("formatGram and @use directives", () => {
 		expect(after.map((d) => d.specifier)).toEqual(
 			before.map((d) => d.specifier),
 		);
-		expect(after.map((d) => d.retroPlanning)).toEqual(
-			before.map((d) => d.retroPlanning),
-		);
+		// The anchor's location moves with the spaces the formatter trims.
+		const anchor = (d: (typeof before)[number]) => {
+			if (!d.retroPlanning) return d.retroPlanning;
+			const { loc: _loc, ...rest } = d.retroPlanning;
+			return rest;
+		};
+		expect(after.map(anchor)).toEqual(before.map(anchor));
 		expect(after.map((d) => stripLoc(d.bindings))).toEqual(
 			before.map((d) => stripLoc(d.bindings)),
 		);
