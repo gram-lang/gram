@@ -19,10 +19,13 @@ interface Warning {
   item?: string;
   loc?: { start: number; end: number }; // décalages en caractères dans la source, quand disponible
   section?: string | null;
+  data?: Record<string, unknown>; // depuis la 1.5.0 : de quoi corriger (voir plus bas)
 }
 ```
 
 `compile()` les retourne dans le tableau `CompilationResult.warnings`. De son côté, `analyze()` les propage (et en ajoute potentiellement de nouveaux) dans `AnalyzedCompilationResult.warnings`. Ce ne sont jamais de simples chaînes de caractères : le champ `.message` est toujours garanti.
+
+<Since v="1.5.0" /> Quelques codes portent aussi `data`, ce dont un outil a besoin pour agir sans décortiquer `.message` : le serveur de langage le transmet dans le `data` du diagnostic, et ses Quick Fix s'en servent. Seuls `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`) et le `INVALID_UNIT` d'un ingrédient (`{ reason, suggestion? }`) le remplissent ; ailleurs, il est absent.
 
 ## Sévérité & `--strict`
 
@@ -59,9 +62,31 @@ Un `Timer` (minuteur) ou une `Temperature` a été écrit sans unité explicite 
 ### `INVALID_UNIT`
 Soit le mot qui suit un nombre dans un `Timer` (ou dans l'ancre d'une section) n'est pas une unité de temps, comme dans `~{3 bananes}`, soit une `Temperature` a reçu une unité autre que Celsius ou Fahrenheit. **Correction** : utilisez une unité de temps reconnue pour les minuteurs (`h`, `min`, `heures`, `hr`…), et limitez-vous à `°C` ou `°F` pour les températures.
 
-<Since v="1.4.1" type="changed" /> L'avertissement signale aussi un ingrédient dont l'unité se lit comme deux quantités : une unité connue, un nombre puis une autre unité connue, comme dans `@farine{1 cup 5 tbsp}` ou `@farine{1 kg 200 g}`. Gram n'additionne pas les quantités : tout `cup 5 tbsp` passait donc pour une seule unité inconnue, sans masse, et une recette doublée affichait `2 cup 5 tbsp`. **Correction** : écrivez le total dans une seule unité (`@farine{1.2 kg}`). Un nombre qui ne fait que décrire l'unité, comme dans `@tomates{1 boîte de 400 g}`, ne déclenche rien : doubler le nombre de boîtes reste juste.
+<Since v="1.4.1" type="changed" /> L'avertissement signale aussi un ingrédient dont l'unité se lit comme deux quantités : une unité connue, un nombre puis une autre unité connue, comme dans `@farine{1 cup 5 tbsp}` ou `@farine{1 kg 200 g}`. Tout `cup 5 tbsp` passe alors pour une seule unité inconnue, sans masse, et une recette doublée affiche `2 cup 5 tbsp`. **Correction** : <Since v="1.5.0" type="changed" /> écrivez les deux quantités sous forme de [somme](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités), `@farine{1 kg + 200 g}` ; l'éditeur propose la correction, et `data.suggestion` contient l'unité à écrire (`kg + 200 g`). Un nombre qui ne fait que décrire l'unité, comme dans `@tomates{1 boîte de 400 g}`, ne déclenche rien : doubler le nombre de boîtes reste juste.
 
 Il signale enfin une unité qui cache une quantité, comme dans `@farine{environ 200g}` : une quantité commence par son nombre, donc avec des mots devant, tout le texte était lu comme une unité, sans masse, et la quantité disparaissait d'une recette mise à l'échelle. **Correction** : écrivez la quantité seule (`@farine{200g}`), et le « environ » dans l'étape s'il compte. Des mots sans nombre, comme `{une pincée}` ou `{à votre goût}`, ne déclenchent rien.
+
+### `INVALID_QUANTITY`
+<Since v="1.5.0" />
+
+Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) que Gram refuse d'additionner. La recette compile quand même et la somme s'affiche telle qu'écrite, mais elle ne compte ni dans la liste de courses ni dans la nutrition. Le message et `data.reason` disent ce qui coince :
+
+| `reason` | Exemple | Correction |
+| :--- | :--- | :--- |
+| `unitlessTerm` | `{1 + 1 tasse}` | Donnez son unité à chaque terme : `{1 tasse + 1 càs}`. |
+| `percentTerm` | `{100 g + 10%}` | Écrivez le résultat (`{110 g}`, fourni dans `data.suggestion` et proposé par l'éditeur), ou une quantité relative comme `{10% &farine}`. |
+| `expressionTerm` | `{2 x 100 g + 50 g}` | Une somme ne fait qu'ajouter ou retirer : écrivez `{250 g}`. |
+| `quantityInUnit` | `{1 boîte de 400 g + 50 g}` | Écrivez la quantité dans une seule unité : `{450 g}`. |
+| `nonPositiveTotal` | `{1 càs - 1 tasse}` | On retire autant ou plus qu'on n'ajoute : vérifiez les termes. |
+| `rangeAfterMinus` | `{1 tasse - 1-2 càs}` | Une fourchette retirée inverserait ses bornes : mettez-la sur un terme ajouté, ou écrivez le total en fourchette. |
+| `minusAcrossFamilies` | `{1 tasse - 20 g}` | On ne retire une quantité que d'une quantité de même nature (un volume d'un volume, une masse d'une masse). |
+
+La soustraction se vérifie nature par nature : `{1 tasse - 2 càs + 30 g}` passe.
+
+### `OZ_AFTER_VOLUME`
+<Since v="1.5.0" />
+
+Information : une somme place `oz` après un volume, comme dans `@eau{1 cup + 2 oz}`. `oz` est une once de poids, et Gram la lit comme telle : la somme est un volume plus une masse. **Correction** : écrivez `fl oz` si vous pensiez à une once liquide (`data.suggestion`, proposé par l'éditeur) ; sinon, rien à faire.
 
 ### `DURATION_OUT_OF_RANGE`
 <Since v="1.4.0" />

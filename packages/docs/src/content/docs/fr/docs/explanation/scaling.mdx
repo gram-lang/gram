@@ -55,6 +55,29 @@ function resolveScaleFactor(
 | `UNIT_MISMATCH` | Les unités appartiennent à différentes familles (masse vs volume) et aucune densité n'a pu être résolue | Ajoutez une densité via `gram db enrich`, déclarez-en une dans le bloc `densities:` de la recette, ou faites correspondre les unités |
 | `INVALID_FACTOR` | Référence non-positive, non-finie, avec une quantité nulle, etc. | — |
 
+## Mettre à l'échelle une somme de quantités
+<Since v="1.5.0" />
+
+Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) se met à l'échelle terme par terme : `applyScale` multiplie chacun de ses `parts`, puis recalcule le total. L'affichage revient au renderer, qui suit une règle simple : une recette à l'échelle d'origine montre chaque somme telle qu'écrite ; une fois mise à l'échelle, une quantité s'écrit comme on la mesure en cuisine.
+
+| Écrit | Échelle | Affiché |
+| :--- | :--- | :--- |
+| `{1 kg + 200 g}` | × 2 | `2,4 kg` |
+| `{800 g + 200 g}` | × 1 | `1000 g` (pas `1 kg`) |
+| `{1 cup + 1 tbsp}` | × 2 | `2 cup + 2 tbsp` (jamais `2 1/8 cup`) |
+| `{1 cup - 2 tbsp}` | × 2 | `1 3/4 cup` |
+| `{1 cup - 2 tbsp}` | × 0,5 | `1/2 cup − 1 tbsp` |
+| `{1 cup + 1-2 tbsp}` | × 2 | `2 cup + 2-4 tbsp` |
+| `{1 lb + 4 oz}` | × 1,5 | `1 1/2 lb + 6 oz` |
+| `{1 cup + 50 ml}` | × 2 | `2 cup + 100 ml` |
+
+- **Les unités métriques restent dans la plus grande unité écrite**, en décimal : on pèse en grammes, donc `{800 g + 200 g}` se lit `1000 g`. Seule la liste de courses passe à l'unité dans laquelle on achète (`1500 g` → `1,5 kg`).
+- **Les unités américaines et impériales sont recomposées** seulement au besoin, en fractions que possèdent vraiment les tasses et cuillères doseuses (¼, ⅓, ½, ⅔, ¾ de tasse ; ½ tbsp ; ⅛, ¼, ½ tsp…), jamais au-dessus de la plus grande unité écrite, cuillères (`cup → tbsp → tsp`) et mesures liquides (`gal → qt → pt → fl oz`) chacune de leur côté. Des termes déjà mesurables tels quels restent comme ils sont.
+- **Une fourchette** garde la partie commune à ses deux bornes, et l'écart porte sur le dernier terme.
+- **Deux systèmes** (`cup` et `ml`) restent terme par terme.
+
+**Le scaling inversé sur une somme** (`--scale farine=500g`) s'appuie sur son total quand tous les termes sont de même nature ; un volume à côté d'une masse laisse deux entrées dans la liste de courses, ce qui déclenche `AMBIGUOUS_MULTI_UNIT`, comme deux mentions séparées.
+
 ## Immuabilité
 
 La fonction qui applique réellement la multiplication sur chaque quantité, `applyScale(result, factor)`, est une fonction pure : elle clone l'entrée (`structuredClone`) avant toute modification, puis renvoie un nouveau `CompilationResult`. Cela offre deux avantages majeurs :
@@ -85,6 +108,7 @@ Lorsqu'une recette importe une sous-base via `@use` (ex : `@use "./bases/pate.gr
 ## Consommer ceci depuis un nouveau frontend
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 <Steps>
 

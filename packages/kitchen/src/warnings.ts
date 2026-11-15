@@ -254,7 +254,7 @@ export const warningTemplates: {
 			: p.type === "Ingredient" && p.reason === "hiddenQuantity"
 				? `Unit "${p.value}"${p.item ? ` of "${p.item}"` : ""} hides a quantity: a quantity starts with its number, so write it alone (e.g. {200g} rather than {about 200g}).`
 				: p.type === "Ingredient"
-					? `Unit "${p.value}"${p.item ? ` of "${p.item}"` : ""} reads as two quantities, which Gram does not add: write the total in one unit (e.g. {1.2 kg} rather than {1 kg 200 g}).`
+					? `Unit "${p.value}"${p.item ? ` of "${p.item}"` : ""} reads as two quantities: write them as a sum, with " + " between them (e.g. {1 kg + 200 g} rather than {1 kg 200 g}).`
 					: `Invalid unit "${p.value}" for ${p.type}.`,
 	[WarningCode.DURATION_OUT_OF_RANGE]: (p) =>
 		`${p.type === "RetroPlanning" ? `Retro-planning offset for "${p.item}"` : `Timer "${p.item}"`} is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.`,

@@ -155,6 +155,44 @@ isMetricMassUnit('kilo', 'fr');  // true
 isMetricMassUnit('lb');          // false
 ```
 
+## Sums of quantities
+
+<Since v="1.5.0" />
+
+Every quantity of the pipeline (a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities) like `{1 cup + 1 tbsp}`, a plain `{200 g}`, the entries of a shopping list) goes through one model of **terms**: a value, a unit, and `minus` for a term taken away. Kitchen, the analyzer and the renderer all add up, scale and write quantities with these functions, so they always agree. The module is pure: it knows nothing about the AST or the compiled recipe.
+
+```typescript
+type TermValue = number | QuantityValue; // a number, or the single / fraction / range shape of the compiled recipe
+interface Term { value: TermValue; unit: string | null; minus?: boolean }
+interface TermsTotal { qty: TermValue; unit: string | null }
+
+function termsTotal(terms: readonly Term[]): TermsTotal | null
+function mergeTerms(terms: readonly Term[], mode: "unit" | "ladder"): Term[]
+function scaleTerms(terms: readonly Term[], factor: number): Term[]
+function formatTerms(terms: readonly Term[], options?: FormatTermsOptions): string
+
+const UNIT_LADDERS: readonly UnitLadder[]
+function ladderOf(rawUnit: string | undefined | null, lang?: string): LadderStep | null
+function sameLadder(rawUnits: readonly (string | undefined | null)[], lang?: string): boolean
+```
+
+- **`UNIT_LADDERS`**: the units that convert by a whole ratio, each counted in its ladder's smallest unit: US volume (`tsp` 1, `tbsp` 3, `fl oz` 6, `cup` 48, `pt` 96, `qt` 192, `gal` 768), imperial mass (`oz` 1, `lb` 16), metric mass (`mg`, `g`, `livre`, `kg`) and metric volume (`ml`, `cl`, `dl`, `tasse`, `l`). They agree with `UNIT_CONVERSIONS` to 0.01%. `pinch`, `dash` and unknown units are on no ladder.
+- **`termsTotal`**: one unit keeps its unit (`1 tasse + 1 tasse` stays in `tasse`, never converted); units of one ladder add up in the smallest unit written, with exact whole-number arithmetic; one family across systems gives grams or milliliters; anything else (a volume and a weight, unknown units) gives `null`. Ranges add up bound by bound, and a total with a range stays a range.
+- **`mergeTerms`**: `"unit"` adds up the terms of each unit (a section's ingredient list), `"ladder"` the terms of each ladder (the shopping list). Terms added always come before terms taken away (`1 cup − 2 tbsp`, never `−2 tbsp + 1 cup`).
+- **`formatTerms`**: `mode: "written"` (default) writes the terms as the author did; `mode: "computed"` writes an amount Gram worked out the way a cook measures it (see [scaling sums of quantities](/docs/explanation/scaling/#scaling-sums-of-quantities)). Options: `lang`, `buying` (a shopping list: move up to the unit you buy), `rounding` (round to what a cook can measure, after scaling), `plus` / `minus` separators, and `number` / `text` to write numbers your own way.
+
+```typescript
+import { termsTotal, mergeTerms, scaleTerms, formatTerms, ladderOf } from '@gram-lang/i18n';
+
+const terms = [{ value: 1, unit: 'cup' }, { value: 1, unit: 'tbsp' }];
+termsTotal(terms);                                           // { qty: 17, unit: "tbsp" }
+termsTotal([{ value: 1, unit: 'cup' }, { value: 50, unit: 'ml' }]); // { qty: 286.59, unit: "ml" }
+termsTotal([{ value: 1, unit: 'cup' }, { value: 20, unit: 'g' }]);  // null
+formatTerms(scaleTerms(terms, 2), { mode: 'computed', rounding: true }); // "2 cup + 2 tbsp"
+formatTerms([{ value: 34, unit: 'tbsp' }], { mode: 'computed', buying: true }); // "2 cup + 2 tbsp"
+ladderOf('cups')?.size;                                      // 48 (teaspoons in a cup)
+```
+
 ## Related resources
 
 <CardGrid>

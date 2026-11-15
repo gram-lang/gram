@@ -622,7 +622,7 @@
     },
     {
       "code": "INVALID_UNIT",
-      "message": "Unit \"lb 4 oz\" of \"beef\" reads as two quantities, which Gram does not add: write the total in one unit (e.g. {1.2 kg} rather than {1 kg 200 g}).",
+      "message": "Unit \"lb 4 oz\" of \"beef\" reads as two quantities: write them as a sum, with \" + \" between them (e.g. {1 kg + 200 g} rather than {1 kg 200 g}).",
       "item": "beef",
       "loc": {
         "start": 327,

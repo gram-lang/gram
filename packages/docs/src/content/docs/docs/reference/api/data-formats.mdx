@@ -295,6 +295,21 @@ Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a
 { "type": "timer", "raw": "1:30" }
 ```
 
+<Since v="1.5.0" /> A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) (`@flour{1 cup + 1 tbsp}`) adds `parts` to its `Usage`: each term as written, with its `qty` (a number or a `QuantityValue`) and `unit`, and `minus: true` on a term taken away. **`parts` is the only source of truth**; `qty` and `unit` are a total kept so that a program reading them stays right:
+
+- **One kind of unit**: `qty` / `unit` hold the total, in the smallest unit written when the units share a scale (`{1 cup + 1 tbsp}` gives `17` `tbsp`), in `ml` or `g` otherwise. A range in a term makes the total a range.
+- **Several kinds** (a volume and a weight, or units Gram doesn't know): no `qty`, and `unit` holds the sum written out (`"1 cup + 20 g"`), like a quantity in words (`{a pinch}`). Read `parts` rather than parsing it.
+- **Refused** (an `INVALID_QUANTITY` warning): `parts` alone, no `qty` nor `unit`.
+
+```json
+{ "id": "flour", "_usageId": "1", "qty": 17, "unit": "tbsp", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 1, "unit": "tbsp" } ] }
+{ "id": "sugar", "_usageId": "2", "qty": 14, "unit": "tbsp", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 2, "unit": "tbsp", "minus": true } ] }
+{ "id": "rice", "_usageId": "3", "unit": "1 cup + 20 g", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 20, "unit": "g" } ] }
+{ "id": "oil", "_usageId": "4", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 20, "unit": "g", "minus": true } ] }
+```
+
+The same fields appear on a reference (`&dough{1 kg + 200 g}`) and a composite parent (`<@oranges{1 lb + 4 oz}`). In the shopping list, a sum counts as separate mentions: its terms join the entries of their unit, and an entry whose amounts include a range keeps `qty` as its middle plus `range: { min, max }`, added bound by bound.
+
 ## 3. Composed recipes (`@gram-lang/modules`)
 
 When a recipe imports sub-modules via the `@use` directive, `finalizeComposed()` decorates the standard `CompilationResult` into a `ComposedCompilationResult`. It adds module metadata to both the root payload and individual spliced sections:

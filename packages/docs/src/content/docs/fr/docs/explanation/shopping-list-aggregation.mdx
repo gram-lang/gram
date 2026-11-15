@@ -13,7 +13,7 @@ Quand une recette (ou un lot complet) est envoyée à la Kitchen pour générer 
 
 ```mermaid
 flowchart TD
-    Raw["Ingrédients Bruts (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Regroupement par ID brut & unités identiques"]
+    Raw["Ingrédients Bruts (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Regroupement par ID brut & échelle d'unités"]
     KitchenGroup --> HasDB{Base BDD Fournie ?}
     
     HasDB -- Oui --> AliasRes["@gram-lang/analyzer<br/>Résolution des Alias (ex: beurre ➔ butter)"]
@@ -38,9 +38,15 @@ import Term from '../../../../../components/Term.astro';
    La résolution des alias intervient une couche au-dessus, dans `@gram-lang/analyzer`, qui lui accède à la base de données. Si `beurre` y est défini comme alias de `butter`, l'Analyseur va regrouper les entrées brutes sous cet identifiant canonique, fusionnant `@butter` et `@beurre` en une seule ligne `butter`. **Cette étape requiert impérativement une base de données** ; sans elle (compilation avec `@gram-lang/kitchen` seul, ou CLI lancé à nu), les alias sont ignorés et le doublon subsiste.
 
 2. ### Fusion des unités
-   Si les ingrédients regroupés partagent la même unité (ex : `100 g` et `50 g`), ils sont simplement additionnés (`150 g`), cela se produit directement dans `@gram-lang/kitchen`, sans avoir besoin de base de données.
+   `@gram-lang/kitchen` fusionne, sans base de données, tout ce qu'il peut additionner exactement, à trois niveaux :
 
-   S'ils ont des unités différentes (ex : `100 g` et `1 tasse`), les additionner nécessite une conversion via la masse, ce qui, tout comme la résolution des alias, dépend de la base de données d'ingrédients et se produit donc dans `@gram-lang/analyzer`. Si chaque quantité contributrice se résout en une masse (densité connue, depuis la BDD ou une surcharge au niveau de la recette), l'analyseur les convertit toutes en grammes et les fusionne en une seule entrée.
+   - **Même unité** : `100 g` et `50 g` s'additionnent (`150 g`). Les graphies d'une même unité n'en font qu'une (`cup` et `cups`, `càs` et `c.à.s`).
+   - <Since v="1.5.0" /> **Même échelle** : des unités qui se convertissent par un rapport entier s'additionnent dans la plus petite unité écrite. Cuillères et tasses américaines (`tsp`, `tbsp`, `fl oz`, `cup`, `pt`, `qt`, `gal`), onces et livres, grammes et kilos, millilitres et litres forment chacun une échelle : `1 kg` et `200 g` donnent `1200 g` (affiché `1,2 kg`), `1 cup` et `2 tbsp` donnent `18 tbsp` (affiché `1 cup + 2 tbsp`).
+   - **Systèmes ou natures différents** (`cup` et `ml`, un volume et une masse) : des entrées séparées, marquées `multiUnit: true`. `pincée` reste hors de toute échelle : ce n'est pas une mesure exacte.
+
+   <Since v="1.5.0" /> Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) compte comme plusieurs mentions : `@lait{1 cup + 50 ml}` s'achète en `1 cup` et `50 ml`, exactement comme `@lait{1 cup}` puis `@&lait{50 ml}`. La liste de courses ne dépend donc jamais de la façon dont l'auteur a regroupé ses quantités. Les fourchettes s'additionnent borne par borne (`2-3 g` et `200 g` donnent `202-203 g`, et non plus le milieu, `202,5 g`). Une unité que Gram ne connaît pas reste telle qu'écrite : `gousse` et `gousses` font deux entrées.
+
+   Des entrées d'unités de natures différentes (ex : `100 g` et `1 tasse`) ne s'additionnent qu'avec une conversion via la masse, ce qui, tout comme la résolution des alias, dépend de la base de données d'ingrédients et se produit donc dans `@gram-lang/analyzer`. Si chaque quantité contributrice se résout en une masse (densité connue, depuis la BDD ou une surcharge au niveau de la recette), l'analyseur les convertit toutes en grammes et les fusionne en une seule entrée.
 
    **Repli (*Fallback*) : densité manquante.** Si la densité est introuvable pour au moins l'une des unités, l'Analyseur ne peut mathématiquement pas produire un total fiable. Plutôt que d'inventer une valeur, il conserve les lignes séparées, leur applique l'identifiant canonique, et les marque via le *flag* `multiUnit: true`. Les moteurs de rendu exploitent ce flag pour regrouper ces entrées sous un en-tête commun (ex : « ⚠️ Unités mixtes »). Cela signale au cuisinier qu'il s'agit du même ingrédient, tout en évitant d'additionner silencieusement des choux et des carottes.
 

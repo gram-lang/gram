@@ -527,6 +527,36 @@ Pour @milk{0,5-0,75 l}.
 
 Gram has no thousands separator: write `{1500 g}`, never `{1,500 g}`. A comma followed by exactly three digits is read as a decimal like any other (`{1,000 g}` is 1 g), but since a reader could mean a thousand, the compiler warns `AMBIGUOUS_NUMBER` and says how it read the number. A point keeps the meaning it has always had: `{1.000 kg}` is 1 kg, with no warning.
 
+### Sums of quantities
+*(since v1.5.0)*
+
+A measure that doesn't fit one unit is written the way a recipe says it: terms joined by `+`, or `-` for an amount taken away.
+
+```gram
+Add @flour{1 cup + 1 tbsp} and @sugar{1 cup - 2 tbsp}.
+
+Pour @milk{1 cup + 1-2 tbsp}.
+
+Mix in @butter{2 1/2 tbsp + ½ tsp} and @rice{1 cup + 20 g}.
+```
+
+Each term is a number (or a range, or a fraction) with its unit. Gram keeps the terms as written and works out their total: `{1 cup + 1 tbsp}` is 17 tbsp, `{1 cup - 2 tbsp}` is 14 tbsp. The recipe shows the sum as you wrote it; once scaled, it is worked out again into amounts a cook can measure (`{1 cup + 1 tbsp}` doubled reads `2 cup + 2 tbsp`, never `2 1/8 cup`). The `=` modifier locks a sum like any other quantity (`@=salt{1,5 g + 1 pinch}`).
+
+A sum counts as **separate mentions** of the ingredient: `@rice{1 cup + 20 g}` goes into the shopping list exactly like `@rice{1 cup}` followed by `@&rice{20 g}`. Terms of the same kind of unit add up (cups and spoons, kilos and grams); a volume next to a weight, or two units Gram doesn't know (`{1 head + 2 cloves}`), stay side by side.
+
+A few rules keep a sum readable:
+
+- **Every term has its unit**: `{1 + 1 cup}` is refused.
+- **Only amounts**: no percentage (`{100 g + 10%}`, write `{110 g}`, or a [relative quantity](/docs/reference/syntax/relative-quantities/)), no multiplication (`{2 x 100 g + 50 g}`).
+- **Take away from the same kind**: `{1 cup - 2 tbsp}` works, `{1 cup - 20 g}` doesn't, and what is taken away must leave something (`{1 tbsp - 1 cup}` is refused).
+- **No range after `-`**: `{1 cup - 1-2 tbsp}` would swap its bounds; write the range on a term that is added.
+
+A refused sum compiles with an `INVALID_QUANTITY` warning that says why, and counts for nothing in the shopping list and the nutrition. Two quantities written side by side without an operator (`{1 cup 5 tbsp}`) raise `INVALID_UNIT`; the editor offers to insert the ` + `.
+
+:::caution[oz is a weight]
+In `{1 cup + 2 oz}`, `oz` is an ounce of weight, not of volume: Gram reads it as written and adds a note (`OZ_AFTER_VOLUME`). Write `fl oz` for a fluid ounce.
+:::
+
 ## Error handling
 
 Some syntax errors stop the recipe from being read before it is even compiled: an unreadable quantity in braces (`@salt{1 g/l}`), a brace that is never closed. The message points at the exact spot to fix, and the editor underlines it.
@@ -538,6 +568,7 @@ The compiler checks for semantic errors in your `@ingredient` declarations and w
 - **Database Missing**: If you compile with a database and the `@ingredient` is not found, it warns `MISSING_INGREDIENT`.
 - **Missing Macros**: If the database lacks nutritional information for the `@ingredient`, it warns `MISSING_MACROS`.
 - **Unknown Mass**: If it cannot convert a volume or count into grams to estimate nutrition, it warns `UNKNOWN_MASS`.
+- **Invalid Quantity**: If a sum of quantities can't be read (a term without a unit, a percentage, an amount taken away from another kind…), it warns `INVALID_QUANTITY` and gives the reason.
 - **Ambiguous Number**: If a comma is followed by exactly three digits (`{1,000 g}`), it reads a decimal and warns `AMBIGUOUS_NUMBER`, in case a thousand was meant.
 
 ## Related resources
@@ -1508,6 +1539,7 @@ Specialized patterns for flexible culinary instructions:
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
 | **Fractions** | `n/d` or Unicode | `@flour{1 1/2 cups}`, `@sugar{½ cup}` | Fully supported across imperial and metric systems. |
+| **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Kept as written and added up; a volume and a weight stay side by side. Since 1.5.0. |
 
 ## Intermediate variables
 
@@ -1618,6 +1650,14 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ❌  ~{about 10 minutes}    →   ✅  ~{10min}
 ```
 Quantities and timers need a real number (or empty braces for "to taste"); fuzzy text doesn't parse.
+
+### One amount given in several measures
+*(since v1.5.0)*
+
+```gram
+❌  @flour{1 cup 5 tbsp}    →   ✅  @flour{1 cup + 5 tbsp}
+```
+Write an amount the recipe gives in several measures as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities), exactly as the source says it: "1 cup plus 1 tablespoon" is `{1 cup + 1 tbsp}`, "1 cup minus 2 tablespoons" is `{1 cup - 2 tbsp}`, and a volume next to a weight is fine (`{1 cup + 20 g}`). Don't work it out into one number either (`{1.0625 cup}`, `{17 tbsp}`): Gram adds the terms itself and shows them as the cook measures them. Every term needs its unit, and a term is only an amount: no percentage (`{100g + 10%}`), no multiplication (`{2 x 100g}`), no range after `-` (a range may be a term that is added: `{1 cup + 1-2 tbsp}`).
 
 ### Using `@&` on the first occurrence
 
@@ -2022,6 +2062,21 @@ Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a
 { "type": "timer", "raw": "1:30" }
 ```
 
+*(since v1.5.0)* A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) (`@flour{1 cup + 1 tbsp}`) adds `parts` to its `Usage`: each term as written, with its `qty` (a number or a `QuantityValue`) and `unit`, and `minus: true` on a term taken away. **`parts` is the only source of truth**; `qty` and `unit` are a total kept so that a program reading them stays right:
+
+- **One kind of unit**: `qty` / `unit` hold the total, in the smallest unit written when the units share a scale (`{1 cup + 1 tbsp}` gives `17` `tbsp`), in `ml` or `g` otherwise. A range in a term makes the total a range.
+- **Several kinds** (a volume and a weight, or units Gram doesn't know): no `qty`, and `unit` holds the sum written out (`"1 cup + 20 g"`), like a quantity in words (`{a pinch}`). Read `parts` rather than parsing it.
+- **Refused** (an `INVALID_QUANTITY` warning): `parts` alone, no `qty` nor `unit`.
+
+```json
+{ "id": "flour", "_usageId": "1", "qty": 17, "unit": "tbsp", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 1, "unit": "tbsp" } ] }
+{ "id": "sugar", "_usageId": "2", "qty": 14, "unit": "tbsp", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 2, "unit": "tbsp", "minus": true } ] }
+{ "id": "rice", "_usageId": "3", "unit": "1 cup + 20 g", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 20, "unit": "g" } ] }
+{ "id": "oil", "_usageId": "4", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 20, "unit": "g", "minus": true } ] }
+```
+
+The same fields appear on a reference (`&dough{1 kg + 200 g}`) and a composite parent (`<@oranges{1 lb + 4 oz}`). In the shopping list, a sum counts as separate mentions: its terms join the entries of their unit, and an entry whose amounts include a range keeps `qty` as its middle plus `range: { min, max }`, added bound by bound.
+
 ## 3. Composed recipes (`@gram-lang/modules`)
 
 When a recipe imports sub-modules via the `@use` directive, `finalizeComposed()` decorates the standard `CompilationResult` into a `ComposedCompilationResult`. It adds module metadata to both the root payload and individual spliced sections:
@@ -2190,10 +2245,13 @@ interface Warning {
   item?: string;
   loc?: { start: number; end: number }; // character offsets into the source, when available
   section?: string | null;
+  data?: Record<string, unknown>; // since 1.5.0: what a tool needs to fix it (see below)
 }
 ```
 
 `compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
+
+*(since v1.5.0)* A few codes also carry `data`, the facts a tool needs to act on the warning without parsing `.message`: the language server passes it on as the diagnostic's `data`, and its Quick Fixes read it. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`) and an ingredient's `INVALID_UNIT` (`{ reason, suggestion? }`) set it; for the other codes it is absent.
 
 ## Severity & `--strict`
 
@@ -2273,9 +2331,31 @@ A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` in
 ### `INVALID_UNIT`
 Either the word right after a number in a `Timer` (or a section's anchor) is not a time unit, as in `~{3 bananas}`, or a `Temperature` was given a unit other than Celsius/Fahrenheit. **Fix**: use a recognized time unit for timers (`h`, `hr`, `min`, `heures`…); use `°C` or `°F` for temperatures.
 
-*(since v1.4.1)* It also flags an ingredient whose unit reads as two quantities: a known unit, a number and another known unit, as in `@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`. Gram does not add quantities, so the whole `cup 5 tbsp` was taken as one unknown unit: no mass, and a scaled recipe read `2 cup 5 tbsp`. **Fix**: write the total in one unit (`@flour{1.2 kg}`). A number that only describes the unit, as in `@tomatoes{1 tin of 400 g}`, raises nothing: scaling the number of tins stays right.
+*(since v1.4.1)* It also flags an ingredient whose unit reads as two quantities: a known unit, a number and another known unit, as in `@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`. The whole `cup 5 tbsp` is taken as one unknown unit: no mass, and a scaled recipe reads `2 cup 5 tbsp`. **Fix**: *(since v1.5.0)* write the two quantities as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities), `@flour{1 cup + 5 tbsp}`; the editor offers this fix, and `data.suggestion` holds the unit to write (`cup + 5 tbsp`). A number that only describes the unit, as in `@tomatoes{1 tin of 400 g}`, raises nothing: scaling the number of tins stays right.
 
 It flags as well a unit that hides a quantity, as in `@flour{about 200g}`: a quantity starts with its number, so with words in front the whole text was read as a unit, with no mass, and the quantity vanished from a scaled recipe. **Fix**: write the quantity alone (`@flour{200g}`), and the "about" in the step if it matters. Words with no number, such as `{a pinch}` or `{to taste}`, raise nothing.
+
+### `INVALID_QUANTITY`
+*(since v1.5.0)*
+
+A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) Gram refuses to add up. The recipe still compiles and the sum is shown as written, but it counts for nothing in the shopping list and the nutrition. The message and `data.reason` name the problem:
+
+| `reason` | Example | Fix |
+| :--- | :--- | :--- |
+| `unitlessTerm` | `{1 + 1 cup}` | Give every term its unit: `{1 cup + 1 tbsp}`. |
+| `percentTerm` | `{100 g + 10%}` | Write the result (`{110 g}`, given in `data.suggestion` and offered by the editor), or a relative quantity such as `{10% &flour}`. |
+| `expressionTerm` | `{2 x 100 g + 50 g}` | A sum only adds or takes away: write `{250 g}`. |
+| `quantityInUnit` | `{1 tin of 400 g + 50 g}` | Write the amount in one unit: `{450 g}`. |
+| `nonPositiveTotal` | `{1 tbsp - 1 cup}` | What is taken away is as much as what is added, or more: check the terms. |
+| `rangeAfterMinus` | `{1 cup - 1-2 tbsp}` | A range taken away would swap its bounds: put it on a term that is added, or write the total as a range. |
+| `minusAcrossFamilies` | `{1 cup - 20 g}` | Take an amount away from one of its kind only (a volume from a volume, a weight from a weight). |
+
+Subtraction is checked kind by kind, so `{1 cup - 2 tbsp + 30 g}` is fine.
+
+### `OZ_AFTER_VOLUME`
+*(since v1.5.0)*
+
+Information: a sum puts `oz` after a volume, as in `@water{1 cup + 2 oz}`. `oz` is an ounce of weight, so Gram reads it as one: the sum is a volume plus a weight. **Fix**: write `fl oz` if a fluid ounce was meant (`data.suggestion`, offered by the editor); otherwise there's nothing to do.
 
 ### `DURATION_OUT_OF_RANGE`
 *(since v1.4.0)*
