@@ -148,10 +148,6 @@ h3 {
 .step-quantity {
 	white-space: nowrap;
 }
-.unit {
-	color: var(--dark-grey);
-	font-size: 0.95em;
-}
 .opt {
 	color: var(--grey);
 	font-style: italic;

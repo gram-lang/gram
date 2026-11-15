@@ -262,6 +262,12 @@ export interface RenderContext {
 	 */
 	paper?: boolean;
 
+	/**
+	 * The recipe's scale factor (`scaleFactor` of the compiled recipe): when
+	 * it is not 1, every amount is shown worked out (`formatUsageQuantity`).
+	 */
+	scaleFactor?: number;
+
 	/** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
 	formatMode?: "inline" | "mise-en-place" | "shopping-list";
 

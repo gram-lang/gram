@@ -4,7 +4,6 @@ import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
 import {
 	commonFraction,
 	formatNumber,
-	formatTerm,
 	isTermValue,
 	getDictionary,
 	isCoarseUnit,
@@ -14,6 +13,7 @@ import {
 	TIME_TO_MINUTES,
 	toKitchenFraction,
 	toLargerMetricUnit,
+	type Term,
 	type TermValue,
 	termValueNumber,
 } from "@gram-lang/i18n";
@@ -36,22 +36,19 @@ export function formatGrams(grams: number, lang?: string): string {
 	return `${formatNumber(grams, lang, 1)} g`;
 }
 
-// Converts an AggregatedIngredient to a plain object that formatElement can render.
-/** How a term taken away starts in `variable_entries` (`− 2 tbsp`). */
-const MINUS = "− ";
-
 /**
- * The quantities of one ingredient joined into one text: ` + ` between them,
- * a space only before a term taken away (`1 cup − 2 tbsp`).
+ * Amounts that could not be added into one (a text next to a number) joined
+ * into one text by ` + `.
  */
 export function joinAmounts(parts: readonly string[]): string {
-	return parts
-		.filter((part) => part !== "")
-		.map((part, i) => (i === 0 || part.startsWith(MINUS) ? part : `+ ${part}`))
-		.join(" ");
+	return parts.filter((part) => part !== "").join(" + ");
 }
 
-// The first quantity becomes qty/unit; additional ones become variable_entries strings.
+/**
+ * A section entry as `formatElement` renders it: its added-up quantities in
+ * `terms`, the first one also in `qty` / `unit`, and a text or relative
+ * quantity in `variable_entries`.
+ */
 export function aggToRendererItem(
 	agg: AggregatedIngredient,
 ): Record<string, unknown> {
@@ -73,23 +70,30 @@ export function aggToRendererItem(
 		return base;
 	}
 
-	const [first, ...rest] = agg.quantities;
+	const [first] = agg.quantities;
 	if (first) {
 		base.qty = first.qty;
 		base.unit = first.unit ?? null;
 	}
-	if (rest.length > 0) {
-		base.variable_entries = rest.map((q) => {
-			if (isTermValue(q.qty)) {
-				const text = formatTerm({ value: q.qty, unit: q.unit ?? null });
-				return q.minus ? `${MINUS}${text}` : text;
-			}
-			// A text or relative quantity has no terms: written as it is.
+	// The quantities that add up go to `terms` (`formatUsageQuantity` works
+	// them out); a text or relative quantity has no terms: written as it is.
+	const terms: Term[] = [];
+	const asWritten: string[] = [];
+	for (const q of agg.quantities) {
+		if (isTermValue(q.qty)) {
+			terms.push({
+				value: q.qty,
+				unit: q.unit ?? null,
+				...(q.minus ? { minus: true } : {}),
+			});
+		} else {
 			const qty = q.qty as any;
 			const qStr = qty?.text ?? String(qty?.value ?? qty);
-			return q.unit ? `${qStr} ${q.unit}` : qStr;
-		});
+			asWritten.push(q.unit ? `${qStr} ${q.unit}` : qStr);
+		}
 	}
+	base.terms = terms;
+	if (asWritten.length > 0) base.variable_entries = asWritten;
 	return base;
 }
 
@@ -681,7 +685,12 @@ export function isWrittenInMetricMass(
 	item: QuantityHolder,
 	lang?: string,
 ): boolean {
-	const terms = item.parts?.length ? termsOfUsage(item) : [];
+	const summed = (item as { terms?: Term[] }).terms;
+	const terms = Array.isArray(summed)
+		? summed
+		: item.parts?.length
+			? termsOfUsage(item)
+			: [];
 	if (terms.length === 0) return isMetricMassUnit(item.unit, lang);
 	return terms.every((term) => isMetricMassUnit(term.unit, lang));
 }

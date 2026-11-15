@@ -252,6 +252,21 @@ export function sameLadder(
 }
 
 /**
+ * How a reader of a language writes a canonical unit Gram brings in itself
+ * (a scaled amount recomposed into a spoon the author never wrote): `càs`
+ * for `tbsp` in French. Any other unit keeps its canonical spelling.
+ */
+const UNIT_SPELLINGS: Readonly<
+	Record<string, Readonly<Record<string, string>>>
+> = { fr: { tsp: "càc", tbsp: "càs" } };
+
+/** The spelling of a canonical unit (`tbsp`) in a language (`càs` in French). */
+export function unitSpelling(canonical: string, lang?: string): string {
+	const base = lang?.toLowerCase().split("-")[0];
+	return (base && UNIT_SPELLINGS[base]?.[canonical]) || canonical;
+}
+
+/**
  * Normalizes a raw string unit into a standard canon unit.
  * Examples: 'càs' -> 'tbsp', 'kilo' -> 'kg'.
  */
