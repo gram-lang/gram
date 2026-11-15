@@ -4,7 +4,8 @@ import type { RecipeData, ActiveTimer, Phase } from "./types";
 import MiseEnPlace from "./MiseEnPlace";
 import StepView from "./StepView";
 import EndScreen from "./EndScreen";
-import { fmtQty, fmtMass, fmtCountdown, shouldShowMass } from "./prepare";
+import { formatUsageQuantity } from "@gram-lang/renderer";
+import { fmtMass, fmtCountdown, shouldShowMass } from "./prepare";
 
 interface Props {
 	recipe: RecipeData;
@@ -213,10 +214,9 @@ export default function App({ recipe }: Props) {
 						<Text dimColor>Ingredients for this section:</Text>
 						{currentFlat.sectionIngredients.map((ing, idx) => {
 							const mass = recipe.massMap[ing.id];
+							// Each mention as written (`100 g + 100 g`), a sum with its terms.
 							const qtyStr = ing.quantities
-								? ing.quantities
-										.map((q) => fmtQty({ qty: q.qty, unit: q.unit }).trim())
-										.join(" + ")
+								? formatUsageQuantity({ mentions: ing.quantities }) || null
 								: null;
 							const showMass =
 								mass && ing.quantities?.some((q) => shouldShowMass(q.unit));

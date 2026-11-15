@@ -4,7 +4,6 @@ import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
 import {
 	commonFraction,
 	formatNumber,
-	isTermValue,
 	getDictionary,
 	isCoarseUnit,
 	isMetricMassUnit,
@@ -45,9 +44,9 @@ export function joinAmounts(parts: readonly string[]): string {
 }
 
 /**
- * A section entry as `formatElement` renders it: its added-up quantities in
- * `terms`, the first one also in `qty` / `unit`, and a text or relative
- * quantity in `variable_entries`.
+ * A section entry as `formatElement` renders it: every mention's amount in
+ * `mentions` (as written, never added up), the first one also in `qty` /
+ * `unit`.
  */
 export function aggToRendererItem(
 	agg: AggregatedIngredient,
@@ -72,28 +71,12 @@ export function aggToRendererItem(
 
 	const [first] = agg.quantities;
 	if (first) {
-		base.qty = first.qty;
+		if (first.qty !== undefined) base.qty = first.qty;
 		base.unit = first.unit ?? null;
 	}
-	// The quantities that add up go to `terms` (`formatUsageQuantity` works
-	// them out); a text or relative quantity has no terms: written as it is.
-	const terms: Term[] = [];
-	const asWritten: string[] = [];
-	for (const q of agg.quantities) {
-		if (isTermValue(q.qty)) {
-			terms.push({
-				value: q.qty,
-				unit: q.unit ?? null,
-				...(q.minus ? { minus: true } : {}),
-			});
-		} else {
-			const qty = q.qty as any;
-			const qStr = qty?.text ?? String(qty?.value ?? qty);
-			asWritten.push(q.unit ? `${qStr} ${q.unit}` : qStr);
-		}
-	}
-	base.terms = terms;
-	if (asWritten.length > 0) base.variable_entries = asWritten;
+	// Every mention as the step wrote it (`formatUsageQuantity` writes each,
+	// worked out only when the recipe is scaled): never added up here.
+	base.mentions = agg.quantities;
 	return base;
 }
 
@@ -685,6 +668,10 @@ export function isWrittenInMetricMass(
 	item: QuantityHolder,
 	lang?: string,
 ): boolean {
+	const mentions = (item as { mentions?: QuantityHolder[] }).mentions;
+	if (Array.isArray(mentions) && mentions.length > 0) {
+		return mentions.every((m) => isWrittenInMetricMass(m, lang));
+	}
 	const summed = (item as { terms?: Term[] }).terms;
 	const terms = Array.isArray(summed)
 		? summed

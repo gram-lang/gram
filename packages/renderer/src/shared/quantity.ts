@@ -37,6 +37,14 @@ export function isScaled(scaleFactor: number | undefined): boolean {
 }
 
 /**
+ * The mentions of a section entry (`aggToRendererItem`): the amount of each,
+ * as its step wrote it.
+ */
+export interface SectionMentions {
+	mentions?: Record<string, unknown>[];
+}
+
+/**
  * The terms of a section entry (`aggToRendererItem`): the quantities of every
  * occurrence, already added up unit by unit. Set apart from `parts`, which
  * only ever holds what one occurrence wrote.
@@ -64,6 +72,16 @@ export function formatUsageQuantity(
 	item: Record<string, unknown>,
 	ctx: QuantityContext = {},
 ): string {
+	// A section entry: each mention written on its own, joined by ` + `
+	// (`100 g + 100 g`, two portions to weigh), never added up.
+	const mentions = (item as SectionMentions).mentions;
+	if (Array.isArray(mentions)) {
+		return joinAmounts(
+			mentions.map((m) =>
+				formatUsageQuantity(m as Record<string, unknown>, ctx),
+			),
+		);
+	}
 	const parts = item.parts as QuantityPart[] | undefined;
 	const summed = (item as SummedTerms).terms;
 	let terms: Term[];

@@ -35,10 +35,10 @@ describe("sums of quantities, as written or worked out", () => {
 		expect(md).toContain("**butter** (2 cup + 40 g)");
 	});
 
-	it("adds up the occurrences of a section", () => {
+	it("lists every mention of a section as written, never added up", () => {
 		const section = sectionOf(toMarkdown(build()));
-		expect(section).toContain("- **flour** (1 cup + 3 tbsp)");
-		// One occurrence keeps what was written.
+		// Two mentions, two portions to measure: `{1 cup + 1 tbsp}` then `{2 tbsp}`.
+		expect(section).toContain("- **flour** (1 cup + 1 tbsp + 2 tbsp)");
 		expect(section).toContain("- **sugar** (1/2 cup − 2 tbsp)");
 		expect(section).toContain("- **oats** (1.6 cup)");
 	});
@@ -50,6 +50,11 @@ describe("sums of quantities, as written or worked out", () => {
 		expect(list).toContain("**milk** (1 cup + 1-2 tbsp)");
 		// Not scaled: an amount that does not recompose exactly stays as is.
 		expect(list).toContain("**oats** (1.6 cup)");
+	});
+
+	it("works out each mention of a scaled section on its own", () => {
+		const section = sectionOf(toMarkdown(build(2)));
+		expect(section).toContain("- **flour** (2 cup + 2 tbsp + 4 tbsp)");
 	});
 
 	it("says the same thing in HTML and in text", () => {

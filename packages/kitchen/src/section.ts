@@ -1,6 +1,5 @@
+import type { QuantityPart } from "./terms";
 import type { StepToken, Usage } from "./types";
-import { mergeTerms, type Term } from "@gram-lang/i18n";
-import { isRefusedSum, termsOfParts, termsOfUsage } from "./terms";
 import { round2 } from "./utils";
 
 export interface AggregatedIngredient {
@@ -17,13 +16,15 @@ export interface AggregatedIngredient {
 	// Raw Usage.composite.preparation — a preparation on the PARENT itself (e.g.
 	// "cut in half"), distinct from this entry's own `preparation` above.
 	parentPreparation?: string | null;
-	// null = unmeasured (Rule 2: dedup); array = measured occurrences in order (Rule 1: addition)
+	// null = unmeasured (Rule 2: dedup); array = measured mentions in order, one
+	// per mention, never added up (Rule 1: listing)
 	// Rule 3 (segregation): a given id can have both an unmeasured entry AND a measured entry simultaneously
 	quantities: Array<{
-		qty: NonNullable<Usage["qty"]>;
+		/** Absent for a sum with no single total (`{1 cup + 20 g}`, or refused). */
+		qty?: NonNullable<Usage["qty"]>;
 		unit?: string | null;
-		/** A term taken away (`- 2 tbsp` in `{1 cup - 2 tbsp}`). Since 1.5.0. */
-		minus?: true;
+		/** The terms of a sum (`{1 cup + 1 tbsp}`), as on its `Usage`. Since 1.5.0. */
+		parts?: QuantityPart[];
 	}> | null;
 	normalizedMass?: number;
 	conversionMethod?: string;
@@ -56,56 +57,26 @@ function createBaseEntry(
 
 type SectionQuantity = NonNullable<AggregatedIngredient["quantities"]>[number];
 
-/** A term as a section lists it. */
-function quantityOfTerm(term: Term): SectionQuantity {
-	return term.minus
-		? { qty: term.value, unit: term.unit, minus: true }
-		: { qty: term.value, unit: term.unit };
-}
-
 /**
- * What the occurrences of one entry add up to, kept apart until the entry is
- * complete: the terms that add up, and what is listed as written.
+ * One mention as a section lists it: its amount as the step wrote it (a sum
+ * keeps its `parts`), never added to the others. Two mentions of `100 g` are
+ * often two portions to weigh: the section shows both, the shopping list
+ * adds them up.
  */
-interface EntryAmounts {
-	/** The terms of every occurrence that adds up (`mergeTerms("unit")`). */
-	terms: Term[];
-	/**
-	 * Listed as written, after the terms: a sum Gram refused (it counts for
-	 * nothing, but the reader still sees it), a text (`{une pincée}`) or a
-	 * relative quantity (`{10%}`).
-	 */
-	asWritten: SectionQuantity[];
-}
-
-function addOccurrence(amounts: EntryAmounts, ing: Usage): void {
-	if (isRefusedSum(ing)) {
-		amounts.asWritten.push(...termsOfParts(ing.parts).map(quantityOfTerm));
-		return;
-	}
-	const terms = termsOfUsage(ing);
-	if (terms.length > 0) amounts.terms.push(...terms);
-	else amounts.asWritten.push({ qty: ing.qty!, unit: ing.unit ?? null });
-}
-
-/**
- * The quantities of an entry: the terms of one unit added up (`100 g` and
- * `100 g` give `200 g`, a term taken away comes off its own unit), terms
- * added before terms taken away, then what is listed as written.
- */
-function entryQuantities(amounts: EntryAmounts): SectionQuantity[] {
-	return [
-		...mergeTerms(amounts.terms, "unit").map(quantityOfTerm),
-		...amounts.asWritten,
-	];
+function quantityOfMention(ing: Usage): SectionQuantity {
+	const quantity: SectionQuantity = {};
+	if (ing.qty != null) quantity.qty = ing.qty;
+	quantity.unit = ing.unit ?? null;
+	if (ing.parts?.length) quantity.parts = ing.parts;
+	return quantity;
 }
 
 /**
  * Aggregates a flat list of section Usage items into display-ready entries:
  *
- *   Rule 1 — Addition:    measured + measured → one entry, the terms of each
- *                         unit added up (`100 g` + `100 g` → `200 g`), units
- *                         kept apart (`1 cup` + `2 tbsp`)
+ *   Rule 1 — Listing:     measured + measured → one entry listing every
+ *                         mention as written (`100 g` and `100 g`: two
+ *                         portions to weigh); the shopping list adds them up
  *   Rule 2 — Dedup:       unmeasured + unmeasured → one entry
  *   Rule 3 — Segregation: measured ≠ unmeasured → always two separate entries
  *
@@ -118,7 +89,6 @@ export function aggregateSectionIngredients(
 	const measuredByKey = new Map<string, AggregatedIngredient>();
 	const unmeasuredByKey = new Map<string, AggregatedIngredient>();
 	const order: AggregatedIngredient[] = [];
-	const amountsOf = new Map<AggregatedIngredient, EntryAmounts>();
 
 	for (const ing of ingredients) {
 		if (ing.type === "composite") continue;
@@ -147,7 +117,7 @@ export function aggregateSectionIngredients(
 		if (hasMeasuredQty) {
 			const existing = measuredByKey.get(key);
 			if (existing) {
-				addOccurrence(amountsOf.get(existing)!, ing);
+				existing.quantities!.push(quantityOfMention(ing));
 				if (ing.normalizedMass) {
 					existing.normalizedMass =
 						(existing.normalizedMass || 0) + ing.normalizedMass;
@@ -164,15 +134,12 @@ export function aggregateSectionIngredients(
 			} else {
 				const entry: AggregatedIngredient = {
 					...createBaseEntry(ing, name),
-					quantities: [],
+					quantities: [quantityOfMention(ing)],
 					normalizedMass: ing.normalizedMass,
 					conversionMethod: ing.conversionMethod,
 					isEstimate: ing.isEstimate,
 					bakersPercentage: ing.bakersPercentage,
 				};
-				const amounts: EntryAmounts = { terms: [], asWritten: [] };
-				addOccurrence(amounts, ing);
-				amountsOf.set(entry, amounts);
 				measuredByKey.set(key, entry);
 				order.push(entry);
 			}
@@ -186,10 +153,6 @@ export function aggregateSectionIngredients(
 				order.push(entry);
 			}
 		}
-	}
-
-	for (const [entry, amounts] of amountsOf) {
-		entry.quantities = entryQuantities(amounts);
 	}
 
 	return order;
