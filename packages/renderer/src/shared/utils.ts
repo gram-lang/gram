@@ -1,5 +1,5 @@
 import { ASTNodeType } from "@gram-lang/parser";
-import { round2 } from "@gram-lang/kitchen";
+import { type QuantityHolder, round2, termsOfUsage } from "@gram-lang/kitchen";
 import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
 import {
 	commonFraction,
@@ -8,6 +8,7 @@ import {
 	isTermValue,
 	getDictionary,
 	isCoarseUnit,
+	isMetricMassUnit,
 	localizeDecimals,
 	resolveTimeUnit,
 	TIME_TO_MINUTES,
@@ -667,4 +668,20 @@ function glueElements(
 /** The `glue` of the HTML views: see `glueElements`. */
 export function nobr(html: string): string {
 	return `<span class="gram-nobr">${html}</span>`;
+}
+
+/**
+ * True when an amount is written in metric weights only (`250 g`,
+ * `{1 kg + 200 g}`): it is its own weight, and the standardized mass would
+ * only say it again. A sum with any other term (`{1 lb + 200 g}`, whose
+ * total is in grams, or `{1 cup + 20 g}`) is not. An amount with no terms
+ * is judged by its unit.
+ */
+export function isWrittenInMetricMass(
+	item: QuantityHolder,
+	lang?: string,
+): boolean {
+	const terms = item.parts?.length ? termsOfUsage(item) : [];
+	if (terms.length === 0) return isMetricMassUnit(item.unit, lang);
+	return terms.every((term) => isMetricMassUnit(term.unit, lang));
 }

@@ -119,7 +119,10 @@
       ],
       "qty": 40,
       "unit": "g",
-      "multiUnit": true
+      "multiUnit": true,
+      "normalizedMass": 40,
+      "isEstimate": false,
+      "conversionMethod": "physical"
     },
     {
       "type": "composite",
@@ -512,10 +515,6 @@
     },
     {
       "code": "UNKNOWN_MASS",
-      "message": "Cannot calculate mass for \"salt\" — omitted from nutritional totals."
-    },
-    {
-      "code": "UNKNOWN_MASS",
       "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
     },
     {
@@ -589,10 +588,6 @@
         {
           "code": "UNKNOWN_MASS",
           "message": "Cannot calculate mass for \"sugar\" — omitted from nutritional totals."
-        },
-        {
-          "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"salt\" — omitted from nutritional totals."
         },
         {
           "code": "UNKNOWN_MASS",

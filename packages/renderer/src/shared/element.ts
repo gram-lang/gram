@@ -8,6 +8,7 @@ import {
 	formatTimerDuration,
 	formatDecimalToFraction,
 	largerAmount,
+	isWrittenInMetricMass,
 	type NumberStyle,
 	round1,
 } from "./utils";
@@ -265,6 +266,9 @@ const strategies: Record<
 		const massAddsInfo =
 			normalizedMass !== null &&
 			conversionMethod !== "relative" &&
+			!isWrittenInMetricMass(item, context.lang) &&
+			// TODO(1.5, PR 6): drop once the step shows the terms as written
+			// (`1 lb + 200 g`): it shows their total until then (`653.6 g`).
 			!isMetricMassUnit(item.unit, context.lang);
 		const massText =
 			massAddsInfo && item.bakersPercentage === undefined

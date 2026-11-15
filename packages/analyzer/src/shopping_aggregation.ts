@@ -34,6 +34,32 @@ function resolveDisplayName(
 }
 
 /**
+ * The bounds of a line merged by mass, when an entry it merges is a range
+ * (`range`, next to its middle in `qty`): a mass is proportional to the
+ * amount it weighs, so each bound weighs `normalizedMass` times the bound
+ * over the middle. `undefined` when no entry is a range.
+ */
+function massRange(
+	items: ShoppingListItem[],
+): { min: number; max: number } | undefined {
+	if (!items.some((i) => i.range)) return undefined;
+	let min = 0;
+	let max = 0;
+	for (const item of items) {
+		const mass = item.normalizedMass ?? 0;
+		const middle = typeof item.qty === "number" ? item.qty : 0;
+		if (item.range && middle > 0) {
+			min += (mass * item.range.min) / middle;
+			max += (mass * item.range.max) / middle;
+		} else {
+			min += mass;
+			max += mass;
+		}
+	}
+	return { min: round2(min), max: round2(max) };
+}
+
+/**
  * Re-groups the shopping list produced by `@gram-lang/kitchen` (which groups purely by
  * raw id + unit, with no knowledge of the ingredient database) by CANONICAL id,
  * merging aliased ingredients (e.g. "beurre"/"butter") and cross-unit entries
@@ -124,6 +150,8 @@ export function aggregateShoppingList(
 			if (Math.abs(totalPurchasing - totalMass) > 0.001) {
 				merged.purchasingMass = round2(totalPurchasing);
 			}
+			const range = massRange(items);
+			if (range) merged.range = range;
 			if (items.every((i) => i.fixed)) merged.fixed = true;
 			if (items.some((i) => i.relative)) merged.relative = true;
 

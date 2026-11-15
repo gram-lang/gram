@@ -1,7 +1,10 @@
-import { slugify, round2 } from "@gram-lang/kitchen";
+import { slugify, round2, termsByFamily } from "@gram-lang/kitchen";
 import type { Meta } from "@gram-lang/parser";
 import {
 	normalizeUnit,
+	type Term,
+	termsTotal,
+	termValueNumber,
 	UNIT_CONVERSIONS,
 	unitContainsQuantity,
 } from "@gram-lang/i18n";
@@ -15,7 +18,7 @@ import type { IngredientData } from "./types";
  * Responsible for converting physical mass units into a standard Gram unit (g).
  */
 
-interface ConversionResult {
+export interface ConversionResult {
 	mass: number;
 	method: "physical" | "density" | "unit_weight" | "default" | "explicit";
 }
@@ -247,4 +250,149 @@ export function applyYield(
 		normalizedMass: mass,
 		purchasingMass: round2(mass / yieldFactor),
 	};
+}
+
+/** The mass of one part of an amount, as `standardizeMass` found it. */
+export interface TermMass {
+	/** The part weighed: a family's total (`14 tbsp` for `1 cup - 2 tbsp`). */
+	term: Term;
+	/** Grams, always positive: `term.minus` says whether it is taken away. */
+	mass: number;
+	method: ConversionResult["method"];
+	isEstimate: boolean;
+}
+
+/** What an amount weighs, term by term (`massOf`). */
+export interface AmountMass {
+	/** The terms whose mass is known, in their written order. */
+	known: TermMass[];
+	/** The terms whose mass is unknown (a volume with no density, a unit with no weight). */
+	unknown: Term[];
+}
+
+/**
+ * The terms an amount is weighed by: one per family (`termsByFamily`), its
+ * terms added up (`termsTotal`), so `{1 cup - 2 tbsp}` is weighed as the
+ * `14 tbsp` it amounts to, exactly as a quantity written that way. A family
+ * whose terms do not add up (a term with no unit next to one with a unit)
+ * keeps its terms as written; a negative total is a term taken away.
+ */
+function weighableTerms(terms: readonly Term[]): Term[] {
+	return termsByFamily(terms).flatMap((group) => {
+		const total = group.length > 1 ? termsTotal(group) : null;
+		if (!total) return group;
+		const n = termValueNumber(total.qty);
+		return n !== null && n < 0
+			? [{ value: -n, unit: total.unit, minus: true }]
+			: [{ value: total.qty, unit: total.unit }];
+	});
+}
+
+/**
+ * The mass of an amount, family by family (`{1 cup + 20 g}`,
+ * `{1 cup - 2 tbsp}`, see `weighableTerms`): each goes through
+ * `standardizeMass`, so a sum over several families weighs what its parts
+ * weigh, as occurrences written apart would. A term with no unit counts as
+ * a piece (`unit`), like a quantity with none; a range counts by its middle.
+ *
+ * A term `standardizeMass` cannot weigh is listed in `unknown`, so a caller
+ * tells a complete mass from a partial one: `{1 cup + 20 g}` of an
+ * ingredient with no density is not 20 g.
+ */
+export function massOf(
+	terms: readonly Term[],
+	database: Record<string, IngredientData>,
+	ingredientName?: string,
+	overrides?: Record<string, number>,
+	lang?: string,
+): AmountMass {
+	const result: AmountMass = { known: [], unknown: [] };
+	for (const term of weighableTerms(terms)) {
+		const amount = termValueNumber(term.value);
+		const norm =
+			amount === null
+				? null
+				: standardizeMass(
+						amount,
+						term.unit || "unit",
+						database,
+						ingredientName,
+						overrides,
+						lang,
+					);
+		if (norm) {
+			result.known.push({
+				term,
+				mass: norm.mass,
+				method: norm.method,
+				isEstimate: norm.isEstimate,
+			});
+		} else {
+			result.unknown.push(term);
+		}
+	}
+	return result;
+}
+
+/** A complete mass, its waste factor applied (`weighAmount`). */
+export interface WeighedAmount extends YieldedMass {
+	method: ConversionResult["method"] | "estimate";
+	isEstimate: boolean;
+}
+
+/**
+ * What an amount weighs once its waste factor is applied, or `null` when
+ * any term has no known mass (a partial mass would read as the whole: an
+ * ingredient's `1 cup + 20 g` with no density is not 20 g), when there is
+ * no term, or when the total is negative.
+ *
+ * The yield is applied term by term (`applyYield`): a unit weight is a
+ * gross mass, any other a net one, and one sum can hold both. The method is
+ * the terms' own when they share one, else `estimate` if any term is one,
+ * else `explicit` if any term is, else `physical`.
+ */
+export function weighAmount(
+	terms: readonly Term[],
+	database: Record<string, IngredientData>,
+	ingredientName?: string,
+	overrides?: Record<string, number>,
+	lang?: string,
+	yieldFactor?: number,
+): WeighedAmount | null {
+	const { known, unknown } = massOf(
+		terms,
+		database,
+		ingredientName,
+		overrides,
+		lang,
+	);
+	if (unknown.length > 0 || known.length === 0) return null;
+
+	let normalizedMass = 0;
+	let purchasingMass = 0;
+	let hasPurchasing = false;
+	for (const { term, mass, method } of known) {
+		const sign = term.minus ? -1 : 1;
+		const yielded = applyYield(mass, method, yieldFactor);
+		normalizedMass += sign * yielded.normalizedMass;
+		purchasingMass += sign * (yielded.purchasingMass ?? yielded.normalizedMass);
+		if (yielded.purchasingMass !== undefined) hasPurchasing = true;
+	}
+	// A sum Gram accepted never weighs less than nothing; a guard all the same.
+	if (normalizedMass < 0) return null;
+
+	const methods = new Set(known.map((k) => k.method));
+	const isEstimate = known.some((k) => k.isEstimate);
+	const method =
+		methods.size === 1
+			? known[0]!.method
+			: isEstimate
+				? "estimate"
+				: methods.has("explicit")
+					? "explicit"
+					: "physical";
+
+	const weighed: WeighedAmount = { normalizedMass, method, isEstimate };
+	if (hasPurchasing) weighed.purchasingMass = purchasingMass;
+	return weighed;
 }

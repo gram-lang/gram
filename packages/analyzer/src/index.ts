@@ -18,8 +18,9 @@ import type {
 	ShoppingListItem,
 	RegistryEntry,
 } from "@gram-lang/kitchen";
+import type { Term } from "@gram-lang/i18n";
+import { groupTerms, mergeKey } from "@gram-lang/i18n";
 import {
-	numericTotal,
 	termsOfUsage,
 	WarningCode,
 	round2,
@@ -38,9 +39,9 @@ import type {
 import { calculateMassMetrics } from "./metrics";
 import { calculateNutrition, type NutritionItem } from "./nutrition";
 import {
-	standardizeMass,
 	parseDensityOverrides,
-	applyYield,
+	weighAmount,
+	type WeighedAmount,
 } from "./mass_standardization";
 import { getIngredientData } from "./ingredient_db";
 import { aggregateShoppingList } from "./shopping_aggregation";
@@ -108,31 +109,48 @@ function standardizeUsageMass(
 	enableYieldCalculation: boolean,
 	lang?: string,
 ): void {
-	const numericQty = numericTotal(termsOfUsage(usage));
-	if (numericQty === null) return;
+	const weighed = weighUsage(
+		termsOfUsage(usage),
+		usage,
+		database,
+		overrides,
+		enableYieldCalculation,
+		lang,
+	);
+	if (!weighed) return;
 
-	const norm = standardizeMass(
-		numericQty,
-		usage.unit || "unit",
+	usage.conversionMethod = weighed.method;
+	usage.isEstimate = weighed.isEstimate;
+	usage.normalizedMass = round2(weighed.normalizedMass);
+	if (weighed.purchasingMass !== undefined) {
+		usage.purchasingMass = round2(weighed.purchasingMass);
+	}
+}
+
+/**
+ * What `terms` of `usage`'s ingredient weigh (`weighAmount`), its waste
+ * factor applied when yields are on: the whole usage, or the share of it a
+ * shopping entry holds.
+ */
+function weighUsage(
+	terms: readonly Term[],
+	usage: Partial<Usage> & Pick<Usage, "id">,
+	database: Record<string, IngredientData>,
+	overrides: Record<string, number>,
+	enableYieldCalculation: boolean,
+	lang?: string,
+): WeighedAmount | null {
+	const yieldFactor = enableYieldCalculation
+		? getIngredientData(usage.id, database)?.physical?.yield
+		: undefined;
+	return weighAmount(
+		terms,
 		database,
 		usage.name || usage.id,
 		overrides,
 		lang,
+		yieldFactor,
 	);
-	if (!norm) return;
-
-	usage.conversionMethod = norm.method;
-	usage.isEstimate = norm.isEstimate;
-
-	const dbData = getIngredientData(usage.id, database);
-	const yieldFactor = enableYieldCalculation
-		? dbData?.physical?.yield
-		: undefined;
-	const yielded = applyYield(norm.mass, norm.method, yieldFactor);
-	usage.normalizedMass = round2(yielded.normalizedMass);
-	if (yielded.purchasingMass !== undefined) {
-		usage.purchasingMass = round2(yielded.purchasingMass);
-	}
 }
 
 /**
@@ -364,6 +382,52 @@ function syncEnrichedFieldsIntoSteps(sections: AnalyzedSection[]): void {
 }
 
 /**
+ * The mass a shopping entry holds of one usage. A usage is bought whole in
+ * one entry, unless it is a sum over several ladders (`{1 cup + 20 g}`):
+ * the shopping list then buys one entry per ladder (`byLadder` in kitchen),
+ * each listing the usage, and each weighs only its own terms, never the
+ * usage's whole mass (which would count the sum once per entry).
+ */
+function shareOfEntry(
+	usage: AnalyzedUsage,
+	entry: ShoppingListItem,
+	database: Record<string, IngredientData>,
+	overrides: Record<string, number>,
+	enableYieldCalculation: boolean,
+	lang?: string,
+): Pick<
+	AnalyzedUsage,
+	"normalizedMass" | "purchasingMass" | "isEstimate" | "conversionMethod"
+> {
+	const groups = groupTerms(termsOfUsage(usage), "ladder");
+	if (groups.length <= 1) return usage;
+	const key = mergeKey(entry.unit || null, "ladder");
+	const terms = groups.find(
+		(group) => mergeKey(group[0]?.unit || null, "ladder") === key,
+	);
+	const weighed = terms
+		? weighUsage(
+				terms,
+				usage,
+				database,
+				overrides,
+				enableYieldCalculation,
+				lang,
+			)
+		: null;
+	if (!weighed) return {};
+	return {
+		normalizedMass: round2(weighed.normalizedMass),
+		purchasingMass:
+			weighed.purchasingMass !== undefined
+				? round2(weighed.purchasingMass)
+				: undefined,
+		isEstimate: weighed.isEstimate,
+		conversionMethod: weighed.method,
+	};
+}
+
+/**
  * Pass 2: enriches the master Shopping List with the same physical masses
  * computed per-section in pass 1 (composites/alternatives/plain items each
  * need their own aggregation rule), then resolves database aliases and
@@ -455,7 +519,15 @@ function enrichShoppingList(
 				let hasEstimate = false;
 				let hasRelativeResolved = false;
 
-				usages.forEach((u) => {
+				usages.forEach((usage) => {
+					const u = shareOfEntry(
+						usage,
+						stdItem,
+						database,
+						overrides,
+						opts.enableYieldCalculation !== false,
+						opts.lang,
+					);
 					if (u.normalizedMass !== undefined) {
 						totalMass += u.normalizedMass;
 						totalPurchasing += u.purchasingMass ?? u.normalizedMass;
