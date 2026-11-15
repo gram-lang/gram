@@ -242,41 +242,61 @@ function totalAsTerm(total: TermsTotal): Term {
 }
 
 /**
- * Puts the terms of several amounts of one ingredient together, terms added
- * before terms taken away (`2 tbsp` then `1 cup - 4 tbsp` gives
- * `1 cup`, `2 tbsp`, `- 4 tbsp`, never a term taken away first).
- *
- * - `"unit"` keeps every term as it is, one after the other: this is how a
- *   section lists an ingredient it uses several times.
- * - `"ladder"` adds up the terms of each ladder into one, in the smallest
- *   unit written (`1 cup`, `2 tbsp` and `- 4 tbsp` give `14 tbsp`, see
- *   `termsTotal`), and the terms of each unit on no ladder into one; two
- *   systems (`cup` and `ml`) or two families stay apart. Each result keeps
- *   the place of the first term it adds up; a negative result is a term
- *   taken away.
+ * The key `mergeTerms` groups a term's unit under: its ladder in `"ladder"`
+ * mode (`cup` and `tbsp`, `g` and `kg`), otherwise the unit itself, its
+ * spellings counted as one (`cup` / `cups`). A unit Gram does not know
+ * (`gousse`) is only lowercased: `gousse` and `gousses` stay two units.
  */
-export function mergeTerms(terms: readonly Term[], mode: MergeMode): Term[] {
-	const ordered = addedFirst(terms);
-	if (mode === "unit") return ordered;
+export function mergeKey(unit: string | null, mode: MergeMode): string {
+	const step = mode === "ladder" ? ladderOf(unit) : null;
+	return step ? `ladder:${step.ladder.id}` : `unit:${normalizeUnit(unit)}`;
+}
 
+/** The terms grouped by `mergeKey`, groups in the order their first term comes. */
+export function groupTerms(terms: readonly Term[], mode: MergeMode): Term[][] {
 	const groups = new Map<string, Term[]>();
-	for (const term of ordered) {
-		const step = ladderOf(term.unit);
-		const key = step
-			? `ladder:${step.ladder.id}`
-			: `unit:${normalizeUnit(term.unit)}`;
+	for (const term of terms) {
+		const key = mergeKey(term.unit, mode);
 		const group = groups.get(key);
 		if (group) group.push(term);
 		else groups.set(key, [term]);
 	}
+	return [...groups.values()];
+}
 
+/** True for a total of exactly nothing (`2 tbsp - 2 tbsp`). */
+function isZero(term: Term): boolean {
+	const bounds = termBounds(term.value);
+	return !!bounds && bounds.min === 0 && bounds.max === 0;
+}
+
+/**
+ * Puts the terms of several amounts of one ingredient together, terms added
+ * before terms taken away (`2 tbsp` then `1 cup - 4 tbsp` gives
+ * `1 cup - 2 tbsp`, never a term taken away first).
+ *
+ * - `"unit"` adds up the terms of each unit into one, its spellings counted
+ *   as one (`100 g` and `100 g` give `200 g`); two units stay apart, even on
+ *   one ladder (`1 cup`, `2 tbsp`): this is how a section lists an
+ *   ingredient it uses several times.
+ * - `"ladder"` adds up the terms of each ladder into one, in the smallest
+ *   unit written (`1 cup`, `2 tbsp` and `- 4 tbsp` give `14 tbsp`, see
+ *   `termsTotal`), and the terms of each unit on no ladder into one; two
+ *   systems (`cup` and `ml`) or two families stay apart.
+ *
+ * Each result keeps the place of the first term it adds up; a negative
+ * result is a term taken away, a result of zero is left out (unless nothing
+ * else is left). A lone term stays as written.
+ */
+export function mergeTerms(terms: readonly Term[], mode: MergeMode): Term[] {
 	const merged: Term[] = [];
-	for (const group of groups.values()) {
+	for (const group of groupTerms(addedFirst(terms), mode)) {
 		const total = group.length > 1 ? termsTotal(group) : null;
 		if (total) merged.push(totalAsTerm(total));
 		else merged.push(...group);
 	}
-	return addedFirst(merged);
+	const kept = merged.filter((term) => !isZero(term));
+	return addedFirst(kept.length > 0 ? kept : merged.slice(0, 1));
 }
 
 /**

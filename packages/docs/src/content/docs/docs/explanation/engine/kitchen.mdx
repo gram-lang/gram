@@ -68,7 +68,7 @@ Kitchen operates purely on text syntax, without consulting `ingredients.yaml`. A
 :::
 
 :::tip[Per-Section Ingredient Aggregation]
-The `section.ts` module provides `aggregateSectionIngredients`, specifically designed for displaying ingredients *per section* (for prep stations). Its rules differ from the global shopping list: repeated occurrences of the same ingredient are not summed, but concatenated (e.g. `200g + 50g`) to clarify preparation stages.
+The `section.ts` module provides `aggregateSectionIngredients`, specifically designed for displaying ingredients *per section* (for prep stations). Its rules differ from the global shopping list: repeated occurrences of the same ingredient add up only within one unit (`100 g` and `100 g` give `200 g`), and different units stay side by side (`1 cup + 2 tbsp`), where the shopping list adds up a whole measuring system (`18 tbsp`).
 :::
 
 ## Compilation output

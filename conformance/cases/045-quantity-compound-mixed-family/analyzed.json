@@ -69,8 +69,19 @@
       "_usageIds": [
         "3"
       ],
-      "qty": 286.59,
-      "unit": "ml"
+      "qty": 1,
+      "unit": "cup",
+      "multiUnit": true
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 50,
+      "unit": "ml",
+      "multiUnit": true
     },
     {
       "id": "garlic",
@@ -419,6 +430,10 @@
     },
     {
       "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
       "message": "Cannot calculate mass for \"garlic\" — omitted from nutritional totals."
     },
     {
@@ -495,6 +510,10 @@
         {
           "code": "MISSING_INGREDIENT",
           "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
         },
         {
           "code": "UNKNOWN_MASS",

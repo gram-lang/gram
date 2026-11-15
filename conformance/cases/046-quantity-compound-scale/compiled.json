@@ -73,8 +73,20 @@
         "3"
       ],
       "fixed": true,
-      "qty": 5.24,
-      "unit": "ml"
+      "qty": 1,
+      "unit": "tsp",
+      "multiUnit": true
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "3"
+      ],
+      "fixed": true,
+      "qty": 1,
+      "unit": "pinch",
+      "multiUnit": true
     },
     {
       "id": "milk",
@@ -83,7 +95,11 @@
         "4"
       ],
       "qty": 35,
-      "unit": "tbsp"
+      "unit": "tbsp",
+      "range": {
+        "min": 34,
+        "max": 36
+      }
     },
     {
       "id": "butter",

@@ -63,6 +63,85 @@ describe("aggregateSectionIngredients", () => {
 	});
 });
 
+describe("adding up the occurrences of a section (since 1.5.0)", () => {
+	it("adds up the occurrences of one unit, its spellings counted as one", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({ qty: 100, unit: "g" }),
+			usage({ qty: 100, unit: "grams" }),
+		]);
+		expect(entry!.quantities).toEqual([{ qty: 200, unit: "g" }]);
+	});
+
+	it("keeps two units apart, even on one ladder", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({ qty: 1, unit: "cup" }),
+			usage({ qty: 2, unit: "tbsp" }),
+		]);
+		expect(entry!.quantities).toEqual([
+			{ qty: 1, unit: "cup" },
+			{ qty: 2, unit: "tbsp" },
+		]);
+	});
+
+	it("takes a term away from its own unit, terms added first", () => {
+		// `@sugar{2 tbsp}` then `@sugar{1 cup - 4 tbsp}`.
+		const [entry] = aggregateSectionIngredients([
+			usage({ qty: 2, unit: "tbsp" }),
+			usage({
+				qty: 12,
+				unit: "tbsp",
+				parts: [
+					{ qty: 1, unit: "cup" },
+					{ qty: 4, unit: "tbsp", minus: true },
+				],
+			}),
+		]);
+		expect(entry!.quantities).toEqual([
+			{ qty: 1, unit: "cup" },
+			{ qty: 2, unit: "tbsp", minus: true },
+		]);
+	});
+
+	it("adds ranges by their bounds", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({
+				qty: {
+					type: "range",
+					value: 2.5,
+					range: { min: 2, max: 3 },
+					text: "2-3",
+				},
+				unit: "g",
+			}),
+			usage({ qty: 200, unit: "g" }),
+		]);
+		expect(entry!.quantities).toEqual([
+			{
+				qty: { type: "range", value: 202.5, range: { min: 202, max: 203 } },
+				unit: "g",
+			},
+		]);
+	});
+
+	it("lists a refused sum as written, apart from what adds up", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({ qty: 100, unit: "g" }),
+			usage({
+				parts: [
+					{ qty: 1, unit: "cup" },
+					{ qty: 20, unit: "g", minus: true },
+				],
+			}),
+			usage({ qty: 50, unit: "g" }),
+		]);
+		expect(entry!.quantities).toEqual([
+			{ qty: 150, unit: "g" },
+			{ qty: 1, unit: "cup" },
+			{ qty: 20, unit: "g", minus: true },
+		]);
+	});
+});
+
 describe("composite parent tracking", () => {
 	it("attaches the raw parent name to a composite child entry", () => {
 		const [entry] = aggregateSectionIngredients([
@@ -98,7 +177,7 @@ describe("composite parent tracking", () => {
 			}),
 		]);
 		expect(entry!.parent).toBe("citron");
-		expect(entry!.quantities).toHaveLength(2);
+		expect(entry!.quantities).toEqual([{ qty: 80, unit: "ml" }]);
 	});
 
 	it("attaches the parent's own preparation, distinct from this entry's preparation", () => {

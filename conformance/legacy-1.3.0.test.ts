@@ -43,6 +43,12 @@ const TIMER_ADDED_SINCE_1_3_0 = new Set(["raw", "minutes"]);
 // in 1.3.0, so no case of the tag has one; listed so a sum never moves a digest.
 const QUANTITY_ADDED_SINCE_1_3_0 = new Set(["parts"]);
 
+// Added after 1.3.0 on a shopping entry (1.5): the bounds of a total with a
+// range in it, next to its middle in `qty`. Left out only next to a numeric
+// `qty`: a range quantity object (`{ type: "range", range }`) keeps its own.
+const isShoppingRange = (value: object, key: string): boolean =>
+	key === "range" && typeof (value as { qty?: unknown }).qty === "number";
+
 function canonical(value: unknown): string {
 	if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
 	if (value && typeof value === "object") {
@@ -50,6 +56,7 @@ function canonical(value: unknown): string {
 		const entries = Object.entries(value as Record<string, unknown>)
 			.filter(([k]) => !(isTimer && TIMER_ADDED_SINCE_1_3_0.has(k)))
 			.filter(([k]) => !QUANTITY_ADDED_SINCE_1_3_0.has(k))
+			.filter(([k]) => !isShoppingRange(value, k))
 			.sort(([a], [b]) => (a < b ? -1 : 1))
 			.map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`);
 		return `{${entries.join(",")}}`;

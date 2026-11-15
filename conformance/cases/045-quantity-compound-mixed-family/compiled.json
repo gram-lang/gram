@@ -66,8 +66,19 @@
       "_usageIds": [
         "3"
       ],
-      "qty": 286.59,
-      "unit": "ml"
+      "qty": 1,
+      "unit": "cup",
+      "multiUnit": true
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 50,
+      "unit": "ml",
+      "multiUnit": true
     },
     {
       "id": "garlic",
