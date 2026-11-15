@@ -41,6 +41,7 @@ export const markdownBackend: RenderBackend = {
 			classes: options.classes,
 			formatDuration: options.formatDuration,
 			formatFraction: options.formatFraction,
+			scaleFactor: data.scaleFactor,
 			bakersMathOnly: options.bakersMathOnly,
 			lang: options.lang,
 			// Footnotes are collected here too (GFM `[^id]` refs + definitions at

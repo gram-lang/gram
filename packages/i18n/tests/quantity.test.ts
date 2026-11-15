@@ -447,3 +447,99 @@ describe("formatTerms", () => {
 		).toBe("1 cup plus 1 tbsp");
 	});
 });
+
+describe("formatTerms, computed", () => {
+	const computed = (
+		terms: Term[],
+		options: Parameters<typeof formatTerms>[1] = {},
+	) => formatTerms(terms, { mode: "computed", ...options });
+	const t = (value: Term["value"], unit: string | null, minus?: true): Term =>
+		minus ? { value, unit, minus } : { value, unit };
+
+	it("recomposes a scaled sum term by term, never into a fraction no spoon measures", () => {
+		const doubled = scaleTerms([t(1, "cup"), t(1, "tbsp")], 2);
+		expect(computed(doubled)).toBe("2 cup + 2 tbsp");
+	});
+
+	it("writes one amount of the largest unit written when that unit measures it", () => {
+		expect(computed([t(2, "cup"), t(4, "tbsp", true)])).toBe("1 3/4 cup");
+		expect(computed([t(1, "cup"), t(20, "tbsp")])).toBe("2 1/4 cup");
+		expect(computed([t(1, "lb"), t(4, "oz")])).toBe("1 1/4 lb");
+	});
+
+	it("keeps terms that are measurable as they are", () => {
+		expect(computed([t(1, "cup"), t(2, "tbsp", true)])).toBe("1 cup − 2 tbsp");
+		expect(computed([t(0.5, "cup"), t(2, "tbsp", true)])).toBe(
+			"1/2 cup − 2 tbsp",
+		);
+	});
+
+	it("breaks an amount down, three terms at most, the last rounded to what its unit measures", () => {
+		expect(computed(scaleTerms([t(1, "cup")], 1.1))).toBe(
+			"1 cup + 1 tbsp + 2 tsp",
+		);
+	});
+
+	it("never climbs above the largest unit written in a step", () => {
+		expect(computed([t(34, "tbsp")])).toBe("34 tbsp");
+	});
+
+	it("climbs to a much larger unit for what is bought, never to a near one", () => {
+		expect(computed([t(34, "tbsp")], { buying: true })).toBe("2 cup + 2 tbsp");
+		expect(computed([t(12, "tbsp")], { buying: true })).toBe("3/4 cup");
+		expect(computed([t(3, "tsp")], { buying: true })).toBe("3 tsp");
+		expect(computed([t(20, "oz")], { buying: true })).toBe("1 1/4 lb");
+	});
+
+	it("leaves an amount that does not recompose exactly as it is without rounding", () => {
+		expect(computed([t(1.6, "cup")], { buying: true, rounding: false })).toBe(
+			"1.6 cup",
+		);
+	});
+
+	it("shares the part common to both bounds of a range", () => {
+		const doubled = scaleTerms([t(1, "cup"), t(range(1, 2), "tbsp")], 2);
+		expect(computed(doubled)).toBe("2 cup + 2-4 tbsp");
+		expect(computed([t(range(34, 36), "tbsp")], { buying: true })).toBe(
+			"2 cup + 2-4 tbsp",
+		);
+	});
+
+	it("keeps a metric amount in the largest unit written, in the larger unit to buy", () => {
+		const doubled = scaleTerms([t(1, "kg"), t(200, "g")], 2);
+		expect(computed(doubled)).toBe("2.4 kg");
+		expect(computed([t(800, "g"), t(200, "g")])).toBe("1000 g");
+		expect(computed([t(1500, "g")], { buying: true })).toBe("1.5 kg");
+		expect(computed([t(2250, "ml")], { buying: true })).toBe("2.25 l");
+	});
+
+	it("keeps two systems and two families apart, term by term", () => {
+		expect(computed([t(1, "cup"), t(50, "ml")])).toBe("1 cup + 50 ml");
+		expect(computed(scaleTerms([t(1, "cup"), t(20, "g")], 2))).toBe(
+			"2 cup + 40 g",
+		);
+		expect(computed([t(1, "tsp"), t(1, "pinch")])).toBe("1 tsp + 1 pinch");
+	});
+
+	it("keeps the spelling written, and writes a unit Gram brings in the reader's way", () => {
+		expect(computed([t(1, "cups"), t(1, "cups")])).toBe("2 cups");
+		expect(computed(scaleTerms([t(1, "càs")], 0.4), { lang: "fr" })).toBe(
+			"1 1/4 càc",
+		);
+		expect(computed([t(1.5, "kg")], { lang: "fr" })).toBe("1,5 kg");
+	});
+
+	it("writes terms added before terms taken away", () => {
+		expect(computed([t(30, "g"), t(1, "cup"), t(2, "tbsp", true)])).toBe(
+			"30 g + 1 cup − 2 tbsp",
+		);
+	});
+
+	it("goes through the caller's number writer", () => {
+		expect(
+			computed(scaleTerms([t(1, "cup"), t(1, "tbsp")], 1.5), {
+				number: (n) => `<${n}>`,
+			}),
+		).toBe("<1.5> cup + <1.5> tbsp");
+	});
+});

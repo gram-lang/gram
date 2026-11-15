@@ -1387,12 +1387,6 @@
 		margin-left: 2px;
 	}
 
-	.unit {
-		color: var(--color-text-muted);
-		font-size: 0.9em;
-		margin-left: 2px;
-	}
-
 	.prep,
 	.composite-parent {
 		color: var(--color-text-muted);

@@ -146,8 +146,10 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 				} as unknown as Record<string, IngredientData>,
 			).result;
 			const md = toMarkdown(sums);
-			expect(md).toContain("**flour** (1200 g)");
-			expect(md).toContain("- **flour** (1 kg + 200 g)");
+			// The step as written, the section worked out in the larger unit
+			// written, the shopping list in kilograms.
+			expect(md).toContain("Mix **flour** (1 kg + 200 g)");
+			expect(md).toContain("- **flour** (1.2 kg)");
 			expect(md).toContain("- **salt** (1 cup + 20 g, ~303.9 g)");
 		});
 

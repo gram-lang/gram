@@ -113,6 +113,7 @@ export const textBackend: RenderBackend = {
 			registry: data.registry || { ingredients: {}, cookware: {} },
 			formatDuration: options.formatDuration,
 			formatFraction: options.formatFraction,
+			scaleFactor: data.scaleFactor,
 			bakersMathOnly: options.bakersMathOnly,
 			lang: options.lang,
 			textStyle: options.textStyle,

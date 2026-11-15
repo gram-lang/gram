@@ -660,12 +660,6 @@
 }
 
 .gram-recipe .gross-mass,
-.gram-recipe .unit {
-	color: var(--grey);
-	font-size: 0.85em;
-	margin-left: 1pt;
-}
-
 .gram-recipe .prep,
 .gram-recipe .composite-parent,
 .gram-recipe .optional {

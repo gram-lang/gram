@@ -361,10 +361,6 @@ h3 {
 .step-quantity {
 	white-space: nowrap;
 }
-.unit {
-	color: var(--dark-grey);
-	font-size: 0.95em;
-}
 .opt {
 	color: var(--grey);
 	font-style: italic;
@@ -1053,12 +1049,6 @@ h3 {
 }
 
 .gram-recipe .gross-mass,
-.gram-recipe .unit {
-	color: var(--grey);
-	font-size: 0.85em;
-	margin-left: 1pt;
-}
-
 .gram-recipe .prep,
 .gram-recipe .composite-parent,
 .gram-recipe .optional {

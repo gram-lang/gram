@@ -3,16 +3,14 @@ import {
 	escapeHtml,
 	escapeMarkdownHtml,
 	getQty,
-	joinAmounts,
 	formatQuantityValue,
 	formatTimerDuration,
-	formatDecimalToFraction,
 	largerAmount,
 	isWrittenInMetricMass,
-	type NumberStyle,
 	round1,
 } from "./utils";
-import { formatNumber, getDictionary, isMetricMassUnit } from "@gram-lang/i18n";
+import { formatUsageQuantity, quantityContext } from "./quantity";
+import { formatNumber, getDictionary } from "@gram-lang/i18n";
 
 import { DEFAULT_ICONS } from "./icons";
 import { type TooltipRow, tooltipCardAttrs } from "./tooltip-card";
@@ -60,20 +58,6 @@ function massMethodLabel(
 	if (conversionMethod === "unit_weight")
 		return t.renderer.massMethodUnitWeight;
 	return undefined;
-}
-
-/** How the numbers of a view are written: its language, its `formatFraction`. */
-function numberStyle(context: RenderContext): NumberStyle {
-	return { lang: context.lang, formatFraction: context.formatFraction };
-}
-
-/** A quantity as written: "2 tbsp", "1/2 tsp", "6". Empty without one. */
-function writtenQty(item: any, style: NumberStyle): string {
-	const qty = getQty(item, style);
-	if (!qty) return "";
-	const value =
-		qty.text || formatDecimalToFraction(qty.value, item.unit, style);
-	return `${value}${item.unit ? ` ${item.unit}` : ""}`;
 }
 
 /**
@@ -137,10 +121,15 @@ function ingredientTooltip(
 		const parentName =
 			context.registry?.ingredients?.[composite.parent]?.name ||
 			composite.parent;
-		const parentQty =
-			composite.quantity !== undefined && composite.quantity !== null
-				? `${composite.quantity}${composite.unit ? ` ${composite.unit}` : ""} `
-				: "";
+		const parentAmount = formatUsageQuantity(
+			{
+				qty: composite.quantity,
+				unit: composite.unit,
+				parts: composite.parts,
+			},
+			{ ...quantityContext(context), buying: false },
+		);
+		const parentQty = parentAmount ? `${parentAmount} ` : "";
 		rows.push({
 			label: t.renderer.tooltipTakenFrom,
 			value: `${parentQty}${parentName}`,
@@ -199,9 +188,6 @@ const strategies: Record<
 			}
 		}
 
-		const style = numberStyle(context);
-		const qty = getQty(item, style);
-
 		const prep = item.preparation || "";
 		const isOptional = item.modifiers?.includes("optional");
 
@@ -222,16 +208,9 @@ const strategies: Record<
 		// A shopping list is what you buy: 1000 g or more in kg, 1000 ml or
 		// more in l. Elsewhere a quantity is what you weigh, and stays as is.
 		const buying = context.formatMode === "shopping-list";
-		let plainQty = "";
-		let originalQtyStr = "";
-		if (qty) {
-			originalQtyStr =
-				(buying &&
-					typeof qty.value === "number" &&
-					largerAmount(qty.value, item.unit, context.lang)) ||
-				(qty.text || formatDecimalToFraction(qty.value, item.unit, style)) +
-					(item.unit ? ` ${item.unit}` : "");
-		}
+		// The amount, with the quantities that could not be added to it.
+		const originalQtyStr = formatUsageQuantity(item, quantityContext(context));
+		let plainQty = originalQtyStr;
 
 		if (item.bakersPercentage !== undefined) {
 			const perc = `${formatNumber(item.bakersPercentage, context.lang, 1)}%`;
@@ -239,24 +218,6 @@ const strategies: Record<
 			if (normalizedMass !== null) absMass = `${grams}g`;
 			else absMass = originalQtyStr;
 			plainQty = context.bakersMathOnly ? perc : `${perc} (${absMass})`;
-		} else {
-			plainQty = originalQtyStr;
-		}
-
-		if (
-			item.variable_entries &&
-			item.variable_entries.length > 0 &&
-			item.bakersPercentage === undefined
-		) {
-			plainQty = plainQty
-				? joinAmounts([plainQty, ...item.variable_entries])
-				: joinAmounts(item.variable_entries);
-			if (originalQtyStr)
-				originalQtyStr = joinAmounts([
-					originalQtyStr,
-					...item.variable_entries,
-				]);
-			else originalQtyStr = joinAmounts(item.variable_entries);
 		}
 
 		// The standardized mass, next to the quantity as written, wherever it
@@ -266,10 +227,7 @@ const strategies: Record<
 		const massAddsInfo =
 			normalizedMass !== null &&
 			conversionMethod !== "relative" &&
-			!isWrittenInMetricMass(item, context.lang) &&
-			// TODO(1.5, PR 6): drop once the step shows the terms as written
-			// (`1 lb + 200 g`): it shows their total until then (`653.6 g`).
-			!isMetricMassUnit(item.unit, context.lang);
+			!isWrittenInMetricMass(item, context.lang);
 		const massText =
 			massAddsInfo && item.bakersPercentage === undefined
 				? `${isEstimate ? (format === "text" ? "≈" : "~") : ""}${
@@ -544,8 +502,8 @@ const strategies: Record<
 		const ingredients = registry.ingredients || {};
 		const def = ingredients[item.id];
 		const name = def ? def.name : item.id || t.renderer.unknownReference;
-		const style = numberStyle(context);
-		const qty = getQty(item, style);
+		// The amount, with the quantities that could not be added to it.
+		const amount = formatUsageQuantity(item, quantityContext(context));
 
 		if (format === "html") {
 			const caretIcon =
@@ -556,72 +514,32 @@ const strategies: Record<
 			const refAttr = refId ? ` data-ref-id="${escapeHtml(refId)}"` : "";
 
 			if (mode === "inline") {
-				const qtyParts = qty
-					? [
-							writtenQty(item, numberStyle(context)),
-							...(item.variable_entries ?? []),
-						]
-					: [];
 				const tip = tooltipCardAttrs(
 					{
 						title: name,
 						subtitle: t.renderer.intermediateIngredient,
-						rows:
-							qtyParts.length > 0
-								? [{ label: t.renderer.quantity, value: joinAmounts(qtyParts) }]
-								: [],
+						rows: amount ? [{ label: t.renderer.quantity, value: amount }] : [],
 					},
 					t.renderer.colon,
 				);
 				return `<span class="${className}"${refAttr}${tip}>${caretIcon} ${escapeHtml(name)}</span>`;
-			} else {
-				let html = `<span class="${className}"${refAttr}>${caretIcon} ${escapeHtml(name)}`;
-				if (qty) {
-					const parts = [];
-					const baseQty =
-						qty.text || formatDecimalToFraction(qty.value, item.unit, style);
-					let first = escapeHtml(baseQty);
-					if (item.unit)
-						first += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
-					parts.push(first);
-					if (item.variable_entries && item.variable_entries.length > 0) {
-						parts.push(...item.variable_entries.map(escapeHtml));
-					}
-					html += ` <span class="quantity">${joinAmounts(parts)}</span>`;
-				}
-				html += `</span>`;
-				return html;
 			}
+			let html = `<span class="${className}"${refAttr}>${caretIcon} ${escapeHtml(name)}`;
+			if (amount)
+				html += ` <span class="quantity">${escapeHtml(amount)}</span>`;
+			html += `</span>`;
+			return html;
 		} else if (format === "text") {
-			let detail = "";
-			if (qty) {
-				const parts = [
-					`${qty.text || formatDecimalToFraction(qty.value, item.unit, style)}${item.unit ? ` ${item.unit}` : ""}`,
-					...(item.variable_entries ?? []),
-				];
-				detail = joinAmounts(parts);
-			}
 			const mode = context.formatMode || "inline";
 			return textRow(
 				mode === "inline" ? { ...context, textColumn: undefined } : context,
 				name,
 				styled(context, "reference", name),
-				detail,
+				amount,
 			);
 		} else {
 			let md = `👉*${escapeMarkdownHtml(name)}*`;
-			if (qty) {
-				const parts = [];
-				const qtyVal =
-					qty.text || formatDecimalToFraction(qty.value, item.unit, style);
-				let first = String(qtyVal);
-				if (item.unit) first += ` ${item.unit}`;
-				parts.push(first);
-				if (item.variable_entries && item.variable_entries.length > 0) {
-					parts.push(...item.variable_entries);
-				}
-				md += ` (${escapeMarkdownHtml(joinAmounts(parts))})`;
-			}
+			if (amount) md += ` (${escapeMarkdownHtml(amount)})`;
 			return md;
 		}
 	},
@@ -704,7 +622,7 @@ const strategies: Record<
 							opt.id ||
 							"",
 					),
-					value: writtenQty(opt, numberStyle(context)),
+					value: formatUsageQuantity(opt, quantityContext(context)),
 					detail: opt.preparation || undefined,
 				}));
 
