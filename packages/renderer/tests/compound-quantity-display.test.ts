@@ -126,6 +126,10 @@ describe("list lines with long amounts", () => {
 		const html = toHTML(build());
 		const badge = html.slice(html.indexOf('class="mixed-units-badge"'));
 		expect(badge.slice(0, 400)).toContain("gicon-warning");
+		// The badge is its icon alone on screen: its tooltip names it.
+		expect(badge).toMatch(
+			/^class="mixed-units-badge" data-tooltip="Mixed units: /,
+		);
 		expect(html).not.toContain("⚠️");
 	});
 });

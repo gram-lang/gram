@@ -22,7 +22,9 @@ function list(lines: ReturnType<typeof line>[]) {
 		classes,
 		classList: {
 			add: (c: string) => classes.add(c),
-			remove: (c: string) => classes.delete(c),
+			remove: (...cs: string[]) => {
+				for (const c of cs) classes.delete(c);
+			},
 		},
 		querySelectorAll: () => lines,
 	};
@@ -65,10 +67,41 @@ describe("one layout per list (watchListStacking)", () => {
 			{ target: tight, contentRect: { width: 300 } },
 			{ target: roomy, contentRect: { width: 300 } },
 		]);
+		expect(tight.classes.has("kit-list-single")).toBe(true);
 		expect(tight.classes.has("kit-list-stacked")).toBe(true);
-		// Another list of the page keeps its compact lines.
+		// Another list of the page keeps its columns and its compact lines.
+		expect(roomy.classes.has("kit-list-single")).toBe(false);
 		expect(roomy.classes.has("kit-list-stacked")).toBe(false);
 		stop();
+	});
+
+	it("tries one column first, and stacks only when a line still does not fit", () => {
+		withResizeObserver();
+		const classes = new Set<string>();
+		// The amount falls under the name in a column, fits on a whole line.
+		const fitsInOneColumn = {
+			querySelector: (s: string) => ({
+				getBoundingClientRect: () => ({
+					top:
+						s.includes("kit-qty") && !classes.has("kit-list-single") ? 22 : 0,
+					height: 20,
+				}),
+			}),
+		};
+		const wide = {
+			classes,
+			classList: {
+				add: (c: string) => classes.add(c),
+				remove: (...cs: string[]) => {
+					for (const c of cs) classes.delete(c);
+				},
+			},
+			querySelectorAll: () => [fitsInOneColumn],
+		};
+		watchListStacking({ querySelectorAll: () => [wide] } as never);
+		observed?.callback([{ target: wide, contentRect: { width: 700 } }]);
+		expect(classes.has("kit-list-single")).toBe(true);
+		expect(classes.has("kit-list-stacked")).toBe(false);
 	});
 
 	it("measures again only when the width changes, not the height", () => {
@@ -96,6 +129,7 @@ describe("one layout per list (watchListStacking)", () => {
 		expect(only.classes.has("kit-list-stacked")).toBe(true);
 		resize(600); // wider: everything fits again
 		expect(only.classes.has("kit-list-stacked")).toBe(false);
+		expect(only.classes.has("kit-list-single")).toBe(false);
 	});
 
 	it("does nothing without ResizeObserver, and the standalone script carries it", () => {

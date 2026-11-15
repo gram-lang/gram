@@ -220,7 +220,7 @@ export const en = {
 		increasePortions: "Increase portions",
 		returnToStep: "Return to step",
 		mixedUnitsTooltip:
-			"Couldn't be combined into one total — add a density to the ingredient database to merge them",
+			"Mixed units: couldn't be combined into one total — add a density to the ingredient database to merge them",
 		mixedUnits: "Mixed units",
 		copyShoppingList: "Copy list",
 		copied: "Copied!",

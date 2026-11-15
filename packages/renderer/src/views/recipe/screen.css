@@ -643,6 +643,20 @@
 		font-size: 1.1em;
 	}
 
+	/*
+	 * In a narrow view, the button is its icon alone, so the list's title keeps
+	 * its line; its `aria-label` still names it.
+	 */
+	@container (max-width: 420px) {
+		.copy-shopping-btn {
+			padding: 7px 7px;
+		}
+
+		.copy-shopping-btn .copy-label {
+			display: none;
+		}
+	}
+
 	.prep-body {
 		padding: 12px 14px;
 		border-top: 1px solid var(--color-border);
@@ -801,7 +815,7 @@
 		font-weight: 500;
 		line-height: 1.5;
 		color: var(--color-text-muted);
-		background-color: var(--color-bg-subtle);
+		background-color: var(--color-bg);
 		border: 1px solid var(--color-border);
 		border-radius: 3px;
 		padding: 0 6px;
@@ -811,6 +825,25 @@
 
 	.mixed-units-badge .gicon {
 		flex-shrink: 0;
+	}
+
+	/*
+	 * On screen the badge is its icon alone, its name opening the tooltip; the
+	 * name stays for screen readers, and on paper, where nothing hovers.
+	 */
+	@media screen {
+		.mixed-units-badge {
+			padding: 5px;
+		}
+
+		.mixed-units-label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
 	}
 
 	.kit-name-col {
@@ -843,10 +876,23 @@
 	}
 
 	/*
-	 * One line of the list did not fit: every amount of that list goes under
-	 * its name, so the list reads the same from top to bottom
+	 * One line of the list did not fit in its column: the list takes one
+	 * column, as high as its lines stacked in two, read at a glance
 	 * (`watchListStacking`, `shared/kit-stacking.ts`).
 	 */
+	.kit-list.kit-list-single {
+		columns: auto;
+	}
+
+	/*
+	 * One line did not fit even then: every amount of that list goes under its
+	 * name, so the list reads the same from top to bottom. The name leads; the
+	 * amount, smaller, follows it closely, and more space parts two entries.
+	 */
+	.kit-list.kit-list-stacked > li {
+		margin-bottom: 0.6rem;
+	}
+
 	.kit-list.kit-list-stacked label > span > .kit-qty {
 		flex-basis: 100%;
 		/*
@@ -855,6 +901,20 @@
 		 * (the weight, then the amount as written, then the badges).
 		 */
 		justify-content: flex-start;
+		gap: 0.4rem;
+		margin-top: 1px;
+		font-size: 0.76rem;
+	}
+
+	.kit-list.kit-list-stacked .kit-qty .kit-mass {
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	/* The weight, then the amount as written: two figures, not one. */
+	.kit-list.kit-list-stacked .kit-qty .kit-orig::before {
+		content: "·";
+		margin-right: 0.4rem;
 	}
 
 	.kit-list.kit-list-stacked .kit-qty::before {
@@ -1161,6 +1221,15 @@
 		--kit-hl-bg: color-mix(in srgb, var(--kit-hl) 10%, transparent);
 		background-color: var(--kit-hl-bg);
 		box-shadow: 0 0 0 4px var(--kit-hl-bg);
+	}
+
+	/*
+	 * Mixed units: the group's line and each of its lines match the hovered
+	 * name; only the group is tinted, the tints would pile up otherwise.
+	 */
+	.kit-list li.gram-ingredient-active li.gram-ingredient-active {
+		background-color: transparent;
+		box-shadow: none;
 	}
 
 	.kit-list .kit-name {

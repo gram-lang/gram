@@ -200,7 +200,7 @@ export const fr: GramLocale = {
 		increasePortions: "Augmenter les portions",
 		returnToStep: "Retour à l'étape",
 		mixedUnitsTooltip:
-			"Impossible de fusionner en un seul total — ajoutez une densité à la base de données pour les convertir",
+			"Unités mixtes : impossible de fusionner en un seul total — ajoutez une densité à la base de données pour les convertir",
 		mixedUnits: "Unités mixtes",
 		copyShoppingList: "Copier la liste",
 		copied: "Copié !",

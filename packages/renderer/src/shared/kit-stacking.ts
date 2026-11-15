@@ -1,10 +1,13 @@
 /**
  * Keeps each list of a recipe view (a shopping list, a section's ingredients)
- * to one layout: when one of its lines no longer fits on a line, with its
- * amount pushed down under the name, every line of that list puts its amount
- * under its name (`kit-list-stacked`), so a reader never wonders which amount
- * goes with which name. Each list decides for itself; another list of the
- * page keeps its compact lines.
+ * to one layout, the most compact one where every line fits on a line:
+ * 1. as many columns as the width holds (`columns` in `screen.css`);
+ * 2. when one line no longer fits, one column (`kit-list-single`): the same
+ *    height as the lines stacked in two columns, and a list read at a glance;
+ * 3. when one line still does not fit, every line of that list puts its
+ *    amount under its name (`kit-list-stacked`), so a reader never wonders
+ *    which amount goes with which name.
+ * Each list decides for itself; another list of the page keeps its columns.
  *
  * Measured on what is shown (font included), again when a list changes width
  * or the view is redrawn. Without a script, each line decides for itself
@@ -15,6 +18,7 @@
  */
 export function watchListStacking(root: HTMLElement | Document): () => void {
 	if (typeof ResizeObserver === "undefined") return () => {};
+	const SINGLE = "kit-list-single";
 	const STACKED = "kit-list-stacked";
 	const LISTS = ".kit-list:not(.sub-kit-list)";
 	const widths = new WeakMap<Element, number>();
@@ -29,21 +33,26 @@ export function watchListStacking(root: HTMLElement | Document): () => void {
 		return q.top >= n.top + n.height / 2;
 	}
 
-	function update(list: Element): void {
-		list.classList.remove(STACKED);
+	/** True when one line of the list does not fit on a line. */
+	function anyWraps(list: Element): boolean {
 		const lines = list.querySelectorAll("li > label > span");
 		for (let i = 0; i < lines.length; i++) {
-			if (wraps(lines[i] as Element)) {
-				list.classList.add(STACKED);
-				return;
-			}
+			if (wraps(lines[i] as Element)) return true;
 		}
+		return false;
+	}
+
+	function update(list: Element): void {
+		list.classList.remove(SINGLE, STACKED);
+		if (!anyWraps(list)) return;
+		list.classList.add(SINGLE);
+		if (anyWraps(list)) list.classList.add(STACKED);
 	}
 
 	const resizes = new ResizeObserver((entries) => {
 		for (const entry of entries) {
 			const width = Math.round(entry.contentRect.width);
-			// Stacking changes a list's height only: never measure it again for that.
+			// Its layout changes a list's height only: never measure it again for that.
 			if (widths.get(entry.target) === width) continue;
 			widths.set(entry.target, width);
 			update(entry.target);
