@@ -1,4 +1,4 @@
-// GRAM_SPEC_VERSION: 8
+// GRAM_SPEC_VERSION: 9
 // Last synced against @gram-lang/parser@1.0.0-beta.3 (grammar.ohm + kitchen processor.ts).
 // Update this version and the prompt body whenever the .gram syntax evolves.
 // Each top-level section maps 1-to-1 to a spec document in packages/docs/src/reference/syntax/.
@@ -118,14 +118,16 @@ Recipes without any ## are a single implicit section (valid for simple recipes).
 
 Options (order is free — both \`~{...}\` before \`->&name\` and \`->&name\` before \`~{...}\` are valid):
 - Retroplanning: \`~{-2h}\` means this section must START 2 hours before the rest.
-  Units: d (days), h (hours), min or m (minutes — auto-corrected to min). Example: \`~{-12h}\`, \`~{-30min}\`.
-  STRICT RULE: the duration MUST be a signed NEGATIVE, non-zero number with an explicit unit.
+  Units: d (days), h (hours), min (minutes). Example: \`~{-12h}\`, \`~{-30min}\`, \`~{-1h30}\`, \`~{-1d 12h}\`.
+  STRICT RULE: the duration MUST be a signed NEGATIVE, non-zero duration with an explicit unit.
+  An anchor in days opens a separate working day (the day before); an anchor in hours does not.
   All of the following are INVALID and produce a compiler warning — never emit them:
     ❌ \`~{2h}\`              (unsigned/positive — the leading "-" is mandatory)
     ❌ \`~{0h}\` or \`~{-0h}\` (zero has no meaning as a lead time)
-    ❌ \`~{the day before}\`  (free text is not accepted, unlike step timers' semantic text)
+    ❌ \`~{the day before}\`  (free text is never accepted in \`~{...}\`)
     ❌ \`~{-2s}\`             (seconds are not a valid retro-planning unit — use min/h/d)
-  ✅ Only \`~{-<positive number><d|h|min>}\` is valid, e.g. \`~{-2d}\`, \`~{-12h}\`, \`~{-30min}\`.
+    ❌ \`~{-1-2d}\`           (an anchor is never a range)
+  ✅ Only a negative duration in d, h and min is valid, e.g. \`~{-2d}\`, \`~{-12h}\`, \`~{-1h30}\`.
 - Intermediate output: \`->&name\` captures the section result for later use.
   Example: \`## Béchamel Sauce ->&bechamel\`
 - Both together: \`## Pastry ~{-2h} ->&pastry\` or \`## Pastry ->&pastry ~{-2h}\`
@@ -379,19 +381,30 @@ SECTION 5 — TIMERS (~) & TEMPS (^)
 
 ### Timers
 
-Syntax: \`~name?_?{duration}\`
+Syntax: \`~_?name?{duration}\` (\`_\` first for a passive timer, then an optional name)
 
-A numeric value and a unit are ALWAYS REQUIRED. No fuzzy text.
+A duration with an explicit unit is ALWAYS REQUIRED. No fuzzy text.
 
-| Format          | Example           | Meaning                                      |
-|-----------------|-------------------|----------------------------------------------|
-| Active (blocking)| \`~{10min}\`       | Cook is actively busy for 10 minutes         |
-| Passive         | \`~_{1h}\`          | Background: oven/rest/chill — cook is free   |
-| Named           | \`~eggs{3min}\`     | Named for UI notifications                   |
-| Range           | \`~{10-15min}\`     | Uncertainty range                            |
+| Format            | Example            | Meaning                                      |
+|-------------------|--------------------|----------------------------------------------|
+| Active (blocking) | \`~{10min}\`        | Cook is actively busy for 10 minutes         |
+| Passive           | \`~_{1h}\`          | Background: oven/rest/chill — cook is free   |
+| Named             | \`~eggs{3min}\`     | Named for UI notifications                   |
+| Hours and minutes | \`~{1h30}\`         | 1 hour 30 minutes, written as a cook would   |
+| Days and hours    | \`~_{2d 4h}\`       | 2 days 4 hours                               |
+| Range             | \`~{10-15min}\`     | Uncertainty range (smallest first)           |
+| Range, two units  | \`~{45min-1h}\`, \`~_{1h30-2h}\` | Each side written in full     |
 
-Supported units: \`min\` (preferred), \`h\`, \`d\`, \`s\`
-Note: \`m\` and \`minutes\` are auto-corrected to \`min\` but prefer \`min\` directly.
+Supported units: \`min\` (preferred), \`h\`, \`d\`, \`s\`. Write units from the largest to the smallest.
+Write an hour and a half as \`~{1h30}\` (preferred) or \`~{90min}\`, never as a decimal of an hour
+written with minutes in mind: \`~{1.30h}\` is 1 hour 18 minutes.
+
+Never emit (each produces a warning and the timer is not counted):
+  ❌ \`~{1:30}\`            (hours or minutes? write \`~{1h30}\`)
+  ❌ \`~{1 hour and a half}\`, \`~{2 to 3 hours}\` (no words — write \`~{1h30}\`, \`~{2-3h}\`)
+  ❌ \`~{1-2h30}\`          (ambiguous range — write \`~{1h-2h30}\`)
+  ❌ \`~{2 * 5min}\`        (no multiplication — write one timer per repetition)
+  ❌ \`~{PT1H30M}\`         (ISO 8601 is for machines — write \`~{1h30}\`)
 
 RULE — active vs passive vs sequential:
 - Kneading, stirring, whisking, sautéeing → ACTIVE \`~{10min}\`

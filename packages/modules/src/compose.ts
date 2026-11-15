@@ -121,6 +121,9 @@ function stampUri(sections: SectionAST[], uri: string): void {
 	sections.forEach((section) => {
 		stamp(section);
 		if (section.intermediateDecl) stamp(section.intermediateDecl);
+		// The module's own anchor; a host's `@use` anchor is moved onto the
+		// section only after this, and keeps the host's location.
+		if (section.retroPlanning) stamp(section.retroPlanning);
 		section.children.forEach((child) => {
 			stamp(child);
 			if (child.type === ASTNodeType.Step) {
@@ -444,7 +447,7 @@ export function composeRecipe(
 						ModuleWarningCode.STOCKED_RETRO_PLANNING_IGNORED,
 						{
 							specifier: decl.specifier,
-							loc: decl.loc,
+							loc: decl.retroPlanning.loc ?? decl.loc,
 						},
 					);
 				}
@@ -604,7 +607,10 @@ export function composeRecipe(
 							pushModuleWarning(
 								warnings,
 								ModuleWarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED,
-								{ specifier: decl.specifier, loc: decl.loc },
+								{
+									specifier: decl.specifier,
+									loc: decl.retroPlanning?.loc ?? decl.loc,
+								},
 							);
 						}
 						target.retroPlanning = decl.retroPlanning;

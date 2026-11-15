@@ -214,10 +214,12 @@ function walkTimer(out: RawToken[], timer: TimerAST, text: string): void {
 		pos += timer.name.length;
 	}
 
-	if (isQuantity(timer.quantity)) {
-		emitQuantity(out, timer.quantity, text);
-	} else if (isTextQuantity(timer.quantity)) {
-		emitTextQtyWithText(out, timer.quantity, text);
+	// Only the braces: the duration inside (`1h30`, `1:30 h`, `5'30"`) is left
+	// to the TextMate grammar, like a temperature. `timer.quantity` is no guide:
+	// the grammar cuts `1h30` as 1 + unit `h30`.
+	if (text[pos] === "{" && text[timer.loc.end - 1] === "}") {
+		emit(out, pos, 1, T.operator);
+		emit(out, timer.loc.end - 1, 1, T.operator);
 	}
 }
 

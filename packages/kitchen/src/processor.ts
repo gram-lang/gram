@@ -65,6 +65,7 @@ import type { RecipeRegistry } from "./registry";
 import {
 	isMeasureUnit,
 	looksLikeThousands,
+	parseDuration,
 	unitContainsQuantity,
 } from "@gram-lang/i18n";
 import { type Warning, WarningCode, pushWarning } from "./warnings";
@@ -223,12 +224,26 @@ function checkAmbiguousNumbers(
 			);
 			return;
 		case ASTNodeType.Timer:
-			checkAmbiguousNumber(
-				ctx,
-				quantityValue(item.quantity),
-				item.name || "Timer",
-				item.loc,
-			);
+			if (item.quantity?.type === ASTNodeType.Quantity) {
+				checkAmbiguousNumber(
+					ctx,
+					quantityValue(item.quantity),
+					item.name || "Timer",
+					item.loc,
+				);
+			} else if (parseDuration(item.raw).ok) {
+				// A natural timer the grammar keeps as text (`45 min - 1,000 h`):
+				// its numbers are only in what was written. One that is not read
+				// already says why (INVALID_DURATION).
+				for (const text of item.raw.match(/\d+(?:[.,]\d+)?/g) ?? [])
+					checkAmbiguousText(
+						ctx,
+						text,
+						String(Number(text.replace(",", "."))),
+						item.name || "Timer",
+						item.loc,
+					);
+			}
 			return;
 		case ASTNodeType.Temperature:
 			checkAmbiguousNumber(
@@ -700,6 +715,9 @@ function processRetroPlanning(
 	if (!rp) return undefined;
 
 	const item = section.title || "Section";
+	// The anchor itself (`~{-1h30}`), not the whole section; an AST built
+	// before 1.5.0 has no `loc` on the anchor.
+	const loc = rp.loc ?? section.loc;
 
 	// Retro-planning only makes sense as anticipation ("prepare N time before
 	// the rest"): a zero or positive offset has no clear meaning here, unlike
@@ -713,20 +731,14 @@ function processRetroPlanning(
 			"RetroPlanning",
 			item,
 			rp.raw,
-			section.loc,
+			loc,
 		);
 		return { raw: rp.raw };
 	}
 
 	// Only an anchor that is kept: a dropped one was read as nothing, so how
 	// its number was read does not matter yet.
-	checkAmbiguousText(
-		ctx,
-		reading.text,
-		String(reading.value),
-		item,
-		section.loc,
-	);
+	checkAmbiguousText(ctx, reading.text, String(reading.value), item, loc);
 
 	let value = reading.value;
 	const { unit } = reading;
@@ -734,7 +746,7 @@ function processRetroPlanning(
 		pushWarning(ctx, WarningCode.DURATION_OUT_OF_RANGE, {
 			type: "RetroPlanning",
 			item,
-			loc: section.loc,
+			loc: loc,
 		});
 		value = maxDurationIn(unit);
 	}

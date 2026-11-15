@@ -21,7 +21,11 @@
         "raw": "-1d",
         "sign": -1,
         "value": 1,
-        "unit": "d"
+        "unit": "d",
+        "loc": {
+          "start": 64,
+          "end": 70
+        }
       },
       "loc": {
         "start": 42,

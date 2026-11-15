@@ -160,8 +160,8 @@
       "message": "\"1,000\" on \"Section\" was read as 1: Gram reads a comma between two digits as a decimal and has no thousands separator. Write 1000 if that is the number you meant.",
       "item": "Section",
       "loc": {
-        "start": 38,
-        "end": 91
+        "start": 49,
+        "end": 59
       }
     },
     {

@@ -273,7 +273,7 @@ You can assign a preparation timeframe to a `## Section` by adding a `~timer`-li
 ## Puff Pastry ~{-2d}
 ```
 This tells the compiler that the "Puff Pastry" `## Section` should be prepared **2 days in advance**.
-Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes) — free text (e.g. `~{the day before}`) is not valid here and is flagged by the compiler.
+The offset is a negative duration in days, hours and minutes, written like a timer (`~{-2d}`, `~{-12h}`, `~{-1h30}`, `~{-1d 12h}`) — free text (e.g. `~{the day before}`) is not valid here and is flagged by the compiler.
 
 *See [Times & Scheduling](/docs/reference/syntax/times#section-retro-planning) for the full syntax rules and error handling.*
 
@@ -678,7 +678,7 @@ You can define `~timer` declarations and durations in your recipes using the `~`
 
 ## Basic declaration
 
-A `~timer` **must** specify an explicit unit inside the braces. Fuzzy prose such as `~{about 10 minutes}` is invalid and rejected by the parser.
+A `~timer` **must** state its unit inside the braces. Words are not durations: `~{about 10 minutes}` or `~{half an hour}` are not read, and the compiler warns about them.
 
 ```gram
 Bake for ~{25min}.
@@ -694,13 +694,7 @@ Bake for ~{25min}.
 Shorthand `m` or the word `minutes` are automatically normalized to `min` by the compiler.
 :::
 
-A duration can be a decimal, with a point or a comma (`~{1.5 h}`, `~{1,5 h}`; see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
-
-:::caution
-A decimal is a fraction of the unit, not minutes: `~{1.30 h}` (or `~{1,30 h}`) is 1 hour 18 minutes, not 1 hour 30. Write `~{90min}` or `~{1.5 h}` for an hour and a half.
-:::
-
-These units are resolved through Gram's multi-language time dictionary: localized aliases below are recognized natively regardless of the recipe language (e.g. in a French recipe, `~{2j}` resolves identically to `~{2d}`).
+These units are resolved through Gram's multi-language time dictionary: localized aliases below are recognized natively regardless of the recipe language (e.g. in a French recipe, `~{2j}` resolves identically to `~{2d}`, and `~{1 hr}` reads in any recipe).
 
 | Canonical | Aliases |
 | --- | --- |
@@ -708,6 +702,80 @@ These units are resolved through Gram's multi-language time dictionary: localize
 | `h` | `hr`, `hrs`, `hour`, `hours` |
 | `m` | `min`, `mins`, `minute`, `minutes` |
 | `s` | `sec`, `secs`, `second`, `seconds` |
+
+## Writing a duration
+*(since v1.5.0)*
+
+Write a duration the way a recipe does, in American or British English, in French or in international notation. Spaces carry no meaning: `~{1h30}`, `~{1 h 30}`, `~{1hr 30}` and `~{1 hr. 30 mins}` all read as 1 hour 30 minutes.
+
+```gram
+Simmer the @stock{2 l} for ~{1h30}.
+
+Let the @dough{} rise ~_{1 hr 30 mins}.
+
+Age the @ham{1} in the cellar ~_{2d 4h}.
+```
+
+Whatever the writing, the views display every duration the same way, in the reader's language (`1 h 30 min`), and hovering a timer in your editor shows how Gram read it.
+
+### Several units
+
+A duration can chain several units, optionally joined by `+`: `~{1h30min}`, `~{1 h 30 min}`, `~{2 d 4 h}`, `~{1h + 30min}`.
+
+- Units go **from the largest to the smallest**, each one once: `~{30min 1h}` and `~{1h 2h}` are not read.
+- A **last number without a unit** is allowed right after hours (it counts minutes) or minutes (it counts seconds), when it is a whole number under 60: `~{1h30}`, `~{2min30}`. `~{1h75}` is not read: write `~{2h15}`.
+- **Decimals and fractions** only work in a duration of a single unit: `~{1.5 h}`, `~{1½ h}`, `~{1 1/2 hours}`. `~{1.5h30}` is not read.
+
+### Clock notation
+
+A clock with three parts always reads: `~{1:30:00}` is 1 hour 30 minutes, `~{0:04:30}` is 4 minutes 30 seconds. With two parts, a unit says what the first part is: `~{1:30 h}` is 1 hour 30 minutes, `~{4:30 min}` is 4 minutes 30 seconds.
+
+```gram
+Steam the @pudding{1} for ~_{1:30 h}.
+```
+
+`~{1:30}` alone is not read: it could be 1 hour 30 or 1 minute 30. Write `~{1h30}` or `~{1:30 min}`. After the first part, each part has two digits and stays under 60.
+
+### Prime notation
+
+Common in Italian and French recipes, `'` counts minutes and `"` seconds: `~{5'}`, `~{5'30"}`, `~{45"}`, `~{90'}`. A last number without a prime counts seconds (`~{5'30}`). Primes only count minutes and seconds, in whole numbers.
+
+```gram
+Cook the @spaghetti{500g} for ~{9'}, then toss for ~{1'30"}.
+```
+
+The typographic variants read too: the curly apostrophe `’` that word processors put in place of `'`, the primes `′` and `″`, and two apostrophes `''` for seconds.
+
+### Decimal numbers
+
+A duration can be a decimal, with a point or a comma (`~{1.5 h}`, `~{1,5 h}`; see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
+
+:::caution
+A decimal is a fraction of the unit, not minutes: `~{1.30 h}` (or `~{1,30 h}`) is 1 hour 18 minutes, not 1 hour 30. Write `~{1h30}` or `~{1.5 h}` for an hour and a half.
+:::
+
+### What Gram reads, at a glance
+
+| Written | Read as |
+| :--- | :--- |
+| `~{90min}`, `~{1.5 h}`, `~{1,5 h}`, `~{1½ h}`, `~{1 1/2 hours}` | 1 h 30 min |
+| `~{1h30}`, `~{1 h 30}`, `~{1hr 30}`, `~{1 hr 30 mins}`, `~{1 hour 30 minutes}`, `~{1h30m}` | 1 h 30 min |
+| `~{1 heure 30}`, `~{1h + 30min}`, `~{1:30 h}`, `~{1:30:00}` | 1 h 30 min |
+| `~{4min30}`, `~{4:30 min}`, `~{4'30"}`, `~{0:04:30}` | 4 min 30 s |
+| `~{2 d 4 h}`, `~{2 j 4 h}` | 2 days 4 hours |
+| `~{45 min - 1 h}`, `~{1h30-2h}`, `~{5-7'}` | a range (see below) |
+
+| Not read | Why | Write instead |
+| :--- | :--- | :--- |
+| `~{1:30}` | hours or minutes? | `~{1h30}` or `~{1:30 min}` |
+| `~{1h75}` | 60 minutes or more after the hours | `~{2h15}` |
+| `~{30min 1h}` | units from the smallest to the largest | `~{1h30}` |
+| `~{1.5h30}` | a decimal in a duration of several units | `~{1h30}` or `~{1.5 h}` |
+| `~{half an hour}`, `~{2 to 3 hours}` | words | `~{30min}`, `~{2-3h}` |
+| `~{2 * 2 min}` | a multiplication | the total, `~{4min}` |
+| `~{PT1H30M}` | ISO 8601, a notation for machines | `~{1h30}` |
+
+A duration Gram does not read raises a [warning](#error-handling) with a suggestion, and is not counted in the total time: Gram never guesses.
 
 ### Timer names
 You can assign an explicit name to a `~timer`. This is especially useful for passive background tasks: when multiple timers run concurrently (like a dough fermenting while a stock simmers), named timers allow user interfaces and production run sheets to track each process simultaneously without confusion.
@@ -727,10 +795,20 @@ Let the dough rest in the fridge ~_{12-24h}.
 Roast the chicken for ~{40-50min}.
 ```
 
+Each side of a range follows the rules above, and the shorter duration comes first. The left side takes the unit of the right side only when it is a bare number and the right side has a single unit: `~{1-2 h}`, `~{5-7'}`, `~{1.5-2 h}` (and two clocks before a unit: `~{1:30-2:00 h}`). Otherwise, write both sides in full (since 1.5.0):
+
+```gram
+Braise the @beef cheeks{1 kg} ~_{2h30-3h}.
+
+Poach the @pears{4} for ~{45 min - 1 h}.
+```
+
+`~{1-2h30}` is not read (is the left side 1 hour or 1 hour 30?): write `~{1h-2h30}`. Neither is `~{2-1 h}`: write `~{1-2 h}`.
+
 The interpretation of a range differs fundamentally based on timer type:
 
 - **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning and run sheets](/docs/explanation/planning/)).
-- **How the <Term id="runSheet" /> reflects ranges.** The run sheet displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 (12 to 48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Can't start earlier"). See [Plan a meal](/docs/how-to/plan-a-meal/).
+- **How the <Term id="runSheet" /> reflects ranges.** The run sheet displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 min (12–48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Can't start earlier"). See [Plan a meal](/docs/how-to/plan-a-meal/).
 - **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
 
 :::note
@@ -858,17 +936,31 @@ Working days are designed to fit within a 24-hour span: if a long passive durati
 
 ### Strict syntax
 
-Section header retro-planning annotations require a **strictly negative** signed number followed by a valid unit:
+Section header retro-planning annotations require a **strictly negative** duration:
 
 - A **required** leading `-` sign.
-- A non-zero numeric value.
-- A canonical unit: `d` (days), `h` (hours), or `min` (minutes), or recognized localized aliases.
+- A non-zero duration, written like a timer (see [Writing a duration](#writing-a-duration)) in days, hours and minutes (compound and clock forms since 1.5.0).
+- A single duration: an anchor is never a range, and never counts seconds.
 
 ```gram
 ## Puff pastry ~{-2d}
 
-## Ganache ~{-30min}
+Fold the @butter{250g} into the @dough{500g}.
+
+## Brioche ~{-1d 12h}
+
+Knead the @flour{500g}.
+
+## Ganache ~{-1h30}
+
+Pour the @cream{200ml} over the @chocolate{200g}.
+
+## Custard ~{-1:30 h}
+
+Whisk the @yolks{4} with the @sugar{80g}.
 ```
+
+An anchor written with days stays in days (`~{-1d 12h}` is a day and a half, and opens a working day); otherwise it counts in its smallest unit (`~{-1h30}` is 90 minutes, `~{-1:30 h}` too).
 
 Free prose (`~{the day before}`), positive values (`~{2h}`), and zero values (`~{0h}`) are invalid. Existing recipes using legacy formats still compile for backward compatibility, but produce compiler warnings.
 
@@ -884,6 +976,7 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (`~timer`): Unrecognized units (e.g. `~{30 lightyears}`) trigger `INVALID_UNIT`.
 - **Missing Unit** (section retro-planning): `~{-2}`, free text, positive (`~{2h}`), or zero values (`~{0h}`) trigger `MISSING_UNIT`.
 - **Invalid Unit** (section retro-planning): Unrecognized units trigger `INVALID_UNIT`.
+- **Invalid Duration** *(Since 1.5.0)*: A duration in a shape Gram does not read (`~{1:30}`, `~{1h75}`, `~{30min 1h}`, `~{1-2h30}`, `~{half an hour}`, or a range or seconds in an anchor) triggers `INVALID_DURATION`. The message says why and how to write it; the timer is not counted in the total time, and the section is not anchored. See [Writing a duration](#writing-a-duration).
 - **Ambiguous Number** *(Since 1.5.0)*: A comma followed by exactly three digits (`~{1,000 min}`, `~{-1,000h}`) is read as a decimal, one minute or one hour, and triggers `AMBIGUOUS_NUMBER` in case a thousand was meant.
 - **Time Paradox**: Anchors conflicting with dependency order (e.g. an ingredient anchored at `-10 min` needed by a section anchored at `-1 h`) trigger `TIME_PARADOX`.
 - **Track Contention**: Concurrent passive timers delayed on the same named track trigger `TRACK_CONTENTION`.
@@ -1384,7 +1477,7 @@ Essential markup tokens used directly inside recipe steps:
 | :--- | :--- | :--- | :--- | :--- |
 | **Ingredient** | `@` | `@name[{quantity}]` | `@flour{200g}` | Declares an ingredient. Omitting `{}` indicates no specific quantity (e.g. `@salt`). |
 | **Cookware** | `#` | `#name[{quantity}]` | `#pan{2}`, `#whisk` | Specifies kitchen equipment. Omitting `{}` defaults to a single item (`1`). |
-| **Timer** | `~` | `~{time}` | `~{30min}` | Defines an active cooking or preparation duration. |
+| **Timer** | `~` | `~{time}` | `~{30min}`, `~{1h30}` | Defines an active cooking or preparation duration, written as in a recipe (`1 hr 30 mins`, `1:30 h`, `5'30"`). |
 | **Temperature** | `^` | `^{temperature}` | `^{180°C}`, `^{350°F}` | Declares an exact heat setting (`C` or `F`, case-insensitive). |
 
 ## Modifiers
@@ -1920,6 +2013,14 @@ Mix @flour{200g} and @milk{200ml}.
 :::
 
 Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a bare `string`; ingredients, cookware, and intermediate references share the `Usage` structure (no `type` field, identified by the presence of an `id`); timers, temperatures, comments, and declarations each carry an explicit lowercase `type`. This distinction from the parser's PascalCase `ASTNodeType` is intentional: it describes compiled *output*, not parsed source syntax. See [How to build a custom UI](/docs/how-to/build-custom-ui) for a tutorial on consuming this structure in frontend frameworks.
+
+*(since v1.5.0)* A timer token carries `raw`, the duration as written between the braces, and `minutes`, the duration the schedule uses (the middle of a range). `quantity` and `unit` stay, in the smallest unit written (`1h20` gives `80` `min`), so a program that reads them stays right; a duration written as before 1.5 (`1.5h`) keeps them unchanged. A timer Gram does not read keeps only `raw` (and `name`, `isPassive`): show it as written.
+
+```json
+{ "type": "timer", "raw": "1h30", "quantity": { "type": "single", "value": 90 }, "unit": "min", "minutes": 90 }
+{ "type": "timer", "raw": "1h30-2h", "quantity": { "type": "range", "value": 105, "range": { "min": 90, "max": 120 } }, "unit": "min", "minutes": 105 }
+{ "type": "timer", "raw": "1:30" }
+```
 
 ## 3. Composed recipes (`@gram-lang/modules`)
 

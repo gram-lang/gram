@@ -12,7 +12,11 @@
         "raw": "-3d",
         "sign": -1,
         "value": 3,
-        "unit": "d"
+        "unit": "d",
+        "loc": {
+          "start": 60,
+          "end": 66
+        }
       },
       "intermediateDecl": {
         "type": "IntermediateDecl",
@@ -267,7 +271,11 @@
         "raw": "-2d",
         "sign": -1,
         "value": 2,
-        "unit": "d"
+        "unit": "d",
+        "loc": {
+          "start": 244,
+          "end": 250
+        }
       },
       "intermediateDecl": {
         "type": "IntermediateDecl",
@@ -454,7 +462,11 @@
         "raw": "-1d",
         "sign": -1,
         "value": 1,
-        "unit": "d"
+        "unit": "d",
+        "loc": {
+          "start": 408,
+          "end": 414
+        }
       },
       "intermediateDecl": {
         "type": "IntermediateDecl",
@@ -621,7 +633,11 @@
         "raw": "-1d",
         "sign": -1,
         "value": 1,
-        "unit": "d"
+        "unit": "d",
+        "loc": {
+          "start": 529,
+          "end": 535
+        }
       },
       "intermediateDecl": {
         "type": "IntermediateDecl",
@@ -793,7 +809,11 @@
         "raw": "-1d",
         "sign": -1,
         "value": 1,
-        "unit": "d"
+        "unit": "d",
+        "loc": {
+          "start": 634,
+          "end": 640
+        }
       },
       "intermediateDecl": {
         "type": "IntermediateDecl",

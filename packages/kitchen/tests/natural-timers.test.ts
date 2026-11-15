@@ -190,6 +190,7 @@ describe("natural section anchors", () => {
 	it.each([
 		["~{-1-2d}", "anchorRange"],
 		["~{-1min30}", "anchorSeconds"],
+		["~{-1min 30s}", "anchorSeconds"],
 		["~{-5'}", "anchorSeconds"],
 		["~{-0:04:30}", "anchorSeconds"],
 		["~{-1:30}", "ambiguousClock"],

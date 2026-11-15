@@ -115,7 +115,7 @@ Il est possible d'assigner un délai de rétroplanning à une `## Section` en gl
 ## Pâte Feuilletée ~{-2d}
 ```
 Cette annotation indique au compilateur que la section "Pâte Feuilletée" doit être anticipée **2 jours à l'avance**.
-Les suffixes supportés sont `d` (jours), `h` (heures), `min` ou `m` (minutes) — un texte libre (ex : `~{la veille}`) n'est pas valide ici et est signalé par le compilateur.
+Le décalage est une durée négative en jours, heures et minutes, écrite comme un minuteur (`~{-2j}`, `~{-12h}`, `~{-1h30}`, `~{-1j 12h}`) — un texte libre (ex : `~{la veille}`) n'est pas valide ici et est signalé par le compilateur.
 
 *Voir [Temps & Planification](/fr/docs/reference/syntax/times#rétroplanning-de-section) pour la syntaxe complète et la gestion des erreurs.*
 

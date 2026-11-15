@@ -32,8 +32,8 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 |---|---|
 | **Diagnostics** | Remontée en temps réel des erreurs de syntaxe, des incohérences structurelles (dépendances circulaires) et des avertissements d'ordonnancement (`DAY_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
 | **Semantic Tokens** | Coloration sémantique pilotée par l'AST, permettant de distinguer avec précision les modificateurs, unités, températures et ingrédients composites. |
-| **Completion** | Autocomplétion contextuelle pour les ingrédients de la base de données, les unités canoniques et les variables intermédiaires. |
-| **Hover** | Affiche la composition nutritionnelle et les conversions automatiques volume-masse au survol des ingrédients. |
+| **Completion** | Autocomplétion contextuelle pour les ingrédients de la base de données, les unités canoniques et les variables intermédiaires. Dans un minuteur (`~{…}`), seules les unités de temps sont proposées. |
+| **Hover** | Affiche la composition nutritionnelle et les conversions automatiques volume-masse au survol des ingrédients. Sur un minuteur, montre la durée telle que Gram la lit (`~{1h30}` → `1 h 30 min`) ; sur une ancre de section, l'avance prise par la section et si elle ouvre une journée de travail. |
 | **Go to Definition** | Navigation directe depuis une référence intermédiaire (`&ref`) vers sa déclaration source (`->&ref`). |
 | **Find References** | Inventaire exhaustif de toutes les utilisations d'une variable intermédiaire donnée à travers la recette. |
 | **Rename** | Renommage atomique et sécurisé d'une variable intermédiaire sur l'ensemble du document. |

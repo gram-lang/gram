@@ -12,7 +12,11 @@
         "raw": "-1-2d",
         "sign": 1,
         "value": null,
-        "unit": null
+        "unit": null,
+        "loc": {
+          "start": 47,
+          "end": 55
+        }
       },
       "intermediateDecl": null,
       "children": [

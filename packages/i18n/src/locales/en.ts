@@ -515,6 +515,13 @@ export const en = {
 		statusWarnings: "Warnings",
 		copyBtn: "Copy to Clipboard",
 	},
+	languageServer: {
+		/** Hover on a section anchor: `{duration}` is the anticipation. */
+		anchorReady: "Ready {duration} before it is used.",
+		anchorInDays: "In days: opens a working day of its own.",
+		anchorInHours:
+			"In hours or minutes: a deadline within the day, no working day of its own.",
+	},
 };
 
 export type GramLocale = typeof en;

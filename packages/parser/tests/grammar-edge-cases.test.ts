@@ -286,7 +286,7 @@ describe("section retro-planning", () => {
 
 	it("extracts a negative signed duration", () => {
 		const ast = getAST("## Dough ~{-2h}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "-2h",
 			sign: -1,
 			value: 2,
@@ -296,7 +296,7 @@ describe("section retro-planning", () => {
 
 	it("extracts a positive (unsigned) duration", () => {
 		const ast = getAST("## Dough ~{2d}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "2d",
 			sign: 1,
 			value: 2,
@@ -306,7 +306,7 @@ describe("section retro-planning", () => {
 
 	it("extracts value with no unit (kitchen will flag as MISSING_UNIT)", () => {
 		const ast = getAST("## Dough ~{5}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "5",
 			sign: 1,
 			value: 5,
@@ -316,7 +316,7 @@ describe("section retro-planning", () => {
 
 	it("extracts an unrecognized unit token as-is (kitchen resolves/validates it)", () => {
 		const ast = getAST("## Dough ~{5xyz}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "5xyz",
 			sign: 1,
 			value: 5,
@@ -326,7 +326,7 @@ describe("section retro-planning", () => {
 
 	it("leaves free text with no value/unit extracted (kitchen will flag as invalid)", () => {
 		const ast = getAST("## Dough ~{la veille}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "la veille",
 			sign: 1,
 			value: null,
@@ -346,8 +346,8 @@ describe("section retro-planning", () => {
 			.children[0] as any;
 
 		const expected = { raw: "-2h", sign: -1, value: 2, unit: "h" };
-		expect(retroFirst.retroPlanning).toEqual(expected);
-		expect(declFirst.retroPlanning).toEqual(expected);
+		expect(retroFirst.retroPlanning).toMatchObject(expected);
+		expect(declFirst.retroPlanning).toMatchObject(expected);
 		expect(retroFirst.intermediateDecl.name).toBe("dough");
 		expect(declFirst.intermediateDecl.name).toBe("dough");
 	});
@@ -698,7 +698,7 @@ describe("decimal comma", () => {
 
 	it("reads it in a section anchor", () => {
 		const ast = getAST("## Pâte ~{-1,5h}\n\nPétrir.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "-1,5h",
 			sign: -1,
 			value: 1.5,

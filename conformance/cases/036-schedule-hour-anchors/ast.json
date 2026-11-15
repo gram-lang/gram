@@ -12,7 +12,11 @@
         "raw": "-36h",
         "sign": -1,
         "value": 36,
-        "unit": "h"
+        "unit": "h",
+        "loc": {
+          "start": 69,
+          "end": 76
+        }
       },
       "intermediateDecl": null,
       "children": [
@@ -181,7 +185,11 @@
         "raw": "-2h",
         "sign": -1,
         "value": 2,
-        "unit": "h"
+        "unit": "h",
+        "loc": {
+          "start": 172,
+          "end": 178
+        }
       },
       "intermediateDecl": null,
       "children": [

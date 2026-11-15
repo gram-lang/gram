@@ -15,7 +15,9 @@ import { fileURLToPath } from "node:url";
  *   git show v.1.3.0:conformance/cases/<case>/compiled.json
  * A fix that changes a value without changing its meaning (PR #47 did, for the
  * intermediates' overhead) is the only legitimate reason to regenerate a digest,
- * and the case must be named in the pull request.
+ * and the case must be named in the pull request. 1.5 did too: a section
+ * anchor's warnings point at the anchor itself, no longer at the whole section
+ * or `@use` line (`loc` only, in 021, 022, mod-016 and mod-017).
  *
  * The digests come from the tag's goldens: `canonical(json)` below, sha256, hex.
  */

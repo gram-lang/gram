@@ -81,6 +81,7 @@ interface RetroPlanningAST {
   value: number | null;    // null si aucun nombre n'a pu être extrait (ex : texte libre)
   unit: string | null;     // null si aucune unité trouvée ; sinon le token brut tel
                            // qu'écrit (kitchen le résout/valide ensuite contre d/h/min)
+  loc?: Location;          // depuis la 1.5.0 : l'ancre elle-même, accolades comprises (`~{-2h}`)
 }
 ```
 

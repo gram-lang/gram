@@ -99,6 +99,7 @@ interface RetroPlanningAST {
   value: number | null;    // null if no number could be extracted (e.g. free text)
   unit: string | null;     // null if no unit token was found; otherwise the raw token
                            // as written (kitchen resolves/validates it against d/h/min)
+  loc?: Location;          // since 1.5.0: the anchor itself, braces included (`~{-2h}`)
 }
 ```
 

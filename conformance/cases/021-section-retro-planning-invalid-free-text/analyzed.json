@@ -119,8 +119,8 @@
       "message": "Retro-planning offset for \"Puff Pastry\" requires a strictly negative duration (e.g. -2h, -30min).",
       "item": "Puff Pastry",
       "loc": {
-        "start": 57,
-        "end": 127
+        "start": 72,
+        "end": 89
       }
     },
     {

@@ -112,7 +112,7 @@ gram view brioche.gram --scale farine=300g  # Proportions ajustées pour farine 
 ```
 - Prend en charge la pagination automatique pour les recettes longues.
 - Affiche la synthèse nutritionnelle, les durées et la liste d'ingrédients à cocher.
-- Les minuteurs préservent l'unité déclarée dans la source (`~{1h}` s'affiche `1 h`, `~{20s}` s'affiche `20 s`) et les durées de l'en-tête sont harmonisées pour une lecture instantanée (`1h 5m`, `25m 5s`).
+- Les minuteurs et les durées de l'en-tête s'écrivent comme dans toutes les vues (`~{1h5}` s'affiche `1 h 5 min`, `~{25min 5s}` s'affiche `25 min 5 s`) ; un minuteur que Gram ne lit pas reste tel qu'écrit.
 - Les étapes sont numérotées dans chaque section, comme dans toutes les vues de la recette. Les quantités sont reprises dans le texte des étapes, à côté de chaque ingrédient (`farine (200 g)`) ; `--step-quantities hide` les retire.
 - Le temps d'attente passif apparaît dans l'en-tête de la recette, et les fractions courantes telles que `1/4 tsp` restent sous forme fractionnaire dans la liste de courses.
 - Le drapeau `--scale` ajuste l'intégralité des quantités d'ingrédients (liste de courses et rappels au sein des étapes).

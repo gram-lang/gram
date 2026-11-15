@@ -15,7 +15,7 @@ Essential markup tokens used directly inside recipe steps:
 | :--- | :--- | :--- | :--- | :--- |
 | **Ingredient** | `@` | `@name[{quantity}]` | `@flour{200g}` | Declares an ingredient. Omitting `{}` indicates no specific quantity (e.g. `@salt`). |
 | **Cookware** | `#` | `#name[{quantity}]` | `#pan{2}`, `#whisk` | Specifies kitchen equipment. Omitting `{}` defaults to a single item (`1`). |
-| **Timer** | `~` | `~{time}` | `~{30min}` | Defines an active cooking or preparation duration. |
+| **Timer** | `~` | `~{time}` | `~{30min}`, `~{1h30}` | Defines an active cooking or preparation duration, written as in a recipe (`1 hr 30 mins`, `1:30 h`, `5'30"`). |
 | **Temperature** | `^` | `^{temperature}` | `^{180°C}`, `^{350°F}` | Declares an exact heat setting (`C` or `F`, case-insensitive). |
 
 ## Modifiers
