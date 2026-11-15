@@ -8,6 +8,7 @@
 // generic walk.
 
 import { parseDuration } from "@gram-lang/i18n";
+import { familyOf } from "@gram-lang/kitchen";
 
 interface WalkContext {
 	inStepScope: boolean;
@@ -73,6 +74,19 @@ function walk(node: unknown, shapes: Set<string>, ctx: WalkContext): void {
 			shapes.add(`Timer:isPassive=${Boolean(record.isPassive)}`);
 			addDurationShapes(record.raw, "Timer", shapes);
 			break;
+		case "CompoundQuantity": {
+			// A sum of quantities (`{1 cup + 1 tbsp}`), with what it does that
+			// a plain sum does not: take a term away, or add up several kinds
+			// of amount (`{1 cup + 20 g}`).
+			shapes.add("Ingredient:quantity=compound");
+			const terms = Array.isArray(record.terms) ? (record.terms as Record<string, unknown>[]) : [];
+			if (terms.some((t) => t.minus)) shapes.add("Ingredient:quantity=compound:minus");
+			const families = new Set(
+				terms.map((t) => familyOf(typeof t.unit === "string" ? t.unit : null)),
+			);
+			if (families.size > 1) shapes.add("Ingredient:quantity=compound:mixedFamily");
+			break;
+		}
 		case "RelativeQuantity":
 			shapes.add(`RelativeQuantity:referenceType=${String(record.referenceType)}`);
 			break;

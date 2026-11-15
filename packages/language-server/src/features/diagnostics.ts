@@ -81,6 +81,9 @@ function warningToDiagnostic(
 			message: w.message,
 			code: w.code,
 			source: "gram",
+			// What a Quick Fix acts on (the suggestion of an INVALID_QUANTITY,
+			// say): `provideCodeActions` reads it back from the diagnostic.
+			...(w.data ? { data: w.data } : {}),
 		};
 	}
 

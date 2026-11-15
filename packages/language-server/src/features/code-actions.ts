@@ -189,6 +189,17 @@ export function provideCodeActions(
 			}
 		}
 
+		const quantityFix = quantityQuickFix(state, diag);
+		if (quantityFix) {
+			actions.push({
+				title: quantityFix.title,
+				kind: CodeActionKind.QuickFix,
+				isPreferred: true,
+				diagnostics: [diag],
+				edit: { changes: { [uri]: [quantityFix.edit] } },
+			});
+		}
+
 		if (diag.code === "UNDEFINED_REFERENCE") {
 			const msg =
 				typeof diag.message === "string" ? diag.message : diag.message.value;
@@ -272,4 +283,82 @@ export function provideCodeActions(
 	}
 
 	return actions;
+}
+
+/** The `data` a quantity warning carries (kitchen's `warningData`). */
+interface QuantityFixData {
+	reason?: string;
+	suggestion?: string;
+}
+
+const escapeRegExp = (text: string) =>
+	text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * The Quick Fix of a quantity warning, from the `data` kitchen gives it:
+ * - two quantities in one unit (`INVALID_UNIT`, `{1 cup 5 tbsp}`): ` + `
+ *   between them;
+ * - a sum refused with a result to write (`INVALID_QUANTITY`,
+ *   `{100 g + 10%}`): the braces hold that result (`{110 g}`);
+ * - `oz` after a volume (`OZ_AFTER_VOLUME`, `{1 cup + 2 oz}`): `fl oz`.
+ */
+function quantityQuickFix(
+	state: DocumentState,
+	diag: Diagnostic,
+): { title: string; edit: TextEdit } | null {
+	const data = diag.data as QuantityFixData | undefined;
+	const suggestion = data?.suggestion;
+	if (!suggestion) return null;
+	const start = positionToOffset(state.lineStarts, diag.range.start);
+	const end = positionToOffset(state.lineStarts, diag.range.end);
+	const text = state.text.slice(start, end);
+	const edit = (from: number, to: number, newText: string): TextEdit => ({
+		range: {
+			start: offsetToPosition(state.lineStarts, from),
+			end: offsetToPosition(state.lineStarts, to),
+		},
+		newText,
+	});
+
+	if (diag.code === "INVALID_UNIT" && data.reason === "twoQuantities") {
+		// The range is the term, or the whole ingredient for a lone quantity:
+		// search the braces only, so a name holding the unit is left alone.
+		const open = text.indexOf("{");
+		const [first, second] = suggestion.split(" + ");
+		if (!first || !second) return null;
+		const words = (part: string) =>
+			part.trim().split(/\s+/).map(escapeRegExp).join("\\s+");
+		const gap = new RegExp(
+			`(${words(first)})(\\s*)(?=${escapeRegExp(second.split(/\s+/)[0]!)})`,
+		).exec(text.slice(open + 1));
+		if (!gap) return null;
+		const at = start + open + 1 + gap.index + gap[1]!.length;
+		return {
+			title: "Add the two quantities with ' + '",
+			edit: edit(at, at + gap[2]!.length, " + "),
+		};
+	}
+
+	if (diag.code === "INVALID_QUANTITY") {
+		const open = state.text.lastIndexOf("{", start);
+		const close = state.text.indexOf("}", end);
+		if (open === -1 || close === -1) return null;
+		if (state.text.slice(open, start).includes("}")) return null;
+		return {
+			title: `Replace with {${suggestion}}`,
+			edit: edit(open + 1, close, suggestion),
+		};
+	}
+
+	if (diag.code === "OZ_AFTER_VOLUME") {
+		// The range is the term (`2 oz`): its unit starts at its first letter.
+		const unitAt = text.search(/\p{L}/u);
+		if (unitAt === -1) return null;
+		return {
+			title: `Write ${suggestion} (a volume)`,
+			edit: edit(start + unitAt, end, suggestion),
+		};
+	}
+
+	return null;
 }

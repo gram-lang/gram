@@ -1,4 +1,4 @@
-// GRAM_SPEC_VERSION: 9
+// GRAM_SPEC_VERSION: 10
 // Last synced against @gram-lang/parser@1.0.0-beta.3 (grammar.ohm + kitchen processor.ts).
 // Update this version and the prompt body whenever the .gram syntax evolves.
 // Each top-level section maps 1-to-1 to a spec document in packages/docs/src/reference/syntax/.
@@ -201,6 +201,16 @@ Braces \`{}\` are MANDATORY when the name contains spaces, even with no quantity
 | Fraction  | \`@butter{1/2}\`             | use / not ÷ ; mixed (\`1 1/2\`) and Unicode glyphs (\`1½\`) also accepted |
 | Range     | \`@apples{3-4}\`             | hyphen between two numbers; a unit may follow a range: \`@water{1.5-2l}\` |
 | To taste  | \`@salt{}\` or \`@salt\`        | empty or omitted                   |
+| Sum       | \`@flour{1 cup + 1 tbsp}\`    | terms added with \` + \`, each with its unit |
+| Minus     | \`@sugar{1 cup - 2 tbsp}\`    | a term taken away with \` - \` (same kind of amount) |
+| Mixed     | \`@butter{1 cup + 20 g}\`     | a volume and a weight may be added |
+
+Write an amount given in several measures as a sum, exactly as the recipe says it:
+"1 cup plus 1 tablespoon" → \`{1 cup + 1 tbsp}\`, "1 cup minus 2 tablespoons" → \`{1 cup - 2 tbsp}\`.
+Never work it out into one number (❌ \`{1.0625 cup}\`, ❌ \`{17 tbsp}\`): Gram adds the terms itself.
+Every term needs its unit, and a term is only an amount: no percentage (❌ \`{100g + 10%}\`),
+no multiplication (❌ \`{2 x 100g}\`), no range after \`-\`. A range may be a term that is added
+(\`{1 cup + 1-2 tbsp}\`).
 
 CRITICAL — unit tokens are ALWAYS canonical English/SI tokens (g, kg, ml, l, tbsp, tsp, cup, min, h…),
 even when the surrounding recipe text is written in another language. Never emit localized unit words
