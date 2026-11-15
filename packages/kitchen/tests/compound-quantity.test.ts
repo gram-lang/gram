@@ -254,13 +254,19 @@ describe("composite parents and references", () => {
 });
 
 describe("sections", () => {
-	it("lists a sum as written, a term taken away marked", () => {
+	it("lists a sum as written, its parts kept, a term taken away marked", () => {
 		const [entry] = aggregateSectionIngredients(
 			ingredients("@sugar{1 cup - 2 tbsp}."),
 		);
 		expect(entry?.quantities).toEqual([
-			{ qty: 1, unit: "cup" },
-			{ qty: 2, unit: "tbsp", minus: true },
+			{
+				qty: 14,
+				unit: "tbsp",
+				parts: [
+					{ qty: 1, unit: "cup" },
+					{ qty: 2, unit: "tbsp", minus: true },
+				],
+			},
 		]);
 	});
 
@@ -268,6 +274,7 @@ describe("sections", () => {
 		const [entry] = aggregateSectionIngredients(
 			ingredients("@flour{100 g + 10%}."),
 		);
-		expect(entry?.quantities).toHaveLength(2);
+		expect(entry?.quantities).toHaveLength(1);
+		expect(entry?.quantities?.[0]?.parts).toHaveLength(2);
 	});
 });
