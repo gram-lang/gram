@@ -13,6 +13,8 @@ import {
 	TIME_TO_MINUTES,
 	toKitchenFraction,
 	toLargerMetricUnit,
+	type TermValue,
+	termValueNumber,
 } from "@gram-lang/i18n";
 
 /**
@@ -163,6 +165,14 @@ export function getQty(
 	style: NumberStyle = {},
 ): ExtractedQuantity | undefined {
 	if (item.qty !== undefined) {
+		const bounds = rangeBounds(item);
+		if (bounds) {
+			const unit = item.unit as string | undefined;
+			return {
+				value: termValueNumber(item.qty as TermValue),
+				text: `${formatDecimalToFraction(bounds.min, unit, style)}-${formatDecimalToFraction(bounds.max, unit, style)}`,
+			};
+		}
 		if (typeof item.qty === "number") {
 			return {
 				value: item.qty,
@@ -189,6 +199,28 @@ export function getQty(
 	}
 	if (item.quantity)
 		return localizedQuantity(item.quantity as ExtractedQuantity, style.lang);
+	return undefined;
+}
+
+/**
+ * The bounds of a range written by Gram, with no source text to show: a
+ * shopping entry's `range` next to its middle in `qty`, or a range object
+ * added up or scaled (`{ type: "range", range }` without `text`).
+ */
+function rangeBounds(
+	item: Record<string, unknown>,
+): { min: number; max: number } | undefined {
+	const read = (r: unknown) => {
+		const { min, max } = (r ?? {}) as { min?: unknown; max?: unknown };
+		return typeof min === "number" && typeof max === "number"
+			? { min, max }
+			: undefined;
+	};
+	if (typeof item.qty === "number") return read(item.range);
+	const q = item.qty as { type?: string; text?: unknown; range?: unknown };
+	if (q && typeof q === "object" && q.type === "range" && q.text == null) {
+		return read(q.range);
+	}
 	return undefined;
 }
 

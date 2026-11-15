@@ -222,26 +222,53 @@ describe("termsTotal", () => {
 });
 
 describe("mergeTerms", () => {
-	it("keeps every term, terms added before terms taken away", () => {
+	it("adds up each unit, terms added before terms taken away", () => {
 		const terms: Term[] = [
 			{ value: 2, unit: "tbsp" },
-			{ value: 4, unit: "tbsp", minus: true },
 			{ value: 1, unit: "cup" },
+			{ value: 4, unit: "tbsp", minus: true },
 		];
 		expect(mergeTerms(terms, "unit")).toEqual([
-			{ value: 2, unit: "tbsp" },
 			{ value: 1, unit: "cup" },
-			{ value: 4, unit: "tbsp", minus: true },
+			{ value: 2, unit: "tbsp", minus: true },
 		]);
 	});
 
-	it("never moves a term among the terms of its own sign", () => {
+	it("adds up the spellings of one unit, never two units of one ladder", () => {
 		const terms: Term[] = [
-			{ value: 1, unit: "g" },
+			{ value: 100, unit: "g" },
 			{ value: 2, unit: "kg" },
-			{ value: 3, unit: "g" },
+			{ value: 100, unit: "grams" },
 		];
-		expect(mergeTerms(terms, "unit")).toEqual(terms);
+		expect(mergeTerms(terms, "unit")).toEqual([
+			{ value: 200, unit: "g" },
+			{ value: 2, unit: "kg" },
+		]);
+	});
+
+	it("leaves out a unit that adds up to nothing", () => {
+		const terms: Term[] = [
+			{ value: 2, unit: "tbsp" },
+			{ value: 1, unit: "cup" },
+			{ value: 2, unit: "tbsp", minus: true },
+		];
+		expect(mergeTerms(terms, "unit")).toEqual([{ value: 1, unit: "cup" }]);
+	});
+
+	it("keeps the singular and plural of a unit it does not know apart", () => {
+		// Decided for 1.5: an unknown unit is only lowercased, so `gousse`
+		// and `gousses` are two units, in a section as in the shopping list.
+		const terms: Term[] = [
+			{ value: 1, unit: "gousse" },
+			{ value: 2, unit: "gousses" },
+			{ value: 1, unit: "Gousse" },
+		];
+		for (const mode of ["unit", "ladder"] as const) {
+			expect(mergeTerms(terms, mode)).toEqual([
+				{ value: 2, unit: "gousse" },
+				{ value: 2, unit: "gousses" },
+			]);
+		}
 	});
 
 	it("adds each ladder into one term, in the smallest unit written", () => {

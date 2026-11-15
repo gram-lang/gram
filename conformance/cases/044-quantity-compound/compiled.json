@@ -55,7 +55,11 @@
         "3"
       ],
       "qty": 17.5,
-      "unit": "tbsp"
+      "unit": "tbsp",
+      "range": {
+        "min": 17,
+        "max": 18
+      }
     },
     {
       "id": "butter",

@@ -18,6 +18,7 @@ import {
 	QuantityOverflowError,
 	scaleTerms,
 	type Term,
+	round2,
 	type TermValue,
 	type TermsTotal,
 	termsTotal,
@@ -44,6 +45,8 @@ export interface QuantityHolder {
 	qty?: Usage["qty"] | null;
 	unit?: string | null;
 	parts?: QuantityPart[];
+	/** A shopping entry's bounds, next to its middle in `qty` (`shoppingAmount`). */
+	range?: { min: number; max: number };
 }
 
 /** The terms of `parts`, in their written order, whatever they amount to. */
@@ -103,7 +106,37 @@ export function termsOfUsage(usage: QuantityHolder | null | undefined): Term[] {
 	if (usage.parts?.length) {
 		return isRefusedSum(usage) ? [] : termsOfParts(usage.parts);
 	}
+	// A shopping entry keeps a range as its middle plus its bounds.
+	if (typeof usage.qty === "number" && usage.range) {
+		const { min, max } = usage.range;
+		return termsOfQuantity(
+			{ type: "range", value: usage.qty, range: { min, max } },
+			usage.unit,
+		);
+	}
 	return termsOfQuantity(usage.qty, usage.unit);
+}
+
+/**
+ * A total as a shopping entry stores it: `qty` always a number (the middle
+ * of a range, rounded to 2 decimals), and for a range its bounds in `range`.
+ * No total gives `qty` 0 in `fallbackUnit`.
+ */
+export function shoppingAmount(
+	total: TermsTotal | null,
+	fallbackUnit: string | null = null,
+): { qty: number; unit: string | null; range?: { min: number; max: number } } {
+	if (!total) return { qty: 0, unit: fallbackUnit };
+	const { qty, unit } = total;
+	const middle = round2(termValueNumber(qty) ?? 0);
+	if (typeof qty === "object" && qty.type === "range" && qty.range) {
+		return {
+			qty: middle,
+			unit,
+			range: { min: round2(qty.range.min), max: round2(qty.range.max) },
+		};
+	}
+	return { qty: middle, unit };
 }
 
 /** The terms of a composite parent's share (`<@eggs{…}`), read like a usage. */
@@ -257,25 +290,6 @@ export function familyTotals(
 		const value = total ? termValueNumber(total.qty) : null;
 		return total && value !== null ? [{ value, unit: total.unit }] : [];
 	});
-}
-
-/**
- * The amounts a usage stands for, each a unit and the terms that add up in
- * it: one for a plain quantity or a sum of one family, one per family for a
- * sum of several (`1 cup + 20 g`), none when it has no terms.
- */
-export function amountsOfUsage(
-	usage: QuantityHolder,
-): { unit: string | null; terms: Term[] }[] {
-	const terms = termsOfUsage(usage);
-	if (terms.length === 0) return [];
-	if (!usage.parts?.length || termsTotal(terms)) {
-		return [{ unit: usage.unit ?? null, terms }];
-	}
-	return termsByFamily(terms).map((group) => ({
-		unit: termsTotal(group)?.unit ?? group[0]?.unit ?? null,
-		terms: group,
-	}));
 }
 
 /** `scaleTerms`, an overflow reported as the scaler's own `InvalidFactorError`. */

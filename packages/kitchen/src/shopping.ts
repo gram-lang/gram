@@ -1,14 +1,20 @@
-import { slugify, round2 } from "./utils";
+import { slugify } from "./utils";
 import {
-	amountsOfUsage,
 	numericTotal,
+	shoppingAmount,
 	termsOfComposite,
 	termsOfUsage,
 	writeSum,
 } from "./terms";
 import { detectCycles } from "./graph";
 import { ASTNodeType } from "@gram-lang/parser";
-import { normalizeUnit, type Term } from "@gram-lang/i18n";
+import {
+	groupTerms,
+	mergeKey,
+	normalizeUnit,
+	type Term,
+	termsTotal,
+} from "@gram-lang/i18n";
 import type { ProcessedSection, Registry, Usage } from "./types";
 import type { CompilerOptions } from "./core";
 import { isPurchasableReference } from "./registry";
@@ -21,7 +27,13 @@ export interface ShoppingListItem {
 	type?: string;
 	id: string;
 	name?: string;
+	/** The total; for a range, its middle (the bounds are in `range`). */
 	qty?: number;
+	/**
+	 * The bounds of a total with a range in it, added up by their bounds
+	 * (`2-3 g` and `200 g` give `202-203 g`, `qty` 202.5). Since 1.5.0.
+	 */
+	range?: { min: number; max: number };
 	unit?: string | null;
 	variable_entries?: string[];
 	fixed?: boolean;
@@ -116,14 +128,15 @@ interface CompositeAccumulator {
 }
 
 /**
- * A usage as the shopping list adds it up: itself, or, for a sum of several
- * families (`{1 cup + 20 g}`), one copy per family, each holding the terms
- * of that family and what they amount to.
+ * A usage as the shopping list adds it up: itself, or, for a sum over
+ * several ladders (`{1 cup + 20 g}`, `{1 cup + 10 ml}`), one copy per ladder,
+ * each holding the terms of that ladder and what they amount to, as if they
+ * had been written apart.
  */
-function byFamily(item: Usage): Usage[] {
-	const amounts = amountsOfUsage(item);
-	if (amounts.length <= 1) return [item];
-	return amounts.map((amount) => writeSum({ ...item }, amount.terms));
+function byLadder(item: Usage): Usage[] {
+	const groups = groupTerms(termsOfUsage(item), "ladder");
+	if (groups.length <= 1) return [item];
+	return groups.map((terms) => writeSum({ ...item }, terms));
 }
 
 /**
@@ -137,8 +150,9 @@ export function generateShoppingList(
 	_options?: CompilerOptions,
 ): (ShoppingListItem | CompositeItem | Usage)[] {
 	const listMap = new Map<string, ShoppingListItem>();
-	// The terms each entry of `listMap` adds up, by the same key: one unit
-	// (its spellings merged), so they always amount to a single number.
+	// The terms each entry of `listMap` adds up, by the same key: one ladder
+	// (`cup` and `tbsp`), or one unit on no ladder (its spellings merged), so
+	// they always amount to a single number.
 	const termsByKey = new Map<string, Term[]>();
 	const compositeMap = new Map<string, CompositeAccumulator>();
 	const alternatives: Usage[] = [];
@@ -161,9 +175,9 @@ export function generateShoppingList(
 			if (!isPurchasableReference(item.type, registry.ingredients.get(item.id)))
 				return;
 
-			// A sum of several families (`{1 cup + 20 g}`) is bought as one
-			// amount per family, as if they had been written apart.
-			byFamily(item).forEach(addToList);
+			// A sum over several ladders (`{1 cup + 20 g}`) is bought as one
+			// amount per ladder, as if they had been written apart.
+			byLadder(item).forEach(addToList);
 		});
 	});
 
@@ -186,7 +200,7 @@ export function generateShoppingList(
 			}
 
 			const subId = item.id;
-			// A child split by family (`byFamily`) draws on its parent once.
+			// A child split by ladder (`byLadder`) draws on its parent once.
 			if (!item._usageId || !sharedParent.has(item._usageId)) {
 				if (item._usageId) sharedParent.add(item._usageId);
 				const currentParentTotal = comp.subUsageMap.get(subId) || 0;
@@ -228,12 +242,12 @@ export function generateShoppingList(
 		const terms = isGhost ? [] : termsOfUsage(item);
 		const numericQty = numericTotal(terms);
 
-		// Group by ID AND unit (and ghost status) to prevent semantic data loss
-		// where secondary units were stringified into variable_entries. The
-		// unit is normalized, so the spellings of one unit (`cup` / `cups`,
-		// `c.à.s` / `tbsp`) add up in one entry, shown with the first
-		// spelling met.
-		const key = `${id}::${normalizeUnit(unit)}::${isGhost ? "ghost" : "real"}`;
+		// Group by ID AND ladder (and ghost status): the units of one ladder
+		// (`cup` and `tbsp`, `g` and `kg`) add up in one entry, in the
+		// smallest unit written; a unit on no ladder groups with its own
+		// spellings only (`gousse` and `gousses` stay apart). Two systems
+		// (`cup` and `ml`) or two families keep an entry each (`multiUnit`).
+		const key = `${id}::${mergeKey(unit || null, "ladder")}::${isGhost ? "ghost" : "real"}`;
 
 		if (!listMap.has(key)) {
 			const name = registry.ingredients.get(id)?.name || item.name;
@@ -308,9 +322,7 @@ export function generateShoppingList(
 
 		const terms = termsByKey.get(key);
 		if (terms) {
-			// A range adds up by its middle.
-			res.qty = round2(numericTotal(terms) ?? 0);
-			res.unit = item.unit || null;
+			Object.assign(res, shoppingAmount(termsTotal(terms), item.unit || null));
 		}
 
 		if (item.variableParts && item.variableParts.length > 0) {

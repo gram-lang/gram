@@ -3,6 +3,7 @@ import { slugify, scaleQty, round2 } from "../utils";
 import {
 	isRefusedSum,
 	scaleTermsChecked,
+	shoppingAmount,
 	scaleUsageTerms,
 	termsOfParts,
 	termsOfQuantity,
@@ -208,7 +209,9 @@ function mutateUsage(
 		// Text (`{une pincée}`) and relative (`{10%}`) quantities have no
 		// terms: they are never scaled.
 		const total = scaleUsageTerms(termsOfUsage(usage), factor);
-		if (total) usage.qty = total.qty;
+		// A shopping entry keeps a range as its middle plus its bounds.
+		if (total && "range" in usage) Object.assign(usage, shoppingAmount(total));
+		else if (total) usage.qty = total.qty;
 	}
 	// A composite child's own record of how much of the parent it draws
 	// (`@egg-yolks{2}<@eggs{3}` -> composite.quantity 3) is a separate field
