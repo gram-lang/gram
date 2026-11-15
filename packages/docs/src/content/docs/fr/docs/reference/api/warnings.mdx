@@ -81,7 +81,7 @@ Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quant
 | `rangeAfterMinus` | `{1 tasse - 1-2 càs}` | Une fourchette retirée inverserait ses bornes : mettez-la sur un terme ajouté, ou écrivez le total en fourchette. |
 | `minusAcrossFamilies` | `{1 tasse - 20 g}` | On ne retire une quantité que d'une quantité de même nature (un volume d'un volume, une masse d'une masse). |
 
-La soustraction se vérifie nature par nature : `{1 tasse - 2 càs + 30 g}` passe.
+La soustraction se vérifie nature par nature : chaque nature s'additionne et se soustrait de son côté. `{1 tasse - 2 càs + 30 g}` passe donc (les 2 càs se retirent de la tasse), alors que `{1 tasse - 20 g}` n'a aucune masse dont retirer les 20 g. Le survol d'une somme dans l'éditeur montre ce que donne chaque nature.
 
 ### `OZ_AFTER_VOLUME`
 <Since v="1.5.0" />

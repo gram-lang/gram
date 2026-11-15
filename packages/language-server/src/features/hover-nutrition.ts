@@ -87,11 +87,17 @@ function buildSumSection(
 			`**Total**: ${written} = **${formatTerms([{ value: total.qty, unit: total.unit }])}**`,
 		);
 	} else {
-		const families = termsByFamily(sum.terms).map((group) =>
-			familyName(group[0]?.unit ?? null),
-		);
+		// Each kind adds up, and takes away, on its own: show what each comes
+		// to (`1 cup - 2 tbsp + 30 g` is 14 tbsp of volume and 30 g of weight).
+		const kinds = termsByFamily(sum.terms).map((group) => {
+			const kindTotal = termsTotal(group);
+			const amount = kindTotal
+				? formatTerms([{ value: kindTotal.qty, unit: kindTotal.unit }])
+				: formatTerms(group);
+			return `**${amount}** _(${familyName(group[0]?.unit ?? null)})_`;
+		});
 		lines.push(
-			`**Total**: ${written} _(${families.join(" + ")}, counted apart)_`,
+			`**Total**: ${written} = ${kinds.join(" + ")}, counted apart: each kind adds up and takes away on its own`,
 		);
 	}
 

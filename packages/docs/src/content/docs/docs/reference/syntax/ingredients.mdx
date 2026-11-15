@@ -227,6 +227,8 @@ A few rules keep a sum readable:
 - **Take away from the same kind**: `{1 cup - 2 tbsp}` works, `{1 cup - 20 g}` doesn't, and what is taken away must leave something (`{1 tbsp - 1 cup}` is refused).
 - **No range after `-`**: `{1 cup - 1-2 tbsp}` would swap its bounds; write the range on a term that is added.
 
+Each kind of amount adds up and takes away **on its own**, because a volume and a weight can't be compared without a density. In `{1 cup - 2 tbsp + 30 g}`, the 2 tbsp come off the cup and the 30 g are added beside them: the sum is 14 tbsp of volume plus 30 g of weight. In `{1 cup - 20 g}`, there is no weight to take the 20 g from, so Gram refuses it rather than guess. Hover a sum in the editor to see what each kind comes to.
+
 A refused sum compiles with an `INVALID_QUANTITY` warning that says why, and counts for nothing in the shopping list and the nutrition. Two quantities written side by side without an operator (`{1 cup 5 tbsp}`) raise `INVALID_UNIT`; the editor offers to insert the ` + `.
 
 :::caution[oz is a weight]

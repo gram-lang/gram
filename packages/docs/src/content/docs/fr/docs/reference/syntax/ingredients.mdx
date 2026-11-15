@@ -227,6 +227,8 @@ Quelques règles gardent une somme lisible :
 - **On retire d'une quantité de même nature** : `{1 tasse - 2 càs}` passe, `{1 tasse - 20 g}` non, et il doit rester quelque chose (`{1 càs - 1 tasse}` est refusé).
 - **Pas de fourchette après un `-`** : `{1 tasse - 1-2 càs}` inverserait ses bornes ; mettez la fourchette sur un terme ajouté.
 
+Chaque nature de quantité s'additionne et se soustrait **de son côté**, car on ne compare pas un volume et une masse sans densité. Dans `{1 tasse - 2 càs + 30 g}`, les 2 càs se retirent de la tasse et les 30 g s'ajoutent à côté : la somme fait une tasse moins deux cuillères de volume, plus 30 g de masse. Dans `{1 tasse - 20 g}`, il n'y a aucune masse dont retirer les 20 g : Gram refuse plutôt que de deviner. Survolez une somme dans l'éditeur pour voir ce que donne chaque nature.
+
 Une somme refusée compile quand même, avec un avertissement `INVALID_QUANTITY` qui en donne la raison, et ne compte ni dans la liste de courses ni dans la nutrition. Deux quantités écrites côte à côte sans opérateur (`{1 kg 200 g}`) déclenchent `INVALID_UNIT` ; l'éditeur propose d'insérer le ` + `.
 
 :::caution[oz est une masse]

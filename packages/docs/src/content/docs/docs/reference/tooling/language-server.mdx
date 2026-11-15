@@ -48,7 +48,7 @@ The Gram Language Server implements the following standard capabilities:
 
 <Since v="1.5.0" /> On a [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities), the editor helps in three ways:
 
-- **Hover** shows the total as Gram reads it (`{1 cup + 1 tbsp}` → `= 17 tbsp`; a volume next to a weight reads `volume + mass, counted apart`) and, when the ingredient database can weigh every term, its mass. A sum Gram refuses shows nothing more than its warning.
+- **Hover** shows the total as Gram reads it (`{1 cup + 1 tbsp}` → `= 17 tbsp`; a sum of several kinds shows what each comes to, `{1 cup - 2 tbsp + 30 g}` → `= 14 tbsp (volume) + 30 g (weight), counted apart`) and, when the ingredient database can weigh every term, its mass. A sum Gram refuses shows nothing more than its warning.
 - **Quick Fixes** read the warning's `data`, passed on as the diagnostic's `data`: insert the ` + ` between two quantities written side by side (`{1 cup 5 tbsp}`, `INVALID_UNIT`), write the result Gram suggests (`{100 g + 10%}` → `{110 g}`, `INVALID_QUANTITY`), or turn `oz` after a volume into `fl oz` (`OZ_AFTER_VOLUME`).
 - **Completion** offers units for each term: after `{1 cup + 2`, the units come back.
 
