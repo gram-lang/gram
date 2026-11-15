@@ -111,3 +111,21 @@ describe("run sheet: what to take out", () => {
 		expect(items[0]?.detail).toBe("60 + 30");
 	});
 });
+
+describe("list lines with long amounts", () => {
+	it("lets a sum wrap between its terms, never inside one", () => {
+		const html = toHTML(build());
+		expect(html).toContain(
+			'<span class="kit-mass"><span class="kit-term">1 cup</span> + <span class="kit-term">1-2 tbsp</span></span>',
+		);
+		// A single amount keeps its plain markup.
+		expect(html).toContain('<span class="kit-mass">1.6 cup</span>');
+	});
+
+	it("marks mixed units with an icon on the name's line, not an emoji", () => {
+		const html = toHTML(build());
+		const badge = html.slice(html.indexOf('class="mixed-units-badge"'));
+		expect(badge.slice(0, 400)).toContain("gicon-warning");
+		expect(html).not.toContain("⚠️");
+	});
+});

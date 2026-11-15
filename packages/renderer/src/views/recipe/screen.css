@@ -603,6 +603,8 @@
 		font-size: 1rem;
 		font-weight: 800;
 		color: var(--color-text);
+		/* The copy button and the chevron stay together on the right. */
+		margin-right: auto;
 	}
 
 	.copy-shopping-btn {
@@ -754,9 +756,16 @@
 		transform: rotate(45deg);
 	}
 
+	/*
+	 * A line is the name, then the amount pushed right by a dot leader. When
+	 * both do not fit, the whole amount goes to the line below (still pushed
+	 * right, the leader starting under the name); only an amount wider than the
+	 * column wraps, between its terms. Each line decides for itself, from its
+	 * own name, amount and badges: no width threshold.
+	 */
 	.kit-list label > span {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
+		display: flex;
+		flex-wrap: wrap;
 		align-items: baseline;
 		column-gap: 0.5rem;
 		flex: 1;
@@ -774,11 +783,34 @@
 	}
 
 	.kit-list li.list-item-group > label > span > .kit-name-col {
-		grid-column: 1;
-		grid-row: 1;
+		flex: 1 1 100%;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem 0.5rem;
+	}
+
+	/* Several units Gram could not add up: a small badge on the name's line. */
+	.mixed-units-badge {
 		display: inline-flex;
-		align-items: baseline;
-		gap: 0.35rem;
+		align-items: center;
+		gap: 4px;
+		font-family: var(--gram-font-mono);
+		font-size: 0.7rem;
+		font-weight: 500;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+		background-color: var(--color-bg-subtle);
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		padding: 0 6px;
+		cursor: help;
+		white-space: nowrap;
+	}
+
+	.mixed-units-badge .gicon {
+		flex-shrink: 0;
 	}
 
 	.kit-name-col {
@@ -790,8 +822,8 @@
 
 	.kit-name,
 	.alt-group {
-		grid-column: 1;
-		grid-row: 1;
+		flex: 0 1 auto;
+		min-width: 0;
 		color: var(--color-text);
 		font-weight: 500;
 		overflow-wrap: break-word;
@@ -810,9 +842,38 @@
 		text-transform: uppercase;
 	}
 
+	/*
+	 * One line of the list did not fit: every amount of that list goes under
+	 * its name, so the list reads the same from top to bottom
+	 * (`watchListStacking`, `shared/kit-stacking.ts`).
+	 */
+	.kit-list.kit-list-stacked label > span > .kit-qty {
+		flex-basis: 100%;
+		/*
+		 * Under its name, the amount reads like a card: from the left, no dot
+		 * leader (nothing left to join across the line), the key figure first
+		 * (the weight, then the amount as written, then the badges).
+		 */
+		justify-content: flex-start;
+	}
+
+	.kit-list.kit-list-stacked .kit-qty::before {
+		display: none;
+	}
+
+	.kit-list.kit-list-stacked .kit-qty .kit-mass {
+		order: -1;
+	}
+
+	.kit-list.kit-list-stacked .kit-qty .kit-mass,
+	.kit-list.kit-list-stacked .kit-qty .kit-orig {
+		text-align: left;
+	}
+
+	/* Under the name and the amount, on a line of its own. */
 	.kit-prep {
-		grid-column: 1 / -1;
-		grid-row: 2;
+		order: 2;
+		flex: 1 1 100%;
 		font-size: 0.76rem;
 		color: var(--color-text-muted);
 		font-style: italic;
@@ -822,8 +883,9 @@
 
 	/* The quantity, pushed to the right edge by a dot leader. */
 	.kit-qty {
-		grid-column: 2 / -1;
-		grid-row: 1;
+		order: 1;
+		flex: 1 0 auto;
+		max-width: 100%;
 		display: flex;
 		align-items: baseline;
 		justify-content: flex-end;
@@ -835,18 +897,33 @@
 		color: var(--color-text-muted);
 	}
 
+	/* On the first line of the amount, even when a long one wraps. */
 	.kit-qty::before {
 		content: "";
 		flex: 1;
-		align-self: flex-end;
+		align-self: flex-start;
+		height: calc(1lh - 0.3em);
 		min-width: 0.75rem;
-		margin-bottom: 0.3em;
 		border-bottom: 2px dotted var(--color-border);
 	}
 
 	.kit-orig {
 		font-size: 0.76rem;
 		font-weight: 400;
+	}
+
+	/*
+	 * A long amount wraps between its terms, never inside one (`1 1/2 cup`),
+	 * so it never runs under the name in a narrow column.
+	 */
+	.kit-qty .kit-mass,
+	.kit-qty .kit-orig {
+		white-space: normal;
+		text-align: right;
+	}
+
+	.kit-term {
+		white-space: nowrap;
 	}
 
 	/* ─── Composite: the parts used, under the item you buy ───────────────── */
@@ -1286,6 +1363,8 @@
 		border: 1.5px solid var(--color-text-strong);
 		border-radius: 3px;
 		white-space: nowrap;
+		/* A mono space is a whole character wide: `1 h 30 min` stays compact. */
+		word-spacing: -0.3em;
 		text-decoration: none !important;
 		line-height: 1.7;
 		transform: translateY(1px);
