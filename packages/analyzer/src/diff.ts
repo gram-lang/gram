@@ -8,6 +8,7 @@ import type {
 	ShoppingListItem,
 	CompositeItem,
 } from "@gram-lang/kitchen";
+import { normalizeUnit } from "@gram-lang/i18n";
 import { getNumericQty, scheduleFor, scheduleTimes } from "@gram-lang/kitchen";
 
 // Structural, analyzer-local shapes for the module-composition metadata a
@@ -364,10 +365,18 @@ function diffIngredients(
 	a: ShoppingItem[],
 	b: ShoppingItem[],
 ): IngredientDelta[] {
-	const toMap = (list: ShoppingItem[]) =>
-		new Map<string, SimpleShoppingItem>(
-			flattenShoppingItems(list).map((i) => [i.id, i]),
-		);
+	// An ingredient bought in two units is two shopping entries of one id
+	// (500 g here, 2 cups there): each entry is compared, not only the last
+	// one of each id.
+	const toMap = (list: ShoppingItem[]) => {
+		const map = new Map<string, SimpleShoppingItem[]>();
+		for (const item of flattenShoppingItems(list)) {
+			const entries = map.get(item.id) ?? [];
+			entries.push(item);
+			map.set(item.id, entries);
+		}
+		return map;
+	};
 
 	const aMap = toMap(a);
 	const bMap = toMap(b);
@@ -375,56 +384,97 @@ function diffIngredients(
 	const deltas: IngredientDelta[] = [];
 
 	for (const id of allIds) {
-		const aItem = aMap.get(id);
-		const bItem = bMap.get(id);
-
-		if (aItem && !bItem) {
-			deltas.push({
-				id,
-				name: aItem.name || id,
-				change: "removed",
-				fromQty: numericQty(aItem) ?? undefined,
-				fromUnit: aItem.unit ?? null,
-			});
-			continue;
+		for (const [aItem, bItem] of pairByUnit(
+			aMap.get(id) ?? [],
+			bMap.get(id) ?? [],
+		)) {
+			const delta = diffIngredient(id, aItem, bItem);
+			if (delta) deltas.push(delta);
 		}
-		if (!aItem && bItem) {
-			deltas.push({
-				id,
-				name: bItem.name || id,
-				change: "added",
-				toQty: numericQty(bItem) ?? undefined,
-				toUnit: bItem.unit ?? null,
-			});
-			continue;
-		}
-		if (!aItem || !bItem) continue;
-
-		const aQty = numericQty(aItem);
-		const bQty = numericQty(bItem);
-		const aUnit = aItem.unit ?? null;
-		const bUnit = bItem.unit ?? null;
-
-		if (aQty === bQty && aUnit === bUnit) continue;
-
-		const delta: IngredientDelta = {
-			id,
-			name: bItem.name || id,
-			change: "changed",
-			fromQty: aQty ?? undefined,
-			fromUnit: aUnit,
-			toQty: bQty ?? undefined,
-			toUnit: bUnit,
-		};
-
-		if (aQty !== null && bQty !== null && aUnit === bUnit && aQty !== 0) {
-			delta.percentChange = Math.round(((bQty - aQty) / aQty) * 100);
-		}
-
-		deltas.push(delta);
 	}
 
 	return deltas;
+}
+
+/**
+ * The entries of one ingredient on both sides, paired: same unit first
+ * (`cup` and `cups` are one unit), then what is left in order (a unit that
+ * changed), then the entries only one side has.
+ */
+function pairByUnit(
+	a: SimpleShoppingItem[],
+	b: SimpleShoppingItem[],
+): [SimpleShoppingItem | null, SimpleShoppingItem | null][] {
+	const pairs: [SimpleShoppingItem | null, SimpleShoppingItem | null][] = [];
+	const bLeft = [...b];
+	const aLeft: SimpleShoppingItem[] = [];
+	for (const aItem of a) {
+		const unit = normalizeUnit(aItem.unit);
+		const index = bLeft.findIndex(
+			(bItem) => normalizeUnit(bItem.unit) === unit,
+		);
+		if (index === -1) {
+			aLeft.push(aItem);
+			continue;
+		}
+		pairs.push([aItem, bLeft[index] ?? null]);
+		bLeft.splice(index, 1);
+	}
+	const rest = Math.max(aLeft.length, bLeft.length);
+	for (let i = 0; i < rest; i++)
+		pairs.push([aLeft[i] ?? null, bLeft[i] ?? null]);
+	return pairs;
+}
+
+function diffIngredient(
+	id: string,
+	aItem: SimpleShoppingItem | null,
+	bItem: SimpleShoppingItem | null,
+): IngredientDelta | null {
+	if (aItem && !bItem) {
+		return {
+			id,
+			name: aItem.name || id,
+			change: "removed",
+			fromQty: numericQty(aItem) ?? undefined,
+			fromUnit: aItem.unit ?? null,
+		};
+	}
+	if (!aItem && bItem) {
+		return {
+			id,
+			name: bItem.name || id,
+			change: "added",
+			toQty: numericQty(bItem) ?? undefined,
+			toUnit: bItem.unit ?? null,
+		};
+	}
+	if (!aItem || !bItem) return null;
+
+	const aQty = numericQty(aItem);
+	const bQty = numericQty(bItem);
+	const aUnit = aItem.unit ?? null;
+	const bUnit = bItem.unit ?? null;
+
+	const sameUnit = normalizeUnit(aUnit) === normalizeUnit(bUnit);
+
+	if (aQty === bQty && sameUnit) return null;
+
+	const delta: IngredientDelta = {
+		id,
+		name: bItem.name || id,
+		change: "changed",
+		fromQty: aQty ?? undefined,
+		fromUnit: aUnit,
+		toQty: bQty ?? undefined,
+		toUnit: bUnit,
+	};
+
+	if (aQty !== null && bQty !== null && sameUnit && aQty !== 0) {
+		delta.percentChange = Math.round(((bQty - aQty) / aQty) * 100);
+	}
+
+	return delta;
 }
 
 // The four times a diff reports, all read from the default timeline (mise en

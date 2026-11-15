@@ -1,6 +1,7 @@
 import { slugify, getNumericQty, round2 } from "./utils";
 import { detectCycles } from "./graph";
 import { ASTNodeType } from "@gram-lang/parser";
+import { normalizeUnit } from "@gram-lang/i18n";
 import type { ProcessedSection, Registry, Usage } from "./types";
 import type { CompilerOptions } from "./core";
 import { isPurchasableReference } from "./registry";
@@ -156,8 +157,9 @@ export function generateShoppingList(
 				const currentParentTotal = comp.subUsageMap.get(subId) || 0;
 				comp.subUsageMap.set(subId, currentParentTotal + declParentQty);
 
-				const uUnit = item.unit || "";
-				const uKey = `${subId}::${uUnit}`;
+				// Spellings of one unit (`cup` / `cups`, `c.à.s` / `tbsp`) share an
+				// entry, shown with the first spelling met.
+				const uKey = `${subId}::${normalizeUnit(item.unit)}`;
 
 				if (!comp.usageAccumulator.has(uKey)) {
 					comp.usageAccumulator.set(uKey, {
@@ -199,8 +201,11 @@ export function generateShoppingList(
 			}
 
 			// Group by ID AND unit (and ghost status) to prevent semantic data loss
-			// where secondary units were stringified into variable_entries.
-			const key = `${id}::${unit}::${isGhost ? "ghost" : "real"}`;
+			// where secondary units were stringified into variable_entries. The
+			// unit is normalized, so the spellings of one unit (`cup` / `cups`,
+			// `c.à.s` / `tbsp`) add up in one entry, shown with the first
+			// spelling met.
+			const key = `${id}::${normalizeUnit(unit)}::${isGhost ? "ghost" : "real"}`;
 
 			if (!listMap.has(key)) {
 				const name = registry.ingredients.get(id)?.name || item.name;
@@ -245,7 +250,7 @@ export function generateShoppingList(
 				const display = `${text} ❓`;
 				existing.variableParts!.push(`(${display})`);
 			} else if (numericQty !== null) {
-				const u = unit;
+				const u = existing.unit ?? "";
 				if (!existing.otherUnits![u]) existing.otherUnits![u] = 0;
 				existing.otherUnits![u] += numericQty;
 			} else {
