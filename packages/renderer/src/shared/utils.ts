@@ -365,9 +365,9 @@ function leadingChar(token: StepToken): string {
 }
 
 /**
- * Joins a step's tokens into a single string, inserting a space between two
- * adjacent tokens unless the next one starts with punctuation or whitespace
- * (so "flour," never becomes "flour ,"). The three formatters (HTML, print,
+ * Joins a step's tokens into a single string, inserting a space after an
+ * element unless the next token is text starting with punctuation or
+ * whitespace (so "flour," never becomes "flour ,") or a comment. The three formatters (HTML, print,
  * Markdown) share this exact spacing rule — only how each token is rendered
  * to a string, and which tokens are eligible for a trailing space, differ.
  */
@@ -383,7 +383,13 @@ export function joinStepTokens(
 			const next = tokens[i + 1];
 			if (next !== undefined) {
 				const nextChar = leadingChar(next);
-				if (nextChar && !/^[.,!?:;)\s]/.test(nextChar)) str += " ";
+				// The parser keeps no whitespace after an element, so two elements
+				// in a row (`@flour{500 g} ~{1h}`) get their space here too. A
+				// comment brings its own (or none, before a footnote mark).
+				const nextIsElement =
+					typeof next === "object" && next?.type !== "comment";
+				if (nextIsElement || (nextChar && !/^[.,!?:;)\s]/.test(nextChar)))
+					str += " ";
 			}
 		}
 		return str;
