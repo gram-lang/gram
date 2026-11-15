@@ -50,6 +50,31 @@ describe("scaleAst matches applyScale", () => {
 		expect(viaAst.shopping_list).toEqual(viaCompiled.shopping_list);
 	});
 
+	it("scales a sum of quantities alike, term by term", () => {
+		// Fractions are fine in a sum: each path writes its parts again, so a
+		// scaled fraction comes out a bare number on both.
+		const sumSource = `## Section
+
+@flour{1 cup + 1 1/2 tbsp} and @sugar{1 cup - 2 tbsp}.
+
+@milk{1 cup + 1-2 tbsp} and @butter{1 cup + 20 g}.
+
+@juice{100 ml}<@oranges{1 lb + 4 oz}.
+
+@=salt{1 tsp + 1 pinch} and @oil{1 tbsp - 1 cup}.
+`;
+		const ast = getAST(sumSource);
+		const factor = 2.5;
+
+		const viaAst = compile(scaleAst(ast, factor));
+		const viaCompiled = applyScale(compile(ast), factor);
+
+		expect(viaAst.sections[0]?.ingredients).toEqual(
+			viaCompiled.sections[0]?.ingredients,
+		);
+		expect(viaAst.shopping_list).toEqual(viaCompiled.shopping_list);
+	});
+
 	it("leaves a fixed (@=) ingredient untouched by either path", () => {
 		const fixedSource = "## Section\n\n@=butter{100g}.\n";
 		const ast = getAST(fixedSource);

@@ -31,6 +31,10 @@
 // text format (927.6 KB against the 930 KB budget before the words of the other
 // formats moved into the dictionaries). The playground is a showcase, and the
 // budget is an alarm against a bundle that balloons, not a target to squeeze.
+// It went from 1000 KB to 1040 KB in 1.5.0: sums of quantities
+// (`{1 cup + 1 tbsp}`) brought their grammar (999.2 KB), then the compiler's
+// reading of them, their warnings and their messages (1005.5 KB), with the
+// shopping list, the analyzer, the display and the editor tooling still to come.
 
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -40,7 +44,7 @@ const ASSETS_DIR = join(import.meta.dirname, "..", "dist", "_astro");
 const BUDGETS_KB = {
 	"playground chunk (client:only, but should not balloon)": {
 		pattern: /^GramPlayground\..*\.js$/,
-		maxKb: 1000,
+		maxKb: 1040,
 	},
 };
 

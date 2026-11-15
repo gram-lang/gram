@@ -20,6 +20,7 @@ import {
 	type TimerAST,
 	type TemperatureAST,
 	type TextAST,
+	type CompoundQuantityAST,
 	ASTNodeType,
 	type Location,
 } from "@gram-lang/parser";
@@ -63,12 +64,13 @@ import {
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
 import {
-	isMeasureUnit,
 	looksLikeThousands,
 	parseDuration,
 	unitContainsQuantity,
 } from "@gram-lang/i18n";
 import { type Warning, WarningCode, pushWarning } from "./warnings";
+import { looksLikeTwoQuantities, readSum } from "./compound";
+import { writeSum } from "./terms";
 import { type DurationProblem, readAnchor, readTimer } from "./durations";
 import { detectIntermediateCycles } from "./graph";
 import { calculatePreparationTime } from "./metrics";
@@ -174,6 +176,19 @@ function checkAmbiguousText(
 	});
 }
 
+/** The numbers of an element's `{…}`: one, or one per term of a sum. */
+const quantityValues = (
+	quantity: { type: ASTNodeType; value?: unknown } | null | undefined,
+): QuantityValue[] => {
+	if (quantity?.type === ASTNodeType.CompoundQuantity) {
+		return (quantity as CompoundQuantityAST).terms.flatMap((term) =>
+			term.value ? [term.value as QuantityValue] : [],
+		);
+	}
+	const value = quantityValue(quantity);
+	return value ? [value] : [];
+};
+
 /** The number of an element's `{…}`, when it has one. */
 const quantityValue = (
 	quantity: { type: ASTNodeType; value?: unknown } | null | undefined,
@@ -192,12 +207,8 @@ function checkAmbiguousNumbers(
 ) {
 	switch (item.type) {
 		case ASTNodeType.Ingredient:
-			checkAmbiguousNumber(
-				ctx,
-				quantityValue(item.quantity),
-				item.name,
-				item.loc,
-			);
+			for (const value of quantityValues(item.quantity))
+				checkAmbiguousNumber(ctx, value, item.name, item.loc);
 			if (item.quantity?.type === ASTNodeType.RelativeQuantity) {
 				checkAmbiguousText(
 					ctx,
@@ -207,21 +218,18 @@ function checkAmbiguousNumbers(
 					item.loc,
 				);
 			}
-			checkAmbiguousNumber(
-				ctx,
-				quantityValue(item.composite?.quantity),
-				item.composite?.parent ?? item.name,
-				item.loc,
-			);
+			for (const value of quantityValues(item.composite?.quantity))
+				checkAmbiguousNumber(
+					ctx,
+					value,
+					item.composite?.parent ?? item.name,
+					item.loc,
+				);
 			return;
 		case ASTNodeType.Cookware:
 		case ASTNodeType.Reference:
-			checkAmbiguousNumber(
-				ctx,
-				quantityValue(item.quantity),
-				item.name,
-				item.loc,
-			);
+			for (const value of quantityValues(item.quantity))
+				checkAmbiguousNumber(ctx, value, item.name, item.loc);
 			return;
 		case ASTNodeType.Timer:
 			if (item.quantity?.type === ASTNodeType.Quantity) {
@@ -256,24 +264,8 @@ function checkAmbiguousNumbers(
 	}
 }
 
-/**
- * `{1 cup 5 tbsp}`: a unit made of a known unit, a number and another known
- * unit reads as two quantities, which Gram does not add. Unflagged, the whole
- * "cup 5 tbsp" passed as one unknown unit: no mass, and a scaled recipe read
- * "2 cup 5 tbsp". `{1 boîte de 400 g}` is not one: "boîte de" is no unit, and
- * its 400 g describes the tin, so scaling the number of tins stays right.
- */
-export function looksLikeTwoQuantities(unit: string): boolean {
-	const words = unit.trim().split(/\s+/);
-	for (let i = 1; i < words.length; i++) {
-		const number = words[i]?.match(/^\d+(?:[.,/]\d+)?(.*)$/);
-		if (!number) continue;
-		const first = words.slice(0, i).join(" ");
-		const second = [number[1], ...words.slice(i + 1)].join(" ").trim();
-		if (second && isMeasureUnit(first) && isMeasureUnit(second)) return true;
-	}
-	return false;
-}
+// Moved to `compound.ts`, which reads each term of a sum with it too.
+export { looksLikeTwoQuantities } from "./compound";
 
 /**
  * `{about 200g}`: with no number in front, the whole text is read as a unit,
@@ -285,6 +277,50 @@ export function hidesAQuantity(unit: string): boolean {
 	return unitContainsQuantity(unit);
 }
 
+/**
+ * The warnings of a sum of quantities (`{1 cup + 1 tbsp}`), each pointing at
+ * its term: why it is refused (`INVALID_QUANTITY`), a unit that reads as two
+ * quantities (`INVALID_UNIT`), an `oz` next to a volume (`OZ_AFTER_VOLUME`).
+ * The compiled quantity comes from the same reading (`createCleanUsage`).
+ */
+function checkSum(
+	ctx: ProcessorContext,
+	quantity: { type: ASTNodeType } | null | undefined,
+	item: string,
+	loc: Location | undefined,
+) {
+	if (quantity?.type !== ASTNodeType.CompoundQuantity) return;
+	const sum = readSum(quantity as CompoundQuantityAST, loc);
+	for (const problem of sum.problems) {
+		pushWarning(ctx, WarningCode.INVALID_QUANTITY, {
+			value: problem.value,
+			reason: problem.reason,
+			...(problem.suggestion !== undefined
+				? { suggestion: problem.suggestion }
+				: {}),
+			item,
+			loc: problem.loc ?? loc,
+		});
+	}
+	for (const unit of sum.twoQuantities) {
+		pushWarning(ctx, WarningCode.INVALID_UNIT, {
+			type: "Ingredient",
+			value: unit.value,
+			item,
+			reason: "twoQuantities",
+			loc: unit.loc ?? loc,
+		});
+	}
+	if (sum.ozAfterVolume) {
+		pushWarning(ctx, WarningCode.OZ_AFTER_VOLUME, {
+			value: sum.ozAfterVolume.value,
+			suggestion: "fl oz",
+			item,
+			loc: sum.ozAfterVolume.loc ?? loc,
+		});
+	}
+}
+
 function processIngredient(
 	item: IngredientAST,
 	ctx: ProcessorContext,
@@ -292,6 +328,13 @@ function processIngredient(
 	secIngredients: Usage[],
 ): Usage {
 	checkModifiers(ctx, item.modifiers, item.name, item.loc);
+	checkSum(ctx, item.quantity, item.name, item.loc);
+	checkSum(
+		ctx,
+		item.composite?.quantity,
+		item.composite?.parent ?? item.name,
+		item.loc,
+	);
 
 	const defaultUnit =
 		(item.quantity && "unit" in item.quantity && item.quantity.unit) ||
@@ -439,6 +482,7 @@ function processIngredient(
 		item.quantity &&
 		((item.quantity.type === ASTNodeType.Quantity &&
 			(item.quantity.value !== null || item.quantity.unit !== null)) ||
+			item.quantity.type === ASTNodeType.CompoundQuantity ||
 			item.quantity.type === ASTNodeType.TextQuantity)
 	);
 
@@ -560,6 +604,12 @@ function processReference(
 			}
 		} else if (item.quantity.type === ASTNodeType.TextQuantity) {
 			obj.qty = item.quantity.value;
+		} else if (item.quantity.type === ASTNodeType.CompoundQuantity) {
+			const name = item.displayName ?? cleanName;
+			checkSum(ctx, item.quantity, name, item.loc);
+			const sum = readSum(item.quantity, item.loc);
+			writeSum(obj, sum.terms, sum.problems.length > 0);
+			if (item.quantity.fixed) obj.fixed = true;
 		}
 	}
 

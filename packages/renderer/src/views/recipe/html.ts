@@ -23,6 +23,7 @@ import {
 	formatGrams,
 	type NumberStyle,
 	trimBeforeComments,
+	joinAmounts,
 } from "../../shared/utils";
 import {
 	availableBases,
@@ -132,7 +133,7 @@ function kitQtyHtml(
 		? item.variable_entries.filter((e): e is string => typeof e === "string")
 		: [];
 	const written = () =>
-		[
+		joinAmounts([
 			...(qty
 				? [
 						(large &&
@@ -142,7 +143,7 @@ function kitQtyHtml(
 					]
 				: []),
 			...extra,
-		].join(" + ");
+		]);
 	const grams = (mass: number) =>
 		(large && largerAmount(mass, "g", lang)) || formatGrams(mass, lang);
 	// A quantity already in g, kg or mg is its own weight: the standardized

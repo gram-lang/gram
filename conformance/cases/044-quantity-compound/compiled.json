@@ -35,35 +35,58 @@
       "name": "flour",
       "_usageIds": [
         "1"
-      ]
+      ],
+      "qty": 17,
+      "unit": "tbsp"
     },
     {
       "id": "sugar",
       "name": "sugar",
       "_usageIds": [
         "2"
-      ]
+      ],
+      "qty": 14,
+      "unit": "tbsp"
     },
     {
       "id": "milk",
       "name": "milk",
       "_usageIds": [
         "3"
-      ]
+      ],
+      "qty": 17.5,
+      "unit": "tbsp"
     },
     {
       "id": "butter",
       "name": "butter",
       "_usageIds": [
         "4"
-      ]
+      ],
+      "qty": 8,
+      "unit": "tsp"
     },
     {
       "id": "salt",
       "name": "salt",
       "_usageIds": [
         "5"
-      ]
+      ],
+      "fixed": true,
+      "qty": 1.5,
+      "unit": "g",
+      "multiUnit": true
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "5"
+      ],
+      "fixed": true,
+      "qty": 1,
+      "unit": "pinch",
+      "multiUnit": true
     }
   ],
   "cookware": [],
@@ -73,23 +96,111 @@
       "ingredients": [
         {
           "id": "flour",
-          "_usageId": "1"
+          "_usageId": "1",
+          "qty": 17,
+          "unit": "tbsp",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 1,
+              "unit": "tbsp"
+            }
+          ]
         },
         {
           "id": "sugar",
-          "_usageId": "2"
+          "_usageId": "2",
+          "qty": 14,
+          "unit": "tbsp",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 2,
+              "unit": "tbsp",
+              "minus": true
+            }
+          ]
         },
         {
           "id": "milk",
-          "_usageId": "3"
+          "_usageId": "3",
+          "qty": {
+            "type": "range",
+            "value": 17.5,
+            "range": {
+              "min": 17,
+              "max": 18
+            }
+          },
+          "unit": "tbsp",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": {
+                "type": "range",
+                "value": 1.5,
+                "range": {
+                  "min": 1,
+                  "max": 2
+                },
+                "text": "1-2"
+              },
+              "unit": "tbsp"
+            }
+          ]
         },
         {
           "id": "butter",
-          "_usageId": "4"
+          "_usageId": "4",
+          "qty": 8,
+          "unit": "tsp",
+          "parts": [
+            {
+              "qty": {
+                "type": "fraction",
+                "value": 2.5,
+                "numerator": 5,
+                "denominator": 2,
+                "text": "2 1/2"
+              },
+              "unit": "tbsp"
+            },
+            {
+              "qty": {
+                "type": "fraction",
+                "value": 0.5,
+                "numerator": 1,
+                "denominator": 2,
+                "text": "½"
+              },
+              "unit": "tsp"
+            }
+          ]
         },
         {
           "id": "salt",
-          "_usageId": "5"
+          "_usageId": "5",
+          "unit": "1.5 g + 1 pinch",
+          "parts": [
+            {
+              "qty": 1.5,
+              "unit": "g"
+            },
+            {
+              "qty": 1,
+              "unit": "pinch"
+            }
+          ],
+          "fixed": true
         }
       ],
       "cookware": [],
@@ -100,12 +211,37 @@
             "Whisk ",
             {
               "id": "flour",
-              "_usageId": "1"
+              "_usageId": "1",
+              "qty": 17,
+              "unit": "tbsp",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 1,
+                  "unit": "tbsp"
+                }
+              ]
             },
             "with ",
             {
               "id": "sugar",
-              "_usageId": "2"
+              "_usageId": "2",
+              "qty": 14,
+              "unit": "tbsp",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 2,
+                  "unit": "tbsp",
+                  "minus": true
+                }
+              ]
             },
             "."
           ],
@@ -121,12 +257,63 @@
             "Add ",
             {
               "id": "milk",
-              "_usageId": "3"
+              "_usageId": "3",
+              "qty": {
+                "type": "range",
+                "value": 17.5,
+                "range": {
+                  "min": 17,
+                  "max": 18
+                }
+              },
+              "unit": "tbsp",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": {
+                    "type": "range",
+                    "value": 1.5,
+                    "range": {
+                      "min": 1,
+                      "max": 2
+                    },
+                    "text": "1-2"
+                  },
+                  "unit": "tbsp"
+                }
+              ]
             },
             "and ",
             {
               "id": "butter",
-              "_usageId": "4"
+              "_usageId": "4",
+              "qty": 8,
+              "unit": "tsp",
+              "parts": [
+                {
+                  "qty": {
+                    "type": "fraction",
+                    "value": 2.5,
+                    "numerator": 5,
+                    "denominator": 2,
+                    "text": "2 1/2"
+                  },
+                  "unit": "tbsp"
+                },
+                {
+                  "qty": {
+                    "type": "fraction",
+                    "value": 0.5,
+                    "numerator": 1,
+                    "denominator": 2,
+                    "text": "½"
+                  },
+                  "unit": "tsp"
+                }
+              ]
             },
             "."
           ],
@@ -142,7 +329,19 @@
             "Season with ",
             {
               "id": "salt",
-              "_usageId": "5"
+              "_usageId": "5",
+              "unit": "1.5 g + 1 pinch",
+              "parts": [
+                {
+                  "qty": 1.5,
+                  "unit": "g"
+                },
+                {
+                  "qty": 1,
+                  "unit": "pinch"
+                }
+              ],
+              "fixed": true
             },
             "."
           ],

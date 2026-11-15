@@ -34,6 +34,20 @@ export function formatGrams(grams: number, lang?: string): string {
 }
 
 // Converts an AggregatedIngredient to a plain object that formatElement can render.
+/** How a term taken away starts in `variable_entries` (`− 2 tbsp`). */
+const MINUS = "− ";
+
+/**
+ * The quantities of one ingredient joined into one text: ` + ` between them,
+ * a space only before a term taken away (`1 cup − 2 tbsp`).
+ */
+export function joinAmounts(parts: readonly string[]): string {
+	return parts
+		.filter((part) => part !== "")
+		.map((part, i) => (i === 0 || part.startsWith(MINUS) ? part : `+ ${part}`))
+		.join(" ");
+}
+
 // The first quantity becomes qty/unit; additional ones become variable_entries strings.
 export function aggToRendererItem(
 	agg: AggregatedIngredient,
@@ -64,7 +78,8 @@ export function aggToRendererItem(
 	if (rest.length > 0) {
 		base.variable_entries = rest.map((q) => {
 			if (isTermValue(q.qty)) {
-				return formatTerm({ value: q.qty, unit: q.unit ?? null });
+				const text = formatTerm({ value: q.qty, unit: q.unit ?? null });
+				return q.minus ? `${MINUS}${text}` : text;
 			}
 			// A text or relative quantity has no terms: written as it is.
 			const qty = q.qty as any;

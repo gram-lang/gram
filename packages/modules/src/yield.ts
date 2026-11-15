@@ -6,7 +6,9 @@ import {
 } from "@gram-lang/parser";
 import {
 	numericTotal,
+	readSum,
 	round2,
+	familyTotals,
 	termsOfAst,
 	forEachStep,
 	type Warning,
@@ -137,6 +139,14 @@ function collectReferenceQuantities(
 	function visitRef(ref: ReferenceAST) {
 		if (ref.name !== name) return;
 		const q = ref.quantity;
+		if (q?.type === ASTNodeType.CompoundQuantity) {
+			// A sum asks for one amount per family (`{1 kg + 200 g}` is 1200 g),
+			// as if each had been written apart; a refused one asks for nothing.
+			const sum = readSum(q, ref.loc);
+			if (sum.problems.length > 0) return;
+			requests.push(...familyTotals(sum.terms));
+			return;
+		}
 		if (!q || q.type !== ASTNodeType.Quantity) return;
 		const value = numericTotal(termsOfAst(q));
 		if (value === null) return;

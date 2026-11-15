@@ -1,4 +1,5 @@
 import type { Location } from "@gram-lang/parser";
+import type { InvalidQuantityReason } from "./compound";
 import type { InvalidDurationReason } from "./durations";
 
 export enum WarningCode {
@@ -26,6 +27,8 @@ export enum WarningCode {
 	DURATION_OUT_OF_RANGE = "DURATION_OUT_OF_RANGE",
 	AMBIGUOUS_NUMBER = "AMBIGUOUS_NUMBER",
 	INVALID_DURATION = "INVALID_DURATION",
+	INVALID_QUANTITY = "INVALID_QUANTITY",
+	OZ_AFTER_VOLUME = "OZ_AFTER_VOLUME",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
 	// Phase E). The only module-related code kitchen raises itself, in the
 	// no-resolution-happened degraded path (§C.4) — every other module-only
@@ -89,6 +92,24 @@ export interface WarningPayloads {
 		value: string;
 		/** Why it is not read (see `InvalidDurationReason`). */
 		reason: InvalidDurationReason;
+		item: string;
+		loc?: Location;
+	};
+	[WarningCode.INVALID_QUANTITY]: {
+		/** The term at fault as written (`10%`), or the whole sum for its total. */
+		value: string;
+		/** Why the sum is refused (see `InvalidQuantityReason`). */
+		reason: InvalidQuantityReason;
+		/** What to write instead, when Gram can tell (`110 g`). */
+		suggestion?: string;
+		item: string;
+		loc?: Location;
+	};
+	[WarningCode.OZ_AFTER_VOLUME]: {
+		/** The `oz` term as written, e.g. `2 oz`. */
+		value: string;
+		/** The unit to write for a volume: `fl oz`. */
+		suggestion: string;
 		item: string;
 		loc?: Location;
 	};
@@ -192,6 +213,24 @@ const DURATION_HINTS: Record<InvalidDurationReason, string> = {
 		"a section anchor counts in days, hours and minutes: write e.g. -1h30 or -1:30 h.",
 };
 
+/** What each `INVALID_QUANTITY` reason tells the author to write instead. */
+const QUANTITY_HINTS: Record<InvalidQuantityReason, string> = {
+	percentTerm:
+		"a percentage is not an amount Gram can add. Write the result, or a relative quantity such as {10% &flour} for a share of another ingredient.",
+	expressionTerm:
+		"a sum only adds or takes away amounts: write the result (e.g. {250 g} rather than {2 x 100 g + 50 g}).",
+	unitlessTerm:
+		"every term of a sum needs its unit (e.g. {1 cup + 1 tbsp}, not {1 + 1 tbsp}).",
+	quantityInUnit:
+		"this term's unit holds a quantity of its own: write the amount in one unit (e.g. {450 g} rather than {1 tin of 400 g + 50 g}).",
+	nonPositiveTotal:
+		"what is taken away is as much as what is added, or more: the sum comes to nothing.",
+	rangeAfterMinus:
+		"a range cannot be taken away (its bounds would swap): write the range on a term that is added, or the total as a range.",
+	minusAcrossFamilies:
+		"an amount is only taken away from one of its kind (a volume from a volume, a weight from a weight): Gram cannot check the rest is left above zero.",
+};
+
 export const warningTemplates: {
 	[K in WarningCode]: (payload: WarningPayloads[K]) => string;
 } = {
@@ -223,6 +262,10 @@ export const warningTemplates: {
 		p.type === "RetroPlanning"
 			? `Retro-planning offset "${p.value}" on "${p.item}" is not read: ${DURATION_HINTS[p.reason] ?? p.reason} The section is not anchored.`
 			: `Timer duration "${p.value}"${p.item === "Timer" ? "" : ` on "${p.item}"`} is not read: ${DURATION_HINTS[p.reason] ?? p.reason} It is not counted in the total time.`,
+	[WarningCode.INVALID_QUANTITY]: (p) =>
+		`Quantity "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS[p.reason] ?? p.reason}${p.suggestion ? ` Did you mean {${p.suggestion}}?` : ""} It is not counted in the shopping list or the nutrition.`,
+	[WarningCode.OZ_AFTER_VOLUME]: (p) =>
+		`"${p.value}" of "${p.item}" is a weight: oz weighs, ${p.suggestion} measures a volume. Write ${p.suggestion} if a volume is meant.`,
 	[WarningCode.AMBIGUOUS_NUMBER]: (p) =>
 		`"${p.value}" on "${p.item}" was read as ${p.read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write ${p.suggestion} if that is the number you meant.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
@@ -277,7 +320,27 @@ export interface Warning {
 	// a composition of several `.gram` files. Absent for a plain single-file
 	// compile — mirrors `Location.uri`, from which `pushWarning` copies it.
 	uri?: string;
+	/**
+	 * What a tool needs to act on the warning (a Quick Fix): the reason and
+	 * the suggestion of an `INVALID_QUANTITY`, say. Only set for the codes
+	 * listed in `warningData`. Since 1.5.0.
+	 */
+	data?: Record<string, unknown>;
 }
+
+/**
+ * The part of a payload a warning carries along as `data`, by code. A code
+ * not listed carries none: its compiled JSON stays as it was.
+ */
+const warningData: {
+	[K in WarningCode]?: (payload: WarningPayloads[K]) => Record<string, unknown>;
+} = {
+	[WarningCode.INVALID_QUANTITY]: (p) =>
+		p.suggestion !== undefined
+			? { reason: p.reason, suggestion: p.suggestion }
+			: { reason: p.reason },
+	[WarningCode.OZ_AFTER_VOLUME]: (p) => ({ suggestion: p.suggestion }),
+};
 
 export type WarningSeverity = "error" | "warning" | "info";
 
@@ -302,6 +365,8 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.DURATION_OUT_OF_RANGE]: "warning",
 	[WarningCode.AMBIGUOUS_NUMBER]: "warning",
 	[WarningCode.INVALID_DURATION]: "warning",
+	[WarningCode.INVALID_QUANTITY]: "warning",
+	[WarningCode.OZ_AFTER_VOLUME]: "info",
 	[WarningCode.SCOPE_CONFLICT]: "error",
 	[WarningCode.MISSING_INGREDIENT]: "warning",
 	[WarningCode.MISSING_MACROS]: "info",
@@ -339,6 +404,7 @@ export function pushRawWarning<TPayload extends object>(
 	code: string,
 	message: string,
 	payload: TPayload,
+	data?: Record<string, unknown>,
 ): void {
 	const warnings = Array.isArray(target) ? target : target.warnings;
 	// Cast rather than constraining the generic to `WarningPayloadShape`
@@ -351,6 +417,7 @@ export function pushRawWarning<TPayload extends object>(
 	if ("loc" in shape) warning.loc = shape.loc;
 	if ("section" in shape) warning.section = shape.section;
 	if ("loc" in shape && shape.loc?.uri) warning.uri = shape.loc.uri;
+	if (data) warning.data = data;
 	warnings.push(warning);
 }
 
@@ -359,5 +426,11 @@ export function pushWarning<K extends WarningCode>(
 	code: K,
 	payload: WarningPayloads[K],
 ): void {
-	pushRawWarning(target, code, warningTemplates[code](payload), payload);
+	pushRawWarning(
+		target,
+		code,
+		warningTemplates[code](payload),
+		payload,
+		warningData[code]?.(payload),
+	);
 }

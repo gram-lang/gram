@@ -8,6 +8,7 @@ export * from "./warnings";
 export * from "./types";
 export * from "./section";
 export * from "./terms";
+export * from "./compound";
 export * from "./scale";
 export * from "./graph";
 export * from "./schedule-mode";

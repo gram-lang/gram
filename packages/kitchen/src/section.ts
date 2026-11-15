@@ -1,6 +1,6 @@
 import type { StepToken, Usage } from "./types";
 import { mergeTerms } from "@gram-lang/i18n";
-import { termsOfUsage } from "./terms";
+import { termsOfParts, termsOfUsage } from "./terms";
 import { round2 } from "./utils";
 
 export interface AggregatedIngredient {
@@ -22,6 +22,8 @@ export interface AggregatedIngredient {
 	quantities: Array<{
 		qty: NonNullable<Usage["qty"]>;
 		unit?: string | null;
+		/** A term taken away (`- 2 tbsp` in `{1 cup - 2 tbsp}`). Since 1.5.0. */
+		minus?: true;
 	}> | null;
 	normalizedMass?: number;
 	conversionMethod?: string;
@@ -61,12 +63,15 @@ function createBaseEntry(
 function occurrenceQuantities(
 	ing: Usage,
 ): NonNullable<AggregatedIngredient["quantities"]> {
-	const terms = termsOfUsage(ing);
+	// A sum is listed as written, even one Gram refused (it counts for
+	// nothing, but the reader still sees it).
+	const terms = ing.parts?.length ? termsOfParts(ing.parts) : termsOfUsage(ing);
 	if (terms.length === 0) return [{ qty: ing.qty!, unit: ing.unit ?? null }];
-	return mergeTerms(terms, "unit").map((term) => ({
-		qty: term.value,
-		unit: term.unit,
-	}));
+	return mergeTerms(terms, "unit").map((term) =>
+		term.minus
+			? { qty: term.value, unit: term.unit, minus: true }
+			: { qty: term.value, unit: term.unit },
+	);
 }
 
 /**
@@ -107,7 +112,7 @@ export function aggregateSectionIngredients(
 		}
 
 		const name = ing.name;
-		const hasMeasuredQty = ing.qty != null;
+		const hasMeasuredQty = ing.qty != null || !!ing.parts?.length;
 		const key = ing.preparation ? `${ing.id}::${ing.preparation}` : ing.id;
 
 		if (hasMeasuredQty) {

@@ -3,6 +3,7 @@ import {
 	escapeHtml,
 	escapeMarkdownHtml,
 	getQty,
+	joinAmounts,
 	formatQuantityValue,
 	formatTimerDuration,
 	formatDecimalToFraction,
@@ -247,11 +248,14 @@ const strategies: Record<
 			item.bakersPercentage === undefined
 		) {
 			plainQty = plainQty
-				? `${plainQty} + ${item.variable_entries.join(" + ")}`
-				: item.variable_entries.join(" + ");
+				? joinAmounts([plainQty, ...item.variable_entries])
+				: joinAmounts(item.variable_entries);
 			if (originalQtyStr)
-				originalQtyStr = `${originalQtyStr} + ${item.variable_entries.join(" + ")}`;
-			else originalQtyStr = item.variable_entries.join(" + ");
+				originalQtyStr = joinAmounts([
+					originalQtyStr,
+					...item.variable_entries,
+				]);
+			else originalQtyStr = joinAmounts(item.variable_entries);
 		}
 
 		// The standardized mass, next to the quantity as written, wherever it
@@ -560,7 +564,7 @@ const strategies: Record<
 						subtitle: t.renderer.intermediateIngredient,
 						rows:
 							qtyParts.length > 0
-								? [{ label: t.renderer.quantity, value: qtyParts.join(" + ") }]
+								? [{ label: t.renderer.quantity, value: joinAmounts(qtyParts) }]
 								: [],
 					},
 					t.renderer.colon,
@@ -579,7 +583,7 @@ const strategies: Record<
 					if (item.variable_entries && item.variable_entries.length > 0) {
 						parts.push(...item.variable_entries.map(escapeHtml));
 					}
-					html += ` <span class="quantity">${parts.join(" + ")}</span>`;
+					html += ` <span class="quantity">${joinAmounts(parts)}</span>`;
 				}
 				html += `</span>`;
 				return html;
@@ -591,7 +595,7 @@ const strategies: Record<
 					`${qty.text || formatDecimalToFraction(qty.value, item.unit, style)}${item.unit ? ` ${item.unit}` : ""}`,
 					...(item.variable_entries ?? []),
 				];
-				detail = parts.join(" + ");
+				detail = joinAmounts(parts);
 			}
 			const mode = context.formatMode || "inline";
 			return textRow(
@@ -612,7 +616,7 @@ const strategies: Record<
 				if (item.variable_entries && item.variable_entries.length > 0) {
 					parts.push(...item.variable_entries);
 				}
-				md += ` (${escapeMarkdownHtml(parts.join(" + "))})`;
+				md += ` (${escapeMarkdownHtml(joinAmounts(parts))})`;
 			}
 			return md;
 		}

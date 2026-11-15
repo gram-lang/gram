@@ -1,0 +1,110 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Compound In Base"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 65,
+            "end": 70
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 37,
+        "end": 71
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Montage",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Foncer",
+          "children": [
+            {
+              "type": "Text",
+              "value": "avec ",
+              "loc": {
+                "start": 93,
+                "end": 98
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 400,
+                      "text": "400"
+                    },
+                    "unit": "g",
+                    "loc": {
+                      "start": 104,
+                      "end": 109
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 100,
+                      "text": "100"
+                    },
+                    "unit": "g",
+                    "loc": {
+                      "start": 112,
+                      "end": 117
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "400 g + 100 g",
+                "loc": {
+                  "start": 104,
+                  "end": 117
+                }
+              },
+              "loc": {
+                "start": 98,
+                "end": 118
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 118,
+                "end": 119
+              }
+            }
+          ],
+          "loc": {
+            "start": 84,
+            "end": 120
+          }
+        }
+      ],
+      "loc": {
+        "start": 72,
+        "end": 120
+      }
+    }
+  ]
+}
