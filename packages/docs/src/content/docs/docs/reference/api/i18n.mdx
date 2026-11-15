@@ -47,6 +47,33 @@ resolveTimeUnit('minutes'); // "m"
 resolveTimeUnit('heures', 'fr'); // "h"
 ```
 
+### Reading a duration
+
+<Since v="1.5.0" />
+
+`parseDuration` reads a duration as a timer writes it (`1h30`, `1 hr 30 mins`, `1:30 h`, `5'30"`, `45 min - 1 h`), in any language of `TIME_DICTIONARIES`, into minutes. It never guesses: a text it cannot read comes back with the reason, which kitchen turns into `MISSING_UNIT`, `INVALID_UNIT` or `INVALID_DURATION`. Each side keeps its terms (`parts`, in the unit written) and its form (`units`, `clock` or `prime`). It has no ceiling and no sign: the caller checks both.
+
+```typescript
+function parseDuration(text: string): DurationResult
+
+type DurationResult =
+  | { ok: true; minutes: number; range?: { min: number; max: number }; sides: DurationSide[] }
+  | { ok: false; reason: DurationFailure; unit?: string } // `unit`: the word read as a unit, for "unknownUnit"
+
+interface DurationSide { minutes: number; parts: { value: number; unit: "d" | "h" | "m" | "s" }[]; form: "units" | "clock" | "prime" }
+```
+
+```typescript
+import { parseDuration } from '@gram-lang/i18n';
+
+parseDuration('1h30');         // { ok: true, minutes: 90, sides: [{ minutes: 90, parts: [{ value: 1, unit: "h" }, { value: 30, unit: "m" }], form: "units" }] }
+parseDuration('45 min - 1 h'); // { ok: true, minutes: 52.5, range: { min: 45, max: 60 }, sides: [...] }
+parseDuration('1:30');         // { ok: false, reason: "ambiguousClock" }
+parseDuration('3 bananas');    // { ok: false, reason: "unknownUnit", unit: "bananas" }
+```
+
+The reasons (`DurationFailure`) are listed in the source, each with an example: `empty`, `missingUnit`, `unknownUnit`, `words`, `multiplication`, `iso8601`, `unexpected`, `ambiguousClock`, `clockFormat`, `unitOrder`, `duplicateUnit`, `overflow60`, `decimalInCompound`, `decimalPrime`, `bareNumber`, `reversedRange`, `emptyRange`, `ambiguousRange`. See [Writing a duration](/docs/reference/syntax/times/#writing-a-duration) for the forms themselves.
+
 ## Default ingredient categories
 
 Used by `gram shop` and other consumers to group a shopping list by culinary family when an ingredient's database entry has no explicit `category`:

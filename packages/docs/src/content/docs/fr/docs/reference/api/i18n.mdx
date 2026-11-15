@@ -48,6 +48,33 @@ resolveTimeUnit('minutes'); // "m"
 resolveTimeUnit('heures', 'fr'); // "h"
 ```
 
+### Lire une durée
+
+<Since v="1.5.0" />
+
+`parseDuration` lit une durée telle qu'on l'écrit dans un minuteur (`1h30`, `1 hr 30 mins`, `1:30 h`, `5'30"`, `45 min - 1 h`), dans n'importe quelle langue de `TIME_DICTIONARIES`, et la convertit en minutes. Elle ne devine jamais : un texte qu'elle ne sait pas lire revient avec sa raison, que kitchen transforme en `MISSING_UNIT`, `INVALID_UNIT` ou `INVALID_DURATION`. Chaque côté garde ses termes (`parts`, dans l'unité écrite) et sa forme (`units`, `clock` ou `prime`). Elle n'impose ni plafond ni signe : c'est à l'appelant de les vérifier.
+
+```typescript
+function parseDuration(text: string): DurationResult
+
+type DurationResult =
+  | { ok: true; minutes: number; range?: { min: number; max: number }; sides: DurationSide[] }
+  | { ok: false; reason: DurationFailure; unit?: string } // `unit` : le mot lu comme unité, pour "unknownUnit"
+
+interface DurationSide { minutes: number; parts: { value: number; unit: "d" | "h" | "m" | "s" }[]; form: "units" | "clock" | "prime" }
+```
+
+```typescript
+import { parseDuration } from '@gram-lang/i18n';
+
+parseDuration('1h30');         // { ok: true, minutes: 90, sides: [{ minutes: 90, parts: [{ value: 1, unit: "h" }, { value: 30, unit: "m" }], form: "units" }] }
+parseDuration('45 min - 1 h'); // { ok: true, minutes: 52.5, range: { min: 45, max: 60 }, sides: [...] }
+parseDuration('1:30');         // { ok: false, reason: "ambiguousClock" }
+parseDuration('3 bananes');    // { ok: false, reason: "unknownUnit", unit: "bananes" }
+```
+
+Les raisons (`DurationFailure`) sont décrites dans le code source, chacune avec un exemple : `empty`, `missingUnit`, `unknownUnit`, `words`, `multiplication`, `iso8601`, `unexpected`, `ambiguousClock`, `clockFormat`, `unitOrder`, `duplicateUnit`, `overflow60`, `decimalInCompound`, `decimalPrime`, `bareNumber`, `reversedRange`, `emptyRange`, `ambiguousRange`. Les écritures elles-mêmes sont présentées dans [Écrire une durée](/fr/docs/reference/syntax/times/#écrire-une-durée).
+
 ## Catégories d'ingrédients par défaut
 
 Catégories de repli exploitées par `gram shop` (et d'autres consommateurs) pour regrouper la liste de courses par famille culinaire, lorsqu'un ingrédient de la base n'a pas de `category` explicite :

@@ -112,7 +112,7 @@ gram view brioche.gram --scale flour=300g   # Scaled to flour = 300g
 ```
 - Supports automatic paging for long recipes.
 - Displays calculated nutrition, timings, and ingredient checklists.
-- Timers preserve the unit declared in the recipe (`~{1h}` displays as `1 h`, `~{20s}` as `20 s`), and the durations of the header are formatted for quick readability (`1h 5m`, `25m 5s`).
+- Timers and the durations of the header are written the same way as in every view (`~{1h5}` displays as `1 h 5 min`, `~{25min 5s}` as `25 min 5 s`); a timer Gram does not read is shown as written.
 - Steps are numbered in each section, as in every view of the recipe. Quantities are repeated in the text of the steps, next to each ingredient (`flour (200 g)`); `--step-quantities hide` leaves them out.
 - Passive waiting time appears in the recipe header, and common fractions such as `1/4 tsp` remain fractions in the shopping list.
 - Passing `--scale` adjusts all ingredient quantities (both in the shopping list and in-step references).

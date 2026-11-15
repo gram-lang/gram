@@ -85,7 +85,7 @@ A working day pushed beyond 24 hours by a prolonged passive phase triggers an ex
 ### 4. Smart ingredient management
 - **Silent plural management**: The extension automatically maps common plural nouns in your recipe (e.g. `@carrots`) to singular entries in your YAML database (`carrot`), maintaining natural language without raising false errors.
 - **Fuzzy matching**: If you misspell an ingredient, a Levenshtein distance algorithm suggests the closest known match via Code Actions (Quick Fixes).
-- **Hover insights**: Hover over any ingredient to inspect its full nutritional profile. If the database specifies a density, the hover display instantly converts volume measurements to physical mass (e.g. `1 tbsp → 15g`).
+- **Hover insights**: Hover over any ingredient to inspect its full nutritional profile. If the database specifies a density, the hover display instantly converts volume measurements to physical mass (e.g. `1 tbsp → 15g`). Hover a timer to see how Gram reads it (`~{1:30 h}` → `1 h 30 min`), or a section anchor to see how long ahead the section starts.
 
 :::tip[Automatic database discovery]
 The extension automatically detects the `.gram/ingredients.yaml` file located at the workspace root. For custom folder layouts, specify `gram.ingredientDatabase.path` in your VS Code settings.
@@ -96,7 +96,7 @@ The extension automatically detects the `.gram/ingredients.yaml` file located at
 - **Intelligent autocomplete**:
   - `@` suggests ingredients declared in your database, automatically enclosing multi-word names in `{}` brackets.
   - `&` suggests available intermediate declarations (e.g. `->&dough`).
-  - `{}` contextually suggests canonical units (mass, volume, time) and their aliases as soon as a digit is typed.
+  - `{}` contextually suggests canonical units (mass, volume) and their aliases as soon as a digit is typed; inside a timer (`~{}`), only time units.
 
 #### Navigation shortcuts
 

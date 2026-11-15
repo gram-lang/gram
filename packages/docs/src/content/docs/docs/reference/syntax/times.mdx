@@ -91,7 +91,7 @@ A decimal is a fraction of the unit, not minutes: `~{1.30 h}` (or `~{1,30 h}`) i
 | `~{90min}`, `~{1.5 h}`, `~{1,5 h}`, `~{1½ h}`, `~{1 1/2 hours}` | 1 h 30 min |
 | `~{1h30}`, `~{1 h 30}`, `~{1hr 30}`, `~{1 hr 30 mins}`, `~{1 hour 30 minutes}`, `~{1h30m}` | 1 h 30 min |
 | `~{1 heure 30}`, `~{1h + 30min}`, `~{1:30 h}`, `~{1:30:00}` | 1 h 30 min |
-| `~{2min30}`, `~{4:30 min}`, `~{4'30"}`, `~{0:04:30}` | the minutes and seconds written |
+| `~{4min30}`, `~{4:30 min}`, `~{4'30"}`, `~{0:04:30}` | 4 min 30 s |
 | `~{2 d 4 h}`, `~{2 j 4 h}` | 2 days 4 hours |
 | `~{45 min - 1 h}`, `~{1h30-2h}`, `~{5-7'}` | a range (see below) |
 
@@ -138,7 +138,7 @@ Poach the @pears{4} for ~{45 min - 1 h}.
 The interpretation of a range differs fundamentally based on timer type:
 
 - **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning and run sheets](/docs/explanation/planning/)).
-- **How the <Term id="runSheet" /> reflects ranges.** The run sheet displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 (12 to 48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Can't start earlier"). See [Plan a meal](/docs/how-to/plan-a-meal/).
+- **How the <Term id="runSheet" /> reflects ranges.** The run sheet displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 min (12–48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Can't start earlier"). See [Plan a meal](/docs/how-to/plan-a-meal/).
 - **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
 
 :::note
@@ -284,6 +284,10 @@ Knead the @flour{500g}.
 ## Ganache ~{-1h30}
 
 Pour the @cream{200ml} over the @chocolate{200g}.
+
+## Custard ~{-1:30 h}
+
+Whisk the @yolks{4} with the @sugar{80g}.
 ```
 
 An anchor written with days stays in days (`~{-1d 12h}` is a day and a half, and opens a working day); otherwise it counts in its smallest unit (`~{-1h30}` is 90 minutes, `~{-1:30 h}` too).
@@ -302,7 +306,7 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (`~timer`): Unrecognized units (e.g. `~{30 lightyears}`) trigger `INVALID_UNIT`.
 - **Missing Unit** (section retro-planning): `~{-2}`, free text, positive (`~{2h}`), or zero values (`~{0h}`) trigger `MISSING_UNIT`.
 - **Invalid Unit** (section retro-planning): Unrecognized units trigger `INVALID_UNIT`.
-- **Invalid Duration** *(Since 1.5.0)*: A duration written with a valid unit but in a shape Gram does not read (`~{1:30}`, `~{1h75}`, `~{30min 1h}`, `~{1-2h30}`, `~{half an hour}`, or a range or seconds in an anchor) triggers `INVALID_DURATION`. The message says why and how to write it; the timer is not counted in the total time, and the section is not anchored. See [Writing a duration](#writing-a-duration).
+- **Invalid Duration** *(Since 1.5.0)*: A duration in a shape Gram does not read (`~{1:30}`, `~{1h75}`, `~{30min 1h}`, `~{1-2h30}`, `~{half an hour}`, or a range or seconds in an anchor) triggers `INVALID_DURATION`. The message says why and how to write it; the timer is not counted in the total time, and the section is not anchored. See [Writing a duration](#writing-a-duration).
 - **Ambiguous Number** *(Since 1.5.0)*: A comma followed by exactly three digits (`~{1,000 min}`, `~{-1,000h}`) is read as a decimal, one minute or one hour, and triggers `AMBIGUOUS_NUMBER` in case a thousand was meant.
 - **Time Paradox**: Anchors conflicting with dependency order (e.g. an ingredient anchored at `-10 min` needed by a section anchored at `-1 h`) trigger `TIME_PARADOX`.
 - **Track Contention**: Concurrent passive timers delayed on the same named track trigger `TRACK_CONTENTION`.

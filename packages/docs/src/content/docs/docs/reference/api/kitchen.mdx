@@ -201,6 +201,22 @@ function isDurationTooLong(qty: { value: number; unit: string }): boolean
 function maxDurationIn(unit: string): number
 ```
 
+### Section anchors
+
+<Since v="1.5.0" /> `readAnchor` reads a section anchor (`-2h`, `-1j 12h`, `-1:30 h`) the way the schedule plans it: strictly negative, a single duration (no range), in days, hours and minutes (no seconds, no prime). The value comes back positive, in days when the anchor is written with days (it then opens a working day), otherwise in its smallest unit. A refused anchor comes back with the warning it gets when compiled.
+
+```typescript
+function readAnchor(raw: string): AnchorReading
+
+type AnchorReading =
+  | { ok: true; value: number; unit: "d" | "h" | "min"; text?: string } // `text`: the number as written, for a single term
+  | { ok: false; problem: { code: "MISSING_UNIT" } | { code: "INVALID_UNIT"; unit: string } | { code: "INVALID_DURATION"; reason: string } }
+
+readAnchor('-1j 12h'); // { ok: true, value: 1.5, unit: "d" }
+readAnchor('-1h30');   // { ok: true, value: 90, unit: "min" }
+readAnchor('-1-2d');   // { ok: false, problem: { code: "INVALID_DURATION", reason: "anchorRange" } }
+```
+
 ## `RecipeRegistry`
 
 The mutable registry of ingredients and cookware built during compilation, keyed by `slugify(name)`. It implements the `Registry` interface (`ingredients: Map`, `cookware: Map`, `warnings: Warning[]`).

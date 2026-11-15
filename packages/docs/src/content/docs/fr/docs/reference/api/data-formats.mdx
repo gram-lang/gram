@@ -287,6 +287,14 @@ Mélanger @farine{200g} et @lait{200ml}.
 
 Remarquez le vocabulaire `StepToken` généré par le compilateur au sein de `content` : le texte narratif pur est une simple `string` ; les ingrédients, le matériel et les références partagent la forme `Usage` (sans champ `type`, identifiés par la présence d'un `id`) ; les minuteurs, températures, commentaires et déclarations portent chacun un discriminant `type` explicite en minuscules. Cette distinction avec l'énumération `ASTNodeType` (en PascalCase) du parseur est délibérée : elle caractérise la charge utile *compilée*, non la syntaxe d'entrée. Consultez le guide [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui) pour un exemple d'intégration dans un framework front-end.
 
+<Since v="1.5.0" /> Un minuteur porte `raw`, la durée telle qu'écrite entre les accolades, et `minutes`, la durée que retient le planning (le milieu d'une fourchette). `quantity` et `unit` restent, dans la plus petite unité écrite (`1h20` donne `80` `min`), pour que les programmes qui les lisent restent justes ; une durée écrite comme avant la 1.5 (`1.5h`) les garde inchangés. Un minuteur que Gram ne lit pas ne garde que `raw` (et `name`, `isPassive`) : il s'affiche tel qu'écrit.
+
+```json
+{ "type": "timer", "raw": "1h30", "quantity": { "type": "single", "value": 90 }, "unit": "min", "minutes": 90 }
+{ "type": "timer", "raw": "1h30-2h", "quantity": { "type": "range", "value": 105, "range": { "min": 90, "max": 120 } }, "unit": "min", "minutes": 105 }
+{ "type": "timer", "raw": "1:30" }
+```
+
 ## 3. Recettes composées (`@gram-lang/modules`)
 
 Lorsqu'une recette importe des sous-modules via la directive modulaire `@use`, `finalizeComposed()` transforme le `CompilationResult` standard en un `ComposedCompilationResult`. Il ajoute des métadonnées modulaires à la racine de la charge utile ainsi que sur chaque section injectée :

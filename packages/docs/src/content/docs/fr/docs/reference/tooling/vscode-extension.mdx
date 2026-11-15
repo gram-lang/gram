@@ -85,7 +85,7 @@ Une journée de travail qu'une phase passive prolongée repousse au-delà du cyc
 ### 4. Gestion intelligente des ingrédients
 - **Gestion transparente des pluriels** : L'extension associe automatiquement les formes plurielles courantes de votre recette (ex. `@carottes`) aux entrées singulières correspondantes de votre référentiel YAML (`carotte`). Vous conservez ainsi une rédaction naturelle sans générer de faux avertissements.
 - **Appariement flou (*Fuzzy Matching*)** : En cas de faute de frappe sur un ingrédient, un algorithme basé sur la distance de Levenshtein suggère la correspondance la plus probable via les actions de code (*Quick Fixes*).
-- **Informations au survol** : Survolez n'importe quel ingrédient pour inspecter ses valeurs nutritionnelles. Si la base lui associe une masse volumique, le survol convertit instantanément les volumes en masse physique (ex. `1 c.à.s → 15 g`).
+- **Informations au survol** : Survolez n'importe quel ingrédient pour inspecter ses valeurs nutritionnelles. Si la base lui associe une masse volumique, le survol convertit instantanément les volumes en masse physique (ex. `1 c.à.s → 15 g`). Survolez un minuteur pour voir comment Gram le lit (`~{1:30 h}` → `1 h 30 min`), ou une ancre de section pour connaître l'avance prise par la section.
 
 :::tip[Détection automatique de la base de données]
 L'extension détecte automatiquement le fichier `.gram/ingredients.yaml` présent à la racine de votre espace de travail. Pour les arborescences spécifiques, personnalisez le chemin via `gram.ingredientDatabase.path` dans vos paramètres VS Code.
@@ -96,7 +96,7 @@ L'extension détecte automatiquement le fichier `.gram/ingredients.yaml` présen
 - **Autocomplétion intelligente** :
   - `@` suggère les ingrédients déclarés dans votre base, en encapsulant automatiquement les dénominations composées entre accolades `{}`.
   - `&` suggère les variables intermédiaires déclarées en amont (ex. `->&pâte`).
-  - `{}` contextuelles suggère les unités canoniques (masse, volume, temps) et leurs alias dès la saisie d'un chiffre.
+  - `{}` suggère les unités canoniques (masse, volume) et leurs alias dès la saisie d'un chiffre ; dans un minuteur (`~{}`), seulement les unités de temps.
 
 #### Raccourcis de navigation
 

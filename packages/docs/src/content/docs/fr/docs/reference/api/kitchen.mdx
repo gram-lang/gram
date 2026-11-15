@@ -201,6 +201,22 @@ function isDurationTooLong(qty: { value: number; unit: string }): boolean
 function maxDurationIn(unit: string): number
 ```
 
+### Ancres de section
+
+<Since v="1.5.0" /> `readAnchor` lit une ancre de section (`-2h`, `-1j 12h`, `-1:30 h`) comme le planning la compte : strictement négative, une seule durée (pas de fourchette), en jours, heures et minutes (ni secondes ni prime). La valeur revient positive, en jours si l'ancre est écrite avec des jours (elle ouvre alors une journée de travail), sinon dans sa plus petite unité. Une ancre refusée revient avec l'avertissement qu'elle reçoit à la compilation.
+
+```typescript
+function readAnchor(raw: string): AnchorReading
+
+type AnchorReading =
+  | { ok: true; value: number; unit: "d" | "h" | "min"; text?: string } // `text` : le nombre tel qu'écrit, pour un seul terme
+  | { ok: false; problem: { code: "MISSING_UNIT" } | { code: "INVALID_UNIT"; unit: string } | { code: "INVALID_DURATION"; reason: string } }
+
+readAnchor('-1j 12h'); // { ok: true, value: 1.5, unit: "d" }
+readAnchor('-1h30');   // { ok: true, value: 90, unit: "min" }
+readAnchor('-1-2d');   // { ok: false, problem: { code: "INVALID_DURATION", reason: "anchorRange" } }
+```
+
 ## `RecipeRegistry`
 
 Le registre mutable d'ingrédients et de matériel construit durant la compilation, indexé par `slugify(name)`. Il implémente l'interface `Registry` (`ingredients: Map`, `cookware: Map`, `warnings: Warning[]`).

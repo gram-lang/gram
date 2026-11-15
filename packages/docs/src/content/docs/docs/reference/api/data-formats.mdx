@@ -287,6 +287,14 @@ Mix @flour{200g} and @milk{200ml}.
 
 Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a bare `string`; ingredients, cookware, and intermediate references share the `Usage` structure (no `type` field, identified by the presence of an `id`); timers, temperatures, comments, and declarations each carry an explicit lowercase `type`. This distinction from the parser's PascalCase `ASTNodeType` is intentional: it describes compiled *output*, not parsed source syntax. See [How to build a custom UI](/docs/how-to/build-custom-ui) for a tutorial on consuming this structure in frontend frameworks.
 
+<Since v="1.5.0" /> A timer token carries `raw`, the duration as written between the braces, and `minutes`, the duration the schedule uses (the middle of a range). `quantity` and `unit` stay, in the smallest unit written (`1h20` gives `80` `min`), so a program that reads them stays right; a duration written as before 1.5 (`1.5h`) keeps them unchanged. A timer Gram does not read keeps only `raw` (and `name`, `isPassive`): show it as written.
+
+```json
+{ "type": "timer", "raw": "1h30", "quantity": { "type": "single", "value": 90 }, "unit": "min", "minutes": 90 }
+{ "type": "timer", "raw": "1h30-2h", "quantity": { "type": "range", "value": 105, "range": { "min": 90, "max": 120 } }, "unit": "min", "minutes": 105 }
+{ "type": "timer", "raw": "1:30" }
+```
+
 ## 3. Composed recipes (`@gram-lang/modules`)
 
 When a recipe imports sub-modules via the `@use` directive, `finalizeComposed()` decorates the standard `CompilationResult` into a `ComposedCompilationResult`. It adds module metadata to both the root payload and individual spliced sections:
