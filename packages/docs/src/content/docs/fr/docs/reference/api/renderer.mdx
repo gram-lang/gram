@@ -167,6 +167,16 @@ function escapeMarkdownHtml(unsafe: string | null | undefined): string   // neut
 function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
 ```
 
+<Since v="1.5.0" /> `formatUsageQuantity` écrit la quantité d'un ingrédient, d'une référence ou d'une entrée de liste de courses de la même façon que les vues, à partir de ses termes (`parts`, ou `qty` / `unit`) : telle qu'écrite quand Gram n'a rien changé (`1 cup + 1 tbsp`), recalculée quand la recette est mise à l'échelle ou pour une liste de courses (`2 cup + 2 tbsp`, jamais `34 tbsp` ; les fourchettes par leurs bornes). `gram shop` et `gram scale` s'en servent aussi. Voir [mettre à l'échelle une somme de quantités](/fr/docs/explanation/scaling/#mettre-à-léchelle-une-somme-de-quantités).
+
+```typescript
+function formatUsageQuantity(item: Record<string, unknown>, ctx?: QuantityContext): string
+interface QuantityContext { lang?: string; formatFraction?: (value: number) => string; scaled?: boolean; buying?: boolean }
+
+formatUsageQuantity({ qty: 34, unit: 'tbsp' }, { buying: true });                       // "2 cup + 2 tbsp"
+formatUsageQuantity({ qty: 13.5, unit: 'tbsp', range: { min: 13, max: 14 } }, { buying: true }); // "13-14 tbsp"
+```
+
 ## Le plan de marche
 
 <Since v="1.4.0" />
