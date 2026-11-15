@@ -75,6 +75,24 @@ describe("buildShoppingList", () => {
 		expect(salt?.cannotAggregate).toBe(false);
 	});
 
+	// An entry the compiler could only describe (here a percentage of an
+	// intermediate that does not exist) used to be dropped from the list.
+	it("keeps a quantity it cannot compute, as written, after the total", async () => {
+		const a = await tmp(
+			"## Prep\n\n[Season] Add @salt{2% &dough} and @salt{3 g}.\n",
+		);
+		const result = await buildShoppingList([a]);
+		const salt = result.items.find((i) => i.id === "salt");
+		expect(salt?.displayQty).toBe("3 g + (2% of dough ❓)");
+	});
+
+	it("lists an ingredient with only such a quantity", async () => {
+		const a = await tmp("## Prep\n\n[Season] Add @salt{2% &dough}.\n");
+		const result = await buildShoppingList([a]);
+		const salt = result.items.find((i) => i.id === "salt");
+		expect(salt?.displayQty).toBe("(2% of dough ❓)");
+	});
+
 	it("cannot aggregate mixed incompatible units without a database and reports a warning", async () => {
 		const a = await tmp("## Prep\n[Mix] Add @butter{2 tbsp} to the bowl.\n");
 		const b = await tmp("## Prep\n[Mix] Add @butter{50g} to the bowl.\n");

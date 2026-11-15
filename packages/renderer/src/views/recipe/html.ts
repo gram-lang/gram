@@ -125,20 +125,37 @@ function kitQtyHtml(
 	let html = "";
 	const { lang } = style;
 	const unit = item.unit ?? "";
+	// The quantities in other units (or not numeric), which the compiler
+	// could not add to the first one: shown after it, joined by " + ", like
+	// the other views do (`formatElement`).
+	const extra = Array.isArray(item.variable_entries)
+		? item.variable_entries.filter((e): e is string => typeof e === "string")
+		: [];
 	const written = () =>
-		(large && typeof qty === "number" && largerAmount(qty, unit, lang)) ||
-		`${formatDecimalToFraction(qty, unit, style)}${unit ? ` ${unit}` : ""}`;
+		[
+			...(qty
+				? [
+						(large &&
+							typeof qty === "number" &&
+							largerAmount(qty, unit, lang)) ||
+							`${formatDecimalToFraction(qty, unit, style)}${unit ? ` ${unit}` : ""}`,
+					]
+				: []),
+			...extra,
+		].join(" + ");
 	const grams = (mass: number) =>
 		(large && largerAmount(mass, "g", lang)) || formatGrams(mass, lang);
 	// A quantity already in g, kg or mg is its own weight: the standardized
 	// mass would only say it again (3 kg, 3000 g).
 	const mass = isMetricMassUnit(unit, lang) ? undefined : item.normalizedMass;
-	if (qty && mass && round1(mass) !== qty) {
+	if (mass && ((qty && round1(mass) !== qty) || extra.length > 0)) {
 		html += `<span class="kit-orig">${escapeHtml(written())}</span>`;
 	}
 	if (mass) {
 		const isEst = item.isEstimate ? "~" : "";
 		html += `<span class="kit-mass">${isEst}${escapeHtml(grams(mass))}</span>`;
+	} else if (extra.length > 0 && !isCookware) {
+		html += `<span class="kit-mass">${escapeHtml(written())}</span>`;
 	} else if (qty && !isCookware && (unit || showBareCount)) {
 		html += `<span class="kit-mass">${escapeHtml(written())}</span>`;
 	}

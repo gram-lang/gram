@@ -38,6 +38,12 @@ interface CollectedItem {
 	unit?: string;
 	normalizedMass?: number;
 	isEstimate?: boolean;
+	/**
+	 * What the compiler could not turn into a number (a relative quantity
+	 * whose base is missing, a circular reference): shown as written after
+	 * the total, never dropped.
+	 */
+	extras?: string[];
 	recipe: string;
 }
 
@@ -103,11 +109,12 @@ export async function buildShoppingList(
 				const slug = basename(file, ".gram");
 
 				const pushItem = (item: any) => {
-					if (
-						(item as any).type === "alternative" ||
-						(item as any).variable_entries
-					)
-						return;
+					if ((item as any).type === "alternative") return;
+					const extras = Array.isArray(item.variable_entries)
+						? item.variable_entries.filter(
+								(e: unknown): e is string => typeof e === "string",
+							)
+						: [];
 					const qty =
 						typeof item.qty === "number" && Number.isFinite(item.qty)
 							? item.qty
@@ -124,6 +131,7 @@ export async function buildShoppingList(
 						unit: item.unit,
 						normalizedMass: item.normalizedMass,
 						isEstimate: item.isEstimate,
+						...(extras.length > 0 ? { extras } : {}),
 						recipe: slug,
 					});
 				};
@@ -168,6 +176,9 @@ export async function buildShoppingList(
 		const recipes = [...new Set(items.map((i) => i.recipe))];
 		const displayName = items[0]?.name ?? id;
 		const category = resolveCategoryLabel(opts.db?.[id]?.category);
+		const extras = items.flatMap((i) => i.extras ?? []).join(" + ");
+		const withExtras = (displayQty: string) =>
+			extras ? `${displayQty} + ${extras}` : displayQty;
 
 		const qtyItems = items.filter(
 			(i): i is CollectedItem & { qty: number } => i.qty !== null,
@@ -177,7 +188,7 @@ export async function buildShoppingList(
 			entries.push({
 				id,
 				name: displayName,
-				displayQty: "-",
+				displayQty: extras || "-",
 				isEstimate: false,
 				recipes,
 				category,
@@ -222,7 +233,7 @@ export async function buildShoppingList(
 			entries.push({
 				id,
 				name: displayName,
-				displayQty: finalEntry.displayQty!,
+				displayQty: withExtras(finalEntry.displayQty!),
 				isEstimate: finalEntry.isEstimate!,
 				recipes,
 				category,
@@ -241,9 +252,11 @@ export async function buildShoppingList(
 			entries.push({
 				id,
 				name: displayName,
-				displayQty: qtyItems
-					.map((i) => `${i.qty}${i.unit ? ` ${i.unit}` : ""} (${i.recipe})`)
-					.join(" + "),
+				displayQty: withExtras(
+					qtyItems
+						.map((i) => `${i.qty}${i.unit ? ` ${i.unit}` : ""} (${i.recipe})`)
+						.join(" + "),
+				),
 				isEstimate: false,
 				recipes,
 				category,
