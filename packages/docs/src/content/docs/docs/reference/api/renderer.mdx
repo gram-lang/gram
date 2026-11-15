@@ -167,6 +167,16 @@ function escapeMarkdownHtml(unsafe: string | null | undefined): string   // esca
 function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
 ```
 
+<Since v="1.5.0" /> `formatUsageQuantity` writes the amount of an ingredient, a reference or a shopping-list entry the one way the views do, from its terms (`parts`, or `qty` / `unit`): as written when Gram changed nothing (`1 cup + 1 tbsp`), worked out when the recipe is scaled or for a shopping list (`2 cup + 2 tbsp`, never `34 tbsp`; ranges by their bounds). `gram shop` and `gram scale` use it too. See [scaling sums of quantities](/docs/explanation/scaling/#scaling-sums-of-quantities).
+
+```typescript
+function formatUsageQuantity(item: Record<string, unknown>, ctx?: QuantityContext): string
+interface QuantityContext { lang?: string; formatFraction?: (value: number) => string; scaled?: boolean; buying?: boolean }
+
+formatUsageQuantity({ qty: 34, unit: 'tbsp' }, { buying: true });                       // "2 cup + 2 tbsp"
+formatUsageQuantity({ qty: 13.5, unit: 'tbsp', range: { min: 13, max: 14 } }, { buying: true }); // "13-14 tbsp"
+```
+
 ## The run sheet
 
 <Since v="1.4.0" />
