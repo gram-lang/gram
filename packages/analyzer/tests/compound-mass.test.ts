@@ -163,4 +163,22 @@ describe("diffRecipes() on amounts", () => {
 			toText: "202-203 g",
 		});
 	});
+
+	it("writes cups and spoons as the shopping list does, not as a total in spoons", () => {
+		const diff = diffRecipes(
+			compiled("Add @flour{1 cup + 1 tbsp} and @milk{1 cup + 1-2 tbsp}."),
+			compiled("Add @flour{1 cup + 3 tbsp} and @milk{1 cup + 2-3 tbsp}."),
+		);
+		const byId = (id: string) => diff.ingredients.find((d) => d.id === id);
+		expect(byId("flour")).toMatchObject({
+			fromQty: 17,
+			toQty: 19,
+			fromText: "1 cup + 1 tbsp",
+			toText: "1 cup + 3 tbsp",
+		});
+		expect(byId("milk")).toMatchObject({
+			fromText: "1 cup + 1-2 tbsp",
+			toText: "1 cup + 2-3 tbsp",
+		});
+	});
 });

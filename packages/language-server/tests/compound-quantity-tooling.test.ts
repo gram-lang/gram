@@ -111,9 +111,18 @@ describe("hover on a sum", () => {
 	it("shows the mass of the sum, part by part", () => {
 		const text = recipe("Add @flour{1 cup + 20 g}.");
 		const hover = hoverAt(text, "@flour", db);
-		expect(hover).toContain("volume + weight, counted apart");
+		expect(hover).toContain(
+			"**1 cup** _(volume)_ + **20 g** _(weight)_, counted apart",
+		);
 		// 1 cup ≈ 236.59 ml × 0.53 ≈ 125.4 g, plus 20 g.
 		expect(hover).toMatch(/1 cup \+ 20 g ≈ \*\*145 g\*\*/);
+	});
+
+	it("shows what each kind comes to when a sum takes away within one kind", () => {
+		const text = recipe("Add @butter{1 cup - 2 tbsp + 30 g}.");
+		expect(hoverAt(text, "@butter", db)).toContain(
+			"= **14 tbsp** _(volume)_ + **30 g** _(weight)_, counted apart: each kind adds up and takes away on its own",
+		);
 	});
 
 	it("shows the total of an ingredient the database lacks", () => {

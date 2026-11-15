@@ -528,7 +528,16 @@ function decompose(
 			out.push({ value: exactly, unit });
 			break;
 		}
-		const whole = Math.floor(value + 1e-9);
+		// The largest unit takes the largest amount it measures, fraction
+		// included (`1 1/2 cup + 1 1/2 tbsp`, not `1 cup + 9 1/2 tbsp`); the
+		// units below take whole ones.
+		const whole =
+			i === 0
+				? Math.max(
+						0,
+						...measuredCandidates(value, unit).filter((c) => c <= value + 1e-9),
+					)
+				: Math.floor(value + 1e-9);
 		if (whole > 0) {
 			out.push({ value: whole, unit });
 			rest -= whole * size;

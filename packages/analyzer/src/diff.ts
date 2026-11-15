@@ -211,12 +211,15 @@ const numericQty = (item: ShoppingItem): number | null =>
 	numericTotal(termsOfUsage(item));
 
 /**
- * The amount of an entry as text, its unit included (`2-3 g`), or
- * `undefined` when it has no terms (a text quantity, no quantity).
+ * The amount of an entry as text, its unit included, written the way the
+ * shopping list writes it (`1 cup + 1 tbsp` for 17 tbsp, `2-3 g`, `1.5 kg`),
+ * or `undefined` when it has no terms (a text quantity, no quantity).
  */
 const amountText = (item: ShoppingItem): string | undefined => {
 	const terms = termsOfUsage(item);
-	return terms.length > 0 ? formatTerms(terms, { minus: " - " }) : undefined;
+	return terms.length > 0
+		? formatTerms(terms, { minus: " - ", mode: "computed", buying: true })
+		: undefined;
 };
 
 /** `fromText` / `toText` of a delta, each only when there is one. */
