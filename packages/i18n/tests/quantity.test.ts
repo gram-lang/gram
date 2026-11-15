@@ -78,13 +78,116 @@ describe("termsTotal", () => {
 		).toEqual({ qty: 3, unit: "cup" });
 	});
 
-	it("adds a range by its middle", () => {
+	it("adds a range by its bounds, and stays a range", () => {
 		expect(
 			termsTotal([
 				{ value: range(2, 3), unit: "g" },
 				{ value: 200, unit: "g" },
 			]),
-		).toEqual({ qty: 202.5, unit: "g" });
+		).toEqual({ qty: range(202, 203), unit: "g" });
+	});
+
+	it("takes a range away bound against bound", () => {
+		expect(
+			termsTotal([
+				{ value: 10, unit: "tbsp" },
+				{ value: range(1, 2), unit: "tbsp", minus: true },
+			]),
+		).toEqual({ qty: range(8, 9), unit: "tbsp" });
+	});
+
+	it("never converts a sum of one unit", () => {
+		expect(
+			termsTotal([
+				{ value: 1, unit: "tasse" },
+				{ value: 1, unit: "tasses" },
+			]),
+		).toEqual({ qty: 2, unit: "tasse" });
+		expect(
+			termsTotal([
+				{ value: 1, unit: "livre" },
+				{ value: 1, unit: "livre" },
+			]),
+		).toEqual({ qty: 2, unit: "livre" });
+	});
+
+	it("adds one ladder exactly, in the smallest unit written", () => {
+		expect(
+			termsTotal([
+				{ value: 1, unit: "cup" },
+				{ value: 1, unit: "tbsp" },
+			]),
+		).toEqual({ qty: 17, unit: "tbsp" });
+		expect(
+			termsTotal([
+				{ value: 1, unit: "cup" },
+				{ value: 2, unit: "tbsp", minus: true },
+			]),
+		).toEqual({ qty: 14, unit: "tbsp" });
+		expect(
+			termsTotal([
+				{ value: 1, unit: "lb" },
+				{ value: 4, unit: "oz" },
+			]),
+		).toEqual({ qty: 20, unit: "oz" });
+		expect(
+			termsTotal([
+				{ value: 1, unit: "kg" },
+				{ value: 200, unit: "g" },
+			]),
+		).toEqual({ qty: 1200, unit: "g" });
+	});
+
+	it("keeps the spelling the smallest unit was written in", () => {
+		expect(
+			termsTotal([
+				{ value: 1, unit: "cups" },
+				{ value: 1, unit: "càs" },
+			]),
+		).toEqual({ qty: 17, unit: "càs" });
+	});
+
+	it("adds fractions of a ladder without floating-point noise", () => {
+		expect(
+			termsTotal([
+				{
+					value: { type: "fraction", value: 0.5, numerator: 1, denominator: 2 },
+					unit: "cup",
+				},
+				{ value: 0.1, unit: "tsp" },
+				{ value: 0.2, unit: "tsp" },
+			]),
+		).toEqual({ qty: 24.3, unit: "tsp" });
+	});
+
+	it("adds a range on a ladder by its bounds", () => {
+		expect(
+			termsTotal([
+				{ value: 1, unit: "cup" },
+				{ value: range(1, 2), unit: "tbsp" },
+			]),
+		).toEqual({ qty: range(17, 18), unit: "tbsp" });
+	});
+
+	it("adds across systems of one family in grams or milliliters", () => {
+		expect(
+			termsTotal([
+				{ value: 1, unit: "cup" },
+				{ value: 10, unit: "ml" },
+			]),
+		).toEqual({ qty: 246.59, unit: "ml" });
+		expect(
+			termsTotal([
+				{ value: 1, unit: "oz" },
+				{ value: 10, unit: "g" },
+			]),
+		).toEqual({ qty: 38.35, unit: "g" });
+		expect(
+			termsTotal([
+				{ value: 1, unit: "tsp" },
+				{ value: 1, unit: "pinch" },
+			]),
+		).toEqual({ qty: 5.24, unit: "ml" });
 	});
 
 	it("takes away a term taken away, in the unit of a term added", () => {
@@ -101,6 +204,18 @@ describe("termsTotal", () => {
 			termsTotal([
 				{ value: 1, unit: "cup" },
 				{ value: 20, unit: "g" },
+			]),
+		).toBeNull();
+		expect(
+			termsTotal([
+				{ value: 1, unit: "gousse" },
+				{ value: 1, unit: "pièce" },
+			]),
+		).toBeNull();
+		expect(
+			termsTotal([
+				{ value: 1, unit: null },
+				{ value: 1, unit: "cup" },
 			]),
 		).toBeNull();
 	});
@@ -127,6 +242,86 @@ describe("mergeTerms", () => {
 			{ value: 3, unit: "g" },
 		];
 		expect(mergeTerms(terms, "unit")).toEqual(terms);
+	});
+
+	it("adds each ladder into one term, in the smallest unit written", () => {
+		const terms: Term[] = [
+			{ value: 2, unit: "tbsp" },
+			{ value: 1, unit: "cup" },
+			{ value: 4, unit: "tbsp", minus: true },
+		];
+		expect(mergeTerms(terms, "ladder")).toEqual([{ value: 14, unit: "tbsp" }]);
+	});
+
+	it("keeps systems, families and units off a ladder apart", () => {
+		const terms: Term[] = [
+			{ value: 1, unit: "cup" },
+			{ value: 100, unit: "ml" },
+			{ value: 2, unit: "gousses" },
+			{ value: 1, unit: "tbsp" },
+			{ value: 50, unit: "g" },
+			{ value: 1, unit: "gousses" },
+			{ value: 1, unit: "kg" },
+		];
+		expect(mergeTerms(terms, "ladder")).toEqual([
+			{ value: 17, unit: "tbsp" },
+			{ value: 100, unit: "ml" },
+			{ value: 3, unit: "gousses" },
+			{ value: 1050, unit: "g" },
+		]);
+	});
+
+	it("leaves a lone term as written", () => {
+		const fraction = {
+			type: "fraction" as const,
+			value: 0.5,
+			numerator: 1,
+			denominator: 2,
+			text: "1/2",
+		};
+		expect(
+			mergeTerms(
+				[
+					{ value: fraction, unit: "cup" },
+					{ value: 20, unit: "g" },
+				],
+				"ladder",
+			),
+		).toEqual([
+			{ value: fraction, unit: "cup" },
+			{ value: 20, unit: "g" },
+		]);
+	});
+
+	it("adds ranges by their bounds", () => {
+		expect(
+			mergeTerms(
+				[
+					{ value: range(2, 3), unit: "g" },
+					{ value: 200, unit: "g" },
+				],
+				"ladder",
+			),
+		).toEqual([{ value: range(202, 203), unit: "g" }]);
+	});
+
+	it("turns a negative total into a term taken away, after the others", () => {
+		expect(
+			mergeTerms(
+				[
+					{ value: 4, unit: "tbsp", minus: true },
+					{ value: 1, unit: "tsp" },
+					{ value: 1, unit: "cup" },
+					{ value: 1, unit: "l" },
+					{ value: 100, unit: "cl", minus: true },
+					{ value: 50, unit: "ml", minus: true },
+				],
+				"ladder",
+			),
+		).toEqual([
+			{ value: 37, unit: "tsp" },
+			{ value: 50, unit: "ml", minus: true },
+		]);
 	});
 });
 

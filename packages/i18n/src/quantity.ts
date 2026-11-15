@@ -7,7 +7,13 @@
  * recipe. `@gram-lang/kitchen` reads its usages and AST nodes into terms
  * (`termsOfUsage`, `termsOfAst`) and writes them back (`usageFromTerms`).
  */
-import { normalizeUnit } from "./units";
+import {
+	type LadderStep,
+	ladderOf,
+	normalizeUnit,
+	sameLadder,
+	UNIT_CONVERSIONS,
+} from "./units";
 
 /**
  * A numeric value as the compiled recipe stores it: a plain number, or the
@@ -88,6 +94,70 @@ function addedFirst(terms: readonly Term[]): Term[] {
 	return [...terms.filter((t) => !t.minus), ...terms.filter((t) => t.minus)];
 }
 
+/** The lowest and highest number a value stands for (the same for a single value). */
+function termBounds(value: TermValue): { min: number; max: number } | null {
+	if (typeof value === "number") return { min: value, max: value };
+	if (value.type === "range" && value.range) {
+		return { min: value.range.min, max: value.range.max };
+	}
+	const n = termValueNumber(value);
+	return n === null ? null : { min: n, max: n };
+}
+
+/** Removes the floating-point noise of an exact sum (`0.1 + 0.2` gives `0.3`). */
+const exact = (n: number): number => Math.round(n * 1e9) / 1e9;
+
+/**
+ * The unit a list of terms adds up in, and how much one of each term's unit
+ * weighs in it (`weight / divisor`): see `termsTotal`.
+ */
+interface CommonUnit {
+	unit: string | null;
+	weight: (term: Term) => number;
+	divisor: number;
+	round: (n: number) => number;
+}
+
+function commonUnit(ordered: readonly Term[]): CommonUnit | null {
+	const [first] = ordered;
+	if (!first) return null;
+
+	const firstKey = normalizeUnit(first.unit);
+	if (ordered.every((t) => normalizeUnit(t.unit) === firstKey)) {
+		return { unit: first.unit, weight: () => 1, divisor: 1, round: exact };
+	}
+
+	const units = ordered.map((t) => t.unit);
+	if (sameLadder(units)) {
+		// Every step is a whole number of the ladder's smallest unit, so the
+		// sum is counted in it, then read in the smallest unit written.
+		const steps = ordered.map((t) => ladderOf(t.unit) as LadderStep);
+		let smallest = 0;
+		steps.forEach((step, i) => {
+			if (step.size < (steps[smallest] as LadderStep).size) smallest = i;
+		});
+		return {
+			unit: (ordered[smallest] as Term).unit,
+			weight: (t) => (ladderOf(t.unit) as LadderStep).size,
+			divisor: (steps[smallest] as LadderStep).size,
+			round: exact,
+		};
+	}
+
+	for (const family of [UNIT_CONVERSIONS.mass, UNIT_CONVERSIONS.volume]) {
+		const factors = units.map((u) => family.map[normalizeUnit(u)]);
+		if (factors.every((f) => f !== undefined)) {
+			return {
+				unit: family.base,
+				weight: (t) => family.map[normalizeUnit(t.unit)] as number,
+				divisor: 1,
+				round: round2,
+			};
+		}
+	}
+	return null;
+}
+
 /**
  * What the terms amount to.
  *
@@ -95,9 +165,18 @@ function addedFirst(terms: readonly Term[]): Term[] {
  * - one term added: that term as written (a range stays a range, a fraction
  *   keeps its text);
  * - several terms of one unit (its spellings count as one: `cup` / `cups`):
- *   the sum of their numbers (a range counts for its middle), in the unit of
- *   the first term added;
- * - several units: `null` (the terms do not add up to one amount).
+ *   their sum in that unit, never converted (`1 tasse + 1 tasse` is
+ *   `2 tasses`), spelled as the first term added;
+ * - several units of one ladder (`UNIT_LADDERS`): their exact sum in the
+ *   smallest unit written (`1 cup + 1 tbsp` is `17 tbsp`);
+ * - several units of one family across systems (`cup` and `ml`, `oz` and
+ *   `g`): their sum in grams or milliliters, rounded to 2 decimals;
+ * - otherwise (`cup` and `g`, `gousse` and `pièce`, a term with no unit next
+ *   to one with a unit): `null`, the terms do not add up to one amount.
+ *
+ * A range is added by its bounds (`2-3 g + 200 g` is `202-203 g`): a term
+ * taken away removes its highest number from the lowest bound and its lowest
+ * number from the highest one. A total with a range in it stays a range.
  */
 export function termsTotal(terms: readonly Term[]): TermsTotal | null {
 	const ordered = addedFirst(terms);
@@ -106,29 +185,98 @@ export function termsTotal(terms: readonly Term[]): TermsTotal | null {
 	if (ordered.length === 1 && !first.minus) {
 		return { qty: first.value, unit: first.unit };
 	}
-	const unitKey = normalizeUnit(first.unit);
-	let sum = 0;
+
+	const common = commonUnit(ordered);
+	if (!common) return null;
+
+	let min = 0;
+	let max = 0;
+	let isRange = false;
 	for (const term of ordered) {
-		if (normalizeUnit(term.unit) !== unitKey) return null;
-		const n = termValueNumber(term.value);
-		if (n === null) return null;
-		sum = term.minus ? sum - n : sum + n;
+		const bounds = termBounds(term.value);
+		if (!bounds) return null;
+		if (typeof term.value === "object" && term.value.type === "range") {
+			isRange = true;
+		}
+		const weight = common.weight(term);
+		if (term.minus) {
+			min -= bounds.max * weight;
+			max -= bounds.min * weight;
+		} else {
+			min += bounds.min * weight;
+			max += bounds.max * weight;
+		}
 	}
-	return { qty: sum, unit: first.unit };
+	min = common.round(min / common.divisor);
+	max = common.round(max / common.divisor);
+
+	if (!isRange) return { qty: min, unit: common.unit };
+	return {
+		qty: { type: "range", value: exact((min + max) / 2), range: { min, max } },
+		unit: common.unit,
+	};
 }
 
-export type MergeMode = "unit";
+export type MergeMode = "unit" | "ladder";
+
+/** A total read back as one term: a negative total becomes a term taken away. */
+function totalAsTerm(total: TermsTotal): Term {
+	const { qty, unit } = total;
+	if (typeof qty === "number") {
+		return qty < 0 ? { value: -qty, unit, minus: true } : { value: qty, unit };
+	}
+	if (qty.type === "range" && qty.range.max < 0) {
+		const min = -qty.range.max;
+		const max = -qty.range.min;
+		return {
+			value: {
+				type: "range",
+				value: exact((min + max) / 2),
+				range: { min, max },
+			},
+			unit,
+			minus: true,
+		};
+	}
+	return { value: qty, unit };
+}
 
 /**
  * Puts the terms of several amounts of one ingredient together, terms added
  * before terms taken away (`2 tbsp` then `1 cup - 4 tbsp` gives
  * `1 cup`, `2 tbsp`, `- 4 tbsp`, never a term taken away first).
  *
- * `"unit"` keeps every term as it is, one after the other: this is how a
- * section lists an ingredient it uses several times.
+ * - `"unit"` keeps every term as it is, one after the other: this is how a
+ *   section lists an ingredient it uses several times.
+ * - `"ladder"` adds up the terms of each ladder into one, in the smallest
+ *   unit written (`1 cup`, `2 tbsp` and `- 4 tbsp` give `14 tbsp`, see
+ *   `termsTotal`), and the terms of each unit on no ladder into one; two
+ *   systems (`cup` and `ml`) or two families stay apart. Each result keeps
+ *   the place of the first term it adds up; a negative result is a term
+ *   taken away.
  */
-export function mergeTerms(terms: readonly Term[], _mode: MergeMode): Term[] {
-	return addedFirst(terms);
+export function mergeTerms(terms: readonly Term[], mode: MergeMode): Term[] {
+	const ordered = addedFirst(terms);
+	if (mode === "unit") return ordered;
+
+	const groups = new Map<string, Term[]>();
+	for (const term of ordered) {
+		const step = ladderOf(term.unit);
+		const key = step
+			? `ladder:${step.ladder.id}`
+			: `unit:${normalizeUnit(term.unit)}`;
+		const group = groups.get(key);
+		if (group) group.push(term);
+		else groups.set(key, [term]);
+	}
+
+	const merged: Term[] = [];
+	for (const group of groups.values()) {
+		const total = group.length > 1 ? termsTotal(group) : null;
+		if (total) merged.push(totalAsTerm(total));
+		else merged.push(...group);
+	}
+	return addedFirst(merged);
 }
 
 /**
