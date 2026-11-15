@@ -26,7 +26,8 @@ function scaleIngredient(ing: IngredientAST, factor: number): void {
 		scaleQuantityNode(ing.quantity, factor);
 	}
 	const compositeQty = ing.composite?.quantity;
-	if (compositeQty && !compositeQty.fixed) {
+	// TODO(1.5): scale a sum of quantities (CompoundQuantity), term by term.
+	if (compositeQty?.type === ASTNodeType.Quantity && !compositeQty.fixed) {
 		scaleQuantityNode(compositeQty, factor);
 	}
 }

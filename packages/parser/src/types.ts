@@ -25,6 +25,8 @@ export enum ASTNodeType {
 	RelativeQuantity = "RelativeQuantity",
 	TextQuantity = "TextQuantity",
 	Quantity = "Quantity",
+	/** A sum of quantities, `{1 cup + 1 tbsp}`. Since 1.5.0. */
+	CompoundQuantity = "CompoundQuantity",
 	Ingredient = "Ingredient",
 	Composite = "Composite",
 	Cookware = "Cookware",
@@ -189,11 +191,42 @@ export interface QuantityAST extends NodeAST {
 	fixed: boolean;
 }
 
+/** One term of a sum of quantities: `1 cup`, `- 2 tbsp`, `+ 1-2 tsp`. Since 1.5.0. */
+export interface QuantityTermAST {
+	/** Set (to `true`) on a term written after `-`. */
+	minus?: boolean;
+	/** `null` for a number with no value (`1/0`). */
+	value: QuantityValueAST | null;
+	/** `null` for a term written with no unit (`{1 + 1 cup}`). */
+	unit: string | null;
+	/** Where the term is written, its sign left out. */
+	loc: Location;
+}
+
+/**
+ * A sum of quantities, `{1 cup + 1 tbsp}` or `{1 cup - 2 tbsp}`: the terms in
+ * the order they are written. Only an ingredient, a composite parent or a
+ * reference holds one; timers and temperatures do not. Since 1.5.0.
+ */
+export interface CompoundQuantityAST extends NodeAST {
+	type: ASTNodeType.CompoundQuantity;
+	terms: QuantityTermAST[];
+	/** `true` when the element carries the `=` modifier, like `QuantityAST.fixed`. */
+	fixed: boolean;
+	/** The sum as written between the braces, trimmed (`1 cup + 1 tbsp`). */
+	raw: string;
+}
+
 export interface IngredientAST extends NodeAST {
 	type: ASTNodeType.Ingredient;
 	name: string;
 	modifiers: Modifier[];
-	quantity: QuantityAST | RelativeQuantityAST | TextQuantityAST | null;
+	quantity:
+		| QuantityAST
+		| CompoundQuantityAST
+		| RelativeQuantityAST
+		| TextQuantityAST
+		| null;
 	alias?: string | null;
 	preparation?: string | null;
 	composite?: CompositeAST | null;
@@ -211,7 +244,7 @@ export interface CompositeAST extends NodeAST {
 	// `composite_bare` (no `{qty}` at all) genuinely produces `null`, not
 	// `undefined` — matches how every other optional-quantity field here
 	// (e.g. IngredientAST.quantity) distinguishes "absent" from "not parsed".
-	quantity?: QuantityAST | null;
+	quantity?: QuantityAST | CompoundQuantityAST | RelativeQuantityAST | null;
 	preparation?: string | null;
 }
 
@@ -237,7 +270,12 @@ export interface ReferenceAST extends NodeAST {
 	 * `tofu$marinated`): the name as the module author wrote it.
 	 */
 	displayName?: string;
-	quantity?: QuantityAST | TextQuantityAST | null;
+	quantity?:
+		| QuantityAST
+		| CompoundQuantityAST
+		| RelativeQuantityAST
+		| TextQuantityAST
+		| null;
 }
 
 export interface TimerAST extends NodeAST {
@@ -285,6 +323,7 @@ export type ASTNode =
 	| AlternativeAST
 	| IntermediateDecl
 	| QuantityAST
+	| CompoundQuantityAST
 	| TextQuantityAST
 	| RelativeQuantityAST
 	| ImportDecl;

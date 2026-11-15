@@ -718,3 +718,143 @@ describe("decimal comma", () => {
 		expect(() => getAST("## T\n\n@farine{1,kg}.\n")).toThrow(GramParseError);
 	});
 });
+
+describe("sums of quantities (since 1.5.0)", () => {
+	const elements = (src: string): any[] => {
+		const ast = getAST(`## T\n\n${src}\n`);
+		const section = ast.children[0] as { children: { children: any[] }[] };
+		return section.children[0].children.filter(
+			(c: any) => c.type !== ASTNodeType.Text,
+		);
+	};
+	const quantity = (src: string): any => elements(src)[0].quantity;
+	const terms = (src: string) =>
+		quantity(src).terms.map((t: any) => [
+			t.minus ? "-" : "+",
+			t.value?.text ?? null,
+			t.unit,
+		]);
+
+	// [written, terms as [sign, number as written, unit]]
+	const accepted: [string, [string, string | null, string | null][]][] = [
+		[
+			"{1 cup + 1 tbsp}",
+			[
+				["+", "1", "cup"],
+				["+", "1", "tbsp"],
+			],
+		],
+		[
+			"{1 cup - 2 tbsp}",
+			[
+				["+", "1", "cup"],
+				["-", "2", "tbsp"],
+			],
+		],
+		[
+			"{1 cup+20g}",
+			[
+				["+", "1", "cup"],
+				["+", "20", "g"],
+			],
+		],
+		[
+			"{ 1 cup + 1-2 tbsp }",
+			[
+				["+", "1", "cup"],
+				["+", "1-2", "tbsp"],
+			],
+		],
+		[
+			"{1 cup - 1 - 2 tbsp}",
+			[
+				["+", "1", "cup"],
+				["-", "1 - 2", "tbsp"],
+			],
+		],
+		[
+			"{2 1/2 cups + 1½ tbsp - 1,5 tsp}",
+			[
+				["+", "2 1/2", "cups"],
+				["+", "1½", "tbsp"],
+				["-", "1,5", "tsp"],
+			],
+		],
+		[
+			"{1 + 1 cup}",
+			[
+				["+", "1", null],
+				["+", "1", "cup"],
+			],
+		],
+		[
+			"{100g + 10%}",
+			[
+				["+", "100", "g"],
+				["+", "10", "%"],
+			],
+		],
+		[
+			"{1 kg + 2 fl oz}",
+			[
+				["+", "1", "kg"],
+				["+", "2", "fl oz"],
+			],
+		],
+	];
+
+	for (const [braces, expected] of accepted) {
+		it(`reads @farine${braces} as a sum`, () => {
+			const q = quantity(`@farine${braces}`);
+			expect(q.type).toBe(ASTNodeType.CompoundQuantity);
+			expect(terms(`@farine${braces}`)).toEqual(expected);
+			expect(q.raw).toBe(braces.slice(1, -1).trim());
+		});
+	}
+
+	it("keeps a plain quantity and a range as they were", () => {
+		expect(quantity("@farine{200 g}").type).toBe(ASTNodeType.Quantity);
+		const range = quantity("@farine{1 - 2 cups}");
+		expect(range.type).toBe(ASTNodeType.Quantity);
+		expect(range.value.range).toEqual({ min: 1, max: 2 });
+		expect(range.unit).toBe("cups");
+		expect(quantity("@farine{}").type).toBe(ASTNodeType.Quantity);
+		expect(quantity("@farine{10% &pâte}").type).toBe(
+			ASTNodeType.RelativeQuantity,
+		);
+	});
+
+	it("marks a fixed sum with =", () => {
+		const q = quantity("@=sel{1 tsp + 1 pinch}");
+		expect(q.type).toBe(ASTNodeType.CompoundQuantity);
+		expect(q.fixed).toBe(true);
+		expect(quantity("@sel{1 tsp + 1 pinch}").fixed).toBe(false);
+	});
+
+	it("reads a sum on a composite parent and on a reference", () => {
+		const [ing] = elements("@jus{1}<@citron{1 cup + 1 tbsp}");
+		expect(ing.composite.quantity.type).toBe(ASTNodeType.CompoundQuantity);
+		const [ref] = elements("&pâte{1 kg + 200 g}");
+		expect(ref.type).toBe(ASTNodeType.Reference);
+		expect(ref.quantity.type).toBe(ASTNodeType.CompoundQuantity);
+		expect(ref.quantity.terms.map((t: any) => t.unit)).toEqual(["kg", "g"]);
+	});
+
+	it("leaves timers and temperatures as they were", () => {
+		const [temperature] = elements("^{180°C + 20°C}");
+		expect(temperature.type).toBe(ASTNodeType.Temperature);
+		expect(temperature.text).toBe("180°C + 20°C");
+		const [timer] = elements("~{1h + 30min}");
+		expect(timer.quantity.type).toBe(ASTNodeType.TextQuantity);
+		expect(timer.raw).toBe("1h + 30min");
+	});
+
+	it.each([
+		["@sel{100 g + 10% &farine}", "ingredient 'sel'"],
+		["@sel{100 g +}", "ingredient 'sel'"],
+		["@sel{+ 100 g}", "ingredient 'sel'"],
+		["@sel{1 cup ++ 1 tbsp}", "ingredient 'sel'"],
+	])("still rejects %s", (src, fragment) => {
+		expect(() => getAST(`## T\n\n${src}\n`)).toThrow(fragment);
+	});
+});

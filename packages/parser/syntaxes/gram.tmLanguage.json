@@ -332,8 +332,13 @@
            }
         },
         {
-           "match": "[^\\d%@&\\}]+", 
-           "name": "keyword.other.unit.gram" 
+           "comment": "The + or - of a sum of quantities ({1 cup + 1 tbsp}, since 1.5.0), and the dash of a range: a unit never holds one.",
+           "match": "\\s*[+\\-]\\s*",
+           "name": "keyword.operator.quantity.gram"
+        },
+        {
+           "match": "[^\\d%@&\\}+\\-]+",
+           "name": "keyword.other.unit.gram"
         }
       ]
     }

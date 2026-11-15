@@ -54,6 +54,25 @@ describe("termsOfAst", () => {
 		expect(term?.value).toMatchObject({ type: "fraction", value: 0.5 });
 	});
 
+	it("reads one term per term of a sum, its sign kept", () => {
+		const ast = getAST("Mix @flour{1 cup - 1-2 tbsp + 1/0 tsp}.\n");
+		const step = ast.children[0];
+		if (step?.type !== ASTNodeType.Step) throw new Error("no step");
+		const ing = step.children.find(
+			(c): c is IngredientAST => c.type === ASTNodeType.Ingredient,
+		);
+		const terms = termsOfAst(ing?.quantity);
+		// `1/0 tsp` has no value: left out, as a quantity with none is.
+		expect(terms).toHaveLength(2);
+		expect(terms[0]).toMatchObject({ unit: "cup", value: { value: 1 } });
+		expect(terms[0]?.minus).toBeUndefined();
+		expect(terms[1]).toMatchObject({
+			unit: "tbsp",
+			minus: true,
+			value: { type: "range", range: { min: 1, max: 2 } },
+		});
+	});
+
 	it("reads no term from a text quantity", () => {
 		expect(
 			termsOfAst({

@@ -11,6 +11,8 @@ import {
 	type CompositeAST,
 	type CookwareAST,
 	type QuantityAST,
+	type CompoundQuantityAST,
+	type QuantityTermAST,
 	type QuantityValueAST,
 	type RelativeQuantityAST,
 	type TextQuantityAST,
@@ -499,7 +501,11 @@ semantics.addOperation("toAST", {
 		const qtyAST = _qty.toAST();
 
 		if (modifiers.includes("=")) {
-			if (qtyAST && qtyAST.type === ASTNodeType.Quantity) {
+			if (
+				qtyAST &&
+				(qtyAST.type === ASTNodeType.Quantity ||
+					qtyAST.type === ASTNodeType.CompoundQuantity)
+			) {
 				qtyAST.fixed = true;
 			}
 			modifiers = modifiers.filter((m) => m !== "=");
@@ -601,6 +607,45 @@ semantics.addOperation("toAST", {
 		_rb,
 	): RelativeQuantityAST | QuantityAST {
 		return content.toAST();
+	},
+
+	ingredientAmount(
+		_lb,
+		_s1,
+		content,
+		_s3,
+		_rb,
+	): RelativeQuantityAST | QuantityAST | CompoundQuantityAST {
+		return content.toAST();
+	},
+
+	closedQuantity(quantity, _s, _rb): QuantityAST {
+		return quantity.toAST();
+	},
+
+	// `-` sets `minus` on the term after it; `+` leaves the term as it is.
+	compoundQuantity(first, _s1, ops, _s2, rest): CompoundQuantityAST {
+		const terms: QuantityTermAST[] = [first.toAST()];
+		rest.children.forEach((node, i) => {
+			const term = node.toAST() as QuantityTermAST;
+			const minus = ops.children[i]?.sourceString === "-";
+			terms.push(minus ? { minus: true, ...term } : term);
+		});
+		return {
+			type: ASTNodeType.CompoundQuantity,
+			terms,
+			fixed: false, // set by the element's `=` modifier
+			raw: this.sourceString,
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	quantityTerm(val, _s, unit): QuantityTermAST {
+		return {
+			value: val.toAST(),
+			unit: getOpt(unit),
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
 	},
 
 	relativeQuantity(
