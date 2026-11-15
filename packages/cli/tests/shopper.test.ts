@@ -93,6 +93,25 @@ describe("buildShoppingList", () => {
 		expect(salt?.displayQty).toBe("(2% of dough ❓)");
 	});
 
+	it("adds up sums of quantities by unit ladder and writes them as the recipe view does", async () => {
+		const a = await tmp(
+			"## Prep\n\n[Mix] Add @flour{2 cups + 2 tbsp}, @sugar{3/4 cup + 1-2 tbsp} and @chips{1 1/2 cups + 50 g}.\n",
+		);
+		const b = await tmp(
+			"## Prep\n\n[Mix] Add @flour{1 tbsp} and @chips{20 g}.\n",
+		);
+		const result = await buildShoppingList([a, b]);
+		const find = (id: string) => result.items.find((i) => i.id === id);
+		// 34 tbsp + 1 tbsp across two recipes, one ladder: recomposed.
+		expect(find("flour")?.displayQty).toBe("2 cup + 3 tbsp");
+		expect(find("flour")?.cannotAggregate).toBe(false);
+		// A range is added by its bounds, never shown as its middle.
+		expect(find("sugar")?.displayQty).toBe("13-14 tbsp");
+		// A volume and a weight stay apart, each written in full.
+		expect(find("chips")?.displayQty).toBe("1 1/2 cups + 70 g");
+		expect(find("chips")?.cannotAggregate).toBe(true);
+	});
+
 	it("cannot aggregate mixed incompatible units without a database and reports a warning", async () => {
 		const a = await tmp("## Prep\n[Mix] Add @butter{2 tbsp} to the bowl.\n");
 		const b = await tmp("## Prep\n[Mix] Add @butter{50g} to the bowl.\n");

@@ -476,8 +476,16 @@ describe("formatTerms, computed", () => {
 
 	it("breaks an amount down, three terms at most, the last rounded to what its unit measures", () => {
 		expect(computed(scaleTerms([t(1, "cup")], 1.1))).toBe(
-			"1 cup + 1 tbsp + 2 tsp",
+			"1 cup + 1 tbsp + 1 3/4 tsp",
 		);
+	});
+
+	it("rounds the last term to several spoons, never down to one (3/4 tsp stays 3/4 tsp)", () => {
+		expect(computed(scaleTerms([t(0.5, "tsp")], 1.5), { rounding: true })).toBe(
+			"3/4 tsp",
+		);
+		expect(computed([t(1.75, "tsp")], { rounding: true })).toBe("1 3/4 tsp");
+		expect(computed([t(0.7, "tsp")], { rounding: true })).toBe("3/4 tsp");
 	});
 
 	it("never climbs above the largest unit written in a step", () => {

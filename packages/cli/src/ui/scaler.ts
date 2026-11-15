@@ -39,7 +39,15 @@ export function renderScaleResult(
 	console.log();
 
 	const COL_NAME = 22;
-	const COL_QTY = 11;
+	const original = (item: ScaledItem) =>
+		item.originalText || fmtQty(item.originalQty!, item.unit ?? null, lang);
+	const scaledAmount = (item: ScaledItem) =>
+		item.scaledText || fmtQty(item.scaledQty!, item.unit ?? null, lang);
+	// Wide enough for a recomposed amount (`1 1/2 cup + 2-4 tbsp`).
+	const COL_QTY = Math.max(
+		11,
+		...scalable.flatMap((i) => [original(i).length, scaledAmount(i).length]),
+	);
 
 	if (scalable.length > 0) {
 		console.log(
@@ -49,12 +57,8 @@ export function renderScaleResult(
 
 		for (const item of scalable) {
 			const name = (item.name || item.id).slice(0, COL_NAME).padEnd(COL_NAME);
-			const orig = chalk.dim(
-				fmtQty(item.originalQty!, item.unit ?? null, lang).padStart(COL_QTY),
-			);
-			const scaled = chalk.green(
-				fmtQty(item.scaledQty!, item.unit ?? null, lang).padStart(COL_QTY),
-			);
+			const orig = chalk.dim(original(item).padStart(COL_QTY));
+			const scaled = chalk.green(scaledAmount(item).padStart(COL_QTY));
 			console.log(`  ${name} ${orig} ${scaled}`);
 		}
 	}

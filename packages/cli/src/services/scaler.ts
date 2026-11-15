@@ -11,6 +11,7 @@ import {
 	resolveScaleFactor as resolveScaleFactorEngine,
 	IngredientNotFoundError,
 } from "@gram-lang/kitchen";
+import { formatUsageQuantity } from "@gram-lang/renderer";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,10 @@ export interface ScaledItem {
 	unit?: string | null;
 	originalQty?: number;
 	scaledQty?: number;
+	/** The original amount as the shopping list writes it (`2 cup + 2 tbsp`). */
+	originalText?: string;
+	/** The scaled amount as the shopping list writes it (`4 1/4 cup`). */
+	scaledText?: string;
 	nonScalable?: boolean;
 }
 
@@ -206,6 +211,7 @@ const comparisonKey = (i: any): string => `${i.id}::${i.unit ?? ""}`;
 export function buildScaleComparison(
 	original: any[],
 	scaled: any[],
+	lang?: string,
 ): ScaledItem[] {
 	const scaledMap = new Map<string, any>(
 		scaled
@@ -232,6 +238,18 @@ export function buildScaleComparison(
 				originalQty: i.qty,
 				scaledQty:
 					typeof scaledItem?.qty === "number" ? scaledItem.qty : undefined,
+				// Written as the recipe view's shopping list writes them: ranges
+				// by their bounds, spoons and cups recomposed (`2 cup + 2 tbsp`).
+				originalText: formatUsageQuantity(i, { lang, buying: true }),
+				...(scaledItem
+					? {
+							scaledText: formatUsageQuantity(scaledItem, {
+								lang,
+								buying: true,
+								scaled: true,
+							}),
+						}
+					: {}),
 			};
 		});
 }

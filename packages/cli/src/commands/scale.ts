@@ -101,6 +101,7 @@ export default defineCommand({
 			const items = buildScaleComparison(
 				original.shopping_list,
 				scaled.shopping_list,
+				config.language,
 			);
 			const warnings = getScaleWarnings(
 				factor,
