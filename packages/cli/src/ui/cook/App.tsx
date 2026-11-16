@@ -5,6 +5,7 @@ import MiseEnPlace from "./MiseEnPlace";
 import StepView from "./StepView";
 import EndScreen from "./EndScreen";
 import { fmtQty, fmtMass, fmtCountdown, shouldShowMass } from "./prepare";
+import { finishedTimers, markDone } from "./timers";
 
 interface Props {
 	recipe: RecipeData;
@@ -33,22 +34,16 @@ export default function App({ recipe }: Props) {
 		return () => clearInterval(id);
 	}, []);
 
-	// Bell + done flag when a timer completes
+	// Bell + done flag when a timer completes: checked on every tick, one bell
+	// even when several timers end within the same second. The bell stays out
+	// of the state updater, which React may call more than once.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `tick` is the clock that makes time pass for this check
 	useEffect(() => {
-		setActiveTimers((prev) => {
-			const now = Date.now();
-			let changed = false;
-			const next = prev.map((t) => {
-				if (!t.done && now - t.startedAt >= t.durationMs) {
-					process.stdout.write("\x07");
-					changed = true;
-					return { ...t, done: true };
-				}
-				return t;
-			});
-			return changed ? next : prev;
-		});
-	}, []);
+		const ids = finishedTimers(activeTimers, Date.now());
+		if (ids.size === 0) return;
+		process.stdout.write("\x07");
+		setActiveTimers((prev) => markDone(prev, ids));
+	}, [tick, activeTimers]);
 
 	const startTimer = useCallback(
 		(timer: { id: string; name: string; durationMs: number }) => {
