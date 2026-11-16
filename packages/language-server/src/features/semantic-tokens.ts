@@ -245,7 +245,9 @@ function walkTemperature(
 	const body = text.slice(bodyStart, temp.loc.end);
 	const braceOpen = body.indexOf("{");
 	if (braceOpen >= 0) {
-		const braceClose = body.lastIndexOf("}");
+		// The first `}` after `{`, not the last one: a note glued to the
+		// brace (`^{180°C}(mode } spécial)`) may hold one. A quantity cannot.
+		const braceClose = body.indexOf("}", braceOpen + 1);
 		const absOpen = bodyStart + braceOpen;
 		const absClose =
 			bodyStart + (braceClose >= 0 ? braceClose : body.length - 1);
