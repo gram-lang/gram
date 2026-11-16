@@ -157,9 +157,12 @@ GRAM {
   // first word) and the braces leaked into prose -- merging distinct ingredients.
   // Each "-- malformed" branch below turns that into a readable error instead.
   malformedBraces = "{" (~("}" | nl) any)* ("}" | &nl | end)
-  // On one line: an unclosed `(` is prose, never the start of a preparation
-  // that would run to the next `)` further down the recipe, over blank lines
-  // and section headers.
+  // The parenthesis glued to an element: an ingredient's or a tool's
+  // preparation, a composite parent's, a temperature's note (and the sensory
+  // checkpoints' to come). Every rule using it is lexical, so it touches what
+  // comes before it. On one line: an unclosed `(` is prose, never the start
+  // of a preparation that would run to the next `)` further down the recipe,
+  // over blank lines and section headers.
   preparation = "(" (~(")" | nl) any)* ")"
   // `modifier*` mirrors simpleIngredient: a composite parent is an ingredient
   // reference like any other, and authors (and AI importers) write `<@&parent`
@@ -212,13 +215,7 @@ GRAM {
   // start with a space, as it could when the rule was syntactic: `^ {180°C}`
   // and `^oven {180°C}` read as before (`clean` drops the space). The note
   // since 1.5.0.
-  temperature = "^" name? (ingredientQuantity | textQuantity) gluedNote?
-
-  // A note glued to an element's closing brace, on one line: an unclosed
-  // `(` is prose, never the start of a note that would run to the next `)`
-  // further down the recipe. Meant to be shared by the elements to come
-  // (the sensory checkpoints).
-  gluedNote = "(" (~(")" | nl) any)* ")"
+  temperature = "^" name? (ingredientQuantity | textQuantity) preparation?
 
 
   // Comments

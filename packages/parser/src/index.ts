@@ -595,9 +595,6 @@ semantics.addOperation("toAST", {
 	preparation(_lp, text, _rp): string {
 		return clean(text.sourceString);
 	},
-	gluedNote(_lp, text, _rp): string {
-		return clean(text.sourceString);
-	},
 	unit(name): string {
 		return clean(name.sourceString);
 	},
