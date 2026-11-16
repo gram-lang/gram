@@ -277,3 +277,19 @@ describe("summarizeChanges", () => {
 		expect(summary).toContain("3 tabs converted to spaces");
 	});
 });
+
+describe("a temperature with a space and trailing zeros", () => {
+	it("is fixed in a single run", () => {
+		const { content, changes } = formatGram("## T\n\nBake at ^{160.0 °C}.\n");
+		expect(content).toContain("^{160°C}");
+		expect(changes.temperatureSpacing).toBe(1);
+		expect(changes.trailingZeros).toBe(1);
+		expect(formatGram(content).content).toBe(content);
+	});
+
+	it("keeps the zeros that matter", () => {
+		expect(formatGram("## T\n\nHeat to ^{37.50 °C}.\n").content).toContain(
+			"^{37.5°C}",
+		);
+	});
+});
