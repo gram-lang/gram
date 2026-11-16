@@ -1,24 +1,15 @@
 import React from "react";
 import { Box, Text } from "ink";
 import chalk from "chalk";
-import { formatTimerDuration } from "@gram-lang/renderer";
+import { formatTemperature, formatTimerDuration } from "@gram-lang/renderer";
 import type { ActiveTimer, FlatStep } from "./types";
 import type { CompilationResult } from "@gram-lang/kitchen";
 import { fmtQty, fmtMass, fmtCountdown, shouldShowMass } from "./prepare";
 
-function getQtyText(q: any): string {
-	if (!q) return "";
-	if (typeof q === "number") return String(q);
-	return (
-		q.text ??
-		(q.value != null
-			? String(typeof q.value === "object" ? q.value.value : q.value)
-			: "")
-	);
-}
-
-function getTempDisplay(token: any): string {
-	return `${getQtyText(token.quantity)}${token.unit ?? "°"}`;
+/** A temperature as the views show it (`180 °C`, `vif`), with its note. */
+export function getTempDisplay(token: any): string {
+	const value = formatTemperature(token);
+	return token.note ? `${value} (${token.note})` : value;
 }
 
 /** A timer as the views show it (`1 h 30 min`, `1–2 h`), or as written when refused. */

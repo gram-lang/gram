@@ -432,7 +432,7 @@ RULE — active vs passive vs sequential:
 
 ### Temperatures
 
-Syntax: \`^name?{value}\`
+Syntax: \`^name?{value}(note)?\`
 
 \`^\` is the ONLY valid temperature sigil — never \`°\`, which is not a recognized element trigger. The degree sign is still used inside the unit itself (\`°C\`/\`°F\`), and is also accepted bare (\`C\`/\`F\`), case-insensitively.
 
@@ -441,9 +441,12 @@ Syntax: \`^name?{value}\`
 | Exact     | \`^{180C}\`           | Numeric temperature; unit mandatory, one of \`C\`, \`F\`, \`°C\`, \`°F\` (case-insensitive) |
 | Semantic  | \`^{medium heat}\`    | Stove settings, water state, etc.        |
 | Named     | \`^oven{180C}\`       | When multiple heat sources are active    |
+| With note | \`^{160C}(fan)\`      | Cooking mode, probe target, or condition that goes with the temperature |
 
 Range: \`^{180-200C}\`
 The compiler stores the raw numeric value and normalizes the unit to \`°C\`/\`°F\`; the display engine handles further formatting. Only Celsius and Fahrenheit are supported — no Kelvin or other scales.
+
+Note: when the source gives the oven mode or what the temperature is measured on (fan, convection, broil, conventional, internal, covered), keep it in the note glued to the brace — \`^{160C}(fan)\`, \`^{63C}(internal)\`, \`^{high heat}(covered)\` — instead of leaving it in the prose. Keep the note in the recipe's language. The parenthesis must touch the \`}\`: \`^{180C} (preheated)\` with a space is ordinary text. One line, no nested parentheses.
 
 
 ═════════════════════════════════════════
