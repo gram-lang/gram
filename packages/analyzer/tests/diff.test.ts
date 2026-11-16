@@ -24,6 +24,19 @@ describe("diffRecipes — temperature ranges", () => {
 		expect(temperatures[0]?.to?.range).toEqual({ min: 100, max: 400 });
 	});
 
+	it("detects a change of note on the same value (1.5)", () => {
+		const a = compileRecipe("## Section\n\nBake at ^{180C}(fan).\n");
+		const b = compileRecipe("## Section\n\nBake at ^{180C}(grill).\n");
+		const { temperatures } = diffRecipes(a, b);
+		expect(temperatures).toHaveLength(1);
+		expect(temperatures[0]?.from).toMatchObject({ value: 180, note: "fan" });
+		expect(temperatures[0]?.to).toMatchObject({ value: 180, note: "grill" });
+		const c = compileRecipe("## Section\n\nBake at ^{180C}.\n");
+		const added = diffRecipes(c, a).temperatures;
+		expect(added).toHaveLength(1);
+		expect(added[0]?.from && "note" in added[0].from).toBe(false);
+	});
+
 	it("reports no change when both value and range are identical", () => {
 		const a = compileRecipe("## Section\nBake at ^{200-300C}.\n");
 		const b = compileRecipe("## Section\nBake at ^{200-300C}.\n");
