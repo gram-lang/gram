@@ -14,7 +14,6 @@ function stepChildren(src: string): any[] {
 const temperatures = (src: string): any[] =>
 	stepChildren(src).filter((c) => c.type === ASTNodeType.Temperature);
 
-// biome-ignore lint/suspicious/noExplicitAny: walking a parsed AST in tests.
 const texts = (src: string): string[] =>
 	stepChildren(src)
 		.filter((c) => c.type === ASTNodeType.Text)
