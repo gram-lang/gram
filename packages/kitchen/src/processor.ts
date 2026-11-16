@@ -754,6 +754,7 @@ function processTemperature(
 			});
 		}
 	}
+	if (item.note) obj.note = item.note;
 	return obj;
 }
 

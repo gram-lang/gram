@@ -156,6 +156,11 @@ export interface ProcessedTemperature {
 	text?: string;
 	quantity?: QuantityValueAST;
 	unit?: string;
+	/**
+	 * The note glued to the temperature (`^{160°C}(fan)`): words for the
+	 * cook, never read by Gram. Omitted when there is none. Since 1.5.0.
+	 */
+	note?: string;
 }
 
 /**
