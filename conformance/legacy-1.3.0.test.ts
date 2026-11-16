@@ -38,6 +38,11 @@ const ADDED_SINCE_1_3_0 = new Set([
 // the duration in minutes.
 const TIMER_ADDED_SINCE_1_3_0 = new Set(["raw", "minutes"]);
 
+// Added after 1.3.0 inside a step's temperature token (1.5): the note glued
+// to its brace (`^{160°C}(fan)`). Left out when absent, so no case of the tag
+// moves; listed so a note never moves a digest.
+const TEMPERATURE_ADDED_SINCE_1_3_0 = new Set(["note"]);
+
 // Added after 1.3.0 on any ingredient, reference or composite parent (1.5):
 // the terms of a sum of quantities (`{1 cup + 1 tbsp}`). A sum did not parse
 // in 1.3.0, so no case of the tag has one; listed so a sum never moves a digest.
@@ -52,9 +57,12 @@ const isShoppingRange = (value: object, key: string): boolean =>
 function canonical(value: unknown): string {
 	if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
 	if (value && typeof value === "object") {
-		const isTimer = (value as { type?: unknown }).type === "timer";
+		const type = (value as { type?: unknown }).type;
+		const isTimer = type === "timer";
+		const isTemperature = type === "temperature";
 		const entries = Object.entries(value as Record<string, unknown>)
 			.filter(([k]) => !(isTimer && TIMER_ADDED_SINCE_1_3_0.has(k)))
+			.filter(([k]) => !(isTemperature && TEMPERATURE_ADDED_SINCE_1_3_0.has(k)))
 			.filter(([k]) => !QUANTITY_ADDED_SINCE_1_3_0.has(k))
 			.filter(([k]) => !isShoppingRange(value, k))
 			.sort(([a], [b]) => (a < b ? -1 : 1))

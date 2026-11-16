@@ -392,3 +392,17 @@ describe("formatGram and sums of quantities", () => {
 		expect(quantities(formatGram(source).content)).toEqual(before);
 	});
 });
+
+describe("a temperature's note (1.5)", () => {
+	it("keeps a glued note while fixing the braces", () => {
+		expect(
+			formatGram("## T\n\n^{160.0°C}(chaleur tournante)\n").content,
+		).toContain("^{160°C}(chaleur tournante)");
+	});
+
+	it("leaves the space before a parenthesis of prose", () => {
+		expect(
+			formatGram("## T\n\nCuire à ^{180°C} (four préchauffé).\n").content,
+		).toContain("^{180°C} (four préchauffé).");
+	});
+});

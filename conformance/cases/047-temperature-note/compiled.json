@@ -1,0 +1,345 @@
+{
+  "title": "Temperature Note",
+  "slug": "temperature-note",
+  "meta": {
+    "title": "Temperature Note"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Bake",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Preheat ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 160,
+                "text": "160"
+              },
+              "unit": "°C",
+              "note": "chaleur tournante"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Roast in the ",
+            {
+              "type": "temperature",
+              "name": "oven",
+              "quantity": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C",
+              "note": "gril"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Simmer on ",
+            {
+              "type": "temperature",
+              "text": "vif",
+              "note": "à couvert"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Bake at ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C"
+            },
+            "(four préchauffé)."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Rest at ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 20,
+                "text": "20"
+              },
+              "unit": "°C"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 8,
+            "end": 10,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Cook at ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 200,
+                "text": "200"
+              },
+              "unit": "°C"
+            },
+            "(about 20 min"
+          ],
+          "timings": {
+            "start": 10,
+            "end": 12,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Serve (hot)."
+          ],
+          "timings": {
+            "start": 12,
+            "end": 14,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 14,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Bake",
+        "duration": 14
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 14,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Bake",
+        "duration": 14
+      }
+    ],
+    "preparationTime": 0
+  },
+  "miseEnPlace": [],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s0.3",
+        "kind": "step",
+        "section": 0,
+        "step": 3,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.2"
+        ]
+      },
+      {
+        "id": "s0.4",
+        "kind": "step",
+        "section": 0,
+        "step": 4,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.3"
+        ]
+      },
+      {
+        "id": "s0.5",
+        "kind": "step",
+        "section": 0,
+        "step": 5,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.4"
+        ]
+      },
+      {
+        "id": "s0.6",
+        "kind": "step",
+        "section": 0,
+        "step": 6,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.5"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 14,
+    "activeTime": 14,
+    "preparationTime": 0,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 2,
+        "end": 4
+      },
+      {
+        "kind": "step",
+        "task": "s0.2",
+        "section": 0,
+        "step": 2,
+        "start": 4,
+        "end": 6
+      },
+      {
+        "kind": "step",
+        "task": "s0.3",
+        "section": 0,
+        "step": 3,
+        "start": 6,
+        "end": 8
+      },
+      {
+        "kind": "step",
+        "task": "s0.4",
+        "section": 0,
+        "step": 4,
+        "start": 8,
+        "end": 10
+      },
+      {
+        "kind": "step",
+        "task": "s0.5",
+        "section": 0,
+        "step": 5,
+        "start": 10,
+        "end": 12
+      },
+      {
+        "kind": "step",
+        "task": "s0.6",
+        "section": 0,
+        "step": 6,
+        "start": 12,
+        "end": 14
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 14,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}
