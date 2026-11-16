@@ -301,6 +301,11 @@ export interface TemperatureAST extends NodeAST {
 	value?: QuantityValueAST | null;
 	unit?: string | null;
 	text?: string | null;
+	/**
+	 * The note glued to the closing brace (`^{160°C}(fan)`), on one line.
+	 * Omitted when there is none. Since 1.5.0.
+	 */
+	note?: string;
 }
 
 export interface AlternativeAST extends NodeAST {

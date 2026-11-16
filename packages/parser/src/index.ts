@@ -595,6 +595,9 @@ semantics.addOperation("toAST", {
 	preparation(_lp, text, _rp): string {
 		return clean(text.sourceString);
 	},
+	gluedNote(_lp, text, _rp): string {
+		return clean(text.sourceString);
+	},
 	unit(name): string {
 		return clean(name.sourceString);
 	},
@@ -863,14 +866,20 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	Temperature(_1, name, qty): TemperatureAST {
+	temperature(_1, name, qty, noteNode): TemperatureAST {
 		const child = name.children[0];
-		const n = child ? clean(child.sourceString) : null;
+		// `|| null`: the rule is lexical, so `^ {180°C}` reads a name of one
+		// space, which the syntactic rule used to skip.
+		const n = (child && clean(child.sourceString)) || null;
 		const qAST = qty.toAST();
+		// Omitted when absent or empty (`^{160°C}()`), so a temperature
+		// without a note keeps the AST it had before 1.5.0.
+		const note = getOpt(noteNode);
 		const base = {
 			type: ASTNodeType.Temperature as const,
 			name: n,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
+			...(note ? { note } : {}),
 		};
 
 		if (qAST.type === ASTNodeType.TextQuantity) {
