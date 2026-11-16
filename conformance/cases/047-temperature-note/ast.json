@@ -1,0 +1,277 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Temperature Note"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Preheat ",
+              "loc": {
+                "start": 42,
+                "end": 50
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 50,
+                "end": 77
+              },
+              "note": "chaleur tournante",
+              "value": {
+                "type": "single",
+                "value": 160,
+                "text": "160"
+              },
+              "unit": "°C"
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 77,
+                "end": 78
+              }
+            }
+          ],
+          "loc": {
+            "start": 42,
+            "end": 80
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Roast in the ",
+              "loc": {
+                "start": 80,
+                "end": 93
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": "oven",
+              "loc": {
+                "start": 93,
+                "end": 111
+              },
+              "note": "gril",
+              "value": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C"
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 111,
+                "end": 112
+              }
+            }
+          ],
+          "loc": {
+            "start": 80,
+            "end": 114
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Simmer on ",
+              "loc": {
+                "start": 114,
+                "end": 124
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 124,
+                "end": 141
+              },
+              "note": "à couvert",
+              "text": "vif"
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 141,
+                "end": 142
+              }
+            }
+          ],
+          "loc": {
+            "start": 114,
+            "end": 144
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake at ",
+              "loc": {
+                "start": 144,
+                "end": 152
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 152,
+                "end": 160
+              },
+              "value": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C"
+            },
+            {
+              "type": "Text",
+              "value": "(four préchauffé).",
+              "loc": {
+                "start": 161,
+                "end": 179
+              }
+            }
+          ],
+          "loc": {
+            "start": 144,
+            "end": 181
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Rest at ",
+              "loc": {
+                "start": 181,
+                "end": 189
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 189,
+                "end": 198
+              },
+              "value": {
+                "type": "single",
+                "value": 20,
+                "text": "20"
+              },
+              "unit": "°C"
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 198,
+                "end": 199
+              }
+            }
+          ],
+          "loc": {
+            "start": 181,
+            "end": 201
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Cook at ",
+              "loc": {
+                "start": 201,
+                "end": 209
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 209,
+                "end": 217
+              },
+              "value": {
+                "type": "single",
+                "value": 200,
+                "text": "200"
+              },
+              "unit": "°C"
+            },
+            {
+              "type": "Text",
+              "value": "(about 20 min",
+              "loc": {
+                "start": 217,
+                "end": 230
+              }
+            }
+          ],
+          "loc": {
+            "start": 201,
+            "end": 232
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Serve (hot).",
+              "loc": {
+                "start": 232,
+                "end": 244
+              }
+            }
+          ],
+          "loc": {
+            "start": 232,
+            "end": 245
+          }
+        }
+      ],
+      "loc": {
+        "start": 33,
+        "end": 245
+      }
+    }
+  ]
+}

@@ -29,9 +29,13 @@ function fmtMetaValue(v: unknown): string {
 	return String(v);
 }
 
-function fmtTempValue(v?: { value: number; unit: string }): string {
+function fmtTempValue(v?: {
+	value: number;
+	unit: string;
+	note?: string;
+}): string {
 	if (!v) return "?";
-	return `${v.value}${v.unit}`;
+	return `${v.value}${v.unit}${v.note ? ` (${v.note})` : ""}`;
 }
 
 const TIMING_LABELS: Record<string, string> = {

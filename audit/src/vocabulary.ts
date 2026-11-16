@@ -70,6 +70,11 @@ function walk(node: unknown, shapes: Set<string>, ctx: WalkContext): void {
 			if (record.preparation) shapes.add("Composite:hasPreparation");
 			break;
 		}
+		case "Temperature": {
+			// The note glued to the brace (`^{160°C}(fan)`, 1.5).
+			if (record.note) shapes.add("Temperature:hasNote");
+			break;
+		}
 		case "Timer":
 			shapes.add(`Timer:isPassive=${Boolean(record.isPassive)}`);
 			addDurationShapes(record.raw, "Timer", shapes);

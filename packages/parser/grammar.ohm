@@ -94,7 +94,7 @@ GRAM {
     | Ingredient
     | Cookware
     | Timer
-    | Temperature
+    | temperature
     | Reference
     | CommentBlock
     | Comment
@@ -204,7 +204,18 @@ GRAM {
   timerText = "{" (~("}" | nl) any)* "}"
   
   // Temperature
-  Temperature = "^" name? (ingredientQuantity | textQuantity)
+  // Lexical, so only a note glued to `}` is one: `^{180°C}(fan)` has a note,
+  // `^{180°C} (preheated)` keeps its parenthesis in the prose. `name` may
+  // start with a space, as it could when the rule was syntactic: `^ {180°C}`
+  // and `^oven {180°C}` read as before (`clean` drops the space). The note
+  // since 1.5.0.
+  temperature = "^" name? (ingredientQuantity | textQuantity) gluedNote?
+
+  // A note glued to an element's closing brace, on one line: an unclosed
+  // `(` is prose, never the start of a note that would run to the next `)`
+  // further down the recipe. Meant to be shared by the elements to come
+  // (the sensory checkpoints).
+  gluedNote = "(" (~(")" | nl) any)* ")"
 
 
   // Comments

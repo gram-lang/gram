@@ -3,7 +3,7 @@ import {
 	escapeHtml,
 	escapeMarkdownHtml,
 	getQty,
-	formatQuantityValue,
+	formatTemperature,
 	formatTimerDuration,
 	largerAmount,
 	isWrittenInMetricMass,
@@ -470,30 +470,28 @@ const strategies: Record<
 			(format === "html"
 				? DEFAULT_ICONS.html.thermometer
 				: DEFAULT_ICONS.md.thermometer);
-		const className = context.classes?.temperature || "temp";
+		const value = formatTemperature(item, context.lang);
+		// The note (`^{160°C}(fan)`, 1.5) is an instruction: always in the
+		// sentence, on paper too, never only in a tooltip.
+		const note = item.note ? String(item.note) : "";
 		if (format === "text") {
-			const value = item.text
-				? String(item.text)
-				: `${formatQuantityValue(item.quantity || { value: "" }, context.lang)}${item.unit ? ` ${item.unit}` : ""}`;
-			return styled(context, "timer", value);
+			return styled(context, "timer", value) + (note ? ` (${note})` : "");
 		}
-		if (item.text) {
-			const textVal = item.text;
-			if (format === "html") {
-				return `<span class="${className}" data-semantic="${escapeHtml(textVal)}">${termIcon} ${escapeHtml(textVal)}</span>`;
-			} else {
-				return `${termIcon}${escapeMarkdownHtml(textVal)}`;
-			}
-		} else {
-			const q = item.quantity || { value: "" };
-			const qVal = formatQuantityValue(q, context.lang);
-			const unitStr = item.unit ? ` ${item.unit}` : "";
-			if (format === "html") {
-				return `<span class="${className}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || "")}">${termIcon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
-			} else {
-				return `${termIcon}${escapeMarkdownHtml(qVal)}${escapeMarkdownHtml(unitStr)}`;
-			}
+		if (format !== "html") {
+			return `${termIcon}${escapeMarkdownHtml(value)}${note ? ` (${escapeMarkdownHtml(note)})` : ""}`;
 		}
+		const className = context.classes?.temperature || "temp";
+		const data = item.text
+			? `data-semantic="${escapeHtml(item.text)}"`
+			: `data-value="${escapeHtml((item.quantity || { value: "" }).value)}" data-unit="${escapeHtml(item.unit || "")}"`;
+		const html = `<span class="${className}" ${data}>${termIcon} ${escapeHtml(value)}</span>`;
+		if (!note) return html;
+		// The note sits outside the pill, which never wraps: held in a group of
+		// its own, it may go to the next line (`.gram-nobr` only keeps its
+		// direct text unbreakable).
+		const groupClass = context.classes?.temperatureGroup || "temp-group";
+		const prepClass = context.classes?.prepText || "prep";
+		return `<span class="${groupClass}">${html} <span class="${prepClass}">(${escapeHtml(note)})</span></span>`;
 	},
 
 	reference: (item, format, context) => {

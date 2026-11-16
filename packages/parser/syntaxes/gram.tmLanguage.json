@@ -221,9 +221,10 @@
         "2": { "name": "constant.numeric.temperature.gram" },
         "3": { "name": "punctuation.section.embedded.begin.gram" }
       },
-      "end": "(\\})",
+      "end": "(\\})(?:\\(([^)\\n]+)\\))?",
       "endCaptures": {
-        "1": { "name": "punctuation.section.embedded.end.gram" }
+        "1": { "name": "punctuation.section.embedded.end.gram" },
+        "2": { "name": "string.other.preparation.gram" }
       },
       "patterns": [ { "include": "#temperature-content" } ]
     },

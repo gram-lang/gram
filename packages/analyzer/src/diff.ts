@@ -87,8 +87,16 @@ export interface TemperatureDelta {
 	section: string | null;
 	name?: string;
 	change: "added" | "removed" | "changed";
-	from?: { value: number; unit: string; range?: { min: number; max: number } };
-	to?: { value: number; unit: string; range?: { min: number; max: number } };
+	from?: TemperatureValue;
+	to?: TemperatureValue;
+}
+
+/** A temperature as `diffTemperatures` compares it. `note` since 1.5.0. */
+export interface TemperatureValue {
+	value: number;
+	unit: string;
+	range?: { min: number; max: number };
+	note?: string;
 }
 
 export interface TimerDelta {
@@ -257,11 +265,7 @@ function fmtTimerQty(
 	return `?${u}`;
 }
 
-function getTempValue(token: ProcessedTemperature): {
-	value: number;
-	unit: string;
-	range?: { min: number; max: number };
-} | null {
+function getTempValue(token: ProcessedTemperature): TemperatureValue | null {
 	const q = token.quantity;
 	if (!q) return null;
 	const value =
@@ -277,7 +281,12 @@ function getTempValue(token: ProcessedTemperature): {
 		typeof q === "object" && "type" in q && q.type === "range" && q.range
 			? q.range
 			: undefined;
-	return { value, unit: token.unit ?? "°", range };
+	return {
+		value,
+		unit: token.unit ?? "°",
+		range,
+		...(token.note ? { note: token.note } : {}),
+	};
 }
 
 function isProcessedTimer(token: StepToken): token is ProcessedTimer {
