@@ -142,6 +142,7 @@ export {
 	formatDuration,
 	formatTimer,
 	formatTimerDuration,
+	formatTemperature,
 	formatDurationRange,
 	toCommonFraction,
 	escapeHtml,

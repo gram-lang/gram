@@ -113,6 +113,12 @@ export interface RendererClasses {
 	cookware?: string;
 	timer?: string;
 	temperature?: string;
+	/**
+	 * What holds a temperature and its note together, so the note may wrap
+	 * apart from the value (default `temp-group`). The note itself takes
+	 * `prepText`. Since 1.5.0.
+	 */
+	temperatureGroup?: string;
 	declaration?: string;
 	massBadge?: string;
 	/** A quantity written in the text of a step (default `step-quantity`). */

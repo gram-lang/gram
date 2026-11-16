@@ -355,6 +355,21 @@ export function joinDurationRange(
 }
 
 /**
+ * Displays a compiled temperature the way the views do: its value and unit
+ * (`160 °C`, `180–200 °C`), or its words when it has no number (`vif`). The
+ * note (`^{160°C}(fan)`) is left to the caller, which shows it its own way.
+ * Since 1.5.0.
+ */
+export function formatTemperature(
+	item: { text?: string | null; quantity?: unknown; unit?: string | null },
+	lang?: string,
+): string {
+	if (item.text) return String(item.text);
+	const value = formatQuantityValue(item.quantity, lang);
+	return item.unit ? `${value} ${item.unit}` : value;
+}
+
+/**
  * Displays a compiled timer the way Gram displays every time (`formatDuration`,
  * `formatDurationRange`), from its minutes. A timer is exact where a computed
  * time is not: past a day, one whose minutes the count in days would round
