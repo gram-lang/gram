@@ -1,0 +1,339 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Preparation Single Line"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 50,
+                "end": 54
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 61,
+                  "end": 65
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 54,
+                "end": 66
+              }
+            },
+            {
+              "type": "Text",
+              "value": "(sifted and ",
+              "loc": {
+                "start": 66,
+                "end": 78
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 120,
+                  "text": "120"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 85,
+                  "end": 90
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 78,
+                "end": 91
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 91,
+                "end": 92
+              }
+            }
+          ],
+          "loc": {
+            "start": 50,
+            "end": 94
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Heat a ",
+              "loc": {
+                "start": 94,
+                "end": 101
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "pan",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 105,
+                  "end": 108
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 101,
+                "end": 108
+              }
+            },
+            {
+              "type": "Text",
+              "value": "(large over ",
+              "loc": {
+                "start": 108,
+                "end": 120
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 120,
+                "end": 128
+              },
+              "value": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C"
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 128,
+                "end": 129
+              }
+            }
+          ],
+          "loc": {
+            "start": 94,
+            "end": 131
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Knead ",
+              "loc": {
+                "start": 131,
+                "end": 137
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 20,
+                  "text": "20"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 145,
+                  "end": 148
+                }
+              },
+              "alias": null,
+              "preparation": "soft, cubed",
+              "composite": null,
+              "loc": {
+                "start": 137,
+                "end": 162
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 162,
+                "end": 163
+              }
+            }
+          ],
+          "loc": {
+            "start": 131,
+            "end": 165
+          }
+        }
+      ],
+      "loc": {
+        "start": 40,
+        "end": 165
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Serve",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Serve with ",
+              "loc": {
+                "start": 175,
+                "end": 186
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt",
+              "modifiers": [],
+              "quantity": null,
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 186,
+                "end": 191
+              }
+            },
+            {
+              "type": "Text",
+              "value": "(flaky and ",
+              "loc": {
+                "start": 191,
+                "end": 202
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "zest",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 208,
+                  "end": 209
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "lemon",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": null,
+                  "fixed": false,
+                  "loc": {
+                    "start": 218,
+                    "end": 219
+                  }
+                },
+                "preparation": null,
+                "loc": {
+                  "start": 210,
+                  "end": 220
+                }
+              },
+              "loc": {
+                "start": 202,
+                "end": 220
+              }
+            },
+            {
+              "type": "Text",
+              "value": "(organic.",
+              "loc": {
+                "start": 220,
+                "end": 229
+              }
+            }
+          ],
+          "loc": {
+            "start": 175,
+            "end": 230
+          }
+        }
+      ],
+      "loc": {
+        "start": 165,
+        "end": 230
+      }
+    }
+  ]
+}

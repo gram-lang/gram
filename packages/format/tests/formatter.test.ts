@@ -396,7 +396,7 @@ describe("formatGram and sums of quantities", () => {
 describe("a temperature's note (1.5)", () => {
 	it("keeps a glued note while fixing the braces", () => {
 		expect(
-			formatGram("## T\n\n^{160.0°C}(chaleur tournante)\n").content,
+			formatGram("## T\n\n^{160.0 °C}(chaleur tournante)\n").content,
 		).toContain("^{160°C}(chaleur tournante)");
 	});
 
@@ -404,5 +404,21 @@ describe("a temperature's note (1.5)", () => {
 		expect(
 			formatGram("## T\n\nCuire à ^{180°C} (four préchauffé).\n").content,
 		).toContain("^{180°C} (four préchauffé).");
+	});
+});
+
+describe("a temperature with a space and trailing zeros", () => {
+	it("is fixed in a single run", () => {
+		const { content, changes } = formatGram("## T\n\nBake at ^{160.0 °C}.\n");
+		expect(content).toContain("^{160°C}");
+		expect(changes.temperatureSpacing).toBe(1);
+		expect(changes.trailingZeros).toBe(1);
+		expect(formatGram(content).content).toBe(content);
+	});
+
+	it("keeps the zeros that matter", () => {
+		expect(formatGram("## T\n\nHeat to ^{37.50 °C}.\n").content).toContain(
+			"^{37.5°C}",
+		);
 	});
 });

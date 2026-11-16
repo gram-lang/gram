@@ -199,6 +199,18 @@ export function formatGram(source: string): {
 		return `{${trimmed}}`;
 	});
 
+	// Rule 5: Remove space before ° in temperature quantities (handles multiple temps per brace).
+	// Runs before rule 4, whose patterns allow no space before the unit: in
+	// the other order `{160.0 °C}` only became `{160.0°C}`, and a second run
+	// was needed to drop the zero.
+	body = body.replace(/\{([^}]*)\}/g, (_, inner) => {
+		const fixed = inner.replace(/(\d+)\s+°/g, (_m: string, n: string) => {
+			changes.temperatureSpacing++;
+			return `${n}°`;
+		});
+		return `{${fixed}}`;
+	});
+
 	// Rule 4: Remove trailing decimal zeros in quantities ({500.0g} → {500g}, {1.50g} → {1.5g}),
 	// after a point or a comma ({1,50} → {1,5}). A comma followed by exactly three
 	// digits ({1,000}) is left as written: it may be a thousands separator, which
@@ -241,15 +253,6 @@ export function formatGram(source: string): {
 			return digits ? `${n}${sep}${digits}${unit}` : `${n}${unit}`;
 		});
 		return `{${trimmed.join("")}}`;
-	});
-
-	// Rule 5: Remove space before ° in temperature quantities (handles multiple temps per brace)
-	body = body.replace(/\{([^}]*)\}/g, (_, inner) => {
-		const fixed = inner.replace(/(\d+)\s+°/g, (_m: string, n: string) => {
-			changes.temperatureSpacing++;
-			return `${n}°`;
-		});
-		return `{${fixed}}`;
 	});
 
 	// Rule 6 (from language-server): normalize composite separator spacing

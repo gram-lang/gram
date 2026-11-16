@@ -157,7 +157,10 @@ GRAM {
   // first word) and the braces leaked into prose -- merging distinct ingredients.
   // Each "-- malformed" branch below turns that into a readable error instead.
   malformedBraces = "{" (~("}" | nl) any)* ("}" | &nl | end)
-  preparation = "(" (~")" any)* ")"
+  // On one line: an unclosed `(` is prose, never the start of a preparation
+  // that would run to the next `)` further down the recipe, over blank lines
+  // and section headers.
+  preparation = "(" (~(")" | nl) any)* ")"
   // `modifier*` mirrors simpleIngredient: a composite parent is an ingredient
   // reference like any other, and authors (and AI importers) write `<@&parent`
   // to mark a parent already introduced earlier. Without it, `refName` rejected
