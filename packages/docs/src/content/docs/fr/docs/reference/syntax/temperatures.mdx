@@ -4,6 +4,7 @@ description: "Définissez des ^températures exactes ou sémantiques en Celsius 
 ---
 
 import { CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 Les consignes thermiques de cuisson se déclarent au sein des étapes de recette à l'aide du symbole `^`.
 
@@ -44,6 +45,33 @@ Baisser à ^{feu doux} et laisser mijoter.
 Lorsque le compilateur Gram traite un élément `^température` :
 - Si le texte entre accolades débute par un chiffre, il est analysé comme une **température exacte** et son unité est validée.
 - S'il commence par une lettre ou un mot, l'ensemble du contenu est traité comme une **température sémantique**.
+:::
+
+## Mode de cuisson et précisions
+<Since v="1.5.0" />
+
+Une précision entre parenthèses, collée à l'accolade fermante, accompagne la température : le mode du four, l'endroit où on la mesure, la façon de cuire. Elle s'écrit sur les températures exactes comme sémantiques, nommées ou non, comme la préparation d'un ingrédient.
+
+```gram
+Préchauffer le #four à ^{160°C}(chaleur tournante).
+
+Rôtir jusqu'à ^{63°C}(à cœur).
+
+Faire revenir sur ^plaque{feu vif}(à découvert) pendant ~{5min}.
+```
+
+La précision s'affiche toujours à côté de la température, à l'écran comme sur papier : cuire à 160 °C en chaleur tournante ou en statique, ce n'est pas la même chose. C'est un mot pour le cuisinier, dans la langue de la recette : Gram la garde telle quelle et ne l'interprète jamais.
+
+:::caution[Pas d'espace avant la parenthèse]
+Seule une parenthèse collée à la `}` est une précision, et elle se termine sur la même ligne. Avec un espace, la parenthèse reste dans la phrase :
+
+```gram
+Cuire à ^{180°C}(chaleur tournante).
+
+Cuire à ^{180°C} (le four doit être bien chaud).
+```
+
+La première température porte la précision `chaleur tournante` ; la seconde n'en a pas, et `(le four doit être bien chaud)` reste du texte.
 :::
 
 ## Gestion des erreurs

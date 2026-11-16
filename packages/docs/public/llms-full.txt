@@ -1085,6 +1085,33 @@ When the Gram compiler inspects a `^temperature` token:
 - If it starts with non-numeric text, it is treated as a **Semantic temperature** string.
 :::
 
+## Cooking mode and notes
+*(since v1.5.0)*
+
+A note in parentheses, right after the closing brace, says what goes with the temperature: the oven mode, where it is measured, how to cook. It works on exact and semantic temperatures, named or not, the way a preparation follows an ingredient.
+
+```gram
+Preheat the #oven to ^{160°C}(fan).
+
+Roast until the meat reaches ^{63°C}(internal).
+
+Cook on ^stove{high heat}(uncovered) for ~{5min}.
+```
+
+The note is always shown next to the temperature, on screen and on paper, since baking at 160 °C fan or conventional is not the same thing. It is words for the cook, in the recipe's language: Gram keeps it as written and never reads it.
+
+:::caution[No space before the parenthesis]
+Only a parenthesis that touches the `}` is a note, and it ends on the same line. With a space, the parenthesis stays part of the sentence:
+
+```gram
+Bake at ^{180°C}(fan).
+
+Bake at ^{180°C} (the oven must be hot).
+```
+
+The first temperature has the note `fan`; the second has none, and `(the oven must be hot)` is ordinary text.
+:::
+
 ## Error handling
 
 Only Celsius and Fahrenheit temperature scales are supported. The compiler emits structured warnings when encountering malformed temperature values:
@@ -1540,6 +1567,7 @@ Specialized patterns for flexible culinary instructions:
 | **Passive timer** | `~_` | `~_{1h}` | Represents resting/rising time without blocking the cook. |
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
+| **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown; the parenthesis touches the brace. Since 1.5.0. |
 | **Fractions** | `n/d` or Unicode | `@flour{1 1/2 cups}`, `@sugar{½ cup}` | Fully supported across imperial and metric systems. |
 | **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Kept as written and added up; a volume and a weight stay side by side. Since 1.5.0. |
 
@@ -1660,6 +1688,15 @@ Quantities and timers need a real number (or empty braces for "to taste"); fuzzy
 ❌  @flour{1 cup 5 tbsp}    →   ✅  @flour{1 cup + 5 tbsp}
 ```
 Write an amount the recipe gives in several measures as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities), exactly as the source says it: "1 cup plus 1 tablespoon" is `{1 cup + 1 tbsp}`, "1 cup minus 2 tablespoons" is `{1 cup - 2 tbsp}`, and a volume next to a weight is fine (`{1 cup + 20 g}`). Don't work it out into one number either (`{1.0625 cup}`, `{17 tbsp}`): Gram adds the terms itself and shows them as the cook measures them. Every term needs its unit, and a term is only an amount: no percentage (`{100g + 10%}`), no multiplication (`{2 x 100g}`), no range after `-` (a range may be a term that is added: `{1 cup + 1-2 tbsp}`).
+
+### The oven mode left in the prose
+*(since v1.5.0)*
+
+```gram
+❌  Bake at ^{160°C} fan.         →   ✅  Bake at ^{160°C}(fan).
+❌  Bake at ^{180°C} (fan).       →   ✅  Bake at ^{180°C}(fan).
+```
+What goes with a temperature (the oven mode, "internal", "covered") belongs in a [note](/docs/reference/syntax/temperatures/#cooking-mode-and-notes) glued to the closing brace, in the recipe's language. With a space before it, the parenthesis is ordinary text and the note is lost.
 
 ### Using `@&` on the first occurrence
 
