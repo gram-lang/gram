@@ -257,56 +257,93 @@ function standardizeSectionMasses(
  * Pass 1.5: resolves Relative Quantities (`% of &target`), mutating
  * `sections` in place. Must run after `standardizeSectionMasses` — it reads
  * the `normalizedMass` that pass just computed on the target ingredient.
+ *
+ * The options of an alternative (`@butter{10% @&flour}|@oil{8% @&flour}`)
+ * are resolved too, after the section's other ingredients, each one for
+ * itself: an option never adds to the others, since only one is bought. An
+ * option may also take a share of an earlier option of the same group
+ * (`@butter{100 g}|@oil{80% @&butter}`, "or 80% of that weight in oil"),
+ * the one scope kitchen gives it besides the section; that earlier option
+ * then wins over the section's own mentions.
  */
 function resolveRelativeQuantities(
 	sections: AnalyzedSection[],
 	warnings: CompilationResult["warnings"],
 ): void {
 	sections.forEach((sec) => {
+		// The target's mentions in the section: an ingredient (`@&flour`),
+		// or a reference written with its amount (`&dough{200 g}`), which
+		// sits in `sec.ingredients` under the same id. An alternative's
+		// wrapper (id "alternative") never matches a target.
+		const sectionMentions = sec.ingredients;
+
 		sec.ingredients.forEach((item) => {
-			// A ratio with units (`1 / 100 g @&flour`) is kitchen's to resolve.
-			if (item.formula && "percent" in item.formula) {
-				const targetId = item.dependencies?.[0];
+			if (item.type === "alternative") return;
+			resolveRelativeUsage(item, sectionMentions, warnings);
+		});
 
-				let targetMass = 0;
-				let foundMass = false;
-
-				// The target's mentions in the section: an ingredient (`@&flour`),
-				// or a reference written with its amount (`&dough{200 g}`), which
-				// sits in `sec.ingredients` under the same id.
-				if (targetId) {
-					sec.ingredients.forEach((other) => {
-						if (other.id === targetId && other.normalizedMass !== undefined) {
-							targetMass += other.normalizedMass;
-							foundMass = true;
-						}
-					});
-				}
-
-				if (foundMass && targetMass > 0) {
-					const calculatedMass = (item.formula.percent / 100) * targetMass;
-					item.normalizedMass = round2(calculatedMass);
-					// `Usage.qty` accepts QuantityValueAST's "single"/"fraction"/
-					// "range" variants, never a raw QuantityAST (`type:
-					// ASTNodeType.Quantity` = the literal string "Quantity") —
-					// this happened to still render correctly only because
-					// renderer's getQty() has an untyped fallback that reads
-					// `.value` off *any* object shape, ignoring `.type`. `unit`
-					// isn't part of QuantityValueAST either — `item.unit` below
-					// is the real, and only, place that's read from.
-					item.qty = { type: "single", value: item.normalizedMass };
-					item.unit = "g";
-					item.conversionMethod = "relative";
-				} else {
-					warnings.push({
-						code: WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS,
-						message: `Cannot compute relative quantity for '${item.name || item.id}' because the mass of target '${item.formula.target}' is unknown.`,
-						item: item.name || item.id,
-					});
-				}
-			}
+		sec.ingredients.forEach((item) => {
+			if (item.type !== "alternative" || !Array.isArray(item.options)) return;
+			const earlierOptions: AnalyzedUsage[] = [];
+			item.options.forEach((opt) => {
+				if (typeof opt === "string" || !("id" in opt) || !opt.id) return;
+				const option = opt as AnalyzedUsage;
+				const targetId = option.dependencies?.[0];
+				const sibling = earlierOptions.some((o) => o.id === targetId);
+				resolveRelativeUsage(
+					option,
+					sibling ? earlierOptions : sectionMentions,
+					warnings,
+				);
+				earlierOptions.push(option);
+			});
 		});
 	});
+}
+
+/** Resolves one `% of &target` usage against the mentions it may target. */
+function resolveRelativeUsage(
+	item: AnalyzedUsage,
+	mentions: AnalyzedUsage[],
+	warnings: CompilationResult["warnings"],
+): void {
+	// A ratio with units (`1 / 100 g @&flour`) is kitchen's to resolve.
+	if (!item.formula || !("percent" in item.formula)) return;
+	const targetId = item.dependencies?.[0];
+
+	let targetMass = 0;
+	let foundMass = false;
+
+	if (targetId) {
+		mentions.forEach((other) => {
+			if (other.id === targetId && other.normalizedMass !== undefined) {
+				targetMass += other.normalizedMass;
+				foundMass = true;
+			}
+		});
+	}
+
+	if (foundMass && targetMass > 0) {
+		const calculatedMass = (item.formula.percent / 100) * targetMass;
+		item.normalizedMass = round2(calculatedMass);
+		// `Usage.qty` accepts QuantityValueAST's "single"/"fraction"/
+		// "range" variants, never a raw QuantityAST (`type:
+		// ASTNodeType.Quantity` = the literal string "Quantity") —
+		// this happened to still render correctly only because
+		// renderer's getQty() has an untyped fallback that reads
+		// `.value` off *any* object shape, ignoring `.type`. `unit`
+		// isn't part of QuantityValueAST either — `item.unit` below
+		// is the real, and only, place that's read from.
+		item.qty = { type: "single", value: item.normalizedMass };
+		item.unit = "g";
+		item.conversionMethod = "relative";
+	} else {
+		warnings.push({
+			code: WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS,
+			message: `Cannot compute relative quantity for '${item.name || item.id}' because the mass of target '${item.formula.target}' is unknown.`,
+			item: item.name || item.id,
+		});
+	}
 }
 
 /**
@@ -444,6 +481,20 @@ function enrichShoppingList(
 	overrides: Record<string, number>,
 	opts: AnalyzerOptions,
 ): CompilationResult["shopping_list"] {
+	// The options of an alternative whose percentage pass 1.5 resolved, by
+	// `_usageId`: the shopping list holds its own copy of each option.
+	const resolvedOptions = new Map<string, AnalyzedUsage>();
+	allRawIngredients.forEach((usage) => {
+		if (usage.type !== "alternative" || !Array.isArray(usage.options)) return;
+		usage.options.forEach((opt) => {
+			if (typeof opt === "string" || !("_usageId" in opt)) return;
+			const option = opt as AnalyzedUsage;
+			if (option._usageId && option.conversionMethod === "relative") {
+				resolvedOptions.set(option._usageId, option);
+			}
+		});
+	});
+
 	shoppingList.forEach((item) => {
 		if (opts.enableMassStandardization !== false) {
 			if (
@@ -498,6 +549,19 @@ function enrichShoppingList(
 				// standardizeUsageMass needs an object with an `id`.
 				item.options.forEach((opt) => {
 					if (typeof opt === "string" || !("id" in opt) || !opt.id) return;
+					// A percentage option was resolved on the section's copy
+					// (pass 1.5): the shopping list buys that amount.
+					const option = opt as Usage;
+					const resolved = option._usageId
+						? resolvedOptions.get(option._usageId)
+						: undefined;
+					if (resolved) {
+						option.qty = resolved.qty;
+						option.unit = resolved.unit;
+						option.normalizedMass = resolved.normalizedMass;
+						option.conversionMethod = resolved.conversionMethod;
+						return;
+					}
 					standardizeUsageMass(
 						opt,
 						database,

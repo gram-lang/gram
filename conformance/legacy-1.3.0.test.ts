@@ -21,7 +21,10 @@ import { fileURLToPath } from "node:url";
  * written with no number is no longer lost from the shopping list: its entry
  * lists it in `variable_entries` (026, `{1/0 cups}`, whose fraction has no
  * value). That fraction now raises an `INVALID_QUANTITY` warning, where it
- * used to vanish without a word (026 again, `warnings` only).
+ * used to vanish without a word (026 again, `warnings` only). And the
+ * goldens no longer carry the analyzer's warnings, which `analyze()` used to
+ * add to the compiled result it was given (the compiler never raised them:
+ * warn-001, warn-002, warn-009, warn-010 and warn-011, `warnings` only).
  *
  * The digests come from the tag's goldens: `canonical(json)` below, sha256, hex.
  */

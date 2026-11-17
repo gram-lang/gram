@@ -40,13 +40,14 @@ Ajouter le @sel{2% &pâte}. // 2% de la masse totale de la variable &pâte
 
 ## Règles de résolution
 
-Lors de l'évaluation d'une quantité relative, le compilateur observe trois règles de portée et de calcul :
+Lors de l'évaluation d'une quantité relative, le compilateur observe quatre règles de portée et de calcul :
 
 | Règle | Portée | Description |
 | :--- | :--- | :--- |
 | **Portée de section** | Section courante uniquement | Il n'est pas possible de cibler directement un ingrédient brut déclaré dans une autre section. Pour traverser les sections, capturez le résultat dans une `&variable` intermédiaire globale. |
 | **Accumulation** | Somme des occurrences | Si le même `@ingrédient` cible apparaît plusieurs fois dans la section, le pourcentage est appliqué sur la **somme totale cumulée** de ces quantités. |
 | **Calcul en masse** | Évalué en grammes | Les calculs reposent invariablement sur la **masse physique en grammes**. Par exemple, 50% de « 2 œufs » (calibrés à 50g l'unité) produira **50g**, et non 1 œuf. |
+| **Alternatives** | Une option à la fois | Chaque option d'une alternative reçoit sa propre quantité, sans jamais s'additionner aux autres : pour 200 g de farine, `@beurre{10% @&farine}\|@huile{8% @&farine}` se lit « 20 g de beurre ou 16 g d'huile ». Une option peut aussi se calculer sur une option qui la précède dans le même groupe : `@beurre{100g}\|@huile{80% @&beurre}`. |
 
 ## Règles de calcul des masses
 
