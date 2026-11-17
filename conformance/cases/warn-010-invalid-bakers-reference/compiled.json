@@ -131,13 +131,7 @@
       ]
     }
   ],
-  "warnings": [
-    {
-      "code": "INVALID_BAKERS_REFERENCE",
-      "message": "Cannot use 'sugar' as the Baker's Percentage reference: its quantity is itself computed from another ingredient's percentage, not an absolute mass.",
-      "item": "sugar"
-    }
-  ],
+  "warnings": [],
   "metrics": {
     "totalTime": 4,
     "totalBreakdown": [
