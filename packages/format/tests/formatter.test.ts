@@ -422,3 +422,52 @@ describe("a temperature with a space and trailing zeros", () => {
 		);
 	});
 });
+
+describe("a target state (1.5)", () => {
+	const format = (line: string) => formatGram(`${line}\n`).content.trimEnd();
+
+	it("only has the spaces inside its braces trimmed", () => {
+		expect(format("Cuire jusqu'à ={ la nappe }.")).toBe(
+			"Cuire jusqu'à ={la nappe}.",
+		);
+	});
+
+	it("keeps its words as written: numbers, units, signs", () => {
+		for (const line of [
+			"Cuire jusqu'à ={180 °C à cœur}.",
+			"Étaler jusqu'à ={1.0cm}.",
+			"Abaisser jusqu'à ={2,50mm}.",
+			"Battre @oeufs jusqu'à ={1 cup+1 tbsp}.",
+			"Saler avec @sel jusqu'à ={goût}.",
+		]) {
+			expect(format(line)).toBe(line);
+		}
+	});
+
+	it("keeps its note, glued or spaced, as written", () => {
+		for (const line of [
+			"Cuire jusqu'à ={la nappe}(la crème nappe la cuillère).",
+			"Fouetter jusqu'au ={ruban} (environ 5 min).",
+		]) {
+			expect(format(line)).toBe(line);
+		}
+	});
+
+	it("leaves the quantities around it formatted as before", () => {
+		expect(
+			format("Battre @sucre{80.0g} et @lait{1 cup+1 tbsp} jusqu'à ={ruban}."),
+		).toBe("Battre @sucre{80g} et @lait{1 cup + 1 tbsp} jusqu'à ={ruban}.");
+	});
+
+	it("is a fixed point that still parses to the same target states", () => {
+		const src = "## T\n\nCuire à ^{82.0 °C} jusqu'à ={ la nappe }(test).\n";
+		const once = formatGram(src).content;
+		expect(formatGram(once).content).toBe(once);
+		// biome-ignore lint/suspicious/noExplicitAny: walking a parsed AST in tests.
+		const step = (getAST(once).children[0] as any).children[0];
+		// biome-ignore lint/suspicious/noExplicitAny: walking a parsed AST in tests.
+		expect(
+			step.children.find((c: any) => c.type === "Checkpoint"),
+		).toMatchObject({ state: "la nappe", note: "test" });
+	});
+});
