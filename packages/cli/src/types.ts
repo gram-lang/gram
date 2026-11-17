@@ -113,10 +113,31 @@ export interface DbValidateResult {
 	hasErrors: boolean;
 }
 
+/**
+ * An amount on the shopping list as numbers, for a script to read: `amount`
+ * a plain number (the middle of a range), `unit` canonical (`tbsp` for
+ * `tablespoons` or `c. à s.`), `null` for a count.
+ */
+export interface ShoppingAmount {
+	amount: number;
+	unit: string | null;
+	/** The bounds of a range (`13-14 tbsp`); absent otherwise. */
+	range?: { min: number; max: number };
+}
+
 export interface ShoppingEntry {
 	id: string;
 	name: string;
+	/** The amount as a reader sees it (`2 cup + 3 tbsp`, `3,9 kg`, `-`). */
 	displayQty: string;
+	/** The total as a number; `null` with no number, or units that do not add up (see `parts`). */
+	amount: number | null;
+	unit: string | null;
+	range?: { min: number; max: number };
+	/** The amounts listed apart when their units do not add up (`1 1/2 cups + 70 g`). */
+	parts?: ShoppingAmount[];
+	/** What could not be turned into a number (`(2% of dough ❓)`): not counted in `amount`. */
+	unresolved?: string[];
 	isEstimate: boolean;
 	recipes: string[];
 	category: string;

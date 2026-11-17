@@ -176,6 +176,17 @@ gram shop "menus/*.gram" --scale 4    # Batch cooking × 4
 - When a glob or multiple files are provided, files imported (via `@use`) by other recipes in the batch are excluded by default to avoid duplicate shopping list entries. Pass `--include-modules` to include them.
 - Options: `--format terminal|md|json`, `--output/-o <file>`, `--scale <factor>`, `--db`, `--skip-db`, `--include-modules`, and the analyzer's [settings flags](#settings-flags).
 
+With `--format json`, each item keeps `qty`, the amount as a reader sees it (`2 cup + 3 tbsp`, `3,9 kg`), and also gives it as numbers, for a script to read <Since v="1.5.0" />:
+- `amount` is a plain number, in the unit `qty` shows (`3.9` with `"unit": "kg"`), never written with a decimal comma. `null` when the ingredient has no number, or when its units do not add up.
+- `unit` is the canonical unit (`tbsp` for `tablespoons` or `c. à s.`), `null` for a count (`@eggs{4}`). Cups and spoons add up in the smallest unit written: `2 cup + 3 tbsp` gives `"amount": 35, "unit": "tbsp"`.
+- `range` gives the bounds of a range (`{ "min": 13, "max": 14 }`); `amount` is then its middle.
+- `parts` lists the amounts whose units do not add up, as `qty` writes them (`1 1/2 cups + 70 g` gives `[{ "amount": 1.5, "unit": "cup" }, { "amount": 70, "unit": "g" }]`).
+- `unresolved` lists what could not be turned into a number (`(2% of dough ❓)`): it is never counted in `amount`.
+
+```json
+{ "id": "salt", "name": "salt", "qty": "3 g + (2% of dough ❓)", "amount": 3, "unit": "g", "unresolved": ["(2% of dough ❓)"], "isEstimate": false, "category": "Spices", "recipes": ["brioche"] }
+```
+
 #### `gram cook <file>`
 Launches an interactive step-by-step cooking guide directly in the terminal.
 ```bash

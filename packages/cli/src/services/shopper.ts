@@ -5,8 +5,12 @@ import {
 	getCategoryLabels,
 	isCategoryKey,
 	mergeTerms,
+	normalizeUnit,
+	round2,
 	type Term,
+	termValueNumber,
 	toLargerMetricUnit,
+	UNIT_CONVERSIONS,
 } from "@gram-lang/i18n";
 import { termsOfUsage } from "@gram-lang/kitchen";
 import { runPipeline } from "../core/pipeline";
@@ -19,6 +23,7 @@ import type {
 import { resolveCanonicalId } from "@gram-lang/analyzer";
 import type {
 	ShopResult,
+	ShoppingAmount,
 	ShoppingEntry,
 	ModuleResolutionOptions,
 } from "../types";
@@ -49,11 +54,65 @@ interface CollectedItem {
 	fileIndex: number;
 }
 
-/** A mass in grams on the shopping list: 1000 g or more in kg. */
-function formatMass(grams: number, lang: string): string {
-	const larger = toLargerMetricUnit(grams, "g");
-	return `${fmtNumber(larger.value, larger.unit === "g" ? 0 : 2, lang)} ${larger.unit}`;
+/** A mass in grams on the shopping list, 1000 g or more in kg: as numbers and as written. */
+function shoppingMass(
+	grams: number,
+	lang: string,
+): { amount: ShoppingAmount; text: string } {
+	const { value, unit } = toLargerMetricUnit(grams, "g");
+	return {
+		amount: { amount: value, unit },
+		text: `${fmtNumber(value, unit === "g" ? 0 : 2, lang)} ${unit}`,
+	};
 }
+
+/** How many `to` one `from` makes, two metric units of one kind (`g` to `kg`: 0.001). */
+function metricRatio(from: string, to: string, lang: string): number {
+	const canonical = normalizeUnit(from, lang);
+	for (const { map } of [UNIT_CONVERSIONS.mass, UNIT_CONVERSIONS.volume]) {
+		const a = map[canonical];
+		const b = map[to];
+		if (a !== undefined && b !== undefined) return a / b;
+	}
+	return 1;
+}
+
+/**
+ * One term of the total as numbers, in the unit `displayQty` writes it in:
+ * 1000 g or more in kg, decided on the upper bound of a range as the recipe
+ * view does (`800-1100 g` is `0.8-1.1 kg`). A term taken away is negative.
+ * The unit is canonical (`tbsp` for `tablespoons` or `c. à s.`), so a script
+ * reads one spelling. `null` when the term holds no number.
+ */
+function amountOf(term: Term, lang: string): ShoppingAmount | null {
+	const middle = termValueNumber(term.value);
+	if (middle === null) return null;
+	const bounds =
+		typeof term.value === "object" && term.value.type === "range"
+			? term.value.range
+			: undefined;
+	let unit = term.unit || null;
+	let factor = term.minus ? -1 : 1;
+	if (unit && !term.minus) {
+		const larger = toLargerMetricUnit(bounds?.max ?? middle, unit, lang).unit;
+		if (larger !== unit) {
+			factor = metricRatio(unit, larger, lang);
+			unit = larger;
+		}
+	}
+	const num = (n: number) => round2(n * factor);
+	const amount: ShoppingAmount = {
+		amount: num(middle),
+		unit: unit ? normalizeUnit(unit, lang) : null,
+	};
+	if (bounds) {
+		const [a, b] = [num(bounds.min), num(bounds.max)];
+		amount.range = { min: Math.min(a, b), max: Math.max(a, b) };
+	}
+	return amount;
+}
+
+const NO_AMOUNT = { amount: null, unit: null } as const;
 
 // This used to be its own hardcoded list that didn't match the canonical
 // categories i18n defines — not even in English ("Fish" vs "Seafood",
@@ -164,9 +223,12 @@ export async function buildShoppingList(
 		const recipes = [...new Set(items.map((i) => i.recipe))];
 		const displayName = items[0]?.name ?? id;
 		const category = resolveCategoryLabel(opts.db?.[id]?.category);
-		const extras = items.flatMap((i) => i.extras ?? []).join(" + ");
+		const unresolved = items.flatMap((i) => i.extras ?? []);
+		const extras = unresolved.join(" + ");
 		const withExtras = (displayQty: string) =>
 			extras ? `${displayQty} + ${extras}` : displayQty;
+		// Never counted in `amount`: a script sees the total is not complete.
+		const unresolvedField = unresolved.length > 0 ? { unresolved } : {};
 
 		const qtyItems = items.filter((i) => i.terms.length > 0);
 
@@ -175,6 +237,8 @@ export async function buildShoppingList(
 				id,
 				name: displayName,
 				displayQty: extras || "-",
+				...NO_AMOUNT,
+				...unresolvedField,
 				isEstimate: false,
 				recipes,
 				category,
@@ -183,8 +247,11 @@ export async function buildShoppingList(
 			continue;
 		}
 
-		let fullyAggregated = false;
-		let finalEntry: Partial<ShoppingEntry> = {};
+		let total: {
+			displayQty: string;
+			amount: ShoppingAmount | null;
+			isEstimate: boolean;
+		} | null = null;
 
 		if (opts.db) {
 			const massItems = qtyItems.filter((i) => i.normalizedMass != null);
@@ -193,9 +260,10 @@ export async function buildShoppingList(
 					(sum, i) => sum + (i.normalizedMass ?? 0),
 					0,
 				);
-				fullyAggregated = true;
-				finalEntry = {
-					displayQty: formatMass(Math.round(totalMass), lang),
+				const mass = shoppingMass(Math.round(totalMass), lang);
+				total = {
+					displayQty: mass.text,
+					amount: mass.amount,
 					isEstimate: massItems.some((i) => i.isEstimate),
 				};
 			}
@@ -212,17 +280,22 @@ export async function buildShoppingList(
 			{ terms: merged },
 			{ lang, buying: true, scaled: isScaledFactor(opts.scaleFactor) },
 		);
-		if (!fullyAggregated && merged.length === 1) {
-			fullyAggregated = true;
-			finalEntry = { displayQty: amount, isEstimate: false };
+		if (!total && merged.length === 1) {
+			total = {
+				displayQty: amount,
+				amount: amountOf(merged[0] as Term, lang),
+				isEstimate: false,
+			};
 		}
 
-		if (fullyAggregated) {
+		if (total) {
 			entries.push({
 				id,
 				name: displayName,
-				displayQty: withExtras(finalEntry.displayQty!),
-				isEstimate: finalEntry.isEstimate!,
+				displayQty: withExtras(total.displayQty),
+				...(total.amount ?? NO_AMOUNT),
+				...unresolvedField,
+				isEstimate: total.isEstimate,
 				recipes,
 				category,
 				cannotAggregate: false,
@@ -241,6 +314,10 @@ export async function buildShoppingList(
 				id,
 				name: displayName,
 				displayQty: withExtras(amount),
+				...NO_AMOUNT,
+				// The same terms `displayQty` writes, one per unit that adds up.
+				parts: merged.flatMap((t) => amountOf(t, lang) ?? []),
+				...unresolvedField,
 				isEstimate: false,
 				recipes,
 				category,

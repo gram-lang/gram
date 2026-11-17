@@ -176,6 +176,17 @@ gram shop "menus/*.gram" --scale 4    # Préparation par lots × 4
 - Lorsqu'un motif de recherche ou plusieurs fichiers sont fournis, les recettes importées (via `@use`) par d'autres fichiers du lot sont exclues par défaut pour éviter les doublons sur la liste de courses consolidée. Spécifiez `--include-modules` pour les inclure malgré tout.
 - Options : `--format terminal|md|json`, `--output/-o <fichier>`, `--scale <facteur>`, `--db`, `--skip-db`, `--include-modules`, ainsi que les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur.
 
+Avec `--format json`, chaque article garde `qty`, la quantité telle qu'on la lit (`2 cup + 3 tbsp`, `3,9 kg`), et la donne aussi en nombres, pour qu'un script s'en serve directement <Since v="1.5.0" /> :
+- `amount` est un nombre brut, dans l'unité qu'affiche `qty` (`3.9` avec `"unit": "kg"`), jamais écrit avec une virgule. Il vaut `null` si l'ingrédient n'a pas de quantité chiffrée, ou si ses unités ne s'additionnent pas.
+- `unit` est l'unité canonique (`tbsp` pour `tablespoons` comme pour `c. à s.`), `null` pour un nombre de pièces (`@oeufs{4}`). Tasses et cuillères s'additionnent dans la plus petite unité écrite : `2 cup + 3 tbsp` donne `"amount": 35, "unit": "tbsp"`.
+- `range` donne les bornes d'une fourchette (`{ "min": 13, "max": 14 }`) ; `amount` en est alors le milieu.
+- `parts` liste les quantités dont les unités ne s'additionnent pas, comme `qty` les écrit (`1 1/2 cups + 70 g` donne `[{ "amount": 1.5, "unit": "cup" }, { "amount": 70, "unit": "g" }]`).
+- `unresolved` liste ce qui n'a pas pu être chiffré (`(2% of pâte ❓)`) : ce n'est jamais compté dans `amount`.
+
+```json
+{ "id": "sel", "name": "sel", "qty": "3 g + (2% of pâte ❓)", "amount": 3, "unit": "g", "unresolved": ["(2% of pâte ❓)"], "isEstimate": false, "category": "Épices", "recipes": ["brioche"] }
+```
+
 #### `gram cook <fichier>`
 Lance un guide de cuisine interactif pas à pas, directement au sein du terminal.
 ```bash

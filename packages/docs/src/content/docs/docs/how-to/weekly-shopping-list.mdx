@@ -53,6 +53,8 @@ gram shop "menus/*.gram" --format md --output shopping-list.md
 gram shop "menus/*.gram" --format json --output shopping-list.json
 ```
 
+Besides the amount as you read it (`qty`), the JSON gives each ingredient's amount as numbers (`amount`, `unit`), so a script or an app can sort, add up or compare them without reading the text. The [CLI reference](/docs/reference/tooling/cli/#gram-shop-pattern) describes every field.
+
 ## Related resources
 
 <CardGrid>
