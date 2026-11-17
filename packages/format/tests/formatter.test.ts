@@ -337,6 +337,19 @@ describe("formatGram and sums of quantities", () => {
 		}
 	});
 
+	it("never spaces the name of a relative quantity's target", () => {
+		for (const step of [
+			"Add @cacao{5% @&chocolat-70}.",
+			"Add @salt{2% &dough-2}.",
+			"Add @eggs{1 / 100 g @&crème-30%}.",
+		]) {
+			const first = format(step);
+			expect(first.content).toBe(`${step}\n`);
+			expect(first.changes.quantityOperatorSpacing).toBe(0);
+			expect(formatGram(first.content).content).toBe(first.content);
+		}
+	});
+
 	it("removes trailing zeros term by term, not a thousands comma", () => {
 		const { content, changes } = format(
 			"Add @flour{1.50 cup + 2.0 tbsp} and @sugar{1,000 g + 1 kg}.",

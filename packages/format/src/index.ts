@@ -148,6 +148,9 @@ function braceOwner(body: string, offset: number): BraceOwner {
 const isCheckpoint = (body: string, offset: number) =>
 	braceOwner(body, offset) === "checkpoint";
 
+/** A target after the first character: `5% @&flour`, `1 / 100 g &dough`. */
+const HAS_TARGET = /.(?:@&|&)/u;
+
 /**
  * One space around each operator of a sum: a `+` between an amount and a
  * number, a `-` only after a unit (`1 cup-2 tbsp`), never between two
@@ -259,6 +262,9 @@ export function formatGram(source: string): {
 	// one space around each operator, and rule 4 term by term.
 	body = body.replace(/\{([^{}\n]*)\}/g, (match, inner: string, offset) => {
 		if (braceOwner(body, offset) !== "ingredient") return match;
+		// A quantity relative to a target (`5% @&chocolat-70`) is never a sum:
+		// spacing the `-` of its target's name would rename the target.
+		if (HAS_TARGET.test(inner)) return match;
 		const spaced = spaceSumOperators(inner);
 		if (!SUM_OPERATOR.test(spaced)) return match;
 		if (spaced !== inner) changes.quantityOperatorSpacing++;
