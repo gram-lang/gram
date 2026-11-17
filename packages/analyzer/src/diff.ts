@@ -4,6 +4,7 @@ import type {
 	StepToken,
 	ProcessedTimer,
 	ProcessedTemperature,
+	ProcessedCheckpoint,
 	Usage,
 	ShoppingListItem,
 	CompositeItem,
@@ -107,6 +108,20 @@ export interface TimerDelta {
 	to?: string;
 }
 
+/** A target state (`={ribbon stage}`) added, removed or changed. Since 1.5.0. */
+export interface CheckpointDelta {
+	section: string | null;
+	change: "added" | "removed" | "changed";
+	from?: CheckpointValue;
+	to?: CheckpointValue;
+}
+
+/** A target state as `diffRecipes` compares it. Since 1.5.0. */
+export interface CheckpointValue {
+	state: string;
+	note?: string;
+}
+
 export interface ModuleDelta {
 	uri: string;
 	change: "added" | "removed" | "changed";
@@ -128,6 +143,8 @@ export interface DiffResult {
 	sections: SectionDelta[];
 	temperatures: TemperatureDelta[];
 	timers: TimerDelta[];
+	/** Since 1.5.0. */
+	checkpoints: CheckpointDelta[];
 	modules: ModuleDelta[];
 }
 
@@ -306,6 +323,15 @@ function isProcessedTemperature(
 		token !== null &&
 		"type" in token &&
 		token.type === "temperature"
+	);
+}
+
+function isProcessedCheckpoint(token: StepToken): token is ProcessedCheckpoint {
+	return (
+		typeof token === "object" &&
+		token !== null &&
+		"type" in token &&
+		token.type === "checkpoint"
 	);
 }
 
@@ -633,51 +659,52 @@ function diffSections(
 	return deltas;
 }
 
-function diffTemperatures(
+/** A delta of `diffStepTokens`, the shape the timer, temperature and target state deltas share. */
+type StepTokenDelta<V> = {
+	section: string | null;
+	name?: string;
+	change: "added" | "removed" | "changed";
+	from?: V;
+	to?: V;
+};
+
+/**
+ * The deltas of one kind of step token (timers, temperatures, target
+ * states), section by section: named tokens are paired by name, the others
+ * by position (`matchTokenPairs`), and a pair is a change when its name or
+ * its value differs. A token whose value is `null` (a temperature in words)
+ * is never reported as added or removed.
+ */
+function diffStepTokens<T extends StepToken & { name?: string }, V>(
 	aSections: ProcessedSection[],
 	bSections: ProcessedSection[],
-): TemperatureDelta[] {
-	const aMap = extractTokensByType(aSections, isProcessedTemperature);
-	const bMap = extractTokensByType(bSections, isProcessedTemperature);
+	isMatch: (token: StepToken) => token is T,
+	compared: (token: T) => V | null,
+): StepTokenDelta<V>[] {
+	const aMap = extractTokensByType(aSections, isMatch);
+	const bMap = extractTokensByType(bSections, isMatch);
 	const allKeys = new Set([...aMap.keys(), ...bMap.keys()]);
-	const deltas: TemperatureDelta[] = [];
+	const deltas: StepTokenDelta<V>[] = [];
 
 	for (const key of allKeys) {
-		const sectionTitle = key.startsWith("__pos_") ? null : key;
+		const section = key.startsWith("__pos_") ? null : key;
 		const pairs = matchTokenPairs(aMap.get(key) ?? [], bMap.get(key) ?? []);
 
 		for (const [a, b] of pairs) {
-			if (!a && b) {
-				const to = getTempValue(b);
-				if (to)
-					deltas.push({
-						section: sectionTitle,
-						name: b.name,
-						change: "added",
-						to,
-					});
-				continue;
-			}
-			if (a && !b) {
-				const from = getTempValue(a);
-				if (from)
-					deltas.push({
-						section: sectionTitle,
-						name: a.name,
-						change: "removed",
-						from,
-					});
-				continue;
-			}
-			if (a && b) {
-				const from = getTempValue(a);
-				const to = getTempValue(b);
+			const from = a ? compared(a) : null;
+			const to = b ? compared(b) : null;
+			const name = b?.name ?? a?.name;
+			const named = name !== undefined ? { name } : {};
+			if (!a && to !== null) {
+				deltas.push({ section, ...named, change: "added", to });
+			} else if (!b && from !== null) {
+				deltas.push({ section, ...named, change: "removed", from });
+			} else if (a && b) {
 				const nameChanged = (a.name ?? null) !== (b.name ?? null);
-				const valChanged = JSON.stringify(from) !== JSON.stringify(to);
-				if (nameChanged || valChanged) {
+				if (nameChanged || JSON.stringify(from) !== JSON.stringify(to)) {
 					deltas.push({
-						section: sectionTitle,
-						name: b.name ?? a.name,
+						section,
+						...named,
 						change: "changed",
 						from: from ?? undefined,
 						to: to ?? undefined,
@@ -690,62 +717,43 @@ function diffTemperatures(
 	return deltas;
 }
 
+function diffTemperatures(
+	aSections: ProcessedSection[],
+	bSections: ProcessedSection[],
+): TemperatureDelta[] {
+	return diffStepTokens(
+		aSections,
+		bSections,
+		isProcessedTemperature,
+		getTempValue,
+	);
+}
+
 function diffTimers(
 	aSections: ProcessedSection[],
 	bSections: ProcessedSection[],
 ): TimerDelta[] {
-	const aMap = extractTokensByType(aSections, isProcessedTimer);
-	const bMap = extractTokensByType(bSections, isProcessedTimer);
-	const allKeys = new Set([...aMap.keys(), ...bMap.keys()]);
-	const deltas: TimerDelta[] = [];
+	return diffStepTokens(aSections, bSections, isProcessedTimer, (t) =>
+		fmtTimerQty(t.quantity, t.unit, t.raw),
+	);
+}
 
-	for (const key of allKeys) {
-		const sectionTitle = key.startsWith("__pos_") ? null : key;
-		const pairs = matchTokenPairs(aMap.get(key) ?? [], bMap.get(key) ?? []);
-
-		for (const [a, b] of pairs) {
-			if (!a && b) {
-				deltas.push({
-					section: sectionTitle,
-					name: b.name,
-					change: "added",
-					to: fmtTimerQty(b.quantity, b.unit, b.raw),
-				});
-				continue;
-			}
-			if (a && !b) {
-				deltas.push({
-					section: sectionTitle,
-					name: a.name,
-					change: "removed",
-					from: fmtTimerQty(a.quantity, a.unit, a.raw),
-				});
-				continue;
-			}
-			if (a && b) {
-				const from = fmtTimerQty(a.quantity, a.unit, a.raw);
-				const to = fmtTimerQty(b.quantity, b.unit, b.raw);
-				const nameChanged = (a.name ?? null) !== (b.name ?? null);
-				if (nameChanged || from !== to) {
-					deltas.push({
-						section: sectionTitle,
-						name: b.name ?? a.name,
-						change: "changed",
-						from,
-						to,
-					});
-				}
-			}
-		}
-	}
-
-	return deltas;
+// Target states have no name: paired by position in their section.
+function diffCheckpoints(
+	aSections: ProcessedSection[],
+	bSections: ProcessedSection[],
+): CheckpointDelta[] {
+	return diffStepTokens(aSections, bSections, isProcessedCheckpoint, (t) => ({
+		state: t.state,
+		...(t.note ? { note: t.note } : {}),
+	}));
 }
 
 const SKIP_TOKEN_TYPES = new Set([
 	"declaration",
 	"timer",
 	"temperature",
+	"checkpoint",
 	"comment",
 	"alternative",
 	"composite",
@@ -902,6 +910,7 @@ export function diffRecipes(
 	);
 	const temperatures = diffTemperatures(aSections, bSections);
 	const timers = diffTimers(aSections, bSections);
+	const checkpoints = diffCheckpoints(aSections, bSections);
 	const modules = diffModules(a.modules ?? [], b.modules ?? []);
 	const titleChanged = a.title !== b.title;
 
@@ -915,6 +924,7 @@ export function diffRecipes(
 			meta.length > 0 ||
 			temperatures.length > 0 ||
 			timers.length > 0 ||
+			checkpoints.length > 0 ||
 			modules.length > 0,
 		titleChanged,
 		fromTitle: a.title,
@@ -926,6 +936,7 @@ export function diffRecipes(
 		sections,
 		temperatures,
 		timers,
+		checkpoints,
 		modules,
 	};
 }

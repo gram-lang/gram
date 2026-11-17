@@ -476,6 +476,10 @@ export const fr: GramLocale = {
 		statusWarnings: "Avertissements",
 		copyBtn: "Copier dans le presse-papier",
 	},
+	cook: {
+		targetState: "État attendu :",
+		checkTargetState: "Vérifiez : {states}",
+	},
 	languageServer: {
 		anchorReady: "Prête {duration} avant d'être utilisée.",
 		anchorInDays: "En jours : ouvre sa propre journée de travail.",

@@ -115,21 +115,38 @@ const SUM_OPERATOR = / [+-] /;
 /** A term of a sum whose decimals end in zeros (`1.50 cup`, `2.0 tbsp`). */
 const TERM_TRAILING_ZEROS = /^(\d+)([.,])(\d*?)(0+)(\s*[\p{L}°%].*)?$/u;
 
+/** What the brace at an offset opens (see `braceOwner`). */
+type BraceOwner =
+	| "ingredient"
+	| "timer"
+	| "temperature"
+	| "cookware"
+	| "checkpoint"
+	| "other";
+
 /**
- * True when the brace at `offset` holds an ingredient's amount: the nearest
- * sigil before it on its line is an `@` (an ingredient, a composite parent)
- * or a `&` (a reference), not a `~` (a timer), a `^` (a temperature) or a
- * `#` (cookware).
+ * What the brace at `offset` opens: a target state when an `=` touches it
+ * (`={ribbon stage}`, 1.5), otherwise the element of the nearest sigil
+ * before it on its line, an `@` (an ingredient, a composite parent) or a `&`
+ * (a reference) for an ingredient's amount, a `~` for a timer, a `^` for a
+ * temperature, a `#` for cookware.
  */
-function opensIngredientAmount(body: string, offset: number): boolean {
+function braceOwner(body: string, offset: number): BraceOwner {
+	if (body[offset - 1] === "=") return "checkpoint";
 	for (let i = offset - 1; i >= 0; i--) {
 		const c = body[i];
-		if (c === "\n" || c === "}" || c === "{") return false;
-		if (c === "@" || c === "&") return true;
-		if (c === "~" || c === "^" || c === "#") return false;
+		if (c === "\n" || c === "}" || c === "{") return "other";
+		if (c === "@" || c === "&") return "ingredient";
+		if (c === "~") return "timer";
+		if (c === "^") return "temperature";
+		if (c === "#") return "cookware";
 	}
-	return false;
+	return "other";
 }
+
+/** A target state is words: only rule 3 (spaces inside braces) touches it. */
+const isCheckpoint = (body: string, offset: number) =>
+	braceOwner(body, offset) === "checkpoint";
 
 /**
  * One space around each operator of a sum: a `+` between an amount and a
@@ -203,7 +220,8 @@ export function formatGram(source: string): {
 	// Runs before rule 4, whose patterns allow no space before the unit: in
 	// the other order `{160.0 °C}` only became `{160.0°C}`, and a second run
 	// was needed to drop the zero.
-	body = body.replace(/\{([^}]*)\}/g, (_, inner) => {
+	body = body.replace(/\{([^}]*)\}/g, (match, inner, offset) => {
+		if (isCheckpoint(body, offset)) return match;
 		const fixed = inner.replace(/(\d+)\s+°/g, (_m: string, n: string) => {
 			changes.temperatureSpacing++;
 			return `${n}°`;
@@ -219,16 +237,18 @@ export function formatGram(source: string): {
 		sep === "," && decimals.length === 3;
 	body = body.replace(
 		/\{(\d+)([.,])(0+)([a-zA-Z°%]*)\}/g,
-		(match, n, sep, zeros, u) => {
+		(match, n, sep, zeros, u, offset) => {
 			if (looksLikeThousands(sep, zeros)) return match;
+			if (isCheckpoint(body, offset)) return match;
 			changes.trailingZeros++;
 			return `{${n}${u}}`;
 		},
 	);
 	body = body.replace(
 		/\{(\d+)([.,])(\d*[1-9])(0+)([a-zA-Z°%]*)\}/g,
-		(match, n, sep, digits, zeros, u) => {
+		(match, n, sep, digits, zeros, u, offset) => {
 			if (looksLikeThousands(sep, digits + zeros)) return match;
+			if (isCheckpoint(body, offset)) return match;
 			changes.trailingZeros++;
 			return `{${n}${sep}${digits}${u}}`;
 		},
@@ -238,7 +258,7 @@ export function formatGram(source: string): {
 	// `<@…{`, `&…{`; never a timer's `~{1h30-2h}` nor a temperature's):
 	// one space around each operator, and rule 4 term by term.
 	body = body.replace(/\{([^{}\n]*)\}/g, (match, inner: string, offset) => {
-		if (!opensIngredientAmount(body, offset)) return match;
+		if (braceOwner(body, offset) !== "ingredient") return match;
 		const spaced = spaceSumOperators(inner);
 		if (!SUM_OPERATOR.test(spaced)) return match;
 		if (spaced !== inner) changes.quantityOperatorSpacing++;

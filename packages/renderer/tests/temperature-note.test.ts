@@ -48,17 +48,17 @@ describe("a temperature's note in each format", () => {
 
 	it("HTML: outside the pill, in a group the line may break inside", () => {
 		expect(formatElement(exact, "html", { icons })).toBe(
-			'<span class="temp-group"><span class="temp" data-value="160" data-unit="°C">T 160 °C</span> <span class="prep">(fan)</span></span>',
+			'<span class="note-group"><span class="temp" data-value="160" data-unit="°C">T 160 °C</span> <span class="prep">(fan)</span></span>',
 		);
 		expect(formatElement(inWords, "html", { icons })).toBe(
-			'<span class="temp-group"><span class="temp" data-semantic="high">T high</span> <span class="prep">(covered)</span></span>',
+			'<span class="note-group"><span class="temp" data-semantic="high">T high</span> <span class="prep">(covered)</span></span>',
 		);
 	});
 
 	it("HTML: takes the classes of the context", () => {
 		const html = formatElement(exact, "html", {
 			icons,
-			classes: { temperatureGroup: "g", prepText: "n" },
+			classes: { noteGroup: "g", prepText: "n" },
 		});
 		expect(html).toStartWith('<span class="g">');
 		expect(html).toContain('<span class="n">(fan)</span>');

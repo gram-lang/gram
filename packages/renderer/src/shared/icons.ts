@@ -19,6 +19,10 @@ const thermometerIcon = /* @__PURE__ */ svgIcon(
 	"thermometer",
 	"M212,56a28,28,0,1,0,28,28A28,28,0,0,0,212,56Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,96Zm-84,57V88a8,8,0,0,0-16,0v65a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,120,200Zm40-66V48a40,40,0,0,0-80,0v86a64,64,0,1,0,80,0Zm-40,98a48,48,0,0,1-27.42-87.4A8,8,0,0,0,96,138V48a24,24,0,0,1,48,0v90a8,8,0,0,0,3.42,6.56A48,48,0,0,1,120,232Z",
 );
+const targetIcon = /* @__PURE__ */ svgIcon(
+	"target",
+	"M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32l-96,96a8,8,0,0,1-11.32-11.32l27.72-27.72a40,40,0,1,0,17.87,31.09,8,8,0,1,1,16-.9,56,56,0,1,1-22.38-41.65L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z",
+);
 const caretRightIcon = /* @__PURE__ */ svgIcon(
 	"caret-circle-right",
 	"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm29.66-93.66a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32L140.69,128,106.34,93.66a8,8,0,0,1,11.32-11.32Z",
@@ -111,6 +115,7 @@ export const HTML_ICONS: Record<keyof Required<RendererIcons>, string> = {
 	hourglass: hourglassIcon,
 	timer: timerIcon,
 	thermometer: thermometerIcon,
+	checkpoint: targetIcon,
 	caretRight: caretRightIcon,
 	arrowRight: arrowRightIcon,
 	arrowUDownLeft: arrowUDownLeftIcon,
@@ -136,6 +141,7 @@ export const MD_ICONS: Record<keyof Required<RendererIcons>, string> = {
 	hourglass: "⏳ ",
 	timer: "⏲️ ",
 	thermometer: "🌡️ ",
+	checkpoint: "🎯 ",
 	caretRight: "👉",
 	arrowRight: "->&",
 	arrowUDownLeft: "",
@@ -161,6 +167,7 @@ export const PRINT_ICONS: Record<keyof Required<RendererIcons>, string> = {
 	hourglass: hourglassIcon,
 	timer: timerIcon,
 	thermometer: thermometerIcon,
+	checkpoint: targetIcon,
 	caretRight: "→",
 	arrowRight: "→",
 	arrowUDownLeft: "↵",

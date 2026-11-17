@@ -19,6 +19,7 @@ import {
 	type ReferenceAST,
 	type TimerAST,
 	type TemperatureAST,
+	type CheckpointAST,
 	type CommentAST,
 	type AlternativeAST,
 	type IntermediateDecl,
@@ -78,10 +79,42 @@ function throwMalformedQuantity(
 	const problem = raw.endsWith("}")
 		? `Invalid quantity '${raw}' for ${target}`
 		: `Unclosed quantity '${raw}' for ${target} (missing '}')`;
-	throw new GramParseError(
-		`Gram Syntax Error: ${problem}. Expected ${hint}, e.g. ${example}.`,
-		braces.source.startIdx,
+	throwBracesError(
+		problem,
+		`${hint}, e.g. ${example}`,
 		`a valid quantity in braces, e.g. ${example}`,
+		braces.source.startIdx,
+	);
+}
+
+/** The one shape of every "{...}" error: what is wrong, then what was expected. */
+function throwBracesError(
+	problem: string,
+	expectation: string,
+	expected: string,
+	offset: number,
+): never {
+	throw new GramParseError(
+		`Gram Syntax Error: ${problem}. Expected ${expectation}.`,
+		offset,
+		expected,
+	);
+}
+
+/**
+ * Raises the readable error for a target state with nothing in its braces
+ * (`={}`, `={ }`) or none closed on its line (`={ribbon stage`).
+ */
+function throwMalformedCheckpoint(raw: string, offset: number): never {
+	const example = "={ribbon stage}";
+	const problem = raw.endsWith("}")
+		? `Empty target state '${raw}'`
+		: `Unclosed target state '${raw}' (missing '}')`;
+	throwBracesError(
+		problem,
+		`the state that ends the step, e.g. ${example}`,
+		`a target state in braces, e.g. ${example}`,
+		offset,
 	);
 }
 
@@ -861,6 +894,27 @@ semantics.addOperation("toAST", {
 			isPassive: passiveMod.children.length > 0,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
+	},
+
+	checkpoint_full(_open, state, _close, noteNode): CheckpointAST {
+		const s = clean(state.sourceString);
+		if (!s)
+			throwMalformedCheckpoint(
+				`={${state.sourceString}}`,
+				this.source.startIdx,
+			);
+		// Omitted when absent or empty (`={ribbon}()`), as on a temperature.
+		const note = getOpt(noteNode);
+		return {
+			type: ASTNodeType.Checkpoint,
+			state: s,
+			...(note ? { note } : {}),
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	checkpoint_malformed(_eq, braces) {
+		throwMalformedCheckpoint(`=${braces.sourceString}`, this.source.startIdx);
 	},
 
 	temperature(_1, name, qty, noteNode): TemperatureAST {

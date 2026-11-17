@@ -91,7 +91,9 @@ export const SELF_TEST_CASES: SelfTestCase[] = [
 // Raw ❌ glyph count observed in the EN doc as of this transcription. If the
 // live count drifts, the doc likely gained (or lost) a mistake example that
 // nobody transcribed here yet — print an informational note, don't fail.
-const EXPECTED_BAD_GLYPH_COUNT = 22;
+// The 4 added in 1.5 (temperature note, target state) are prose mistakes no
+// check can flag, so they are counted here rather than transcribed above.
+const EXPECTED_BAD_GLYPH_COUNT = 26;
 
 export function extractSelfTestSnippets(): {
 	bad: Snippet[];

@@ -448,6 +448,22 @@ The compiler stores the raw numeric value and normalizes the unit to \`°C\`/\`�
 
 Note: when the source gives the oven mode or what the temperature is measured on (fan, convection, broil, conventional, internal, covered), keep it in the note glued to the brace — \`^{160C}(fan)\`, \`^{63C}(internal)\`, \`^{high heat}(covered)\` — instead of leaving it in the prose. Keep the note in the recipe's language. The parenthesis must touch the \`}\`: \`^{180C} (preheated)\` with a space is ordinary text. One line, no nested parentheses.
 
+### Target states
+
+Syntax: \`={state}(note)?\`
+
+The state to reach, when the source gives one: the sensory cue the cook has to recognize (a texture, a color, a smell, a consistency). It is often at the end of the step ("until…"), but it can sit anywhere ("as soon as the butter turns ={nutty brown}, …"). Wrap only the state; keep the linking words ("until", "as soon as", "jusqu'à", "dès que") in the prose. The state and the note stay in the recipe's language.
+
+\`\`\`
+Whisk @egg yolks{4} and @sugar{80g} until ={ribbon stage}(the batter falls back in a continuous ribbon).
+
+Cook on ^{low heat}, stirring, until ={coats the spoon}(a finger leaves a clean line) ->&custard
+\`\`\`
+
+- The note says how to check the state. The parenthesis must touch the \`}\`: \`={ribbon stage} (about 5 min)\` with a space is ordinary text. One line.
+- Never put a temperature, a duration or a quantity inside \`={...}\`: a probe target is \`^{82C}(internal)\`, a time is \`~{5 min}\`. A step may have both: \`Cook ~{5 min}, until ={golden}.\` (the timer is the estimate, the state is the real cue).
+- Only a real cue from the source: never invent one, and leave a plain "cook for 5 minutes" without a target state.
+
 
 ═════════════════════════════════════════
 SECTION 6 — INTERMEDIATE PREPARATIONS

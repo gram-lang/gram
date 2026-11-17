@@ -515,6 +515,12 @@ export const en = {
 		statusWarnings: "Warnings",
 		copyBtn: "Copy to Clipboard",
 	},
+	cook: {
+		/** Under a step of `gram cook`: the state that ends it (`={ribbon stage}`). */
+		targetState: "Target:",
+		/** When a timer of a step rings: the target states to check, `{states}`. */
+		checkTargetState: "Check: {states}",
+	},
 	languageServer: {
 		/** Hover on a section anchor: `{duration}` is the anticipation. */
 		anchorReady: "Ready {duration} before it is used.",

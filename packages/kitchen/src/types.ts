@@ -164,6 +164,23 @@ export interface ProcessedTemperature {
 }
 
 /**
+ * A target state (`until ={ribbon stage}`), the one technical name of which is
+ * "checkpoint": the state that ends a step, in the cook's words, never read
+ * by Gram. It stays in `content` where it was written, so the sentence reads
+ * whole. Since 1.5.0.
+ */
+export interface ProcessedCheckpoint {
+	type: "checkpoint";
+	/** The state to reach, as written (`ribbon stage`). */
+	state: string;
+	/**
+	 * How to check it (`={coats the spoon}(a finger leaves a clean line)`).
+	 * Omitted when there is none.
+	 */
+	note?: string;
+}
+
+/**
  * `unit`/`sign`/`value`/`minutes` are only present when the section's
  * `~{...}` annotation resolved to a valid signed duration; an unrecognized
  * unit or free text degrades to `{ raw }` only (still displayable, but
@@ -192,6 +209,7 @@ export type StepToken =
 	| ProcessedDeclaration
 	| ProcessedTimer
 	| ProcessedTemperature
+	| ProcessedCheckpoint
 	| ProcessedComment;
 
 export interface ProcessedStep {

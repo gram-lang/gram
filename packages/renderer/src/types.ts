@@ -59,6 +59,8 @@ export interface RendererIcons {
 	hourglass?: string;
 	timer?: string;
 	thermometer?: string;
+	/** Before a target state (`={ribbon stage}`). Since 1.5.0. */
+	checkpoint?: string;
 	caretRight?: string;
 	arrowRight?: string;
 	arrowUDownLeft?: string;
@@ -113,12 +115,14 @@ export interface RendererClasses {
 	cookware?: string;
 	timer?: string;
 	temperature?: string;
+	/** A target state (`={ribbon stage}`), default `checkpoint`. Since 1.5.0. */
+	checkpoint?: string;
 	/**
-	 * What holds a temperature and its note together, so the note may wrap
-	 * apart from the value (default `temp-group`). The note itself takes
-	 * `prepText`. Since 1.5.0.
+	 * What holds an element and its note together (a temperature, a target
+	 * state), so the note may wrap apart from it (default `note-group`). The
+	 * note itself takes `prepText`. Since 1.5.0.
 	 */
-	temperatureGroup?: string;
+	noteGroup?: string;
 	declaration?: string;
 	massBadge?: string;
 	/** A quantity written in the text of a step (default `step-quantity`). */
@@ -164,6 +168,8 @@ export interface TextStyle {
 	reference?: (text: string) => string;
 	cookware?: (text: string) => string;
 	timer?: (text: string) => string;
+	/** A target state (`={ribbon stage}`). Since 1.5.0. */
+	checkpoint?: (text: string) => string;
 	/** The action of a step (`[Mix]`). */
 	action?: (text: string) => string;
 }

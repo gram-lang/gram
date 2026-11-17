@@ -96,7 +96,19 @@ function extractTimers(
 		});
 	}
 
-	return timers.filter((t) => t.durationMs > 0);
+	// A timer is an estimate: when it rings, the step's target states say
+	// whether it is done.
+	const checks = stepTargetStates(step).map((c) => c.state);
+	return timers
+		.filter((t) => t.durationMs > 0)
+		.map((t) => (checks.length > 0 ? { ...t, checks } : t));
+}
+
+/** The target states of a step (`={ribbon stage}(note)`), in their order. Since 1.5.0. */
+export function stepTargetStates(
+	step: any,
+): { state: string; note?: string }[] {
+	return (step?.content ?? []).filter((t: any) => t?.type === "checkpoint");
 }
 
 export function prepareRecipeData(

@@ -1539,6 +1539,7 @@ Essential markup tokens used directly inside recipe steps:
 | **Cookware** | `#` | `#name[{quantity}]` | `#pan{2}`, `#whisk` | Specifies kitchen equipment. Omitting `{}` defaults to a single item (`1`). |
 | **Timer** | `~` | `~{time}` | `~{30min}`, `~{1h30}` | Defines an active cooking or preparation duration, written as in a recipe (`1 hr 30 mins`, `1:30 h`, `5'30"`). |
 | **Temperature** | `^` | `^{temperature}` | `^{180°C}`, `^{350°F}` | Declares an exact heat setting (`C` or `F`, case-insensitive). |
+| **Target state** | `=` | `={state}` | `={ribbon stage}`, `={golden}` | The state to reach, in the cook's words, anywhere in the step. Since 1.5.0. |
 
 ## Modifiers
 
@@ -1568,6 +1569,7 @@ Specialized patterns for flexible culinary instructions:
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
 | **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown; the parenthesis touches the brace. Since 1.5.0. |
+| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to check the state, always shown; the parenthesis touches the brace. Since 1.5.0. |
 | **Fractions** | `n/d` or Unicode | `@flour{1 1/2 cups}`, `@sugar{½ cup}` | Fully supported across imperial and metric systems. |
 | **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Kept as written and added up; a volume and a weight stay side by side. Since 1.5.0. |
 
@@ -1697,6 +1699,15 @@ Write an amount the recipe gives in several measures as a [sum](/docs/reference/
 ❌  Bake at ^{180°C} (fan).       →   ✅  Bake at ^{180°C}(fan).
 ```
 What goes with a temperature (the oven mode, "internal", "covered") belongs in a [note](/docs/reference/syntax/temperatures/#cooking-mode-and-notes) glued to the closing brace, in the recipe's language. With a space before it, the parenthesis is ordinary text and the note is lost.
+
+### The target state left in the prose
+*(since v1.5.0)*
+
+```gram
+❌  Whisk until ribbon stage.                 →   ✅  Whisk until ={ribbon stage}.
+❌  Cook until ={82°C} or ={5 min}.           →   ✅  Cook at ^{82°C}(internal) for ~{5 min}, until ={it coats the spoon}.
+```
+When the source says what state the cook should reach (a texture, a color, a smell), mark it as a [target state](/docs/reference/syntax/target-states/), wherever it sits in the step: only the state between the braces, the linking words ("until", "as soon as", "when") left in the sentence, a test in a glued note if the source gives one. Never a temperature, a time or a quantity inside, and never a cue the source does not give.
 
 ### Using `@&` on the first occurrence
 
@@ -2091,7 +2102,7 @@ Mix @flour{200g} and @milk{200ml}.
 *(since v1.4.0)* Legacy per-step `timings` and `backgroundTasks`, along with `metrics.totalTime`, `metrics.idleTime`, and time breakdowns are deprecated: they remain populated until removed in version 2.0.0, but are omitted from the example above for clarity. The [Kitchen API reference](/docs/reference/api/kitchen) documents each field and its modern counterpart.
 :::
 
-Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a bare `string`; ingredients, cookware, and intermediate references share the `Usage` structure (no `type` field, identified by the presence of an `id`); timers, temperatures, comments, and declarations each carry an explicit lowercase `type`. This distinction from the parser's PascalCase `ASTNodeType` is intentional: it describes compiled *output*, not parsed source syntax. See [How to build a custom UI](/docs/how-to/build-custom-ui) for a tutorial on consuming this structure in frontend frameworks.
+Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a bare `string`; ingredients, cookware, and intermediate references share the `Usage` structure (no `type` field, identified by the presence of an `id`); timers, temperatures, target states (`checkpoint`, since 1.5.0: `{ type, state, note? }`), comments, and declarations each carry an explicit lowercase `type`. This distinction from the parser's PascalCase `ASTNodeType` is intentional: it describes compiled *output*, not parsed source syntax. See [How to build a custom UI](/docs/how-to/build-custom-ui) for a tutorial on consuming this structure in frontend frameworks.
 
 *(since v1.5.0)* A timer token carries `raw`, the duration as written between the braces, and `minutes`, the duration the schedule uses (the middle of a range). `quantity` and `unit` stay, in the smallest unit written (`1h20` gives `80` `min`), so a program that reads them stays right; a duration written as before 1.5 (`1.5h`) keeps them unchanged. A timer Gram does not read keeps only `raw` (and `name`, `isPassive`): show it as written.
 

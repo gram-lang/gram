@@ -17,6 +17,7 @@ Essential markup tokens used directly inside recipe steps:
 | **Cookware** | `#` | `#name[{quantity}]` | `#pan{2}`, `#whisk` | Specifies kitchen equipment. Omitting `{}` defaults to a single item (`1`). |
 | **Timer** | `~` | `~{time}` | `~{30min}`, `~{1h30}` | Defines an active cooking or preparation duration, written as in a recipe (`1 hr 30 mins`, `1:30 h`, `5'30"`). |
 | **Temperature** | `^` | `^{temperature}` | `^{180°C}`, `^{350°F}` | Declares an exact heat setting (`C` or `F`, case-insensitive). |
+| **Target state** | `=` | `={state}` | `={ribbon stage}`, `={golden}` | The state to reach, in the cook's words, anywhere in the step. Since 1.5.0. |
 
 ## Modifiers
 
@@ -46,6 +47,7 @@ Specialized patterns for flexible culinary instructions:
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
 | **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown; the parenthesis touches the brace. Since 1.5.0. |
+| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to check the state, always shown; the parenthesis touches the brace. Since 1.5.0. |
 | **Fractions** | `n/d` or Unicode | `@flour{1 1/2 cups}`, `@sugar{½ cup}` | Fully supported across imperial and metric systems. |
 | **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Kept as written and added up; a volume and a weight stay side by side. Since 1.5.0. |
 
