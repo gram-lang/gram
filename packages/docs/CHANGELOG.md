@@ -1,5 +1,20 @@
 # @gram-lang/docs
 
+## 1.4.2
+
+### Patch Changes
+
+- Updated dependencies [6620c24]
+- Updated dependencies [3ecc785]
+- Updated dependencies [229f017]
+  - @gram-lang/parser@1.4.2
+  - @gram-lang/kitchen@1.4.2
+  - @gram-lang/renderer@1.4.2
+  - @gram-lang/analyzer@1.4.2
+  - @gram-lang/modules@1.4.2
+  - @gram-lang/i18n@1.4.2
+  - @gram-lang/scheduler@1.4.2
+
 ## 1.4.1
 
 ### Patch Changes
