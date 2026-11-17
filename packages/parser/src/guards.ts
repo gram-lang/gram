@@ -5,6 +5,7 @@ import {
 	type CookwareAST,
 	type TimerAST,
 	type TemperatureAST,
+	type CheckpointAST,
 	type ReferenceAST,
 	type IntermediateDecl,
 	type AlternativeAST,
@@ -38,6 +39,13 @@ export function isTemperature(
 	node: ASTNode | null | undefined,
 ): node is TemperatureAST {
 	return node != null && node.type === ASTNodeType.Temperature;
+}
+
+/** A target state (`={ribbon stage}`). Since 1.5.0. */
+export function isCheckpoint(
+	node: ASTNode | null | undefined,
+): node is CheckpointAST {
+	return node != null && node.type === ASTNodeType.Checkpoint;
 }
 
 export function isReference(

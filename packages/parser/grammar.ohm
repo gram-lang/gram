@@ -95,6 +95,7 @@ GRAM {
     | Cookware
     | Timer
     | temperature
+    | checkpoint
     | Reference
     | CommentBlock
     | Comment
@@ -158,9 +159,9 @@ GRAM {
   // Each "-- malformed" branch below turns that into a readable error instead.
   malformedBraces = "{" (~("}" | nl) any)* ("}" | &nl | end)
   // The parenthesis glued to an element: an ingredient's or a tool's
-  // preparation, a composite parent's, a temperature's note (and the sensory
-  // checkpoints' to come). Every rule using it is lexical, so it touches what
-  // comes before it. On one line: an unclosed `(` is prose, never the start
+  // preparation, a composite parent's, a temperature's or a target state's
+  // note. Every rule using it is lexical, so it touches what comes before it.
+  // On one line: an unclosed `(` is prose, never the start
   // of a preparation that would run to the next `)` further down the recipe,
   // over blank lines and section headers.
   preparation = "(" (~(")" | nl) any)* ")"
@@ -217,6 +218,17 @@ GRAM {
   // since 1.5.0.
   temperature = "^" name? (ingredientQuantity | textQuantity) preparation?
 
+  // Target state (a checkpoint in the AST): the state that ends a step
+  // (`until ={ribbon stage}`), with an optional note glued to `}` that says
+  // how to check it (`={coats the spoon}(a finger leaves a clean line)`).
+  // Lexical, like `temperature`: `={ribbon} (prose)` keeps its parenthesis in
+  // the prose. The state is words for the cook, never read by Gram. An empty
+  // or unclosed `={` is a readable error, not prose. Since 1.5.0.
+  checkpoint =
+    | "={" checkpointState "}" preparation? -- full
+    | "=" malformedBraces                    -- malformed
+  checkpointState = (~("}" | nl) any)+
+
 
   // Comments
   Comment = "//" (~nl any)*
@@ -253,10 +265,12 @@ GRAM {
   // Delimiters that end a name (start of quantity/alias/preparation/composite/alternative).
   // @, #, ~, !, &, ?, * are deliberately absent here, so names may contain them freely --
   // only elementStart (below) treats those as starting a new element, and only in free text.
-  syntaxChar = "{" | "}" | "[" | "]" | "(" | ")" | "<" | "|" | ":"
+  // A `=` ends a name only before `{`, where a target state starts: without it a bare
+  // `@salt until ={taste}` read an ingredient "salt until =" of unit "taste" (1.5.0).
+  syntaxChar = "={" | "{" | "}" | "[" | "]" | "(" | ")" | "<" | "|" | ":"
 
   // Stricter than syntaxChar: used to detect where an element starts within free text.
-  elementStart = "@" | "#" | "~" | "^" | "//" | "/*" | "->&" | "&"
+  elementStart = "@" | "#" | "~" | "^" | "={" | "//" | "/*" | "->&" | "&"
   
   nl = "\r"? "\n"
   sp = " " | "\t"

@@ -33,6 +33,8 @@ export enum ASTNodeType {
 	Reference = "Reference",
 	Timer = "Timer",
 	Temperature = "Temperature",
+	/** A target state, `={ribbon stage}`. Since 1.5.0. */
+	Checkpoint = "Checkpoint",
 	Alternative = "Alternative",
 	ImportDecl = "ImportDecl",
 }
@@ -105,6 +107,7 @@ export interface StepAST extends NodeAST {
 		| CookwareAST
 		| TimerAST
 		| TemperatureAST
+		| CheckpointAST
 		| ReferenceAST
 		| AlternativeAST
 		| IntermediateDecl
@@ -308,6 +311,23 @@ export interface TemperatureAST extends NodeAST {
 	note?: string;
 }
 
+/**
+ * A target state: the state that ends a step (`until ={ribbon stage}`), the
+ * one technical name of which is "checkpoint". Words for the cook, in any
+ * language, never read by Gram. Since 1.5.0.
+ */
+export interface CheckpointAST extends NodeAST {
+	type: ASTNodeType.Checkpoint;
+	/** The state to reach, as written between the braces, trimmed. */
+	state: string;
+	/**
+	 * How to check it, glued to the closing brace
+	 * (`={coats the spoon}(a finger leaves a clean line)`), on one line.
+	 * Omitted when there is none.
+	 */
+	note?: string;
+}
+
 export interface AlternativeAST extends NodeAST {
 	type: ASTNodeType.Alternative;
 	options: (IngredientAST | CookwareAST)[];
@@ -325,6 +345,7 @@ export type ASTNode =
 	| ReferenceAST
 	| TimerAST
 	| TemperatureAST
+	| CheckpointAST
 	| AlternativeAST
 	| IntermediateDecl
 	| QuantityAST
