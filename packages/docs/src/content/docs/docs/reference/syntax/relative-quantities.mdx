@@ -40,13 +40,14 @@ Add @salt{2% &dough}. // 2% of the total mass of the &dough variable
 
 ## Resolution rules
 
-When the compiler resolves a relative quantity, it follows three strict scoping and calculation principles:
+When the compiler resolves a relative quantity, it follows four strict scoping and calculation principles:
 
 | Rule | Behavior | Description |
 | :--- | :--- | :--- |
 | **Section scoping** | Current section only | You cannot directly target a base `@ingredient` declared in a different section. To bridge sections, capture the result into a globally scoped `&variable`. |
 | **Accumulation** | Sums all occurrences | If the target `@ingredient` appears multiple times within the same section, the percentage applies to their **cumulative total**. |
 | **Mass-based** | Evaluated in grams | Calculations are always performed against **physical mass in grams**. For example, 50% of "2 eggs" (each standardized at 50g) produces **50g**, not 1 egg. |
+| **Alternatives** | One option at a time | Each option of an alternative gets its own amount, never added to the others: `@butter{10% @&flour}\|@oil{8% @&flour}` reads "20 g of butter or 16 g of oil" for 200 g of flour. An option can also take a share of an earlier option of the same group: `@butter{100g}\|@oil{80% @&butter}`. |
 
 ## Mass calculation rules
 

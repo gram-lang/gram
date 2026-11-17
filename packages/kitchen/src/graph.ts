@@ -56,11 +56,20 @@ export function detectCycles(sections: ProcessedSection[]): Set<string> {
 
 	sections.forEach((sec) => {
 		const graph = new Map<string, Set<string>>();
+		const addEdges = (ing: { id: string; dependencies?: string[] }) => {
+			if (!ing.dependencies) return;
+			if (!graph.has(ing.id)) graph.set(ing.id, new Set());
+			ing.dependencies.forEach((d) => {
+				graph.get(ing.id)?.add(d);
+			});
+		};
 		sec.ingredients.forEach((ing) => {
-			if (ing.dependencies) {
-				if (!graph.has(ing.id)) graph.set(ing.id, new Set());
-				ing.dependencies.forEach((d) => {
-					graph.get(ing.id)?.add(d);
+			addEdges(ing);
+			// An alternative's options can take a share too
+			// (`@butter{10% @&flour}|@oil{8% @&flour}`).
+			if (ing.type === "alternative") {
+				ing.options?.forEach((opt) => {
+					if (typeof opt !== "string" && "id" in opt && opt.id) addEdges(opt);
 				});
 			}
 		});
