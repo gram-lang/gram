@@ -192,7 +192,7 @@ const DURATION_HINTS: Record<InvalidDurationReason, string> = {
 	words:
 		"write it with numbers and units only, e.g. 1h30, 1 hr 30 min, 1:30 h or 5'30\".",
 	multiplication:
-		"Gram does not multiply durations (repetitions will come with [Repeat]): write the total, e.g. 4 min.",
+		"Gram does not multiply durations: write the total, e.g. 4 min.",
 	iso8601:
 		"ISO 8601 is a notation for machines: write 1h30 rather than PT1H30M.",
 	unexpected:

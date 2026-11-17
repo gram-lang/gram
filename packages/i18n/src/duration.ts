@@ -41,7 +41,7 @@ export interface DurationSide {
  * - `missingUnit`: a number with no unit at all (`30`, `1-2`);
  * - `unknownUnit`: a word right after a number that is not a time unit (`3 bananas`);
  * - `words`: any other word (`half an hour`, `1 heure et demie`, `about 10 min`);
- * - `multiplication`: `2 * 2 min`, left to `[Repeat]`;
+ * - `multiplication`: `2 * 2 min`, written as the total instead;
  * - `iso8601`: `PT1H30M`, a notation for machines;
  * - `unexpected`: a character or a sign out of place (`1h, 30min`, `-10 min`, `1/0 h`);
  * - `ambiguousClock`: a two-part clock with no unit (`1:30`: hours or minutes?);
