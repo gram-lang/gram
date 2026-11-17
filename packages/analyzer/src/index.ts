@@ -464,10 +464,17 @@ function resolveRelativeQuantities(
 
 		// A share still waiting waits on a target that never resolved.
 		for (const { usage } of shares) warnUnknownMass(usage, warnings);
-		// Kitchen already said why mismatched units never resolve.
+		// What kitchen already said (two counts that differ) is not said twice.
+		const said = (problem: RatioProblem) =>
+			warnings.some(
+				(w) =>
+					w.code === WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS &&
+					w.loc?.start === problem.spec.loc?.start &&
+					w.loc?.uri === problem.spec.loc?.uri,
+			);
 		pushRatioWarnings(
 			warnings,
-			problems.filter((p) => p.reason !== "incompatibleUnits"),
+			problems.filter((p) => !said(p)),
 		);
 
 		sec.metrics = calculateMassMetrics(sec.ingredients);

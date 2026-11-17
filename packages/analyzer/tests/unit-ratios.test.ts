@@ -93,6 +93,14 @@ describe("ratios resolved with the database", () => {
 		).toContain("unit_weight");
 	});
 
+	it("refuses a named piece against a weight, which only it can tell", () => {
+		const result = prep("Mix @sugar{100 g} and @x{1 / 2 slices @&sugar}.");
+		expect(ratioWarnings(result)).toHaveLength(1);
+		expect(ratioWarnings(result)[0]?.message).toContain(
+			"do not measure the same thing",
+		);
+	});
+
 	it("never says twice what kitchen already refused", () => {
 		const result = prep("Mix @garlic{3 cloves} and @x{1 / 2 slices @&garlic}.");
 		expect(ratioWarnings(result)).toHaveLength(1);
