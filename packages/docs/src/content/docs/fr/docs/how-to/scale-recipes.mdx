@@ -71,6 +71,8 @@ gram view pain.gram --scale farine=400g
 
 Gram va résoudre le facteur global (400/500 = 0.8), ajuster l'ancre `farine` à 400 g, et tous les ingrédients relatifs s'évalueront en cascade sur cette nouvelle base (Eau : 70 % de 400 g = 280 g).
 
+Les proportions avec unités suivent de la même façon (depuis la 1.5.0) : `@oeufs{1 / 100 g @&farine}` donne 4 œufs pour 400 g de farine, et un temps proportionnel comme `~{15 min / 500 g @&roti}` suit le rôti, et le planning avec lui.
+
 ### Les limites de l'ajustement par ingrédient repère
 
 Puisque l'ajustement par ingrédient repère dérive le facteur depuis la quantité d'un ingrédient, tout n'est pas éligible comme cible — seul un ingrédient doté d'une quantité absolue explicite fait l'affaire. Si vous tentez de passer l'un des cas suivants, Gram jettera une erreur (*throw*) plutôt que de calculer silencieusement un facteur aberrant :

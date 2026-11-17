@@ -4,6 +4,8 @@ description: "Define an ingredient's quantity as a percentage of another ingredi
 ---
 
 import { Badge, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
+import Term from '../../../../../components/Term.astro';
 
 In cooking, and especially in baking, precision is essential. Relying on fixed quantities can lead to unbalanced outcomes when raw produce yields vary (for example, when a single lemon yields more juice than expected).
 
@@ -48,6 +50,60 @@ When the compiler resolves a relative quantity, it follows four strict scoping a
 | **Accumulation** | Sums all occurrences | If the target `@ingredient` appears multiple times within the same section, the percentage applies to their **cumulative total**. |
 | **Mass-based** | Evaluated in grams | Calculations are always performed against **physical mass in grams**. For example, 50% of "2 eggs" (each standardized at 50g) produces **50g**, not 1 egg. |
 | **Alternatives** | One option at a time | Each option of an alternative gets its own amount, never added to the others: `@butter{10% @&flour}\|@oil{8% @&flour}` reads "20 g of butter or 16 g of oil" for 200 g of flour. An option can also take a share of an earlier option of the same group: `@butter{100g}\|@oil{80% @&butter}`. |
+
+## Ratios with units
+<Since v="1.5.0" />
+
+A percentage weighs grams against grams. A <Term id="ratio" link={false} /> relates two amounts in any units, the way recipes state their rules: one egg per 100 g of flour, 15 g of salt per liter of water, 15 minutes per 500 g of roast.
+
+```gram
+Mix @flour{500 g} with @eggs{1 / 100 g @&flour}. // 5 eggs
+
+Pour @water{2 l} and @salt{15 g / 1 L @&water}. // 30 g of salt
+
+Crush @garlic{3 cloves} with @parsley{1 tsp / 2 cloves @&garlic}. // 1.5 tsp
+```
+
+**Pattern:** `@name{ amount / target amount @&TargetIngredient }`, or `&TargetVariable` for an intermediate. The amount takes its unit (`15 g`) or none (`1` egg); the target amount is a number and a unit (`100 g`), a unit alone (`L`), or nothing for one piece (`{1 / @&cutlet}`). A range works as the amount (`{15-20 g / 100 g @&flour}`), never as the target amount.
+
+Write a space on at least one side of the slash: `{1/100g @&flour}` reads as the fraction `1/100` and is refused with a message that shows the spaced form. Write the unit alone, too: in `{1 / 100 g of @&flour}` the unit is `g of`, which Gram refuses.
+
+### The unit guardrail
+
+A ratio is computed only when its units can be compared, never guessed:
+
+| Target amount | Target written in | Result |
+| :--- | :--- | :--- |
+| A weight (`100 g`) | A weight (`1 kg`) | Computed by the compiler |
+| A weight | A volume, or pieces | Computed with the density or the `unit_weight` of the ingredient database |
+| Pieces (`2 cloves`, nothing) | The same pieces (`3 clove`, `4`) | Computed by the compiler: singular and plural match |
+| Pieces | Other pieces (`2 slices` for garlic in cloves) | Refused |
+
+A ratio that cannot be computed keeps its writing (`1 / 100 ml @&flour` in the views and the shopping list) and raises `RELATIVE_QUANTITY_UNKNOWN_MASS` with the reason. Unlike a percentage, a computed ratio keeps the unit of its amount: `5` eggs, `15 g` of salt, merged with the other uses of the ingredient in the shopping list.
+
+### Where the target is
+
+The same rules as a percentage: an `@&ingredient` written earlier in the section with an amount (every amount in the section adds up), or an `&intermediate`. An option of an alternative may take an earlier option as its target. When the section uses an intermediate whole, with no amount (`Roll out the &dough`), the ratio counts from the mass of the section that makes it, an estimate of what went into the bowl, before cooking. Gram refuses when another section uses the intermediate too, since it cannot tell who takes what:
+
+```gram
+## Dough ->&dough
+
+Mix @flour{500 g} and @water{60% @&flour}.
+
+## Bake
+
+Roll out the &dough, sprinkle @salt{2 g / 100 g &dough}. // 16 g of 800 g
+```
+
+This applies to a percentage as well (`@sugar{5% &dough}`), which used to give up there.
+
+### On references and composites
+
+A reference to a homemade preparation takes a ratio or a percentage too: `&stock{250 ml / 100 g @&rice}`, `&stock{250% @&rice}`. A composite parent does not yet (`<@box{1 / 100 g @&flour}>` is refused until composites are reworked).
+
+### Scaling
+
+Scaling a recipe computes its ratios again on the scaled amounts: twice the flour, twice the eggs. A ratio whose target is fixed (`@=pepper{2 g}`) stays as it is. `=` on a ratio itself is refused: a ratio always follows its target.
 
 ## Mass calculation rules
 

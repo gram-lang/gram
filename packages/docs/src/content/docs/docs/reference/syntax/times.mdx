@@ -145,6 +145,21 @@ The interpretation of a range differs fundamentally based on timer type:
 Deprecated fields of the compiled recipe (`steps[].timings`, `steps[].backgroundTasks`, and `metrics`) continue to evaluate ranges as their average value until version 2.0.0. Consume the modern `schedule` blocks instead.
 :::
 
+### Proportional times
+<Since v="1.5.0" />
+
+Some times follow a weight: 15 minutes per 500 g of roast, 4 minutes per cutlet. Write the duration, a slash, then the amount of an ingredient written earlier in the section, as in a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units):
+
+```gram
+Season the @roast{1.2 kg} and roast ~{15 min / 500 g @&roast}. // 36 min
+
+Braise the @shoulder{2 kg} ~_{1:30 h / 1 kg @&shoulder}. // 3 h
+
+Fry the @cutlets{4} ~{4 min / @&cutlets}. // 16 min
+```
+
+The duration takes every form above (`1h30`, `1:30 h`, a range such as `15-20 min`), the target amount a single number. A time per piece counted from a weight (`~{4 min / @&cutlets}` with `@cutlets{800 g}`) uses the `unit_weight` of the ingredient database, and stays uncounted, with a warning, when there is none. Scaling the recipe computes the time again, and the schedule with it. A multiplier after a proportional time (`~{15 min / 500 g @&roast * 2}`) is not read yet, nor is a proportional section anchor.
+
 ## Active vs passive
 
 The Gram compiler builds a complete execution timeline for each recipe. To achieve realistic scheduling, it distinguishes hands-on kitchen work from autonomous background tasks.
