@@ -6,6 +6,7 @@ import {
 	type CookwareAST,
 	type TimerAST,
 	type TemperatureAST,
+	type CheckpointAST,
 	type ReferenceAST,
 	type IntermediateDecl,
 	type QuantityAST,
@@ -15,6 +16,7 @@ import {
 	isReference,
 	isTimer,
 	isTemperature,
+	isCheckpoint,
 	isIntermediateDecl,
 	isAlternative,
 	isComment,
@@ -28,7 +30,7 @@ import { offsetToPosition } from "../utils/position";
 
 export const SEMANTIC_TOKEN_TYPES = [
 	"namespace", // 0 — ## section title
-	"keyword", // 1 — sigils: @ # ~ ^ ->& & <@
+	"keyword", // 1 — sigils: @ # ~ ^ = ->& & <@
 	"parameter", // 2 — ingredient / cookware names
 	"variable", // 3 — intermediate / reference names
 	"number", // 4 — quantity amounts
@@ -256,6 +258,24 @@ function walkTemperature(
 	}
 }
 
+// A target state (`={ribbon stage}(note)`, 1.5): its `=` and its braces.
+// The state is left to the TextMate grammar (string.unquoted.checkpoint.gram),
+// and so is the note (string.other.preparation.gram), as on a temperature.
+function walkCheckpoint(
+	out: RawToken[],
+	cp: CheckpointAST,
+	text: string,
+): void {
+	if (!cp.loc || text[cp.loc.start] !== "=") return;
+	const open = cp.loc.start + 1;
+	// The first `}` after `{`: a state holds none, its note may.
+	const close = text.indexOf("}", open + 1);
+	if (text[open] !== "{" || close < 0 || close >= cp.loc.end) return;
+	emit(out, cp.loc.start, 1, T.keyword);
+	emit(out, open, 1, T.operator);
+	emit(out, close, 1, T.operator);
+}
+
 function walkIntermediate(
 	out: RawToken[],
 	decl: IntermediateDecl,
@@ -297,6 +317,7 @@ function walkStep(out: RawToken[], step: StepAST, text: string): void {
 		else if (isCookware(child)) walkCookware(out, child, text);
 		else if (isTimer(child)) walkTimer(out, child, text);
 		else if (isTemperature(child)) walkTemperature(out, child, text);
+		else if (isCheckpoint(child)) walkCheckpoint(out, child, text);
 		else if (isReference(child)) walkReference(out, child, text);
 		else if (isIntermediateDecl(child)) walkIntermediate(out, child, text);
 		else if (isAlternative(child)) {
