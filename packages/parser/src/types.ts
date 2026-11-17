@@ -27,6 +27,8 @@ export enum ASTNodeType {
 	Quantity = "Quantity",
 	/** A sum of quantities, `{1 cup + 1 tbsp}`. Since 1.5.0. */
 	CompoundQuantity = "CompoundQuantity",
+	/** A ratio with units, `{1 / 100 g @&flour}`. Since 1.5.0. */
+	RatioQuantity = "RatioQuantity",
 	Ingredient = "Ingredient",
 	Composite = "Composite",
 	Cookware = "Cookware",
@@ -188,6 +190,41 @@ export interface RelativeQuantityAST extends NodeAST {
 	invalidNumber?: string;
 }
 
+/** One side of a ratio: `1`, `15 g`, `100 g`, `L`. Since 1.5.0. */
+export interface RatioTermAST {
+	/** `null` when no number is written (`/ L`, `/ @&cutlet`) or it was refused (`invalidNumber`). */
+	value: QuantityValueAST | null;
+	/** `null` when unitless (`1 / 100 g`). */
+	unit: string | null;
+	/**
+	 * A number Gram refused, as written: a fraction over zero (`1/0`). Same
+	 * convention as `QuantityAST.invalidNumber`. Omitted otherwise.
+	 */
+	invalidNumber?: string;
+}
+
+/**
+ * A ratio with units, `{1 / 100 g @&flour}`: an amount per amount of a
+ * target, on an ingredient, a composite parent, a reference or a timer
+ * (`~{15 min / 500 g @&roast}`). Since 1.5.0.
+ */
+export interface RatioQuantityAST extends NodeAST {
+	type: ASTNodeType.RatioQuantity;
+	/**
+	 * The amount per target amount. On a timer, `{ value: null, unit: null }`:
+	 * the duration is read from `durationRaw`.
+	 */
+	numerator: RatioTermAST;
+	/** The target amount: `{ value: null, unit: null }` when omitted (`1 / @&cutlet`). */
+	denominator: RatioTermAST;
+	/** A timer's numerator as written (`15 min`, `1:30 h`), read by `parseDuration`. Timers only. */
+	durationRaw?: string;
+	target: string;
+	referenceType: "variable" | "ingredient";
+	/** The ratio as written between the braces, trimmed (`1 / 100 g @&flour`). */
+	raw: string;
+}
+
 export interface TextQuantityAST extends NodeAST {
 	type: ASTNodeType.TextQuantity;
 	value: string;
@@ -246,6 +283,7 @@ export interface IngredientAST extends NodeAST {
 		| QuantityAST
 		| CompoundQuantityAST
 		| RelativeQuantityAST
+		| RatioQuantityAST
 		| TextQuantityAST
 		| null;
 	alias?: string | null;
@@ -265,7 +303,12 @@ export interface CompositeAST extends NodeAST {
 	// `composite_bare` (no `{qty}` at all) genuinely produces `null`, not
 	// `undefined` — matches how every other optional-quantity field here
 	// (e.g. IngredientAST.quantity) distinguishes "absent" from "not parsed".
-	quantity?: QuantityAST | CompoundQuantityAST | RelativeQuantityAST | null;
+	quantity?:
+		| QuantityAST
+		| CompoundQuantityAST
+		| RelativeQuantityAST
+		| RatioQuantityAST
+		| null;
 	preparation?: string | null;
 }
 
@@ -295,6 +338,7 @@ export interface ReferenceAST extends NodeAST {
 		| QuantityAST
 		| CompoundQuantityAST
 		| RelativeQuantityAST
+		| RatioQuantityAST
 		| TextQuantityAST
 		| null;
 }
@@ -309,10 +353,13 @@ export interface TimerAST extends NodeAST {
 	raw: string;
 	/**
 	 * How the grammar cut the braces: a quantity for `10 min` (and `1h30`, read
-	 * as 1 + unit `h30`), the text for anything else (`1:30 h`). Not a duration:
-	 * read `raw` with `parseDuration` (@gram-lang/i18n).
+	 * as 1 + unit `h30`), a ratio for a proportional time
+	 * (`15 min / 500 g @&roast`, since 1.5.0), the text for anything else
+	 * (`1:30 h`). Not a duration: read `raw` with `parseDuration`
+	 * (@gram-lang/i18n), once `isRatioQuantity` has ruled a ratio out (its
+	 * duration is in `durationRaw`).
 	 */
-	quantity: QuantityAST | TextQuantityAST;
+	quantity: QuantityAST | TextQuantityAST | RatioQuantityAST;
 	isPassive: boolean;
 }
 
@@ -376,4 +423,5 @@ export type ASTNode =
 	| CompoundQuantityAST
 	| TextQuantityAST
 	| RelativeQuantityAST
+	| RatioQuantityAST
 	| ImportDecl;
