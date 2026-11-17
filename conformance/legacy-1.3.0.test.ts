@@ -17,7 +17,10 @@ import { fileURLToPath } from "node:url";
  * intermediates' overhead) is the only legitimate reason to regenerate a digest,
  * and the case must be named in the pull request. 1.5 did too: a section
  * anchor's warnings point at the anchor itself, no longer at the whole section
- * or `@use` line (`loc` only, in 021, 022, mod-016 and mod-017).
+ * or `@use` line (`loc` only, in 021, 022, mod-016 and mod-017). And a unit
+ * written with no number is no longer lost from the shopping list: its entry
+ * lists it in `variable_entries` (026, `{1/0 cups}`, whose fraction has no
+ * value).
  *
  * The digests come from the tag's goldens: `canonical(json)` below, sha256, hex.
  */

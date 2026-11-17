@@ -111,7 +111,9 @@ export function aggregateSectionIngredients(
 		}
 
 		const name = ing.name;
-		const hasMeasuredQty = ing.qty != null || !!ing.parts?.length;
+		// A quantity in words (`{une pincée}`) has no number, only a unit: it
+		// is listed as written, like a measured one.
+		const hasMeasuredQty = ing.qty != null || !!ing.parts?.length || !!ing.unit;
 		const key = ing.preparation ? `${ing.id}::${ing.preparation}` : ing.id;
 
 		if (hasMeasuredQty) {
