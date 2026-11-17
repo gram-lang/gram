@@ -443,3 +443,53 @@ describe("diffRecipes — the active time is the schedule's", () => {
 		expect(active).toEqual({ field: "activeTime", from: 50, to: 55 });
 	});
 });
+
+describe("diffRecipes — target states (1.5)", () => {
+	const recipe = (line: string) => compileRecipe(`## Crème\n\n${line}\n`);
+
+	it("reports an added and a removed target state", () => {
+		const a = recipe("Cuire la crème.");
+		const b = recipe("Cuire la crème jusqu'à ={la nappe}(test).");
+		const added = diffRecipes(a, b);
+		expect(added.hasChanges).toBe(true);
+		expect(added.checkpoints).toEqual([
+			{
+				section: "Crème",
+				change: "added",
+				to: { state: "la nappe", note: "test" },
+			},
+		]);
+		expect(diffRecipes(b, a).checkpoints).toEqual([
+			{
+				section: "Crème",
+				change: "removed",
+				from: { state: "la nappe", note: "test" },
+			},
+		]);
+	});
+
+	it("reports a change of state or of note", () => {
+		const a = recipe("Cuire jusqu'à ={la nappe}(test).");
+		expect(
+			diffRecipes(a, recipe("Cuire jusqu'à ={épais}(test).")).checkpoints,
+		).toEqual([
+			{
+				section: "Crème",
+				change: "changed",
+				from: { state: "la nappe", note: "test" },
+				to: { state: "épais", note: "test" },
+			},
+		]);
+		expect(
+			diffRecipes(a, recipe("Cuire jusqu'à ={la nappe}.")).checkpoints[0]?.to,
+		).toEqual({ state: "la nappe" });
+	});
+
+	it("reports nothing when the target states are the same", () => {
+		const a = recipe("Cuire jusqu'à ={la nappe}(test).");
+		const result = diffRecipes(a, recipe("Cuire jusqu'à ={la nappe}(test)."));
+		expect(result.checkpoints).toEqual([]);
+		expect(result.preparations).toEqual([]);
+		expect(result.hasChanges).toBe(false);
+	});
+});
