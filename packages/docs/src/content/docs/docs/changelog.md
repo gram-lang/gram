@@ -6,6 +6,21 @@ tableOfContents:
   maxHeadingLevel: 2
 ---
 
+## [1.4.2](https://git.gram-lang.org/gram-lang/gram/compare/v.1.4.1...v.1.4.2) - 2026-11-17
+
+### Bug fixes and improvements
+- **CLI / Cook**: Fixed `gram cook` timers that never finished: a timer now rings when its time is up and shows as done, ready to be dismissed with any key.
+- **Format**: Fixed a temperature written with a space and trailing zeros, such as `^{160.0 °C}`, that took two runs of the formatter to become `^{160°C}`: it is now fixed in one.
+- **Parser**: Fixed an unclosed parenthesis in a preparation note (such as `@flour{200g}(sifted and`) swallowing the rest of the recipe up to the next `)`, including later steps and sections. Preparations now stay on one line, so an unclosed `(` or a note split across lines is kept as plain step text.
+- **Kitchen, Analyzer, Renderer & CLI**: Fixed lost, split, or skipped ingredient quantities across shopping lists, views, and diffs:
+  - Shopping lists now merge different spellings of the same unit (`1 cup` and `2 cups`, `1 c.à.s` and `2 tbsp`) onto a single line, which also makes those ingredients work again with `gram scale --target`.
+  - The HTML view now displays every quantity when an ingredient uses multiple units in the same section (`100 g + 1 cup`), instead of showing only the first.
+  - `gram shop` no longer drops ingredients whose quantity cannot be computed (such as a percentage of a missing intermediate) and lists them as written.
+  - `gram diff` now compares each unit separately when an ingredient appears in multiple units, and ignores changes that only affect how a unit is spelled.
+- **Renderer**: Fixed a missing space between two consecutive elements in a step, such as an ingredient followed by a timer or cookware (`@flour{500 g} ~{1h}` rendered as "flour (500 g)1 h"), across all views and `gram view`.
+
+---
+
 ## [1.4.1](https://git.gram-lang.org/gram-lang/gram/compare/v.1.4.0...v.1.4.1) - 2026-11-14
 
 ### Bug fixes and improvements

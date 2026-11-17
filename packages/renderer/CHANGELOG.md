@@ -1,5 +1,23 @@
 # @gram-lang/renderer
 
+## 1.4.2
+
+### Patch Changes
+
+- 3ecc785: **Kitchen, Analyzer, Renderer & CLI**: Fixed lost, split, or skipped ingredient quantities across shopping lists, views, and diffs:
+  - Shopping lists now merge different spellings of the same unit (`1 cup` and `2 cups`, `1 c.à.s` and `2 tbsp`) onto a single line, which also makes those ingredients work again with `gram scale --target`.
+  - The HTML view now displays every quantity when an ingredient uses multiple units in the same section (`100 g + 1 cup`), instead of showing only the first.
+  - `gram shop` no longer drops ingredients whose quantity cannot be computed (such as a percentage of a missing intermediate) and lists them as written.
+  - `gram diff` now compares each unit separately when an ingredient appears in multiple units, and ignores changes that only affect how a unit is spelled.
+- 229f017: **Renderer**: Fixed a missing space between two consecutive elements in a step, such as an ingredient followed by a timer or cookware (`@flour{500 g} ~{1h}` rendered as "flour (500 g)1 h"), across all views and `gram view`.
+- Updated dependencies [6620c24]
+- Updated dependencies [3ecc785]
+  - @gram-lang/parser@1.4.2
+  - @gram-lang/kitchen@1.4.2
+  - @gram-lang/analyzer@1.4.2
+  - @gram-lang/i18n@1.4.2
+  - @gram-lang/scheduler@1.4.2
+
 ## 1.4.1
 
 ### Patch Changes
