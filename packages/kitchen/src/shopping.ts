@@ -106,6 +106,8 @@ function formatQuantity(q: Usage["qty"]): string | number {
 	if (q.type === ASTNodeType.RelativeQuantity) {
 		return `${q.percent}% of ${q.target}`;
 	}
+	// A ratio still waiting for its target's amount, as written.
+	if (q.type === ASTNodeType.RatioQuantity) return q.raw;
 
 	return JSON.stringify(q);
 }

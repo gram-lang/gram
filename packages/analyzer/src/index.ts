@@ -264,7 +264,8 @@ function resolveRelativeQuantities(
 ): void {
 	sections.forEach((sec) => {
 		sec.ingredients.forEach((item) => {
-			if (item.formula?.target) {
+			// A ratio with units (`1 / 100 g @&flour`) is kitchen's to resolve.
+			if (item.formula && "percent" in item.formula) {
 				const targetId = item.dependencies?.[0];
 
 				let targetMass = 0;

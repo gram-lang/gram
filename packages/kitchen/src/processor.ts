@@ -21,6 +21,7 @@ import {
 	type CheckpointAST,
 	type TextAST,
 	type CompoundQuantityAST,
+	type RatioQuantityAST,
 	ASTNodeType,
 	type Location,
 } from "@gram-lang/parser";
@@ -38,9 +39,16 @@ import type {
 	RetroPlanning,
 	TimeBreakdownItem,
 	DeferredImport,
+	RatioSpec,
 	Schedule,
 	SectionMiseEnPlace,
 } from "./types";
+import {
+	kitchenConverter,
+	pendingRatio,
+	pushRatioWarnings,
+	resolveRatios,
+} from "./ratio";
 import { type TaskGraph, layout } from "@gram-lang/scheduler";
 import { buildTaskGraph } from "./task-graph";
 import { planLegacy } from "./legacy-timings";
@@ -214,14 +222,39 @@ function checkAmbiguousNumbers(
 					item.composite?.parent ?? item.name,
 					item.loc,
 				);
+			checkRatioNumbers(ctx, item.quantity, item.name, item.loc);
 			return;
 		case ASTNodeType.Cookware:
-		case ASTNodeType.Reference:
 			for (const value of quantityValues(item.quantity))
 				checkAmbiguousNumber(ctx, value, item.name, item.loc);
 			return;
+		case ASTNodeType.Reference:
+			for (const value of quantityValues(item.quantity))
+				checkAmbiguousNumber(ctx, value, item.name, item.loc);
+			checkRatioNumbers(ctx, item.quantity, item.name, item.loc);
+			return;
 		case ASTNodeType.Timer:
-			if (item.quantity?.type === ASTNodeType.Quantity) {
+			if (item.quantity?.type === ASTNodeType.RatioQuantity) {
+				// Its duration's numbers as written, then its denominator.
+				if (parseDuration(item.quantity.durationRaw ?? "").ok) {
+					for (const text of (item.quantity.durationRaw ?? "").match(
+						/\d+(?:[.,]\d+)?/g,
+					) ?? [])
+						checkAmbiguousText(
+							ctx,
+							text,
+							String(Number(text.replace(",", "."))),
+							item.name || "Timer",
+							item.loc,
+						);
+				}
+				checkAmbiguousNumber(
+					ctx,
+					item.quantity.denominator.value,
+					item.name || "Timer",
+					item.loc,
+				);
+			} else if (item.quantity?.type === ASTNodeType.Quantity) {
 				checkAmbiguousNumber(
 					ctx,
 					quantityValue(item.quantity),
@@ -253,6 +286,19 @@ function checkAmbiguousNumbers(
 	}
 }
 
+/** The numbers of a ratio (`1,5 / 100 g @&flour`), numerator and denominator. */
+function checkRatioNumbers(
+	ctx: ProcessorContext,
+	quantity: { type: ASTNodeType } | null | undefined,
+	item: string,
+	loc?: Location,
+) {
+	if (quantity?.type !== ASTNodeType.RatioQuantity) return;
+	const ratio = quantity as RatioQuantityAST;
+	checkAmbiguousNumber(ctx, ratio.numerator.value, item, loc);
+	checkAmbiguousNumber(ctx, ratio.denominator.value, item, loc);
+}
+
 /** The numbers the parser refused in a `{…}` (`invalidNumber`), one per term of a sum. */
 const refusedNumbers = (
 	quantity: { type: ASTNodeType } | null | undefined,
@@ -262,6 +308,10 @@ const refusedNumbers = (
 		return (quantity as CompoundQuantityAST).terms.flatMap((term) =>
 			term.invalidNumber ? [{ text: term.invalidNumber, loc: term.loc }] : [],
 		);
+	}
+	if (quantity.type === ASTNodeType.RatioQuantity) {
+		const ratio = quantity as RatioQuantityAST;
+		return ratioRefusedNumbers(ratio).map((text) => ({ text, loc: ratio.loc }));
 	}
 	const text = (quantity as { invalidNumber?: string }).invalidNumber;
 	return text ? [{ text, loc: (quantity as { loc?: Location }).loc }] : [];
@@ -303,6 +353,12 @@ function checkRefusedNumbers(
 		case ASTNodeType.Cookware:
 		case ASTNodeType.Reference:
 			push(refusedNumbers(item.quantity), item.name, item.loc);
+			return;
+		case ASTNodeType.Timer:
+			// A ratio's denominator (`~{15 min / 1/0 kg @&roast}`); its duration
+			// is left to INVALID_DURATION, like any timer's.
+			if (item.quantity.type === ASTNodeType.RatioQuantity)
+				push(refusedNumbers(item.quantity), item.name || "Timer", item.loc);
 			return;
 		case ASTNodeType.Temperature:
 			if (item.invalidNumber)
@@ -379,14 +435,151 @@ function checkSum(
  */
 function checkRelativeParent(ctx: ProcessorContext, item: IngredientAST) {
 	const quantity = item.composite?.quantity;
-	if (quantity?.type !== ASTNodeType.RelativeQuantity) return;
-	if (quantity.invalidNumber) return; // already said (zeroDenominator)
+	let value: string;
+	if (quantity?.type === ASTNodeType.RelativeQuantity) {
+		if (quantity.invalidNumber) return; // already said (zeroDenominator)
+		value = `${quantity.text ?? quantity.percent}% ${quantity.referenceType === "variable" ? "&" : "@&"}${quantity.target}`;
+	} else if (quantity?.type === ASTNodeType.RatioQuantity) {
+		// A ratio (`<@box{1 / 100 g @&flour}>`, since 1.5.0): the same.
+		if (ratioRefusedNumbers(quantity).length > 0) return; // already said
+		value = quantity.raw;
+	} else return;
 	pushWarning(ctx, WarningCode.INVALID_QUANTITY, {
-		value: `${quantity.text ?? quantity.percent}% ${quantity.referenceType === "variable" ? "&" : "@&"}${quantity.target}`,
+		value,
 		reason: "relativeNotSupported",
 		item: item.composite?.parent ?? item.name,
 		loc: quantity.loc ?? item.loc,
 	});
+}
+
+/**
+ * The target of a share or a ratio (`@&flour`, `&dough`): its id, and
+ * whether it is where it should be. An intermediate must be defined; an
+ * ingredient must appear earlier in the section (`secIngredients`, an
+ * alternative's earlier options included). One that is not is a ghost: the
+ * share or ratio is never resolved. `selfId` flags a target that is the
+ * element itself.
+ */
+function checkRelativeTarget(
+	ctx: ProcessorContext,
+	registry: RecipeRegistry,
+	secIngredients: Usage[],
+	target: { target: string; referenceType: "variable" | "ingredient" },
+	item: { name: string; loc?: Location },
+	selfId?: string,
+): { targetId: string; isGhost: boolean; isCircular: boolean } {
+	const targetName = target.target;
+	const targetId = registry.getIngredientId(targetName);
+	let isGhost = false;
+
+	if (target.referenceType === "variable") {
+		if (!ctx.definedIntermediates.has(targetName)) {
+			isGhost = true;
+			pushWarning(ctx, WarningCode.VARIABLE_NOT_FOUND, {
+				targetName,
+				item: item.name,
+				loc: item.loc,
+			});
+		}
+	} else if (!secIngredients.some((i) => i.id === targetId)) {
+		isGhost = true;
+		pushWarning(ctx, WarningCode.RELATIVE_QUANTITY_UNRESOLVED, {
+			targetName,
+			item: item.name,
+			loc: item.loc,
+		});
+	}
+
+	const isCircular = selfId !== undefined && targetId === selfId;
+	if (isCircular) {
+		pushWarning(ctx, WarningCode.CIRCULAR_REFERENCE, {
+			name: item.name,
+			item: item.name,
+			loc: item.loc,
+		});
+	}
+	return { targetId, isGhost, isCircular };
+}
+
+/** The numbers of a ratio the parser refused (`1/0`), numerator and denominator. */
+const ratioRefusedNumbers = (quantity: RatioQuantityAST) =>
+	[quantity.numerator, quantity.denominator].flatMap((term) =>
+		term.invalidNumber ? [term.invalidNumber] : [],
+	);
+
+/**
+ * True when a ratio can be read: none of its numbers was refused (already
+ * said, `zeroDenominator`), and its denominator is not zero (`/ 0 g`, said
+ * here). One that cannot reads as if no amount had been written.
+ */
+function isReadableRatio(
+	ctx: ProcessorContext,
+	quantity: RatioQuantityAST,
+	item: string,
+	loc?: Location,
+): boolean {
+	if (ratioRefusedNumbers(quantity).length > 0) return false;
+	if (quantity.denominator.value?.value === 0) {
+		pushWarning(ctx, WarningCode.INVALID_QUANTITY, {
+			value: quantity.raw,
+			reason: "zeroDenominator",
+			item,
+			loc: quantity.loc ?? loc,
+		});
+		return false;
+	}
+	return true;
+}
+
+/** A ratio as written, ready to be resolved (and resolved again). */
+function ratioSpecOf(
+	quantity: RatioQuantityAST,
+	numerator: RatioSpec["numerator"],
+	targetId: string,
+	isGhost: boolean,
+): RatioSpec {
+	return {
+		numerator,
+		denominator: {
+			value: quantity.denominator.value?.value ?? 1,
+			unit: quantity.denominator.unit,
+		},
+		target: quantity.target,
+		targetId,
+		referenceType: quantity.referenceType,
+		raw: quantity.raw,
+		...(quantity.loc && { loc: quantity.loc }),
+		...(isGhost && { isGhost: true }),
+	};
+}
+
+/**
+ * Turns `usage` into a ratio's: the pending node as its amount until
+ * `resolveRatios` writes one, the ratio as its formula, its target as its
+ * dependency. Shared by ingredients and references.
+ */
+function writeRatioUsage(
+	usage: Usage,
+	quantity: RatioQuantityAST,
+	target: { targetId: string; isGhost: boolean; isCircular: boolean },
+) {
+	if (!quantity.numerator.value) return;
+	const spec = ratioSpecOf(
+		quantity,
+		{ value: quantity.numerator.value, unit: quantity.numerator.unit },
+		target.targetId,
+		target.isGhost,
+	);
+	usage.qty = pendingRatio(spec);
+	delete usage.unit;
+	if (target.isCircular) usage.isCircular = true;
+	usage.dependencies = [target.targetId];
+	usage.formula = {
+		raw: quantity.raw,
+		target: quantity.target,
+		ratio: spec,
+		isGhost: target.isGhost,
+	};
 }
 
 function processIngredient(
@@ -481,63 +674,71 @@ function processIngredient(
 		!item.quantity.invalidNumber
 	) {
 		const rel = item.quantity;
-		const targetName = rel.target;
-		const targetId = registry.getIngredientId(targetName);
-		const percent = rel.percent;
-
-		let isGhost = false;
-		const formulaStr = `${percent}% of ${targetName}`;
-
-		if (rel.referenceType === "variable") {
-			if (!ctx.definedIntermediates.has(targetName)) {
-				isGhost = true;
-				pushWarning(ctx, WarningCode.VARIABLE_NOT_FOUND, {
-					targetName,
-					item: item.name,
-					loc: item.loc,
-				});
-			}
-		} else {
-			const found = secIngredients.some((i) => i.id === targetId);
-			if (!found) {
-				isGhost = true;
-				pushWarning(ctx, WarningCode.RELATIVE_QUANTITY_UNRESOLVED, {
-					targetName,
-					item: item.name,
-					loc: item.loc,
-				});
-			}
-		}
+		const target = checkRelativeTarget(
+			ctx,
+			registry,
+			secIngredients,
+			rel,
+			item,
+			id,
+		);
 
 		const usage = createCleanUsage(item, id, ctx.usageCounter, ctx.options);
 		// Defer evaluation to analyzer. The percentage's `text` stays in the
 		// AST: the compiled JSON keeps the shape 1.3.0 published.
-		const { text: _text, ...qty } = item.quantity;
+		const { text: _text, ...qty } = rel;
 		usage.qty = qty;
 		usage.unit = null;
+		if (target.isCircular) usage.isCircular = true;
 
-		if (targetId === id) {
-			usage.isCircular = true;
-			pushWarning(ctx, WarningCode.CIRCULAR_REFERENCE, {
-				name: item.name,
-				item: item.name,
-				loc: item.loc,
-			});
-		}
-
-		usage.dependencies = [targetId];
+		usage.dependencies = [target.targetId];
 		usage.formula = {
-			raw: formulaStr,
-			target: targetName,
-			percent: percent,
-			isGhost: isGhost,
+			raw: `${rel.percent}% of ${rel.target}`,
+			target: rel.target,
+			percent: rel.percent,
+			isGhost: target.isGhost,
 		};
 
 		secIngredients.push(usage);
 		return usage;
 	}
 
+	// A ratio with units (`1 / 100 g @&flour`, since 1.5.0): read like a
+	// percentage, resolved once every section is read (`resolveRatios`).
+	if (
+		item.quantity?.type === ASTNodeType.RatioQuantity &&
+		isReadableRatio(ctx, item.quantity, item.name, item.loc)
+	) {
+		const target = checkRelativeTarget(
+			ctx,
+			registry,
+			secIngredients,
+			item.quantity,
+			item,
+			id,
+		);
+		const usage = createCleanUsage(item, id, ctx.usageCounter, ctx.options);
+		// A ratio always follows its target: `=` would freeze it.
+		if (usage.modifiers?.includes("=")) {
+			pushWarning(ctx, WarningCode.INVALID_MODIFIER_COMBINATION, {
+				item: item.name,
+				combination: "= and a ratio",
+				loc: item.loc,
+			});
+			usage.modifiers = usage.modifiers.filter((m) => m !== "=");
+			if (usage.modifiers.length === 0) delete usage.modifiers;
+		}
+		writeRatioUsage(usage, item.quantity, target);
+		secIngredients.push(usage);
+		return usage;
+	}
+
 	const usage = createCleanUsage(item, id, ctx.usageCounter, ctx.options);
+	// A ratio not read (a refused number) keeps no `=` either.
+	if (item.quantity?.type === ASTNodeType.RatioQuantity && usage.modifiers) {
+		usage.modifiers = usage.modifiers.filter((m) => m !== "=");
+		if (usage.modifiers.length === 0) delete usage.modifiers;
+	}
 	if (item.modifiers?.includes("&")) {
 		if (!ctx.seenNames.has(item.name)) {
 			pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, {
@@ -685,6 +886,51 @@ function processReference(
 			const sum = readSum(item.quantity, item.loc);
 			writeSum(obj, sum.terms, sum.problems.length > 0);
 			if (item.quantity.fixed) obj.fixed = true;
+		} else if (
+			item.quantity.type === ASTNodeType.RelativeQuantity &&
+			!item.quantity.invalidNumber
+		) {
+			// A share of another ingredient (`&stock{250% @&rice}`), ignored
+			// before 1.5.0: read as on an ingredient, resolved by the analyzer.
+			const rel = item.quantity;
+			const target = checkRelativeTarget(
+				ctx,
+				registry,
+				secIngredients,
+				rel,
+				{ name: item.displayName ?? cleanName, loc: item.loc },
+				id,
+			);
+			const { text: _text, ...qty } = rel;
+			obj.qty = qty;
+			obj.unit = null;
+			if (target.isCircular) obj.isCircular = true;
+			obj.dependencies = [target.targetId];
+			obj.formula = {
+				raw: `${rel.percent}% of ${rel.target}`,
+				target: rel.target,
+				percent: rel.percent,
+				isGhost: target.isGhost,
+			};
+		} else if (
+			item.quantity.type === ASTNodeType.RatioQuantity &&
+			isReadableRatio(
+				ctx,
+				item.quantity,
+				item.displayName ?? cleanName,
+				item.loc,
+			)
+		) {
+			// A ratio (`&stock{250 ml / 100 g @&rice}`), as on an ingredient.
+			const target = checkRelativeTarget(
+				ctx,
+				registry,
+				secIngredients,
+				item.quantity,
+				{ name: item.displayName ?? cleanName, loc: item.loc },
+				id,
+			);
+			writeRatioUsage(obj, item.quantity, target);
 		}
 	}
 
@@ -712,6 +958,8 @@ function processIntermediateDecl(
 function processTimer(
 	item: TimerAST,
 	ctx: ProcessorContext,
+	registry: RecipeRegistry,
+	secIngredients: Usage[],
 ): ProcessedBlockResult {
 	const obj: ProcessedTimer = { type: "timer" };
 	if (item.name) obj.name = item.name;
@@ -719,6 +967,39 @@ function processTimer(
 	obj.raw = item.raw;
 
 	const name = item.name || "Timer";
+
+	// A proportional time (`~{15 min / 500 g @&roast}`, since 1.5.0): its
+	// duration as any timer's, its target as a ratio's. `quantity`, `unit`
+	// and `minutes` come from `resolveRatios`, once every section is read.
+	if (item.quantity.type === ASTNodeType.RatioQuantity) {
+		const ratio = item.quantity;
+		const durationRaw = ratio.durationRaw ?? "";
+		const reading = readTimer(durationRaw);
+		if (!reading.ok) {
+			pushDurationProblem(
+				ctx,
+				reading.problem,
+				"Timer",
+				name,
+				durationRaw,
+				item.loc,
+			);
+			return obj;
+		}
+		if (!isReadableRatio(ctx, ratio, name, item.loc)) return obj;
+		const target = checkRelativeTarget(ctx, registry, secIngredients, ratio, {
+			name,
+			loc: item.loc,
+		});
+		obj.ratio = ratioSpecOf(
+			ratio,
+			{ value: reading.quantity, unit: reading.unit },
+			target.targetId,
+			target.isGhost,
+		);
+		return obj;
+	}
+
 	// The duration always comes from what was written. The grammar's quantity
 	// is only kept when it already was a duration (`10 min`, `1-2 h`), so
 	// those timers compile exactly as before.
@@ -727,15 +1008,15 @@ function processTimer(
 	const reading = readTimer(item.raw, kept);
 	if (!reading.ok) {
 		// Refused: only `raw` is kept, and the timer counts for nothing,
-		// never for a guessed or a zero duration given without a word.
-		pushDurationProblem(
-			ctx,
-			reading.problem,
-			"Timer",
-			name,
-			item.raw,
-			item.loc,
-		);
+		// never for a guessed or a zero duration given without a word. One
+		// that looks like a proportional time says how to write one.
+		const problem: DurationProblem = LOOKS_LIKE_RATIO.test(item.raw)
+			? {
+					code: "INVALID_DURATION",
+					reason: /[*×]/.test(item.raw) ? "ratioMultiplication" : "ratioShape",
+				}
+			: reading.problem;
+		pushDurationProblem(ctx, problem, "Timer", name, item.raw, item.loc);
 		return obj;
 	}
 
@@ -754,6 +1035,9 @@ function processTimer(
 	obj.minutes = quantityToMinutes({ value: obj.quantity, unit: obj.unit });
 	return obj;
 }
+
+/** A slash followed by a target (`/ 500 g @&roast`): a ratio, read or not. */
+const LOOKS_LIKE_RATIO = /\/[^/]*(?:@&|&)/;
 
 /** The warning for a duration Gram does not read (see `durations.ts`). */
 function pushDurationProblem(
@@ -856,7 +1140,13 @@ function processRetroPlanning(
 	// the rest"): a zero or positive offset has no clear meaning here, unlike
 	// ~timer where a plain duration is the whole point. `readAnchor` refuses
 	// both with MISSING_UNIT, as before.
-	const reading = readAnchor(rp.raw);
+	// `~{-15 min / 500 g @&roast}`: an anchor is one duration, never a ratio.
+	const reading: ReturnType<typeof readAnchor> = LOOKS_LIKE_RATIO.test(rp.raw)
+		? {
+				ok: false,
+				problem: { code: "INVALID_DURATION", reason: "anchorRatio" },
+			}
+		: readAnchor(rp.raw);
 	if (!reading.ok) {
 		pushDurationProblem(
 			ctx,
@@ -949,7 +1239,7 @@ export function processBlockItem(
 		case ASTNodeType.Text:
 			return processText(item as TextAST);
 		case ASTNodeType.Timer:
-			return processTimer(item as TimerAST, ctx);
+			return processTimer(item as TimerAST, ctx, registry, secIngredients);
 		case ASTNodeType.Temperature:
 			return processTemperature(item as TemperatureAST, ctx);
 		case ASTNodeType.Checkpoint:
@@ -1183,6 +1473,14 @@ export function processSections(
 	// the deprecated fields (`timings`, `backgroundTasks`, `metrics`); the
 	// default timeline comes from the task graph below and never reads what
 	// it writes.
+	// Ratios with units, now that every section is read and before any
+	// duration counts: kitchen resolves what one unit family allows, the
+	// analyzer the rest (a density, a unit weight).
+	const ratios = resolveRatios(sections, kitchenConverter(), {
+		mode: "kitchen",
+	});
+	pushRatioWarnings(registry.warnings, ratios.problems);
+
 	const locationOf = (section: number) => sectionASTs[section]?.loc;
 	const { facts: stepFacts, schedules } = recipeTimings(sections);
 	const legacy = planLegacy(sections, schedules);
