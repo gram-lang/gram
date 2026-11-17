@@ -27,7 +27,7 @@ const HINTS: Record<string, string> = {
 	overflow60: "under 60",
 	ambiguousRange: "both sides in full",
 	reversedRange: "starts with the shorter",
-	multiplication: "[Repeat]",
+	multiplication: "does not multiply durations",
 	iso8601: "ISO 8601",
 	words: "numbers and units only",
 	anchorRange: "not a range",
