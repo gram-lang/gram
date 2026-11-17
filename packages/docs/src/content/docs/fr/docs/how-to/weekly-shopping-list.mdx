@@ -53,6 +53,8 @@ gram shop "menus/*.gram" --format md --output liste-de-courses.md
 gram shop "menus/*.gram" --format json --output liste-de-courses.json
 ```
 
+En plus de la quantité lisible (`qty`), le JSON donne celle de chaque ingrédient en nombres (`amount`, `unit`) : un script ou une appli peut ainsi les trier, les additionner ou les comparer sans avoir à décortiquer le texte. Chaque champ est détaillé dans la [référence de la CLI](/fr/docs/reference/tooling/cli/#gram-shop-motif).
+
 ## Ressources associées
 
 <CardGrid>

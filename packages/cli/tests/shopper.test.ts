@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from "bun:test";
 import { buildShoppingList } from "../src/services/shopper";
+import { renderShopJson } from "../src/ui/shop";
 import { writeTmpFile, cleanupTmpFile, makeDb } from "./helpers";
 
 describe("buildShoppingList", () => {
@@ -245,5 +246,158 @@ describe("buildShoppingList", () => {
 		expect(result.recipeCount).toBe(1);
 		const flour = result.items.find((i) => i.id === "flour");
 		expect(flour?.displayQty).toBe("150 g");
+	});
+
+	describe("amounts as numbers", () => {
+		const numbers = (i?: { amount: unknown; unit: unknown }) => ({
+			amount: i?.amount,
+			unit: i?.unit,
+		});
+
+		it("gives the total as a number, in the unit the reader sees", async () => {
+			const a = await tmp(
+				"## Prep\n\n[Mix] Add @flour{200 g}, @rye{1950 g}, @eggs{2} and @cream{1 3/4 cup}.\n",
+			);
+			const b = await tmp(
+				"## Prep\n\n[Mix] Add @flour{100 g}, @rye{1950 g} and @eggs{2}.\n",
+			);
+			const result = await buildShoppingList([a, b], { lang: "fr" });
+			const find = (id: string) => result.items.find((i) => i.id === id);
+			expect(numbers(find("flour"))).toEqual({ amount: 300, unit: "g" });
+			// `3,9 kg` for the reader, a plain number for a script.
+			expect(find("rye")?.displayQty).toBe("3,9 kg");
+			expect(numbers(find("rye"))).toEqual({ amount: 3.9, unit: "kg" });
+			expect(numbers(find("eggs"))).toEqual({ amount: 4, unit: null });
+			expect(numbers(find("cream"))).toEqual({ amount: 1.75, unit: "cup" });
+			expect(find("flour")?.parts).toBeUndefined();
+			expect(find("flour")?.range).toBeUndefined();
+		});
+
+		it("gives a ladder's total in its smallest unit, canonical", async () => {
+			const a = await tmp(
+				"## Prep\n\n[Mix] Add @flour{2 cups + 2 tbsp} and @oil{2 tablespoons}.\n",
+			);
+			const b = await tmp(
+				"## Prep\n\n[Mix] Add @flour{1 tbsp} and @oil{1 c. à s.}.\n",
+			);
+			const result = await buildShoppingList([a, b], { lang: "fr" });
+			const find = (id: string) => result.items.find((i) => i.id === id);
+			expect(find("flour")?.displayQty).toBe("2 cup + 3 tbsp");
+			expect(numbers(find("flour"))).toEqual({ amount: 35, unit: "tbsp" });
+			expect(numbers(find("oil"))).toEqual({ amount: 3, unit: "tbsp" });
+		});
+
+		it("gives a range its middle and its bounds, in the unit of its upper bound", async () => {
+			const a = await tmp(
+				"## Prep\n\n[Mix] Add @sugar{3/4 cup + 1-2 tbsp} and @rice{800-1100 g}.\n",
+			);
+			const result = await buildShoppingList([a]);
+			const find = (id: string) => result.items.find((i) => i.id === id);
+			expect(find("sugar")).toMatchObject({
+				amount: 13.5,
+				unit: "tbsp",
+				range: { min: 13, max: 14 },
+			});
+			expect(find("rice")?.displayQty).toBe("0.8-1.1 kg");
+			expect(find("rice")).toMatchObject({
+				amount: 0.95,
+				unit: "kg",
+				range: { min: 0.8, max: 1.1 },
+			});
+		});
+
+		it("gives the mass worked out with the database", async () => {
+			const db = makeDb({
+				milk: { physical: { density: 1.03 } },
+				cream: { physical: { density: 1 } },
+			});
+			const a = await tmp(
+				"## Prep\n\n[Pour] Add @milk{500 ml} and @cream{1 l}.\n",
+			);
+			const b = await tmp(
+				"## Prep\n\n[Pour] Add @milk{200 g} and @cream{200 g}.\n",
+			);
+			const result = await buildShoppingList([a, b], { db });
+			const find = (id: string) => result.items.find((i) => i.id === id);
+			expect(numbers(find("milk"))).toEqual({ amount: 715, unit: "g" });
+			expect(find("cream")?.displayQty).toBe("1.2 kg");
+			expect(numbers(find("cream"))).toEqual({ amount: 1.2, unit: "kg" });
+		});
+
+		it("has no number for an ingredient without one", async () => {
+			const a = await tmp(
+				"## Prep\n\n[Season] Add @salt{} and @pepper{2% &dough}.\n",
+			);
+			const result = await buildShoppingList([a]);
+			const find = (id: string) => result.items.find((i) => i.id === id);
+			expect(numbers(find("salt"))).toEqual({ amount: null, unit: null });
+			expect(find("salt")?.unresolved).toBeUndefined();
+			expect(numbers(find("pepper"))).toEqual({ amount: null, unit: null });
+			expect(find("pepper")?.unresolved).toEqual(["(2% of dough ❓)"]);
+			expect(find("pepper")?.parts).toBeUndefined();
+		});
+
+		it("says what the number leaves out", async () => {
+			const a = await tmp(
+				"## Prep\n\n[Season] Add @salt{2% &dough} and @salt{3 g}.\n",
+			);
+			const result = await buildShoppingList([a]);
+			const salt = result.items.find((i) => i.id === "salt");
+			expect(salt?.displayQty).toBe("3 g + (2% of dough ❓)");
+			expect(numbers(salt)).toEqual({ amount: 3, unit: "g" });
+			expect(salt?.unresolved).toEqual(["(2% of dough ❓)"]);
+		});
+
+		it("lists the amounts whose units do not add up in parts, as displayQty writes them", async () => {
+			const a = await tmp(
+				"## Prep\n\n[Mix] Add @butter{2 tbsp} and @chips{1 1/2 cups + 50 g}.\n",
+			);
+			const b = await tmp(
+				"## Prep\n\n[Mix] Add @butter{50 g}, @butter{1 tablespoon} and @chips{20 g}.\n",
+			);
+			const result = await buildShoppingList([a, b]);
+			const find = (id: string) => result.items.find((i) => i.id === id);
+			expect(find("butter")?.displayQty).toBe("3 tbsp + 50 g");
+			expect(find("butter")).toMatchObject({
+				amount: null,
+				unit: null,
+				parts: [
+					{ amount: 3, unit: "tbsp" },
+					{ amount: 50, unit: "g" },
+				],
+			});
+			expect(find("chips")?.displayQty).toBe("1 1/2 cups + 70 g");
+			expect(find("chips")?.parts).toEqual([
+				{ amount: 1.5, unit: "cup" },
+				{ amount: 70, unit: "g" },
+			]);
+		});
+
+		it("writes them in the JSON output, parts and unresolved only when there are some", async () => {
+			const a = await tmp(
+				"## Prep\n\n[Mix] Add @flour{200 g}, @chips{1 cup + 50 g} and @salt{2% &dough}.\n",
+			);
+			const json = JSON.parse(
+				renderShopJson(await buildShoppingList([a], { lang: "fr" })),
+			);
+			const find = (id: string) =>
+				json.items.find((i: { id: string }) => i.id === id);
+			expect(find("flour")).toEqual({
+				id: "flour",
+				name: "flour",
+				qty: "200 g",
+				amount: 200,
+				unit: "g",
+				isEstimate: false,
+				category: "Autres",
+				recipes: [expect.any(String)],
+			});
+			expect(find("chips").parts).toEqual([
+				{ amount: 1, unit: "cup" },
+				{ amount: 50, unit: "g" },
+			]);
+			expect(find("salt").unresolved).toEqual(["(2% of dough ❓)"]);
+			expect("parts" in find("salt")).toBe(false);
+		});
 	});
 });
