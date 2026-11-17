@@ -1,6 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { getAST } from "@gram-lang/parser";
 import { compile } from "../src/index";
+import { detectCycles } from "../src/graph";
 import type { ShoppingListItem } from "../src/types";
 
 // Regression test for the v0.0 preliminary fix ahead of the module-imports
@@ -30,5 +31,32 @@ Brush with @water{70% @&flour}.
 		).filter((item) => item.variableParts?.some((p) => p.includes("Circular")));
 
 		expect(circularItems).toEqual([]);
+	});
+});
+
+describe("formula cycles inside an alternative", () => {
+	it("sees the dependencies of an alternative's options", () => {
+		// `resolveRelativeQuantities` (analyzer) resolves the options of an
+		// alternative too: their formulas belong to the section's graph.
+		const source = `## Pastry
+
+Mix @flour{200 g} and @butter{10% @&oil}|@oil{8% @&butter}.
+`;
+		const result = compile(getAST(source));
+
+		expect([...detectCycles(result.sections)].sort()).toEqual([
+			"butter",
+			"oil",
+		]);
+	});
+
+	it("does not flag two options that take a share of the same ingredient", () => {
+		const source = `## Pastry
+
+Mix @flour{200 g} and @butter{10% @&flour}|@oil{8% @&flour}.
+`;
+		const result = compile(getAST(source));
+
+		expect(detectCycles(result.sections).size).toBe(0);
 	});
 });

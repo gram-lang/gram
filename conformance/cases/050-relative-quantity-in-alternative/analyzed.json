@@ -1,0 +1,516 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "farine": {
+        "id": "farine",
+        "name": "farine",
+        "default_unit": "g"
+      },
+      "beurre": {
+        "id": "beurre",
+        "name": "beurre"
+      },
+      "huile": {
+        "id": "huile",
+        "name": "huile"
+      },
+      "lait": {
+        "id": "lait",
+        "name": "lait",
+        "default_unit": "g"
+      },
+      "eau": {
+        "id": "eau",
+        "name": "eau"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "farine",
+      "name": "farine",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "alternative",
+      "type": "alternative",
+      "options": [
+        {
+          "id": "beurre",
+          "_usageId": "2",
+          "qty": {
+            "type": "single",
+            "value": 20
+          },
+          "dependencies": [
+            "farine"
+          ],
+          "formula": {
+            "raw": "10% of farine",
+            "target": "farine",
+            "percent": 10,
+            "isGhost": false
+          },
+          "unit": "g",
+          "normalizedMass": 20,
+          "conversionMethod": "relative"
+        },
+        {
+          "id": "huile",
+          "_usageId": "3",
+          "qty": {
+            "type": "single",
+            "value": 16
+          },
+          "dependencies": [
+            "farine"
+          ],
+          "formula": {
+            "raw": "8% of farine",
+            "target": "farine",
+            "percent": 8,
+            "isGhost": false
+          },
+          "unit": "g",
+          "normalizedMass": 16,
+          "conversionMethod": "relative"
+        }
+      ]
+    },
+    {
+      "id": "alternative",
+      "type": "alternative",
+      "options": [
+        {
+          "id": "lait",
+          "_usageId": "4",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        },
+        {
+          "id": "eau",
+          "_usageId": "5",
+          "qty": {
+            "type": "single",
+            "value": 90
+          },
+          "dependencies": [
+            "lait"
+          ],
+          "formula": {
+            "raw": "90% of lait",
+            "target": "lait",
+            "percent": 90,
+            "isGhost": false
+          },
+          "unit": "g",
+          "normalizedMass": 90,
+          "conversionMethod": "relative"
+        }
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Pâte",
+      "ingredients": [
+        {
+          "id": "farine",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "id": "alternative",
+          "type": "alternative",
+          "options": [
+            {
+              "id": "beurre",
+              "_usageId": "2",
+              "qty": {
+                "type": "single",
+                "value": 20
+              },
+              "dependencies": [
+                "farine"
+              ],
+              "formula": {
+                "raw": "10% of farine",
+                "target": "farine",
+                "percent": 10,
+                "isGhost": false
+              },
+              "normalizedMass": 20,
+              "unit": "g",
+              "conversionMethod": "relative"
+            },
+            {
+              "id": "huile",
+              "_usageId": "3",
+              "qty": {
+                "type": "single",
+                "value": 16
+              },
+              "dependencies": [
+                "farine"
+              ],
+              "formula": {
+                "raw": "8% of farine",
+                "target": "farine",
+                "percent": 8,
+                "isGhost": false
+              },
+              "normalizedMass": 16,
+              "unit": "g",
+              "conversionMethod": "relative"
+            }
+          ]
+        },
+        {
+          "id": "alternative",
+          "type": "alternative",
+          "options": [
+            {
+              "id": "lait",
+              "_usageId": "4",
+              "qty": 100,
+              "unit": "g",
+              "conversionMethod": "physical",
+              "isEstimate": false,
+              "normalizedMass": 100
+            },
+            {
+              "id": "eau",
+              "_usageId": "5",
+              "qty": {
+                "type": "single",
+                "value": 90
+              },
+              "dependencies": [
+                "lait"
+              ],
+              "formula": {
+                "raw": "90% of lait",
+                "target": "lait",
+                "percent": 90,
+                "isGhost": false
+              },
+              "normalizedMass": 90,
+              "unit": "g",
+              "conversionMethod": "relative"
+            }
+          ]
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mélanger ",
+            {
+              "id": "farine",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "avec ",
+            {
+              "id": "alternative",
+              "type": "alternative",
+              "options": [
+                {
+                  "id": "beurre",
+                  "_usageId": "2",
+                  "qty": {
+                    "type": "single",
+                    "value": 20
+                  },
+                  "dependencies": [
+                    "farine"
+                  ],
+                  "formula": {
+                    "raw": "10% of farine",
+                    "target": "farine",
+                    "percent": 10,
+                    "isGhost": false
+                  },
+                  "normalizedMass": 20,
+                  "unit": "g",
+                  "conversionMethod": "relative"
+                },
+                {
+                  "id": "huile",
+                  "_usageId": "3",
+                  "qty": {
+                    "type": "single",
+                    "value": 16
+                  },
+                  "dependencies": [
+                    "farine"
+                  ],
+                  "formula": {
+                    "raw": "8% of farine",
+                    "target": "farine",
+                    "percent": 8,
+                    "isGhost": false
+                  },
+                  "normalizedMass": 16,
+                  "unit": "g",
+                  "conversionMethod": "relative"
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Détendre avec ",
+            {
+              "id": "alternative",
+              "type": "alternative",
+              "options": [
+                {
+                  "id": "lait",
+                  "_usageId": "4",
+                  "qty": 100,
+                  "unit": "g",
+                  "normalizedMass": 100,
+                  "conversionMethod": "physical",
+                  "isEstimate": false
+                },
+                {
+                  "id": "eau",
+                  "_usageId": "5",
+                  "qty": {
+                    "type": "single",
+                    "value": 90
+                  },
+                  "dependencies": [
+                    "lait"
+                  ],
+                  "formula": {
+                    "raw": "90% of lait",
+                    "target": "lait",
+                    "percent": 90,
+                    "isGhost": false
+                  },
+                  "normalizedMass": 90,
+                  "unit": "g",
+                  "conversionMethod": "relative"
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 320,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"farine\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"beurre\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"lait\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 9,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Pâte",
+        "duration": 4
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Pâte",
+        "duration": 4
+      }
+    ],
+    "preparationTime": 5,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 5
+      }
+    ],
+    "totalMass": 320,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"farine\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"beurre\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"lait\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 5,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 5,
+          "duration": 5
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 5
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 5,
+            "duration": 5
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 9,
+    "activeTime": 4,
+    "preparationTime": 5,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 5
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 5,
+        "end": 7
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 7,
+        "end": 9
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 9,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}
