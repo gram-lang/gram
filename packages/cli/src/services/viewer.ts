@@ -8,6 +8,7 @@ import {
 	type ViewSettings,
 } from "@gram-lang/renderer";
 import { runPipeline } from "../core/pipeline";
+import { type TimerKinds, timerKinds } from "./scaler";
 
 export interface ViewOptions {
 	db?: Record<string, IngredientData> | null;
@@ -33,6 +34,8 @@ export interface ViewedRecipe {
 	usedStock: Set<string>;
 	/** The total time of the schedule the view followed, in minutes. */
 	totalMinutes: number;
+	/** Its fixed and proportional timers, for the scale warnings. */
+	timers: TimerKinds;
 	/** The ingredients the database has no nutrition for (empty without a database). */
 	missingIngredients: string[];
 }
@@ -76,6 +79,7 @@ export async function viewRecipe(
 		text: text ?? "",
 		usedStock,
 		totalMinutes: input.times.totalTime,
+		timers: timerKinds(compiled),
 		missingIngredients: analyzed?.missingIngredients ?? [],
 	};
 }

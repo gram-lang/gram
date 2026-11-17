@@ -91,6 +91,16 @@ describe("getScaleWarnings", () => {
 		expect(warnings.some((w) => w.includes("Cooking times"))).toBe(true);
 	});
 
+	it("says proportional times follow the scale, next to fixed ones", () => {
+		expect(getScaleWarnings(2, 45, { fixed: 1, proportional: 1 })).toEqual([
+			"Proportional times follow the scale; fixed times are not adjusted.",
+		]);
+	});
+
+	it("says nothing about times when every timer follows the scale", () => {
+		expect(getScaleWarnings(2, 45, { fixed: 0, proportional: 2 })).toEqual([]);
+	});
+
 	it("can return both warnings at once", () => {
 		const warnings = getScaleWarnings(30, 45);
 		expect(warnings).toHaveLength(2);

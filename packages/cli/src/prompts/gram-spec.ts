@@ -340,6 +340,23 @@ Scope: \`@&IngredientName\` targets are resolved within the CURRENT section only
 declared in another section cannot be targeted). \`&VariableName\` targets (intermediates) are
 resolved globally — a section-level \`->&name\` can be targeted from any later section.
 
+### Ratios with units (an amount per amount of another ingredient)
+
+\`@eggs{1 / 100 g @&flour}\` — 1 egg per 100 g of flour (5 eggs for 500 g)
+\`@salt{15 g / 1 L @&water}\` — 15 g of salt per liter of water
+\`@parsley{1 tsp / 2 cloves @&garlic}\` — a count can be the target's unit
+\`&stock{250 ml / 100 g @&rice}\` — also on a reference to an intermediate
+
+Syntax: \`{amount / target amount @&IngredientName}\` or \`{amount / target amount &VariableName}\`,
+the target amount being a number and a unit (\`100 g\`), a unit alone (\`L\`), or nothing for one
+piece (\`{1 / @&cutlet}\`). Same scope as percentages. Only write a ratio when the source states a
+proportional rule ("1 egg per 100 g of flour"); otherwise write the amount itself.
+Never emit:
+  ❌ \`{1/100g @&flour}\`        (a slash glued on both sides is a fraction — write \`{1 / 100 g @&flour}\`)
+  ❌ \`{1 / 100 g of @&flour}\`  (no word after the unit — write \`{1 / 100 g @&flour}\`)
+  ❌ \`{1 / 100-200 g @&flour}\` (the target amount is a single number)
+  ❌ \`@=eggs{1 / 100 g @&flour}\` (a ratio always follows its target: never \`=\`)
+
 ### Fixed quantities
 
 \`@=salt{5g}\` — 5g regardless of how many portions are made.
@@ -414,7 +431,12 @@ Never emit (each produces a warning and the timer is not counted):
   ❌ \`~{1 hour and a half}\`, \`~{2 to 3 hours}\` (no words — write \`~{1h30}\`, \`~{2-3h}\`)
   ❌ \`~{1-2h30}\`          (ambiguous range — write \`~{1h-2h30}\`)
   ❌ \`~{2 * 5min}\`        (no multiplication — write one timer per repetition)
+  ❌ \`~{15min / 500g @&roast * 2}\` (no multiplication after a proportional time)
   ❌ \`~{PT1H30M}\`         (ISO 8601 is for machines — write \`~{1h30}\`)
+
+A proportional time follows the weight of an ingredient written earlier in the section, when the
+source states it ("15 minutes per 500 g", "4 minutes per cutlet"): \`~_{15min / 500g @&roast}\`,
+\`~{4min / @&cutlet}\`, \`~_{30min / 1kg &dough}\`. Always a space around its \`/\`.
 
 RULE — active vs passive vs sequential:
 - Kneading, stirring, whisking, sautéeing → ACTIVE \`~{10min}\`

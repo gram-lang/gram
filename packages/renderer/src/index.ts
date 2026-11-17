@@ -139,6 +139,7 @@ export {
 	formatDecimalToFraction,
 	getQty,
 	formatQuantityValue,
+	formatRelative,
 	formatDuration,
 	formatTimer,
 	formatTimerDuration,
