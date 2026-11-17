@@ -50,6 +50,7 @@ deprecations:
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/core.ts"
+      - "packages/kitchen/src/recompute.ts"
 
   - id: kitchen-metrics-active-time
     layer: compiled-json
@@ -61,6 +62,7 @@ deprecations:
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/core.ts"
+      - "packages/kitchen/src/recompute.ts"
 
   - id: kitchen-metrics-breakdowns
     layer: compiled-json
@@ -72,6 +74,7 @@ deprecations:
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/core.ts"
+      - "packages/kitchen/src/recompute.ts"
 
   - id: kitchen-legacy-schedule-fallback
     layer: api
