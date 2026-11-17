@@ -1,0 +1,87 @@
+---
+title: "Target states"
+description: "Say when a step is done with ={target states}: the texture, color or smell that ends it, and how to check it."
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
+import Term from '../../../../../components/Term.astro';
+
+<Since v="1.5.0" />
+
+A time says how long a step should take; it is rarely what tells the cook it is done. Custard is ready when it coats the spoon, egg yolks and sugar when they fall back in a ribbon, butter when it smells of hazelnut. A <Term id="targetState" link={false} /> marks that cue with `={...}`: the state that ends the step.
+
+```gram
+Whisk @egg yolks{4} with @sugar{80 g} until ={ribbon stage}.
+
+Leave on the #tray until ={completely cool}.
+```
+
+Write only the state between the braces and leave the words that lead to it ("until", "till it is") in the sentence: the step still reads naturally, and the state stands out on its own in every view.
+
+## How to check it
+
+A note in parentheses, right after the closing brace, says how to tell that the state is reached: the test, the cue a beginner can trust.
+
+```gram
+Cook on ^{low heat}, stirring, until ={it coats the spoon}(a finger drawn across the back of the spoon leaves a clean line) ->&custard{}
+```
+
+The state and its note are always shown, on screen and on paper, and `gram cook` repeats them under the step. They are words for the cook, in the recipe's language: Gram keeps them as written and never reads them.
+
+:::caution[No space before the parenthesis]
+Only a parenthesis that touches the `}` is a note, and it ends on the same line. With a space, the parenthesis stays part of the sentence:
+
+```gram
+Whisk until ={stiff peaks}(the peaks hold when the whisk is lifted).
+
+Whisk until ={stiff peaks} (about 5 min).
+```
+
+The first target state has a note; the second has none, and `(about 5 min)` is ordinary text.
+:::
+
+## With a time and a temperature
+
+A step can carry a target state next to a timer and a temperature. The timer is the estimate, for the schedule; the state is what ends the step at the stove.
+
+```gram
+Cook at ^{82°C}(internal) for ~{8 min}, until ={it coats the spoon}.
+```
+
+:::tip[What does not go inside]
+A target state is a state, never a measure:
+- a temperature to reach is a [temperature](/docs/reference/syntax/temperatures/) with its note: `^{63°C}(internal)`;
+- a time is a [timer](/docs/reference/syntax/times/): `~{5 min}`;
+- a target state is never scaled: `={doubled in volume}` stays as written, whatever the number of servings.
+:::
+
+## Errors
+
+A target state needs words between its braces, closed on the same line. `={}` and `={ribbon stage` (with no `}`) are syntax errors, shown in the editor where they start.
+
+An `=` that does not touch a brace is ordinary text, and the fixed-quantity modifier `@=salt{1 tsp}` is unchanged.
+
+## In the compiled recipe
+
+Each target state is a `checkpoint` token in the step's `content`, where it was written: `{ "type": "checkpoint", "state": "ribbon stage", "note": "…" }`, `note` only when there is one. See [Data formats](/docs/reference/api/data-formats/).
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Temperatures"
+    description="Exact or semantic ^temperatures, and their notes."
+    href="/docs/reference/syntax/temperatures/"
+  />
+  <LinkCard
+    title="Times and scheduling"
+    description="Active work and passive timers with ~timer."
+    href="/docs/reference/syntax/times/"
+  />
+  <LinkCard
+    title="Gram syntax cheatsheet"
+    description="Quick visual reference for every marker."
+    href="/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>

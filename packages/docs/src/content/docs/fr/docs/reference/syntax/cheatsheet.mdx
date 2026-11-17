@@ -17,6 +17,7 @@ Les marqueurs essentiels utilisés directement au fil des étapes :
 | **Matériel** | `#` | `#nom[{quantité}]` | `#poêle{2}`, `#fouet` | Indique un ustensile ou équipement requis. Omettre `{}` équivaut à `1`. |
 | **Minuteur** | `~` | `~{temps}` | `~{30min}`, `~{1h30}` | Définit la durée d'une action active en cuisine, écrite comme dans une recette (`1 heure 30`, `1:30 h`, `5'30"`). |
 | **Température** | `^` | `^{température}` | `^{180°C}`, `^{350°F}` | Indique une consigne thermique précise (`C` ou `F`, insensible à la casse). |
+| **État attendu** | `=` | `={état}` | `={ruban}`, `={doré}` | L'état qui met fin à une étape, avec les mots du cuisinier. Depuis la 1.5.0. |
 
 ## Modificateurs
 
@@ -46,6 +47,7 @@ Formulations complémentaires pour enrichir la description des étapes :
 | **Minuteur nommé** | `~nom{...}` | `~œufs{3min}`, `~_four{45min}` | Linéarise l'accès à un équipement partagé (piste dédiée). |
 | **Température sémantique** | `^{texte}` | `^{feu moyen}`, `^{frémissement}` | Exprime une intensité de chauffe qualitative. |
 | **Précision de température** | `^{...}(précision)` | `^{160°C}(chaleur tournante)`, `^{63°C}(à cœur)` | Mode du four ou condition, toujours affichée ; la parenthèse est collée à l'accolade. Depuis la 1.5.0. |
+| **Précision d'un état attendu** | `={...}(précision)` | `={la nappe}(un doigt laisse une trace nette)` | Comment vérifier l'état, toujours affichée ; la parenthèse est collée à l'accolade. Depuis la 1.5.0. |
 | **Fractions** | `n/d` ou Unicode | `@farine{1 1/2 tasse}`, `@sucre{½ tasse}` | Prises en charge complètes en système métrique comme impérial. |
 | **Somme de quantités** | `a + b`, `a - b` | `@farine{1 kg + 200 g}`, `@lait{1 l - 10 cl}`, `@riz{1 tasse + 20 g}` | Gardée telle qu'écrite et additionnée ; un volume et une masse restent côte à côte. Depuis la 1.5.0. |
 

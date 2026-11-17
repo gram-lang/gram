@@ -158,6 +158,8 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
          return <span className="bg-yellow-100 px-1 rounded">{token.quantity?.value}{token.unit}</span>;
        case 'temperature':
          return <span className="text-red-600">{token.quantity?.value}{token.unit}</span>;
+       case 'checkpoint': // A target state (`={ribbon stage}`, 1.5)
+         return <strong>{token.state}{token.note && ` (${token.note})`}</strong>;
        default:
          return null;
      }

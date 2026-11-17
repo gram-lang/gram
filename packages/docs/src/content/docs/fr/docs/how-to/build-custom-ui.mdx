@@ -158,6 +158,8 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
          return <span className="bg-yellow-100 px-1 rounded">{token.quantity?.value}{token.unit}</span>;
        case 'temperature':
          return <span className="text-red-600">{token.quantity?.value}{token.unit}</span>;
+       case 'checkpoint': // Un état attendu (`={ruban}`, 1.5)
+         return <strong>{token.state}{token.note && ` (${token.note})`}</strong>;
        default:
          return null;
      }

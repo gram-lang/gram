@@ -109,7 +109,7 @@ For `## Puff Pastry ~{-2h}`, `retroPlanning` is `{ raw: "-2h", sign: -1, value: 
 interface StepAST {
   type: ASTNodeType.Step;
   action?: string | null;              // e.g. "Mix" from "[Mix] ..."
-  children: (TextAST | IngredientAST | CookwareAST | TimerAST | TemperatureAST
+  children: (TextAST | IngredientAST | CookwareAST | TimerAST | TemperatureAST | CheckpointAST
     | ReferenceAST | AlternativeAST | IntermediateDecl | CommentAST)[];
   loc?: Location;
 }
@@ -143,13 +143,13 @@ interface RelativeQuantityAST {
 }
 ```
 
-The remaining node interfaces (`CookwareAST`, `ReferenceAST`, `TimerAST`, `TemperatureAST`, `CommentAST`, `AlternativeAST`, `IntermediateDecl`, `TextQuantityAST`) follow the same pattern — see `packages/parser/src/types.ts` for the exhaustive list.
+The remaining node interfaces (`CookwareAST`, `ReferenceAST`, `TimerAST`, `TemperatureAST`, `CheckpointAST`, `CommentAST`, `AlternativeAST`, `IntermediateDecl`, `TextQuantityAST`) follow the same pattern — see `packages/parser/src/types.ts` for the exhaustive list.
 
 ## Type guards
 
 13 type guards are exported for safely narrowing `ASTNode | StepAST | ... | null | undefined` inputs without manual `.type` checks:
 
-`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isQuantity`, `isTextQuantity`, `isRelativeQuantity`.
+`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isCheckpoint`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isQuantity`, `isTextQuantity`, `isRelativeQuantity`.
 
 ```typescript
 import { getAST, isIngredient, isTimer } from '@gram-lang/parser';

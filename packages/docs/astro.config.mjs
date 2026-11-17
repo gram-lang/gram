@@ -98,6 +98,7 @@ export default defineConfig({
             { label: 'Cookware', translations: { fr: 'Matériel' }, slug: 'docs/reference/syntax/cookware' },
             { label: 'Times', translations: { fr: 'Temps' }, slug: 'docs/reference/syntax/times' },
             { label: 'Temperatures', translations: { fr: 'Températures' }, slug: 'docs/reference/syntax/temperatures' },
+            { label: 'Target states', translations: { fr: 'États attendus' }, slug: 'docs/reference/syntax/target-states', badge: { text: 'v1.5.0', variant: 'default' } },
             { label: 'Intermediate variables', translations: { fr: 'Variables intermédiaires' }, slug: 'docs/reference/syntax/intermediate-variables' },
             { label: 'Relative quantities', translations: { fr: 'Quantités relatives' }, slug: 'docs/reference/syntax/relative-quantities' },
             { label: 'Composite ingredients', translations: { fr: 'Ingrédients composites' }, slug: 'docs/reference/syntax/composite-ingredients' },

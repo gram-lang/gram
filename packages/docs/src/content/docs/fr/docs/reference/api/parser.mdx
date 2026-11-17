@@ -91,7 +91,7 @@ Pour `## Pâte Feuilletée ~{-2h}`, `retroPlanning` vaut `{ raw: "-2h", sign: -1
 interface StepAST {
   type: ASTNodeType.Step;
   action?: string | null;              // ex : "Mélanger" issu de "[Mélanger] ..."
-  children: (TextAST | IngredientAST | CookwareAST | TimerAST | TemperatureAST
+  children: (TextAST | IngredientAST | CookwareAST | TimerAST | TemperatureAST | CheckpointAST
     | ReferenceAST | AlternativeAST | IntermediateDecl | CommentAST)[];
   loc?: Location;
 }
@@ -125,13 +125,13 @@ interface RelativeQuantityAST {
 }
 ```
 
-Les autres interfaces de nœuds (`CookwareAST`, `ReferenceAST`, `TimerAST`, `TemperatureAST`, `CommentAST`, `AlternativeAST`, `IntermediateDecl`, `TextQuantityAST`) suivent le même schéma — voir `packages/parser/src/types.ts` pour la liste exhaustive.
+Les autres interfaces de nœuds (`CookwareAST`, `ReferenceAST`, `TimerAST`, `TemperatureAST`, `CheckpointAST`, `CommentAST`, `AlternativeAST`, `IntermediateDecl`, `TextQuantityAST`) suivent le même schéma — voir `packages/parser/src/types.ts` pour la liste exhaustive.
 
 ## Type guards
 
 13 fonctions de garde (*type guards*) sont exportées pour *narrow* de manière sécurisée des entrées `ASTNode | StepAST | ... | null | undefined`, et vous éviter les vérifications manuelles du champ `.type` :
 
-`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isQuantity`, `isTextQuantity`, `isRelativeQuantity`.
+`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isCheckpoint`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isQuantity`, `isTextQuantity`, `isRelativeQuantity`.
 
 ```typescript
 import { getAST, isIngredient, isTimer } from '@gram-lang/parser';

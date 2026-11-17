@@ -88,6 +88,15 @@ Write an amount the recipe gives in several measures as a [sum](/docs/reference/
 ```
 What goes with a temperature (the oven mode, "internal", "covered") belongs in a [note](/docs/reference/syntax/temperatures/#cooking-mode-and-notes) glued to the closing brace, in the recipe's language. With a space before it, the parenthesis is ordinary text and the note is lost.
 
+### The cue that ends a step left in the prose
+<Since v="1.5.0" />
+
+```gram
+❌  Whisk until ribbon stage.                 →   ✅  Whisk until ={ribbon stage}.
+❌  Cook until ={82°C} or ={5 min}.           →   ✅  Cook at ^{82°C}(internal) for ~{5 min}, until ={it coats the spoon}.
+```
+When the source says what tells the cook a step is done (a texture, a color, a smell), mark it as a [target state](/docs/reference/syntax/target-states/): only the state between the braces, "until" left in the sentence, a test in a glued note if the source gives one. Never a temperature, a time or a quantity inside, and never a cue the source does not give.
+
 ### Using `@&` on the first occurrence
 
 ```gram
