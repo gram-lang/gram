@@ -7,16 +7,15 @@ import {
 	TIME_TO_MINUTES,
 } from "@gram-lang/i18n";
 import { readAnchor } from "@gram-lang/kitchen";
-import { isSection, type RetroPlanningAST } from "@gram-lang/parser";
+import {
+	isRatioQuantity,
+	isSection,
+	type RetroPlanningAST,
+} from "@gram-lang/parser";
 import { formatDuration, formatTimerDuration } from "@gram-lang/renderer";
 import type { DocumentState } from "../document-state";
 import { collectTimers } from "../utils/ast-walker";
-
-/** The recipe's language, as the views read it. */
-function recipeLang(state: DocumentState): string | undefined {
-	const meta = state.compilation?.meta?.language;
-	return typeof meta === "string" ? meta : undefined;
-}
+import { compiledRatios, recipeLang } from "../utils/ratios";
 
 const MINUTES_PER_DAY = 24 * 60;
 
@@ -58,6 +57,23 @@ export function provideTimerHover(
 		(t) => t.loc && t.loc.start <= offset && offset < t.loc.end,
 	);
 	if (!timer?.loc) return null;
+	const written = state.text.slice(timer.loc.start, timer.loc.end);
+
+	// A proportional time (`~{15 min / 500 g @&roast}`): the duration it came
+	// to, or why there is none (the warning on the ratio).
+	if (isRatioQuantity(timer.quantity)) {
+		const loc = timer.quantity.loc;
+		const ratio = compiledRatios(state).find(
+			(r) => r.spec.loc?.start === loc?.start,
+		);
+		if (ratio?.resolved) {
+			return markdown(`**\`${written}\`** → ${ratio.resolved}`);
+		}
+		const warning = state.compilation?.warnings.find(
+			(w) => w.loc?.start === loc?.start && !w.loc?.uri,
+		);
+		return warning ? markdown(`**\`${written}\`** → ${warning.message}`) : null;
+	}
 
 	const duration = parseDuration(timer.raw);
 	if (!duration.ok) return null;
@@ -71,7 +87,6 @@ export function provideTimerHover(
 			? { type: "range", range: duration.range }
 			: { type: "single", value: duration.minutes },
 	};
-	const written = state.text.slice(timer.loc.start, timer.loc.end);
 	return markdown(
 		`**\`${written}\`** → ${formatTimerDuration(item, recipeLang(state))}`,
 	);

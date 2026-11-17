@@ -10,6 +10,7 @@ import { positionToOffset, offsetToPosition } from "../utils/position";
 import {
 	collectIntermediates,
 	collectReferences,
+	collectRelativeTargets,
 	findNameAtOffset,
 } from "../utils/ast-walker";
 
@@ -36,7 +37,7 @@ export function prepareName(
 ): PrepareRenameResult | null {
 	if (!state.ast) return null;
 	const offset = positionToOffset(state.lineStarts, position);
-	const found = findNameAtOffset(state.ast, offset);
+	const found = findNameAtOffset(state.ast, offset, state.text);
 	if (!found) return null;
 
 	const decls = collectIntermediates(state.ast);
@@ -67,6 +68,15 @@ export function prepareName(
 			placeholder: found.name,
 		};
 	}
+	const target = collectRelativeTargets(state.ast, state.text).find(
+		(t) => t.name === found.name && t.start <= offset && offset <= t.end,
+	);
+	if (target) {
+		return {
+			range: nameOnlyRange(state, target.start, 0, target.name),
+			placeholder: found.name,
+		};
+	}
 	return null;
 }
 
@@ -78,7 +88,7 @@ export function provideRename(
 ): WorkspaceEdit | null {
 	if (!state.ast) return null;
 	const offset = positionToOffset(state.lineStarts, position);
-	const found = findNameAtOffset(state.ast, offset);
+	const found = findNameAtOffset(state.ast, offset, state.text);
 	if (!found) return null;
 
 	const edits: TextEdit[] = [];
@@ -95,6 +105,15 @@ export function provideRename(
 		if (ref.name === found.name && ref.loc) {
 			edits.push({
 				range: nameOnlyRange(state, ref.loc.start, 1, ref.name),
+				newText: newName,
+			});
+		}
+	}
+
+	for (const target of collectRelativeTargets(state.ast, state.text)) {
+		if (target.referenceType === "variable" && target.name === found.name) {
+			edits.push({
+				range: nameOnlyRange(state, target.start, 0, target.name),
 				newText: newName,
 			});
 		}

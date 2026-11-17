@@ -7,6 +7,8 @@ import {
 import { getDictionary } from "@gram-lang/i18n";
 import { formatDuration } from "@gram-lang/renderer";
 import type { DocumentState } from "../document-state";
+import { offsetToPosition } from "../utils/position";
+import { compiledRatios } from "../utils/ratios";
 
 export function provideInlayHints(
 	state: DocumentState,
@@ -38,6 +40,20 @@ export function provideInlayHints(
 		hints.push({
 			position: Position.create(titleLine, titleChar),
 			label: `  ${t.totalTime}${t.colon}${formatDuration(totalTime, lang)}`,
+			kind: InlayHintKind.Type,
+			paddingLeft: true,
+		});
+	}
+
+	// What each resolved ratio came to, right after its braces: `= 2.5`,
+	// `= 45 min`.
+	for (const { spec, resolved } of compiledRatios(state)) {
+		if (!resolved || !spec.loc) continue;
+		const close = state.text.indexOf("}", spec.loc.end);
+		if (close < 0) continue;
+		hints.push({
+			position: offsetToPosition(state.lineStarts, close + 1),
+			label: `= ${resolved}`,
 			kind: InlayHintKind.Type,
 			paddingLeft: true,
 		});
