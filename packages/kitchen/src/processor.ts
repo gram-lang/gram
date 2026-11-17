@@ -952,6 +952,9 @@ function processIntermediateDecl(
 	});
 	ctx.intermediateDecl = id;
 	ctx.currentSectionIntermediates.add(item.name);
+	// Declared by a step (`Mix … ->&dough.`) as by a section title: a later
+	// share of it (`@salt{2% &dough}`) finds it, instead of a VARIABLE_NOT_FOUND.
+	ctx.definedIntermediates.add(item.name);
 	return { type: "declaration", name: item.name, id };
 }
 
