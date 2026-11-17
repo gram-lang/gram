@@ -31,7 +31,13 @@ export type InvalidQuantityReason =
 	/** `{1 cup - 1-2 tbsp}`: a range after `-` swaps its bounds. */
 	| "rangeAfterMinus"
 	/** `{1 cup - 20 g}`: taken away from another family, nothing to check it against. */
-	| "minusAcrossFamilies";
+	| "minusAcrossFamilies"
+	/**
+	 * `{1/0 cup}`: a fraction over zero has no value. Not only in a sum: on any
+	 * number of an ingredient, a reference, a piece of cookware or a
+	 * temperature. Since 1.5.0.
+	 */
+	| "zeroDenominator";
 
 export interface SumProblem {
 	reason: InvalidQuantityReason;

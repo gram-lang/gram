@@ -20,7 +20,8 @@ import { fileURLToPath } from "node:url";
  * or `@use` line (`loc` only, in 021, 022, mod-016 and mod-017). And a unit
  * written with no number is no longer lost from the shopping list: its entry
  * lists it in `variable_entries` (026, `{1/0 cups}`, whose fraction has no
- * value).
+ * value). That fraction now raises an `INVALID_QUANTITY` warning, where it
+ * used to vanish without a word (026 again, `warnings` only).
  *
  * The digests come from the tag's goldens: `canonical(json)` below, sha256, hex.
  */

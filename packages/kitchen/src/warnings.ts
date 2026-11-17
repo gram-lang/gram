@@ -227,6 +227,7 @@ const QUANTITY_HINTS: Record<InvalidQuantityReason, string> = {
 		"what is taken away is as much as what is added, or more, so the sum comes to nothing. Each kind of amount is counted on its own: in {1 cup - 2 tbsp + 30 g}, the 2 tbsp come off the cup only.",
 	rangeAfterMinus:
 		"a range cannot be taken away (its bounds would swap): write the range on a term that is added, or the total as a range.",
+	zeroDenominator: "a fraction cannot have 0 below the bar (write e.g. 1/2).",
 	minusAcrossFamilies:
 		"an amount is only taken away from one of its kind: a volume from a volume, a weight from a weight. Here nothing of its kind is added to take it from. {1 cup - 2 tbsp + 30 g} works (the 2 tbsp come off the cup); {1 cup - 20 g} does not.",
 };
@@ -263,7 +264,9 @@ export const warningTemplates: {
 			? `Retro-planning offset "${p.value}" on "${p.item}" is not read: ${DURATION_HINTS[p.reason] ?? p.reason} The section is not anchored.`
 			: `Timer duration "${p.value}"${p.item === "Timer" ? "" : ` on "${p.item}"`} is not read: ${DURATION_HINTS[p.reason] ?? p.reason} It is not counted in the total time.`,
 	[WarningCode.INVALID_QUANTITY]: (p) =>
-		`Quantity "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS[p.reason] ?? p.reason}${p.suggestion ? ` Did you mean {${p.suggestion}}?` : ""} It is not counted in the shopping list or the nutrition.`,
+		p.reason === "zeroDenominator"
+			? `Number "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS.zeroDenominator} It is left out, as if no number had been written.`
+			: `Quantity "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS[p.reason] ?? p.reason}${p.suggestion ? ` Did you mean {${p.suggestion}}?` : ""} It is not counted in the shopping list or the nutrition.`,
 	[WarningCode.OZ_AFTER_VOLUME]: (p) =>
 		`"${p.value}" of "${p.item}" is a weight: oz weighs, ${p.suggestion} measures a volume. Write ${p.suggestion} if a volume is meant.`,
 	[WarningCode.AMBIGUOUS_NUMBER]: (p) =>

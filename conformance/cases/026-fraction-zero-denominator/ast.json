@@ -32,6 +32,7 @@
                 "value": null,
                 "unit": "cups",
                 "fixed": false,
+                "invalidNumber": "1/0",
                 "loc": {
                   "start": 65,
                   "end": 73

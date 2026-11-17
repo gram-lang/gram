@@ -180,6 +180,12 @@ export interface RelativeQuantityAST extends NodeAST {
 	text?: string;
 	target: string;
 	referenceType: "variable" | "ingredient";
+	/**
+	 * A number Gram refused, as written: a fraction over zero (`1/0`,
+	 * `1 1/0`). It has no value, so the element reads as if it had no
+	 * number; the compiler says so. Omitted otherwise. Since 1.5.0.
+	 */
+	invalidNumber?: string;
 }
 
 export interface TextQuantityAST extends NodeAST {
@@ -192,6 +198,12 @@ export interface QuantityAST extends NodeAST {
 	value?: QuantityValueAST;
 	unit?: string | null;
 	fixed: boolean;
+	/**
+	 * A number Gram refused, as written: a fraction over zero (`1/0`,
+	 * `1 1/0`). It has no value, so the element reads as if it had no
+	 * number; the compiler says so. Omitted otherwise. Since 1.5.0.
+	 */
+	invalidNumber?: string;
 }
 
 /** One term of a sum of quantities: `1 cup`, `- 2 tbsp`, `+ 1-2 tsp`. Since 1.5.0. */
@@ -202,6 +214,12 @@ export interface QuantityTermAST {
 	value: QuantityValueAST | null;
 	/** `null` for a term written with no unit (`{1 + 1 cup}`). */
 	unit: string | null;
+	/**
+	 * A number Gram refused, as written: a fraction over zero (`1/0`,
+	 * `1 1/0`). It has no value, so the element reads as if it had no
+	 * number; the compiler says so. Omitted otherwise. Since 1.5.0.
+	 */
+	invalidNumber?: string;
 	/** Where the term is written, its sign left out. */
 	loc: Location;
 }
@@ -304,6 +322,12 @@ export interface TemperatureAST extends NodeAST {
 	value?: QuantityValueAST | null;
 	unit?: string | null;
 	text?: string | null;
+	/**
+	 * A number Gram refused, as written: a fraction over zero (`1/0`,
+	 * `1 1/0`). It has no value, so the element reads as if it had no
+	 * number; the compiler says so. Omitted otherwise. Since 1.5.0.
+	 */
+	invalidNumber?: string;
 	/**
 	 * The note glued to the closing brace (`^{160°C}(fan)`), on one line.
 	 * Omitted when there is none. Since 1.5.0.
