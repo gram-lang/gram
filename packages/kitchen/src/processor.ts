@@ -385,6 +385,23 @@ function checkSum(
 	}
 }
 
+/**
+ * `@eggs{3}<@box{50% @&flour}>`: a share of another ingredient on a composite
+ * parent is not supported yet (composites are reworked in 1.6). Said here,
+ * rather than dropped without a word: the parent reads with no quantity.
+ */
+function checkRelativeParent(ctx: ProcessorContext, item: IngredientAST) {
+	const quantity = item.composite?.quantity;
+	if (quantity?.type !== ASTNodeType.RelativeQuantity) return;
+	if (quantity.invalidNumber) return; // already said (zeroDenominator)
+	pushWarning(ctx, WarningCode.INVALID_QUANTITY, {
+		value: `${quantity.text ?? quantity.percent}% ${quantity.referenceType === "variable" ? "&" : "@&"}${quantity.target}`,
+		reason: "relativeNotSupported",
+		item: item.composite?.parent ?? item.name,
+		loc: quantity.loc ?? item.loc,
+	});
+}
+
 function processIngredient(
 	item: IngredientAST,
 	ctx: ProcessorContext,
@@ -399,6 +416,7 @@ function processIngredient(
 		item.composite?.parent ?? item.name,
 		item.loc,
 	);
+	checkRelativeParent(ctx, item);
 
 	const defaultUnit =
 		(item.quantity && "unit" in item.quantity && item.quantity.unit) ||

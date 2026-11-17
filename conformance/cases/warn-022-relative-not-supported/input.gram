@@ -1,0 +1,7 @@
+---
+title: Warn Relative Not Supported
+---
+
+## Composite parent
+
+Mix @flour{100 g} with @eggs{3}<@box{50% @&flour}>.
