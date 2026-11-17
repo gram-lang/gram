@@ -1,13 +1,65 @@
 import type {
 	QuantityValueAST,
 	RelativeQuantityAST,
+	RatioQuantityAST,
 	TextQuantityAST,
 	Meta,
 	ImportDecl,
+	Location,
 } from "@gram-lang/parser";
 import type { Warning } from "./warnings";
 import type { ShoppingListItem, CompositeItem } from "./shopping";
 import type { QuantityPart } from "./terms";
+
+/**
+ * A ratio as written (`1 / 100 g @&flour`, `~{15 min / 500 g @&roast}`),
+ * kept so it can be resolved again from what was written (scaling,
+ * analysis), never from an amount already resolved. Since 1.5.0.
+ */
+export interface RatioSpec {
+	/**
+	 * The amount per target amount, in the unit written (`1`, `15 g`). On a
+	 * timer, its duration as read (`15 min`, `1:30 h` as `90 min`).
+	 */
+	numerator: { value: QuantityValueAST; unit: string | null };
+	/** The target amount: `value` 1 when no number is written (`/ L`, `/ @&cutlet`). */
+	denominator: { value: number; unit: string | null };
+	/** The target as written (`flour`, `dough`). */
+	target: string;
+	/** The target's id: an ingredient's, or an intermediate's. */
+	targetId: string;
+	referenceType: "variable" | "ingredient";
+	/** As written between the braces (`1 / 100 g @&flour`). */
+	raw: string;
+	/** Where it is written, so a warning raised later (analyzer) points at it. */
+	loc?: Location;
+	/** The target was not found where it should be: never resolved. */
+	isGhost?: boolean;
+}
+
+/**
+ * A ratio not resolved yet, as `qty` keeps it: the parser's node without its
+ * `loc`. It waits for the analyzer (a density, a unit weight), or never
+ * resolves (a warning says why). Since 1.5.0.
+ */
+export type PendingRatio = Omit<RatioQuantityAST, "loc">;
+
+/** A share of another ingredient (`70% @&flour`), as 1.3.0 published it. */
+export interface PercentFormula {
+	raw: string;
+	target: string;
+	percent: number;
+	isGhost?: boolean;
+}
+
+/** An amount per amount of another ingredient (`1 / 100 g @&flour`). Since 1.5.0. */
+export interface RatioFormula {
+	/** As written between the braces. */
+	raw: string;
+	target: string;
+	ratio: RatioSpec;
+	isGhost?: boolean;
+}
 
 // The compiled-JSON shape kept on a Usage for its composite-child info
 // (`@juice{150ml}<@lemon{1}`) — deliberately narrower than the parser's
@@ -84,6 +136,7 @@ export interface Usage {
 		| string
 		| QuantityValueAST
 		| RelativeQuantityAST
+		| PendingRatio
 		| TextQuantityAST;
 	unit?: string | null;
 	/**
@@ -101,12 +154,11 @@ export interface Usage {
 	composite?: UsageComposite | null;
 	isCircular?: boolean;
 	dependencies?: string[];
-	formula?: {
-		raw: string;
-		target: string;
-		percent: number;
-		isGhost?: boolean;
-	};
+	/**
+	 * The amount comes from another ingredient: a share (`percent`), or since
+	 * 1.5.0 a ratio (`ratio`). Tell them apart with `"percent" in formula`.
+	 */
+	formula?: PercentFormula | RatioFormula;
 	type?: string;
 	options?: StepToken[]; // For alternatives — recursively processed block results, not raw AST
 	name?: string;
@@ -148,6 +200,12 @@ export interface ProcessedTimer {
 	unit?: string;
 	/** The duration the schedule uses, in minutes (the middle of a range). */
 	minutes?: number;
+	/**
+	 * A proportional time (`~{15 min / 500 g @&roast}`): `quantity`, `unit`
+	 * and `minutes` come from it, absent until its target's amount is known.
+	 * Omitted for any other timer. Since 1.5.0.
+	 */
+	ratio?: RatioSpec;
 }
 
 export interface ProcessedTemperature {

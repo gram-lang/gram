@@ -1,0 +1,572 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "roast": {
+        "id": "roast",
+        "name": "roast",
+        "default_unit": "kg"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt"
+      },
+      "pepper": {
+        "id": "pepper",
+        "name": "pepper",
+        "default_unit": "g"
+      },
+      "chili": {
+        "id": "chili",
+        "name": "chili"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "roast",
+      "name": "roast",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 2,
+      "unit": "kg",
+      "normalizedMass": 2000,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "qty": 30,
+      "unit": "g",
+      "normalizedMass": 30,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "pepper",
+      "name": "pepper",
+      "_usageIds": [
+        "3"
+      ],
+      "fixed": true,
+      "qty": 2,
+      "unit": "g",
+      "normalizedMass": 2,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "chili",
+      "name": "chili",
+      "_usageIds": [
+        "4"
+      ],
+      "relative": true,
+      "qty": 2
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Roast",
+      "ingredients": [
+        {
+          "id": "roast",
+          "_usageId": "1",
+          "qty": 2,
+          "unit": "kg",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 2000
+        },
+        {
+          "id": "salt",
+          "_usageId": "2",
+          "qty": {
+            "type": "single",
+            "value": 30
+          },
+          "dependencies": [
+            "roast"
+          ],
+          "formula": {
+            "raw": "15 g / 1 kg @&roast",
+            "target": "roast",
+            "ratio": {
+              "numerator": {
+                "value": {
+                  "type": "single",
+                  "value": 15,
+                  "text": "15"
+                },
+                "unit": "g"
+              },
+              "denominator": {
+                "value": 1,
+                "unit": "kg"
+              },
+              "target": "roast",
+              "targetId": "roast",
+              "referenceType": "ingredient",
+              "raw": "15 g / 1 kg @&roast",
+              "loc": {
+                "start": 41,
+                "end": 60
+              }
+            },
+            "isGhost": false
+          },
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 30,
+          "unit": "g"
+        },
+        {
+          "id": "pepper",
+          "_usageId": "3",
+          "qty": 2,
+          "unit": "g",
+          "fixed": true,
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 2
+        },
+        {
+          "id": "chili",
+          "_usageId": "4",
+          "qty": {
+            "type": "single",
+            "value": 2
+          },
+          "dependencies": [
+            "pepper"
+          ],
+          "formula": {
+            "raw": "1 / 1 g @&pepper",
+            "target": "pepper",
+            "ratio": {
+              "numerator": {
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                }
+              },
+              "denominator": {
+                "value": 1,
+                "unit": "g"
+              },
+              "target": "pepper",
+              "targetId": "pepper",
+              "referenceType": "ingredient",
+              "raw": "1 / 1 g @&pepper",
+              "loc": {
+                "start": 93,
+                "end": 109
+              }
+            },
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Season ",
+            {
+              "id": "roast",
+              "_usageId": "1",
+              "qty": 2,
+              "unit": "kg",
+              "normalizedMass": 2000,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "with ",
+            {
+              "id": "salt",
+              "_usageId": "2",
+              "qty": {
+                "type": "single",
+                "value": 30
+              },
+              "dependencies": [
+                "roast"
+              ],
+              "formula": {
+                "raw": "15 g / 1 kg @&roast",
+                "target": "roast",
+                "ratio": {
+                  "numerator": {
+                    "value": {
+                      "type": "single",
+                      "value": 15,
+                      "text": "15"
+                    },
+                    "unit": "g"
+                  },
+                  "denominator": {
+                    "value": 1,
+                    "unit": "kg"
+                  },
+                  "target": "roast",
+                  "targetId": "roast",
+                  "referenceType": "ingredient",
+                  "raw": "15 g / 1 kg @&roast",
+                  "loc": {
+                    "start": 41,
+                    "end": 60
+                  }
+                },
+                "isGhost": false
+              },
+              "unit": "g",
+              "normalizedMass": 30,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "and ",
+            {
+              "id": "pepper",
+              "_usageId": "3",
+              "qty": 2,
+              "unit": "g",
+              "fixed": true,
+              "normalizedMass": 2,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            ", then ",
+            {
+              "id": "chili",
+              "_usageId": "4",
+              "qty": {
+                "type": "single",
+                "value": 2
+              },
+              "dependencies": [
+                "pepper"
+              ],
+              "formula": {
+                "raw": "1 / 1 g @&pepper",
+                "target": "pepper",
+                "ratio": {
+                  "numerator": {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    }
+                  },
+                  "denominator": {
+                    "value": 1,
+                    "unit": "g"
+                  },
+                  "target": "pepper",
+                  "targetId": "pepper",
+                  "referenceType": "ingredient",
+                  "raw": "1 / 1 g @&pepper",
+                  "loc": {
+                    "start": 93,
+                    "end": 109
+                  }
+                },
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Roast ",
+            {
+              "type": "timer",
+              "raw": "15 min / 500 g @&roast",
+              "ratio": {
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 15
+                  },
+                  "unit": "min"
+                },
+                "denominator": {
+                  "value": 500,
+                  "unit": "g"
+                },
+                "target": "roast",
+                "targetId": "roast",
+                "referenceType": "ingredient",
+                "raw": "15 min / 500 g @&roast",
+                "loc": {
+                  "start": 121,
+                  "end": 143
+                }
+              },
+              "quantity": {
+                "type": "single",
+                "value": 60
+              },
+              "unit": "min",
+              "minutes": 60
+            },
+            ", then rest ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "raw": "10 min",
+              "quantity": {
+                "type": "single",
+                "value": 10,
+                "text": "10"
+              },
+              "unit": "min",
+              "minutes": 10
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 62,
+            "activeDuration": 60
+          },
+          "backgroundTasks": [
+            {
+              "duration": 10,
+              "startOffset": 60
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "totalMass": 2032,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "chili"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"roast\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"salt\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"pepper\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"chili\" — omitted from nutritional totals."
+    }
+  ],
+  "metrics": {
+    "totalTime": 76,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Roast",
+        "duration": 62
+      },
+      {
+        "label": "timer_passive",
+        "duration": 10
+      }
+    ],
+    "idleTime": 10,
+    "activeTime": 62,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Roast",
+        "duration": 62
+      }
+    ],
+    "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      }
+    ],
+    "totalMass": 2032,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "chili"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"roast\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"salt\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"pepper\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"chili\" — omitted from nutritional totals."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 4,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 4
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 4,
+            "duration": 4
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 60
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.1.t0",
+        "kind": "passive",
+        "section": 0,
+        "step": 1,
+        "offset": 60,
+        "duration": {
+          "nominal": 10
+        },
+        "after": [
+          "s0.1"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 76,
+    "activeTime": 62,
+    "preparationTime": 4,
+    "idleTime": 10,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 4
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 4,
+        "end": 6
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 6,
+        "end": 66
+      },
+      {
+        "kind": "passive",
+        "task": "s0.1.t0",
+        "section": 0,
+        "step": 1,
+        "start": 66,
+        "end": 76
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 66,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  },
+  "scaleFactor": 2
+}

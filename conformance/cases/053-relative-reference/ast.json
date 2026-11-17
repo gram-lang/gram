@@ -1,0 +1,384 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Rice",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "rice",
+        "loc": {
+          "start": 8,
+          "end": 15
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Cook ",
+              "loc": {
+                "start": 17,
+                "end": 22
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "rice",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 28,
+                  "end": 33
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 22,
+                "end": 34
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 34,
+                "end": 35
+              }
+            }
+          ],
+          "loc": {
+            "start": 17,
+            "end": 37
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 37
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Stock",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "stock",
+        "loc": {
+          "start": 46,
+          "end": 54
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Simmer ",
+              "loc": {
+                "start": 56,
+                "end": 63
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": "l",
+                "fixed": false,
+                "loc": {
+                  "start": 70,
+                  "end": 73
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 63,
+                "end": 74
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 74,
+                "end": 75
+              }
+            }
+          ],
+          "loc": {
+            "start": 56,
+            "end": 77
+          }
+        }
+      ],
+      "loc": {
+        "start": 37,
+        "end": 77
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Serve",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix the ",
+              "loc": {
+                "start": 87,
+                "end": 95
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "rice",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 101,
+                  "end": 106
+                }
+              },
+              "loc": {
+                "start": 95,
+                "end": 107
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 108,
+                "end": 113
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "stock",
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 250,
+                    "text": "250"
+                  },
+                  "unit": "ml"
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 100,
+                    "text": "100"
+                  },
+                  "unit": "g"
+                },
+                "target": "rice",
+                "referenceType": "ingredient",
+                "raw": "250 ml / 100 g @&rice",
+                "loc": {
+                  "start": 120,
+                  "end": 141
+                }
+              },
+              "loc": {
+                "start": 113,
+                "end": 142
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 143,
+                "end": 147
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 10,
+                    "text": "10"
+                  },
+                  "unit": "g"
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 100,
+                    "text": "100"
+                  },
+                  "unit": "ml"
+                },
+                "target": "stock",
+                "referenceType": "variable",
+                "raw": "10 g / 100 ml &stock",
+                "loc": {
+                  "start": 155,
+                  "end": 175
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 147,
+                "end": 176
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 176,
+                "end": 177
+              }
+            }
+          ],
+          "loc": {
+            "start": 87,
+            "end": 179
+          }
+        }
+      ],
+      "loc": {
+        "start": 77,
+        "end": 179
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Finish",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Moisten the ",
+              "loc": {
+                "start": 190,
+                "end": 202
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "rice",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 208,
+                  "end": 213
+                }
+              },
+              "loc": {
+                "start": 202,
+                "end": 214
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 215,
+                "end": 220
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "stock",
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 25,
+                "text": "25",
+                "target": "rice",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 227,
+                  "end": 237
+                }
+              },
+              "loc": {
+                "start": 220,
+                "end": 238
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 238,
+                "end": 239
+              }
+            }
+          ],
+          "loc": {
+            "start": 190,
+            "end": 240
+          }
+        }
+      ],
+      "loc": {
+        "start": 179,
+        "end": 240
+      }
+    }
+  ]
+}

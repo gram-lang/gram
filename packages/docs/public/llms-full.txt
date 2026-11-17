@@ -858,6 +858,21 @@ The interpretation of a range differs fundamentally based on timer type:
 Deprecated fields of the compiled recipe (`steps[].timings`, `steps[].backgroundTasks`, and `metrics`) continue to evaluate ranges as their average value until version 2.0.0. Consume the modern `schedule` blocks instead.
 :::
 
+### Proportional times
+*(since v1.5.0)*
+
+Some times follow a weight: 15 minutes per 500 g of roast, 4 minutes per cutlet. Write the duration, a slash, then the amount of an ingredient written earlier in the section, as in a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units):
+
+```gram
+Season the @roast{1.2 kg} and roast ~{15 min / 500 g @&roast}. // 36 min
+
+Braise the @shoulder{2 kg} ~_{1:30 h / 1 kg @&shoulder}. // 3 h
+
+Fry the @cutlets{4} ~{4 min / @&cutlets}. // 16 min
+```
+
+The duration takes every form above (`1h30`, `1:30 h`, a range such as `15-20 min`), the target amount a single number. A time per piece counted from a weight (`~{4 min / @&cutlets}` with `@cutlets{800 g}`) uses the `unit_weight` of the ingredient database, and stays uncounted, with a warning, when there is none. Scaling the recipe computes the time again, and the schedule with it. A multiplier after a proportional time (`~{15 min / 500 g @&roast * 2}`) is not read yet, nor is a proportional section anchor.
+
 ## Active vs passive
 
 The Gram compiler builds a complete execution timeline for each recipe. To achieve realistic scheduling, it distinguishes hands-on kitchen work from autonomous background tasks.
@@ -1292,13 +1307,68 @@ Add @salt{2% &dough}. // 2% of the total mass of the &dough variable
 
 ## Resolution rules
 
-When the compiler resolves a relative quantity, it follows three strict scoping and calculation principles:
+When the compiler resolves a relative quantity, it follows four strict scoping and calculation principles:
 
 | Rule | Behavior | Description |
 | :--- | :--- | :--- |
 | **Section scoping** | Current section only | You cannot directly target a base `@ingredient` declared in a different section. To bridge sections, capture the result into a globally scoped `&variable`. |
 | **Accumulation** | Sums all occurrences | If the target `@ingredient` appears multiple times within the same section, the percentage applies to their **cumulative total**. |
 | **Mass-based** | Evaluated in grams | Calculations are always performed against **physical mass in grams**. For example, 50% of "2 eggs" (each standardized at 50g) produces **50g**, not 1 egg. |
+| **Alternatives** | One option at a time | Each option of an alternative gets its own amount, never added to the others: `@butter{10% @&flour}\|@oil{8% @&flour}` reads "20 g of butter or 16 g of oil" for 200 g of flour. An option can also take a share of an earlier option of the same group: `@butter{100g}\|@oil{80% @&butter}`. |
+
+## Ratios with units
+*(since v1.5.0)*
+
+A percentage weighs grams against grams. A <Term id="ratio" link={false} /> relates two amounts in any units, the way recipes state their rules: one egg per 100 g of flour, 15 g of salt per liter of water, 15 minutes per 500 g of roast.
+
+```gram
+Mix @flour{500 g} with @eggs{1 / 100 g @&flour}. // 5 eggs
+
+Pour @water{2 l} and @salt{15 g / 1 L @&water}. // 30 g of salt
+
+Crush @garlic{3 cloves} with @parsley{1 tsp / 2 cloves @&garlic}. // 1.5 tsp
+```
+
+**Pattern:** `@name{ amount / target amount @&TargetIngredient }`, or `&TargetVariable` for an intermediate. The amount takes its unit (`15 g`) or none (`1` egg); the target amount is a number and a unit (`100 g`), a unit alone (`L`), or nothing for one piece (`{1 / @&cutlet}`). A range works as the amount (`{15-20 g / 100 g @&flour}`), never as the target amount.
+
+Write a space on at least one side of the slash: `{1/100g @&flour}` reads as the fraction `1/100` and is refused with a message that shows the spaced form. Write the unit alone, too: in `{1 / 100 g of @&flour}` the unit is `g of`, which Gram refuses.
+
+### The unit guardrail
+
+A ratio is computed only when its units can be compared, never guessed:
+
+| Target amount | Target written in | Result |
+| :--- | :--- | :--- |
+| A weight (`100 g`) | A weight (`1 kg`) | Computed by the compiler |
+| A weight | A volume, or pieces | Computed with the density or the `unit_weight` of the ingredient database |
+| Pieces (`2 cloves`, nothing) | The same pieces (`3 clove`, `4`) | Computed by the compiler: singular and plural match |
+| Pieces | Other pieces (`2 slices` for garlic in cloves) | Refused |
+
+A ratio that cannot be computed keeps its writing (`1 / 100 ml @&flour` in the views and the shopping list) and raises `RELATIVE_QUANTITY_UNKNOWN_MASS` with the reason. Unlike a percentage, a computed ratio keeps the unit of its amount: `5` eggs, `15 g` of salt, merged with the other uses of the ingredient in the shopping list.
+
+### Where the target is
+
+The same rules as a percentage: an `@&ingredient` written earlier in the section with an amount (every amount in the section adds up), or an `&intermediate`. An option of an alternative may take an earlier option as its target. When the section uses an intermediate whole, with no amount (`Roll out the &dough`), the ratio counts from the mass of the section that makes it, an estimate of what went into the bowl, before cooking. Gram refuses when another section uses the intermediate too, since it cannot tell who takes what:
+
+```gram
+## Dough ->&dough
+
+Mix @flour{500 g} and @water{60% @&flour}.
+
+## Bake
+
+Roll out the &dough, sprinkle @salt{2 g / 100 g &dough}. // 16 g of 800 g
+```
+
+This applies to a percentage as well (`@sugar{5% &dough}`), which used to give up there.
+
+### On references and composites
+
+A reference to a homemade preparation takes a ratio or a percentage too: `&stock{250 ml / 100 g @&rice}`, `&stock{250% @&rice}`. A composite parent does not yet (`<@box{1 / 100 g @&flour}>` is refused until composites are reworked).
+
+### Scaling
+
+Scaling a recipe computes its ratios again on the scaled amounts: twice the flour, twice the eggs. A ratio whose target is fixed (`@=pepper{2 g}`) stays as it is. `=` on a ratio itself is refused: a ratio always follows its target.
 
 ## Mass calculation rules
 
@@ -1564,8 +1634,10 @@ Specialized patterns for flexible culinary instructions:
 | **Short-hand prep** | `(...)` | `@butter{10g}(room temp)` | Notes prep techniques without cluttering names. |
 | **Component alias** | `:slug` | `@dry white wine:wine{10ml}` | Displays user-friendly text while mapping to a canonical ID. |
 | **Relative quantity** | `% @&target` | `@water{70% @&flour}` | Computes amount relative to a reference ingredient mass. |
+| **Ratio with units** | `a / b @&target` | `@eggs{1 / 100 g @&flour}`, `@salt{15 g / L @&water}` | An amount per amount of another ingredient, in any units; a space around the slash. Since 1.5.0. |
 | **Composite child** | `<@parent` | `@lemon zest{1}<@lemon` | Bundles parts (zest, juice) into a single shopping item. |
 | **Passive timer** | `~_` | `~_{1h}` | Represents resting/rising time without blocking the cook. |
+| **Proportional time** | `~{time / b @&target}` | `~{15 min / 500 g @&roast}`, `~{4 min / @&cutlet}` | A time that follows a weight or a count, computed again when scaled. Since 1.5.0. |
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
 | **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown. Since 1.5.0. |
@@ -1710,6 +1782,16 @@ What goes with a temperature (the oven mode, "internal", "covered") belongs in a
 ❌  Cook until ={82°C} or ={5 min}.           →   ✅  Cook at ^{82°C}(internal) for ~{5 min}, until ={it coats the spoon}.
 ```
 When the source says what state the cook should reach (a texture, a color, a smell), mark it as a [target state](/docs/reference/syntax/target-states/), wherever it sits in the step: only the state between the braces, the linking words ("until", "as soon as", "when") left in the sentence, a test in a glued note if the source gives one. Never a temperature, a time or a quantity inside, and never a cue the source does not give.
+
+### A proportional rule computed by hand
+*(since v1.5.0)*
+
+```gram
+❌  Add @eggs{5} (1 egg per 100 g of flour).        →   ✅  Add @eggs{1 / 100 g @&flour}.
+❌  Roast ~{36 min} (15 min per 500 g).             →   ✅  Roast ~{15 min / 500 g @&roast}.
+❌  Add @eggs{1/100g @&flour}.                       →   ✅  Add @eggs{1 / 100 g @&flour}.
+```
+When the source states a proportional rule ("per 100 g", "per liter", "per pound", "per piece"), write it as a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units): it follows the target when the recipe is scaled. Only then: an amount the source gives as such stays an amount. Always a space around the slash, the unit alone before the target (never `100 g of @&flour`), and no multiplier after a proportional time.
 
 ### Using `@&` on the first occurrence
 
@@ -2320,7 +2402,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | --- | --- | --- |
 | `VARIABLE_NOT_FOUND` | warning | `Cannot resolve relative quantity: target intermediate '&{targetName}' is not defined.` |
 | `RELATIVE_QUANTITY_UNRESOLVED` | warning | `Cannot resolve relative quantity: target ingredient '@{targetName}' was not found in the current section.` |
-| `RELATIVE_QUANTITY_UNKNOWN_MASS` | warning | `Cannot compute relative quantity for '{item}': mass of target '{targetName}' is unknown.` |
+| `RELATIVE_QUANTITY_UNKNOWN_MASS` | warning | `Cannot compute the amount of '{item}': undefined` |
 | `CIRCULAR_REFERENCE` | error | `Circular reference detected: '{name}' depends on itself.` |
 | `UNDEFINED_REFERENCE` | error | `Undefined reference '{prefix}{name}' — no prior step or section produces this item.` |
 | `MISSING_UNIT` | warning | `{type} requires an explicit unit (e.g. min, s, °C).` |
@@ -2371,6 +2453,8 @@ A relative quantity references an ingredient (`50% of @name`) that hasn't appear
 ### `RELATIVE_QUANTITY_UNKNOWN_MASS`
 Pushed during analysis: the target of a relative quantity was found, but its own mass couldn't be computed (no resolvable unit/density), so the percentage can't be applied. **Fix**: give the target ingredient a standardizable unit, or a density/`unit_weight` entry in the ingredient database.
 
+For a ratio with units (`1 / 100 g @&flour`, `~{15 min / 500 g @&roast}`, since 1.5.0) it carries a `reason` and points at the ratio: `noTargetQuantity` (the target has no amount), `incompatibleUnits` (`2 slices` against garlic counted in cloves, a weight against a named piece, or a unit followed by a word, `100 g of`), `missingDensity` (a weight against a volume, with no density), `missingUnitWeight` (pieces against a weight, with no `unit_weight`), and for an intermediate used whole (`Roll out the &dough`) `wholeUseAmbiguous` (another section uses it too) or `producerMassUnknown` (the mass of the section that makes it is incomplete). Gram never guesses a ratio it cannot compute: the amount stays unresolved. **Fix**: write the ratio in the unit the target is written in, add the density or `unit_weight` to the ingredient database, or write the amount of the intermediate used (`&dough{500 g}`).
+
 ### `CIRCULAR_REFERENCE`
 An ingredient's relative quantity targets itself (`@flour{50% of @flour}`). **Fix**: remove the self-reference — a percentage-based quantity must target a *different* ingredient or variable.
 
@@ -2404,6 +2488,10 @@ A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) Gr
 
 Subtraction is checked kind by kind: each kind of amount adds up and takes away on its own, so `{1 cup - 2 tbsp + 30 g}` is fine (the 2 tbsp come off the cup), while `{1 cup - 20 g}` has no weight to take the 20 g from. The editor's hover on a sum shows what each kind comes to.
 
+It also flags, with `reason: "zeroDenominator"`, a fraction over zero anywhere a number is written (`@flour{1/0 cup}`, `{1 1/0 cup}`, a term of a sum, `{1/0% &dough}`, `#pan{1/0}`, `^{1/0 °C}`). Such a number has no value: Gram leaves it out, as if no number had been written (`cup` alone, a sum without that term, an ingredient with no quantity for a percentage), where it used to vanish without a word. **Fix**: write the fraction you meant (`1/2`). A timer says it through `INVALID_DURATION`.
+
+With `reason: "relativeNotSupported"`, it flags a percentage on a composite parent (`@eggs{3}<@box{50% @&flour}>`), which Gram does not support yet: the parent is read with no quantity, where the percentage used to vanish without a word. **Fix**: write the parent's amount (`<@box{1}>`). A ratio on a parent (`<@box{1 / 100 g @&flour}>`) is refused the same way, and a ratio over zero (`{1 / 0 g @&flour}`) raises `zeroDenominator`: the ingredient reads with no amount.
+
 ### `OZ_AFTER_VOLUME`
 *(since v1.5.0)*
 
@@ -2422,7 +2510,7 @@ A comma followed by exactly three digits, after a whole part of one to three dig
 ### `INVALID_DURATION`
 *(since v1.5.0)*
 
-A timer or a section's anchor is written with numbers and units Gram knows, but in a way it will not guess: `~{1:30}` (hours or minutes?), `~{30min 1h}` (units out of order), `~{1h75}` (75 minutes after an hour), `~{1-2h30}` (is the left side `1 h` or `1 h 30`?), `~{2-1 h}` (a range starts with the shorter duration), `~{2 * 2 min}` or `~{1 heure et demie}`. The message gives the reason and an example to write instead. The timer is not counted in the total time (only what was written is kept in the compiled JSON, as `raw`), and the anchor is dropped. A section anchor is also refused when it is a range (`~{-1-2d}`) or counts seconds (`~{-1min30}`, `~{-5'}`). **Fix**: write the duration the way the message suggests, e.g. `~{1h30}`, `~{1:30 min}` or `~{1h30-2h}`. A word right after a number is an unknown unit and keeps raising `INVALID_UNIT`, and a number alone keeps raising `MISSING_UNIT`.
+A timer or a section's anchor is written with numbers and units Gram knows, but in a way it will not guess: `~{1:30}` (hours or minutes?), `~{30min 1h}` (units out of order), `~{1h75}` (75 minutes after an hour), `~{1-2h30}` (is the left side `1 h` or `1 h 30`?), `~{2-1 h}` (a range starts with the shorter duration), `~{2 * 2 min}` or `~{1 heure et demie}`. The message gives the reason and an example to write instead. The timer is not counted in the total time (only what was written is kept in the compiled JSON, as `raw`), and the anchor is dropped. A section anchor is also refused when it is a range (`~{-1-2d}`) or counts seconds (`~{-1min30}`, `~{-5'}`). A proportional time is refused with a multiplier (`~{15 min / 500 g @&roast * 2}`, `reason: "ratioMultiplication"`) or a range as its target amount (`~{15 min / 1-2 kg @&roast}`, `"ratioShape"`), and an anchor can never be one (`"anchorRatio"`). **Fix**: write the duration the way the message suggests, e.g. `~{1h30}`, `~{1:30 min}` or `~{1h30-2h}`. A word right after a number is an unknown unit and keeps raising `INVALID_UNIT`, and a number alone keeps raising `MISSING_UNIT`.
 
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`>> name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.

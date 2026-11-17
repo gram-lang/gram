@@ -7,6 +7,7 @@ import {
 import type { DocumentState } from "../document-state";
 import { positionToOffset } from "../utils/position";
 import { collectIngredients } from "../utils/ast-walker";
+import { compiledRatios } from "../utils/ratios";
 import {
 	type IngredientDB,
 	lookupIngredient,
@@ -17,6 +18,7 @@ import { massOf, NUTRIENTS, standardizeMass } from "@gram-lang/analyzer";
 import {
 	type CompoundQuantityAST,
 	isCompoundQuantity,
+	isRatioQuantity,
 	isQuantity,
 	type QuantityAST,
 } from "@gram-lang/parser";
@@ -146,6 +148,25 @@ function buildNutritionSection(entry: IngredientEntry): string | null {
 	return lines.join("\n");
 }
 
+/**
+ * A ratio with units (`1 / 100 g @&flour`): as written, then the amount it
+ * came to, or the warning that says why it did not.
+ */
+function buildRatioSection(
+	state: DocumentState,
+	quantity: unknown,
+): string | null {
+	const q = quantity as Parameters<typeof isRatioQuantity>[0];
+	if (!isRatioQuantity(q) || !q.loc) return null;
+	const start = q.loc.start;
+	const ratio = compiledRatios(state).find((r) => r.spec.loc?.start === start);
+	if (ratio?.resolved) return `**Ratio**: \`${q.raw}\` = **${ratio.resolved}**`;
+	const warning = state.compilation?.warnings.find(
+		(w) => w.loc?.start === start && !w.loc?.uri,
+	);
+	return `**Ratio**: \`${q.raw}\`${warning ? ` — ${warning.message}` : ""}`;
+}
+
 export function provideNutritionHover(
 	state: DocumentState,
 	position: Position,
@@ -165,8 +186,10 @@ export function provideNutritionHover(
 	const sum = isCompoundQuantity(ingredient.quantity)
 		? buildSumSection(ingredient.quantity, entry ?? null, db)
 		: null;
-	// A sum shows its total even for an ingredient the database lacks.
-	if (!entry && !sum) return null;
+	const ratio = buildRatioSection(state, ingredient.quantity);
+	// A sum or a ratio shows what it comes to even for an ingredient the
+	// database lacks.
+	if (!entry && !sum && !ratio) return null;
 
 	const sections: string[] = [
 		entry
@@ -183,6 +206,7 @@ export function provideNutritionHover(
 		if (conversion) sections.push(conversion);
 	}
 	if (sum) sections.push(sum);
+	if (ratio) sections.push(ratio);
 
 	const contents: MarkupContent = {
 		kind: MarkupKind.Markdown,

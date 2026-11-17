@@ -4,6 +4,7 @@ import { locToRange, positionToOffset } from "../utils/position";
 import {
 	collectIntermediates,
 	collectReferences,
+	collectRelativeTargets,
 	findNameAtOffset,
 } from "../utils/ast-walker";
 
@@ -24,6 +25,11 @@ function findAllNameLocations(state: DocumentState, name: string): Location[] {
 			locations.push({ uri: "", range: locToRange(state.lineStarts, ref.loc) });
 		}
 	}
+	for (const target of collectRelativeTargets(state.ast, state.text)) {
+		if (target.referenceType === "variable" && target.name === name) {
+			locations.push({ uri: "", range: locToRange(state.lineStarts, target) });
+		}
+	}
 	return locations;
 }
 
@@ -33,7 +39,7 @@ export function provideReferences(
 ): Location[] {
 	if (!state.ast) return [];
 	const offset = positionToOffset(state.lineStarts, position);
-	const found = findNameAtOffset(state.ast, offset);
+	const found = findNameAtOffset(state.ast, offset, state.text);
 	if (!found) return [];
 	return findAllNameLocations(state, found.name);
 }

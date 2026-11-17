@@ -12,6 +12,7 @@ import {
 	resolveScaleFactor,
 	buildScaleComparison,
 	getScaleWarnings,
+	timerKinds,
 } from "../services/scaler";
 import { renderScaleResult } from "../ui/scaler";
 import { ExitCode, reportError } from "../errors";
@@ -106,6 +107,7 @@ export default defineCommand({
 			const warnings = getScaleWarnings(
 				factor,
 				scheduleTimes(original).totalTime,
+				timerKinds(original),
 			);
 			renderScaleResult(
 				original.title,

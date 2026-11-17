@@ -15,6 +15,8 @@ import {
 	type QuantityTermAST,
 	type QuantityValueAST,
 	type RelativeQuantityAST,
+	type RatioQuantityAST,
+	type RatioTermAST,
 	type TextQuantityAST,
 	type ReferenceAST,
 	type TimerAST,
@@ -75,17 +77,25 @@ function throwMalformedQuantity(
 	hint = "a number and/or a unit",
 ): never {
 	const raw = braces.sourceString;
+	// A ratio glued to its slash (`{1/100g @&flour}`) reads as a fraction:
+	// say how to write the ratio rather than what a quantity is.
+	const glued = GLUED_RATIO.test(raw);
+	const what = glued ? "a ratio with a space around its slash" : hint;
+	const sample = glued ? "{1 / 100 g @&flour}" : example;
 	const target = name ? `${kind} '${name}'` : kind;
 	const problem = raw.endsWith("}")
 		? `Invalid quantity '${raw}' for ${target}`
 		: `Unclosed quantity '${raw}' for ${target} (missing '}')`;
 	throwBracesError(
 		problem,
-		`${hint}, e.g. ${example}`,
-		`a valid quantity in braces, e.g. ${example}`,
+		`${what}, e.g. ${sample}`,
+		`a valid quantity in braces, e.g. ${sample}`,
 		braces.source.startIdx,
 	);
 }
+
+/** A ratio written with its slash glued to both numbers: `{1/100g @&flour}`. */
+const GLUED_RATIO = /^\{\s*\d+\/\d+\s*\p{L}*\s*(@&|&)/u;
 
 /** The one shape of every "{...}" error: what is wrong, then what was expected. */
 function throwBracesError(
@@ -167,6 +177,40 @@ const refusedNumber = (
 	value == null && node.sourceString.trim()
 		? { invalidNumber: node.sourceString.trim() }
 		: {};
+
+/** One side of a ratio from its number and unit nodes (`ratioTerm`, `ratioDenominator_amount`). */
+// biome-ignore lint/suspicious/noExplicitAny: Ohm CST nodes, see `getOpt`.
+const ratioTermOf = (val: any, unit: any): RatioTermAST => {
+	const value = val.toAST() as QuantityValueAST | null;
+	return { value, unit: getOpt(unit), ...refusedNumber(val, value) };
+};
+
+/**
+ * The one builder of a ratio's AST, for an ingredient's braces as for a
+ * timer's: `targetRef` is the `@&name` / `&name` node, `durationRaw` the
+ * timer's numerator as written.
+ */
+const buildRatioAST = (
+	numerator: RatioTermAST,
+	denominator: RatioTermAST | null,
+	// biome-ignore lint/suspicious/noExplicitAny: Ohm CST node, see `getOpt`.
+	targetRef: any,
+	raw: string,
+	loc: { start: number; end: number },
+	durationRaw?: string,
+): RatioQuantityAST => {
+	const [marker, , name] = targetRef.children;
+	return {
+		type: ASTNodeType.RatioQuantity,
+		numerator,
+		denominator: denominator ?? { value: null, unit: null },
+		...(durationRaw !== undefined ? { durationRaw } : {}),
+		target: clean(name.sourceString),
+		referenceType: marker.sourceString === "&" ? "variable" : "ingredient",
+		raw: clean(raw),
+		loc,
+	};
+};
 
 // The number/fraction layer lives in ./numbers.ts (audit 2026-07-22, parser
 // finding P3), imported (not re-exported) here — it's an internal
@@ -546,7 +590,9 @@ semantics.addOperation("toAST", {
 		let modifiers = _mods.children.map((m) => m.sourceString) as Modifier[];
 		const qtyAST = _qty.toAST();
 
-		if (modifiers.includes("=")) {
+		// A ratio keeps its `=` among the modifiers: it always follows its
+		// target, so the compiler refuses the pair instead of dropping it.
+		if (modifiers.includes("=") && qtyAST?.type !== ASTNodeType.RatioQuantity) {
 			if (
 				qtyAST &&
 				(qtyAST.type === ASTNodeType.Quantity ||
@@ -661,7 +707,11 @@ semantics.addOperation("toAST", {
 		content,
 		_s3,
 		_rb,
-	): RelativeQuantityAST | QuantityAST | CompoundQuantityAST {
+	):
+		| RelativeQuantityAST
+		| RatioQuantityAST
+		| QuantityAST
+		| CompoundQuantityAST {
 		return content.toAST();
 	},
 
@@ -719,6 +769,28 @@ semantics.addOperation("toAST", {
 			...refusedNumber(val, value),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
+	},
+
+	ratioQuantity(numerator, _s1, _slash, _s2, denominator, _s3, targetRef) {
+		return buildRatioAST(
+			numerator.toAST(),
+			getOpt(denominator),
+			targetRef,
+			this.sourceString,
+			{ start: this.source.startIdx, end: this.source.endIdx },
+		);
+	},
+
+	ratioTerm(val, _s, unit): RatioTermAST {
+		return ratioTermOf(val, unit);
+	},
+
+	ratioDenominator_amount(val, _s, unit): RatioTermAST {
+		return ratioTermOf(val, unit);
+	},
+
+	ratioDenominator_unit(unit): RatioTermAST {
+		return { value: null, unit: unit.toAST() };
 	},
 
 	absoluteQuantity(val, _s2, unit, _sUnit): QuantityAST {
@@ -898,6 +970,43 @@ semantics.addOperation("toAST", {
 			isPassive: passiveMod.children.length > 0,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
+	},
+
+	Timer_ratio(_1, passiveMod, name, ratio): TimerAST {
+		const child = name.children[0];
+		return {
+			type: ASTNodeType.Timer,
+			name: child ? clean(child.sourceString) : null,
+			raw: clean(ratio.sourceString.slice(1, -1)),
+			quantity: ratio.toAST(),
+			isPassive: passiveMod.children.length > 0,
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	timerRatio(
+		_lb,
+		_s1,
+		duration,
+		_s2,
+		_slash,
+		_s3,
+		denominator,
+		_s4,
+		targetRef,
+		_s5,
+		_rb,
+	): RatioQuantityAST {
+		const start = duration.source.startIdx;
+		const end = targetRef.source.endIdx;
+		return buildRatioAST(
+			{ value: null, unit: null },
+			getOpt(denominator),
+			targetRef,
+			this.source.sourceString.slice(start, end),
+			{ start, end },
+			clean(duration.sourceString),
+		);
 	},
 
 	Timer_text(_1, passiveMod, name, text): TimerAST {

@@ -97,6 +97,16 @@ Ce qui accompagne une température (le mode du four, « à cœur », « à couve
 ```
 Quand la source dit quel état atteindre (une texture, une couleur, une odeur), notez-le en [état attendu](/fr/docs/reference/syntax/target-states/), où qu'il se trouve dans l'étape : l'état seul entre les accolades, les mots de liaison (« jusqu'à », « dès que », « quand ») laissés dans la phrase, et un test en précision collée si la source en donne un. Jamais de température, de durée ni de quantité à l'intérieur, et jamais de repère que la source ne donne pas.
 
+### Une règle proportionnelle calculée à la main
+<Since v="1.5.0" />
+
+```gram
+❌  Ajouter @oeufs{5} (1 œuf pour 100 g de farine).   →   ✅  Ajouter @oeufs{1 / 100 g @&farine}.
+❌  Rôtir ~{36 min} (15 min par 500 g).                →   ✅  Rôtir ~{15 min / 500 g @&roti}.
+❌  Ajouter @oeufs{1/100g @&farine}.                   →   ✅  Ajouter @oeufs{1 / 100 g @&farine}.
+```
+Quand la source énonce une règle proportionnelle (« pour 100 g », « par litre », « par pièce »), écrivez-la en [proportion avec unités](/fr/docs/reference/syntax/relative-quantities/#proportions-avec-unités) : elle suit sa cible quand la recette change d'échelle. Seulement dans ce cas : une quantité que la source donne telle quelle reste une quantité. Toujours une espace autour de la barre, l'unité seule avant la cible (jamais `100 g de @&farine`), et aucun multiplicateur après un temps proportionnel.
+
 ### Utiliser `@&` dès la première occurrence
 
 ```gram

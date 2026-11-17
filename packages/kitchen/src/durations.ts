@@ -42,7 +42,13 @@ const SECONDS: Record<DurationUnit, number> = {
 export type InvalidDurationReason =
 	| Exclude<DurationFailure, "empty" | "missingUnit" | "unknownUnit">
 	| "anchorRange"
-	| "anchorSeconds";
+	| "anchorSeconds"
+	/** `~{15 min / 500 g @&roast * 2}`: a multiplier after a ratio. Since 1.5.0. */
+	| "ratioMultiplication"
+	/** `~{15 min / 1-2 kg @&roast}`: a ratio Gram does not read. Since 1.5.0. */
+	| "ratioShape"
+	/** `## Roast ~{-15 min / 500 g @&roast}`: an anchor is one duration. Since 1.5.0. */
+	| "anchorRatio";
 
 /** What went wrong, as the compiler reports it. */
 export type DurationProblem =

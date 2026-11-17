@@ -21,4 +21,21 @@ describe("gram cook quantities", () => {
 	it("shows a weighed mass in grams, even past 1000", () => {
 		expect(fmtMass(1500)).toBe("1500 g");
 	});
+
+	it("writes a share or a ratio not resolved as such", () => {
+		expect(
+			fmtQty({
+				qty: { type: "RelativeQuantity", percent: 70, target: "flour" },
+			}),
+		).toBe(" 70% of flour");
+		expect(
+			fmtQty({
+				qty: {
+					type: "RatioQuantity",
+					raw: "1 / 100 ml @&flour",
+					target: "flour",
+				},
+			}),
+		).toBe(" 1 / 100 ml of flour");
+	});
 });

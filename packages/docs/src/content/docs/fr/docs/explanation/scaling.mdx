@@ -78,6 +78,13 @@ Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quant
 
 **Le scaling inversé sur une somme** (`--scale farine=500g`) s'appuie sur son total quand tous les termes sont de même nature ; un volume à côté d'une masse laisse deux entrées dans la liste de courses, ce qui déclenche `AMBIGUOUS_MULTI_UNIT`, comme deux mentions séparées.
 
+## Mettre à l'échelle les proportions et les temps proportionnels
+<Since v="1.5.0" />
+
+Une [proportion avec unités](/fr/docs/reference/syntax/relative-quantities/#proportions-avec-unités) n'est jamais multipliée par le facteur : `applyScale` met les cibles à l'échelle, puis recalcule chaque proportion depuis ce qui est écrit (`resolveRatios`, la même passe que `compile`). `@oeufs{1 / 100 g @&farine}` suit donc la farine, et une proportion dont la cible est fixe (`@=poivre{2 g}`) ne bouge pas. La liste de courses est ensuite reconstruite depuis les sections mises à l'échelle : un usage fixe et un usage en proportion d'un même ingrédient s'y fusionnent comme à la compilation.
+
+Quand un [temps proportionnel](/fr/docs/reference/syntax/times/#temps-proportionnels) change (`~{15 min / 500 g @&roti}` pour un rôti deux fois plus gros), le planning est recalculé par les mêmes fonctions que `compile` : `schedule`, le graphe de tâches, `metrics` et les `timings` dépréciés décrivent la recette mise à l'échelle exactement comme la compilerait la source réécrite. Une recette sans proportion se met à l'échelle comme avant. Les avertissements, eux, décrivent toujours la recette telle qu'elle est écrite.
+
 ## Immuabilité
 
 La fonction qui applique réellement la multiplication sur chaque quantité, `applyScale(result, factor)`, est une fonction pure : elle clone l'entrée (`structuredClone`) avant toute modification, puis renvoie un nouveau `CompilationResult`. Cela offre deux avantages majeurs :

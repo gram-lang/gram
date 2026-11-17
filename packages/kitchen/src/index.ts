@@ -11,6 +11,8 @@ export * from "./terms";
 export * from "./compound";
 export * from "./scale";
 export * from "./graph";
+export * from "./ratio";
+export { recomputeSchedule } from "./recompute";
 export * from "./schedule-mode";
 // How a section anchor reads (`-1h30`, `-1j 12h`): the editor's hover shows
 // it the way the compiler plans it.

@@ -5,26 +5,48 @@ import grammar from "../syntaxes/gram.tmLanguage.json";
 // `match` rules: at each position the earliest match wins, then the first
 // rule in order. The regexes are Oniguruma's, which reads these ones as
 // JavaScript does (`\p{L}` needs the `u` flag).
-const rules = grammar.repository["timer-content"].patterns.map((p) => ({
-	regex: new RegExp(p.match, "gu"),
-	scope: p.name,
-}));
+type Pattern = {
+	include?: string;
+	match?: string;
+	name?: string;
+	captures?: Record<string, { name: string }>;
+};
+const repository = grammar.repository as Record<string, Pattern>;
+// Includes are resolved; a rule with captures gives one token per group.
+const rules = (grammar.repository["timer-content"].patterns as Pattern[])
+	.map((p) => (p.include ? repository[p.include.slice(1)] : p) as Pattern)
+	.map((p) => ({
+		regex: new RegExp(p.match as string, "gu"),
+		scope: p.name,
+		captures: p.captures,
+	}));
+
+const short = (scope: string) => scope.split(".").slice(0, 2).join(".");
 
 function scopes(content: string): [string, string][] {
 	const out: [string, string][] = [];
 	let pos = 0;
 	while (pos < content.length) {
-		let best: { index: number; text: string; scope: string } | undefined;
-		for (const { regex, scope } of rules) {
-			regex.lastIndex = pos;
-			const m = regex.exec(content);
-			const text = m?.[0];
-			if (m && text && (!best || m.index < best.index))
-				best = { index: m.index, text, scope };
+		let best:
+			| { index: number; m: RegExpExecArray; rule: (typeof rules)[number] }
+			| undefined;
+		for (const rule of rules) {
+			rule.regex.lastIndex = pos;
+			const m = rule.regex.exec(content);
+			if (m?.[0] && (!best || m.index < best.index))
+				best = { index: m.index, m, rule };
 		}
 		if (!best) break;
-		out.push([best.text, best.scope.split(".").slice(0, 2).join(".")]);
-		pos = best.index + best.text.length;
+		const { m, rule } = best;
+		if (rule.captures) {
+			for (const [group, { name }] of Object.entries(rule.captures)) {
+				const text = m[Number(group)]?.trim();
+				if (text) out.push([text, short(name)]);
+			}
+		} else if (rule.scope) {
+			out.push([m[0], short(rule.scope)]);
+		}
+		pos = best.index + m[0].length;
 	}
 	return out;
 }
@@ -33,6 +55,8 @@ const NUM = "constant.numeric";
 const UNIT = "keyword.other";
 const OP = "keyword.operator";
 const SEP = "punctuation.separator";
+const SIGIL = "keyword.control";
+const TARGET = "entity.name";
 
 describe("TextMate: inside a timer", () => {
 	it("is what the timers rule includes", () => {
@@ -105,6 +129,25 @@ describe("TextMate: inside a timer", () => {
 			["時間", UNIT],
 			["30", NUM],
 			["分", UNIT],
+		]);
+	});
+
+	it("reads a proportional time: its slash and its target", () => {
+		expect(scopes("15 min / 500 g @&roti")).toEqual([
+			["15", NUM],
+			["min", UNIT],
+			["/", OP],
+			["500", NUM],
+			["g", UNIT],
+			["@&", SIGIL],
+			["roti", TARGET],
+		]);
+		expect(scopes("4 min / &côtelette")).toEqual([
+			["4", NUM],
+			["min", UNIT],
+			["/", OP],
+			["&", SIGIL],
+			["côtelette", TARGET],
 		]);
 	});
 });

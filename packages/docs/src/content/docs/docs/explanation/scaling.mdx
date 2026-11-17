@@ -77,6 +77,13 @@ A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) sc
 
 **Reverse scaling against a sum** (`--scale flour=500g`) uses its total when every term is of one kind; a volume next to a weight leaves two shopping-list entries, which raises `AMBIGUOUS_MULTI_UNIT`, as two separate mentions would.
 
+## Scaling ratios and proportional times
+<Since v="1.5.0" />
+
+A [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units) is never multiplied by the factor: `applyScale` scales the targets, then resolves every ratio again from what was written (`resolveRatios`, the same pass `compile` runs), so `@eggs{1 / 100 g @&flour}` follows the flour, and a ratio of a fixed target (`@=pepper{2 g}`) does not move. The shopping list is then built again from the scaled sections, so a fixed and a ratio use of one ingredient merge as they do at compile time.
+
+When a [proportional time](/docs/reference/syntax/times/#proportional-times) changes (`~{15 min / 500 g @&roast}` for twice the roast), the schedule is laid out again by the same functions as `compile`: the `schedule`, the task graph, `metrics` and the deprecated `timings` describe the scaled recipe exactly as the rewritten source would compile. A recipe with no ratio scales as before. The warnings still describe the recipe as written.
+
 ## Immutability
 
 `applyScale(result, factor)` — the function that actually multiplies every quantity — is a pure function: it `structuredClone`s the input before mutating anything, and returns a new `CompilationResult`. Two things fall out of that for free:

@@ -43,7 +43,9 @@ const ADDED_SINCE_1_3_0 = new Set([
 
 // Added after 1.3.0 inside a step's timer token (1.5): what was written and
 // the duration in minutes.
-const TIMER_ADDED_SINCE_1_3_0 = new Set(["raw", "minutes"]);
+// And a proportional time's ratio (1.5): a ratio did not parse in 1.3.0, so
+// no case of the tag has one; listed so a ratio never moves a digest.
+const TIMER_ADDED_SINCE_1_3_0 = new Set(["raw", "minutes", "ratio"]);
 
 // Added after 1.3.0 inside a step's temperature token (1.5): the note glued
 // to its brace (`^{160°C}(fan)`). Left out when absent, so no case of the tag

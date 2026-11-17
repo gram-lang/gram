@@ -13,6 +13,8 @@ import {
 	isAlternative,
 	isStep,
 	isSection,
+	isRatioQuantity,
+	isRelativeQuantity,
 } from "@gram-lang/parser";
 
 export interface IntermediateDeclWithSection {
@@ -129,15 +131,73 @@ export function collectTimers(ast: RecipeAST): TimerAST[] {
 	return results;
 }
 
+/** The target of a share or a ratio (`50% &dough`, `2 g / 100 g &dough`), where its name is written. */
+export interface RelativeTarget {
+	name: string;
+	referenceType: "variable" | "ingredient";
+	/** The name alone, after its sigil. */
+	start: number;
+	end: number;
+}
+
+/**
+ * Every target of a share or a ratio, on an ingredient (an alternative's
+ * options included), a reference or a timer, with the exact place of its
+ * name in `text` so a rename touches the name only.
+ */
+export function collectRelativeTargets(
+	ast: RecipeAST,
+	text: string,
+): RelativeTarget[] {
+	const results: RelativeTarget[] = [];
+	const add = (quantity: unknown) => {
+		const q = quantity as Parameters<typeof isRatioQuantity>[0];
+		if (!(isRelativeQuantity(q) || isRatioQuantity(q)) || !q.loc) return;
+		// The target ends what is written: its name is the last one there.
+		const at = text.slice(q.loc.start, q.loc.end).lastIndexOf(q.target);
+		if (at < 0) return;
+		const start = q.loc.start + at;
+		results.push({
+			name: q.target,
+			referenceType: q.referenceType,
+			start,
+			end: start + q.target.length,
+		});
+	};
+	for (const step of iterAllSteps(ast)) {
+		for (const child of step.children) {
+			if (isIngredient(child) || isReference(child) || isTimer(child)) {
+				add(child.quantity);
+			} else if (isAlternative(child)) {
+				for (const opt of child.options)
+					if (isIngredient(opt)) add(opt.quantity);
+			}
+		}
+	}
+	return results;
+}
+
 export function findNameAtOffset(
 	ast: RecipeAST,
 	offset: number,
+	text?: string,
 ): { name: string; kind: "decl" | "ref" } | null {
 	const refs = collectReferences(ast);
 	const ref = refs.find(
 		(r) => r.loc && r.loc.start <= offset && offset <= r.loc.end,
 	);
 	if (ref) return { name: ref.name, kind: "ref" };
+
+	// An intermediate named as the target of a share or a ratio.
+	const target = text
+		? collectRelativeTargets(ast, text).find(
+				(t) =>
+					t.referenceType === "variable" &&
+					t.start <= offset &&
+					offset <= t.end,
+			)
+		: undefined;
+	if (target) return { name: target.name, kind: "ref" };
 
 	const decls = collectIntermediates(ast);
 	const decl = decls.find(

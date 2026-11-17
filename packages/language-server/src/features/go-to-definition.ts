@@ -6,7 +6,7 @@ import {
 	locToRange,
 	positionToOffset,
 } from "../utils/position";
-import { collectIntermediates, collectReferences } from "../utils/ast-walker";
+import { collectIntermediates, findNameAtOffset } from "../utils/ast-walker";
 
 /**
  * `&name` resolves to an `@use ... as &name` binding, not a local
@@ -58,11 +58,10 @@ export function provideDefinition(
 
 	const offset = positionToOffset(state.lineStarts, position);
 
-	const refs = collectReferences(state.ast);
-	const ref = refs.find(
-		(r) => r.loc && r.loc.start <= offset && offset <= r.loc.end,
-	);
-	if (!ref) return null;
+	// A `&name` reference, or the `&name` target of a share or a ratio.
+	const found = findNameAtOffset(state.ast, offset, state.text);
+	if (found?.kind !== "ref") return null;
+	const ref = { name: found.name };
 
 	const decls = collectIntermediates(state.ast);
 	const match = decls.find((d) => d.decl.name === ref.name);

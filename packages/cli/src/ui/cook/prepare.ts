@@ -5,7 +5,7 @@ import type {
 } from "@gram-lang/kitchen";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { isMetricMassUnit } from "@gram-lang/i18n";
-import { formatDecimalToFraction } from "@gram-lang/renderer";
+import { formatDecimalToFraction, formatRelative } from "@gram-lang/renderer";
 import { splitDuration } from "../../core/format";
 import { passiveTimers } from "../../core/schedule";
 import type { RecipeData, FlatStep, CookTimer } from "./types";
@@ -22,7 +22,9 @@ export function fmtQty(item: { qty?: any; unit?: string | null }): string {
 	if (typeof q === "number") {
 		display = formatDecimalToFraction(q, item.unit ?? undefined);
 	} else if (typeof q === "object" && q !== null) {
-		display = q.text ?? (q.value != null ? String(q.value) : "");
+		// A share or a ratio not resolved: written as such (`70% of flour`).
+		display =
+			formatRelative(q) ?? q.text ?? (q.value != null ? String(q.value) : "");
 	} else {
 		display = String(q);
 	}

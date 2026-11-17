@@ -190,6 +190,7 @@
     "timer-content": {
       "comment": "A duration as written: 1h30, 1 hr 30 mins, 1:30 h, 5'30\", 45 min - 1 h. Mirrors tokenizeDuration (@gram-lang/i18n): numbers, units in any script, primes, and the : + - signs.",
       "patterns": [
+        { "include": "#ratio-target" },
         {
           "match": "\\d+(?:[.,]\\d+)?(?:/\\d+)?|[\u00bc-\u00be\u2150-\u215e]",
           "name": "constant.numeric.gram"
@@ -210,6 +211,11 @@
         },
         {
           "match": "[+\\-\u2013]",
+          "name": "keyword.operator.duration.gram"
+        },
+        {
+          "comment": "The slash of a proportional time (~{15 min / 500 g @&roast}, since 1.5.0).",
+          "match": "/",
           "name": "keyword.operator.duration.gram"
         }
       ]
@@ -333,6 +339,14 @@
         }
       ]
     },
+    "ratio-target": {
+      "comment": "The target of a ratio or a percentage (@&flour, &dough), up to * or ×, where a cycle multiplier will go (since 1.5.0).",
+      "match": "(@&|&)([^}*×\\n]+)",
+      "captures": {
+        "1": { "name": "keyword.control.reference.gram" },
+        "2": { "name": "entity.name.tag.reference.gram" }
+      }
+    },
     "quantity-content": {
       "patterns": [
         { "include": "#number" },
@@ -341,7 +355,13 @@
            "name": "keyword.operator.percent.gram"
         },
         {
-           "match": "(@&|&|@)([^\\}]+)",
+           "comment": "The slash of a ratio with units ({1 / 100 g @&flour}, since 1.5.0); a fraction's slash belongs to its number.",
+           "match": "\\s*/\\s*",
+           "name": "keyword.operator.quantity.gram"
+        },
+        { "include": "#ratio-target" },
+        {
+           "match": "(@)([^\\}]+)",
            "captures": {
                "1": { "name": "keyword.control.reference.gram" },
                "2": { "name": "entity.name.tag.reference.gram" }
@@ -353,7 +373,7 @@
            "name": "keyword.operator.quantity.gram"
         },
         {
-           "match": "[^\\d%@&\\}+\\-]+",
+           "match": "[^\\d%@&\\}+\\-/]+",
            "name": "keyword.other.unit.gram"
         }
       ]

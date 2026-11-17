@@ -97,6 +97,16 @@ What goes with a temperature (the oven mode, "internal", "covered") belongs in a
 ```
 When the source says what state the cook should reach (a texture, a color, a smell), mark it as a [target state](/docs/reference/syntax/target-states/), wherever it sits in the step: only the state between the braces, the linking words ("until", "as soon as", "when") left in the sentence, a test in a glued note if the source gives one. Never a temperature, a time or a quantity inside, and never a cue the source does not give.
 
+### A proportional rule computed by hand
+<Since v="1.5.0" />
+
+```gram
+❌  Add @eggs{5} (1 egg per 100 g of flour).        →   ✅  Add @eggs{1 / 100 g @&flour}.
+❌  Roast ~{36 min} (15 min per 500 g).             →   ✅  Roast ~{15 min / 500 g @&roast}.
+❌  Add @eggs{1/100g @&flour}.                       →   ✅  Add @eggs{1 / 100 g @&flour}.
+```
+When the source states a proportional rule ("per 100 g", "per liter", "per pound", "per piece"), write it as a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units): it follows the target when the recipe is scaled. Only then: an amount the source gives as such stays an amount. Always a space around the slash, the unit alone before the target (never `100 g of @&flour`), and no multiplier after a proportional time.
+
 ### Using `@&` on the first occurrence
 
 ```gram

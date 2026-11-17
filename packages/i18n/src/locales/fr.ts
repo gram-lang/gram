@@ -193,6 +193,11 @@ export const fr: GramLocale = {
 		tooltipBakers: "% boulanger",
 		tooltipTakenFrom: "Prélevé sur",
 		alternatives: "Alternatives",
+		// Une proportion avec unités (`1 / 100 g @&farine`) : sa ligne dans la
+		// bulle, et les deux formes relatives (`70 %`, `1 / 100 g`) tant
+		// qu'elles ne sont pas calculées.
+		tooltipRatio: "Proportion",
+		relativeOf: "{amount} de {target}",
 		// The deprecated portions stepper of the HTML recipe (`interactiveScaling`).
 		// @remove-in: 2.0.0 [renderer-interactive-scaling]
 		decreasePortions: "Diminuer les portions",

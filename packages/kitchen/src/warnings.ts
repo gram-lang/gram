@@ -1,6 +1,7 @@
 import type { Location } from "@gram-lang/parser";
 import { type InvalidQuantityReason, splitTwoQuantities } from "./compound";
 import type { InvalidDurationReason } from "./durations";
+import type { RatioFailure } from "./ratio";
 
 export enum WarningCode {
 	VARIABLE_NOT_FOUND = "VARIABLE_NOT_FOUND",
@@ -52,6 +53,13 @@ export interface WarningPayloads {
 	[WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: {
 		targetName: string;
 		item: string;
+		/**
+		 * Why a ratio with units (`1 / 100 g @&flour`) is not resolved. Absent
+		 * for a percentage, whose target's mass is unknown. Since 1.5.0.
+		 */
+		reason?: Exclude<RatioFailure, "deferred">;
+		/** For `incompatibleUnits`: the unit the target is counted in, as written. */
+		unit?: string | null;
 		loc?: Location;
 	};
 	[WarningCode.CIRCULAR_REFERENCE]: {
@@ -211,7 +219,37 @@ const DURATION_HINTS: Record<InvalidDurationReason, string> = {
 	anchorRange: "a section anchor is one duration, not a range: write e.g. -1d.",
 	anchorSeconds:
 		"a section anchor counts in days, hours and minutes: write e.g. -1h30 or -1:30 h.",
+	ratioMultiplication:
+		"Gram does not multiply a proportional time yet: write the ratio alone, e.g. ~{15 min / 500 g @&roast}.",
+	ratioShape:
+		"a proportional time is a duration / an amount of a target, e.g. ~{15 min / 500 g @&roast}; the amount is a single number.",
+	anchorRatio:
+		"a section anchor is one duration, not a proportional time: write e.g. -1h30.",
 };
+
+/** What a ratio that does not resolve tells the author. */
+function ratioHint(
+	reason: Exclude<RatioFailure, "deferred">,
+	target: string,
+	unit?: string | null,
+): string {
+	switch (reason) {
+		case "noTargetQuantity":
+			return `'${target}' has no amount to count from: write its amount where it is used (e.g. @${target}{500 g}).`;
+		case "incompatibleUnits":
+			return unit && /\s(?:de|du|des|of|d['’])$/iu.test(unit)
+				? `the unit "${unit}" takes the word after it: write the unit alone, e.g. 1 / 100 g @&flour.`
+				: `"${unit ?? "a piece"}" and the unit '${target}' is written in do not measure the same thing: write the ratio in the unit '${target}' is written in.`;
+		case "missingDensity":
+			return `'${target}' is written in a volume and the ratio in a weight (or the reverse), and its density is unknown: add it to the ingredient database, or write both in the same kind of unit.`;
+		case "missingUnitWeight":
+			return `'${target}' is counted in pieces and the ratio in a weight (or the reverse), and the weight of one piece is unknown: add its unit_weight to the ingredient database, or write both the same way.`;
+		case "wholeUseAmbiguous":
+			return `'&${target}' is used whole in several sections: write the amount used here (e.g. &${target}{500 g}).`;
+		case "producerMassUnknown":
+			return `'&${target}' is used whole and the mass of the section that makes it is unknown: write the amount used here (e.g. &${target}{500 g}).`;
+	}
+}
 
 /** What each `INVALID_QUANTITY` reason tells the author to write instead. */
 const QUANTITY_HINTS: Record<InvalidQuantityReason, string> = {
@@ -242,7 +280,9 @@ export const warningTemplates: {
 	[WarningCode.RELATIVE_QUANTITY_UNRESOLVED]: (p) =>
 		`Cannot resolve relative quantity: target ingredient '@${p.targetName}' was not found in the current section.`,
 	[WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: (p) =>
-		`Cannot compute relative quantity for '${p.item}': mass of target '${p.targetName}' is unknown.`,
+		p.reason
+			? `Cannot compute the amount of '${p.item}': ${ratioHint(p.reason, p.targetName, p.unit)}`
+			: `Cannot compute relative quantity for '${p.item}': mass of target '${p.targetName}' is unknown.`,
 	[WarningCode.CIRCULAR_REFERENCE]: (p) =>
 		`Circular reference detected: '${p.name}' depends on itself.`,
 	[WarningCode.UNDEFINED_REFERENCE]: (p) =>

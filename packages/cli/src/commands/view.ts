@@ -124,7 +124,11 @@ export default defineCommand({
 					? `×${scaleFactor}`
 					: `×${scaleFactor.toFixed(2)}`;
 			console.log(chalk.dim(`  Scaled ${factorStr}\n`));
-			for (const w of getScaleWarnings(scaleFactor, viewed.totalMinutes)) {
+			for (const w of getScaleWarnings(
+				scaleFactor,
+				viewed.totalMinutes,
+				viewed.timers,
+			)) {
 				log.warn(w);
 			}
 		}

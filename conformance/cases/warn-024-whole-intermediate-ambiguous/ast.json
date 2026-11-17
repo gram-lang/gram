@@ -1,0 +1,355 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "dough",
+        "loc": {
+          "start": 9,
+          "end": 17
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 19,
+                "end": 23
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 30,
+                  "end": 35
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 23,
+                "end": 36
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 36,
+                "end": 37
+              }
+            }
+          ],
+          "loc": {
+            "start": 19,
+            "end": 39
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 39
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Cream",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "cream",
+        "loc": {
+          "start": 48,
+          "end": 56
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whip ",
+              "loc": {
+                "start": 58,
+                "end": 63
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "cream",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 70,
+                  "end": 76
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 63,
+                "end": 77
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 77,
+                "end": 78
+              }
+            }
+          ],
+          "loc": {
+            "start": 58,
+            "end": 80
+          }
+        }
+      ],
+      "loc": {
+        "start": 39,
+        "end": 80
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Roll out the ",
+              "loc": {
+                "start": 89,
+                "end": 102
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough",
+              "quantity": null,
+              "loc": {
+                "start": 102,
+                "end": 108
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", sprinkle ",
+              "loc": {
+                "start": 108,
+                "end": 119
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt",
+              "modifiers": [],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 2,
+                    "text": "2"
+                  },
+                  "unit": "g"
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 100,
+                    "text": "100"
+                  },
+                  "unit": "g"
+                },
+                "target": "dough",
+                "referenceType": "variable",
+                "raw": "2 g / 100 g &dough",
+                "loc": {
+                  "start": 125,
+                  "end": 143
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 119,
+                "end": 144
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 144,
+                "end": 145
+              }
+            }
+          ],
+          "loc": {
+            "start": 89,
+            "end": 147
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Spread the ",
+              "loc": {
+                "start": 147,
+                "end": 158
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "cream",
+              "quantity": null,
+              "loc": {
+                "start": 158,
+                "end": 164
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 165,
+                "end": 170
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 10,
+                "text": "10",
+                "target": "cream",
+                "referenceType": "variable",
+                "loc": {
+                  "start": 177,
+                  "end": 187
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 170,
+                "end": 188
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 188,
+                "end": 189
+              }
+            }
+          ],
+          "loc": {
+            "start": 147,
+            "end": 191
+          }
+        }
+      ],
+      "loc": {
+        "start": 80,
+        "end": 191
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Serve",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Cut the ",
+              "loc": {
+                "start": 201,
+                "end": 209
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough",
+              "quantity": null,
+              "loc": {
+                "start": 209,
+                "end": 215
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 215,
+                "end": 216
+              }
+            }
+          ],
+          "loc": {
+            "start": 201,
+            "end": 217
+          }
+        }
+      ],
+      "loc": {
+        "start": 191,
+        "end": 217
+      }
+    }
+  ]
+}
