@@ -8,9 +8,10 @@ import {
 	largerAmount,
 	isWrittenInMetricMass,
 	round1,
+	formatRelative,
 } from "./utils";
 import { formatUsageQuantity, quantityContext } from "./quantity";
-import { formatNumber, getDictionary } from "@gram-lang/i18n";
+import { formatNumber, getDictionary, isTermValue } from "@gram-lang/i18n";
 
 import { DEFAULT_ICONS } from "./icons";
 import { type TooltipRow, tooltipCardAttrs } from "./tooltip-card";
@@ -66,6 +67,35 @@ function massMethodLabel(
  * them (`hideIngredientQty`), except an estimated mass, whose "~" the
  * tooltip explains (converted with an average density...).
  */
+/**
+ * The tooltip row of an amount that comes from another ingredient (`70% of
+ * flour`, `1 / 100 g of flour`), or of a proportional time. Only once the
+ * amount is resolved: one not resolved is already what the step (or the
+ * Quantity row, quantities hidden) shows.
+ */
+function relativeRow(item: any, context: RenderContext): TooltipRow[] {
+	const t = getDictionary(context.lang);
+	const formula = item.formula;
+	const source =
+		item.type === "timer"
+			? item.ratio
+			: formula && "ratio" in formula
+				? formula.ratio
+				: formula && "percent" in formula
+					? {
+							type: "RelativeQuantity",
+							percent: formula.percent,
+							target: formula.target,
+						}
+					: undefined;
+	if (!source) return [];
+	const resolved =
+		item.type === "timer" ? item.minutes !== undefined : isTermValue(item.qty);
+	if (!resolved) return [];
+	const value = formatRelative(source, context.lang);
+	return value ? [{ label: t.renderer.tooltipRatio, value }] : [];
+}
+
 function ingredientTooltip(
 	item: any,
 	context: RenderContext,
@@ -110,6 +140,8 @@ function ingredientTooltip(
 			detail: f.isEstimate ? massMethodLabel(f.conversionMethod, t) : undefined,
 		});
 	}
+
+	rows.push(...relativeRow(item, context));
 
 	if (f.prep) {
 		rows.push({ label: t.renderer.tooltipPreparation, value: f.prep });
@@ -464,7 +496,16 @@ const strategies: Record<
 			const tooltipStr = isPassive
 				? t.renderer.passiveTimeTooltip
 				: t.renderer.activeTimeTooltip;
-			return `<span class="${className}" data-tooltip="${tooltipStr}" data-value="${escapeHtml(dataValue)}" data-unit="${escapeHtml(item.unit || "")}"${minutesAttr}>${icon} <span class="timer-text">${escapeHtml(shown)}</span></span>`;
+			// A proportional time also says what its duration follows.
+			const ratioRows = relativeRow(item, context);
+			const tip =
+				ratioRows.length > 0
+					? tooltipCardAttrs(
+							{ title: tooltipStr, rows: ratioRows },
+							t.renderer.colon,
+						)
+					: ` data-tooltip="${tooltipStr}"`;
+			return `<span class="${className}"${tip} data-value="${escapeHtml(dataValue)}" data-unit="${escapeHtml(item.unit || "")}"${minutesAttr}>${icon} <span class="timer-text">${escapeHtml(shown)}</span></span>`;
 		} else if (format === "text") {
 			return styled(context, "timer", shown);
 		} else {
@@ -556,7 +597,12 @@ const strategies: Record<
 					{
 						title: name,
 						subtitle: t.renderer.intermediateIngredient,
-						rows: amount ? [{ label: t.renderer.quantity, value: amount }] : [],
+						rows: [
+							...(amount
+								? [{ label: t.renderer.quantity, value: amount }]
+								: []),
+							...relativeRow(item, context),
+						],
 					},
 					t.renderer.colon,
 				);
