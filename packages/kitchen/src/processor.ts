@@ -4,7 +4,6 @@ import {
 	isDurationTooLong,
 	maxDurationIn,
 	quantityToMinutes,
-	quantityToMinutesRange,
 	nextUsageId,
 } from "./utils";
 import {
@@ -42,22 +41,10 @@ import type {
 	Schedule,
 	SectionMiseEnPlace,
 } from "./types";
-import {
-	type SchedulingDiagnostic,
-	type StepSchedule,
-	type TaskGraph,
-	computeTimeline,
-	layout,
-	scheduleALAP,
-	serializeTracks,
-} from "@gram-lang/scheduler";
-import {
-	type StepFact,
-	type TimerFact,
-	buildTaskGraph,
-	taskIds,
-} from "./task-graph";
-import { commitTimeline } from "./legacy-timings";
+import { type TaskGraph, layout } from "@gram-lang/scheduler";
+import { buildTaskGraph } from "./task-graph";
+import { planLegacy } from "./legacy-timings";
+import { recipeTimings } from "./step-timing";
 import { pushPassiveOverlapWarnings } from "./overlap-warnings";
 import {
 	isSameSchedulingProblem,
@@ -1082,16 +1069,13 @@ export function processSections(
 	const sections: ProcessedSection[] = [];
 	const blocksToProcess: ASTNode[] = groupIntoSections(astChildren);
 
-	const globalSchedules: StepSchedule[] = [];
-	const stepFacts: StepFact[] = [];
 	// Parallel to `sections`, kept only to recover a `.loc` for warnings raised
 	// by the schedule module (see ./schedule) — `ProcessedSection` is the JSON
 	// output shape and doesn't carry source locations.
 	const sectionASTs: SectionAST[] = [];
-	let globalActiveTime = 0;
 
-	// --- PHASE 1: Forward Pass (Estimation & Flattening) ---
-	blocksToProcess.forEach((node, sectionIndex) => {
+	// --- Reading: every section into tokens ---
+	blocksToProcess.forEach((node) => {
 		const sectionAST = node as SectionAST;
 		sectionASTs.push(sectionAST);
 		ctx.currentSectionIntermediates.clear();
@@ -1138,18 +1122,7 @@ export function processSections(
 
 		sectionAST.children.forEach((block) => {
 			if (block.type === ASTNodeType.Step) {
-				let localActiveTime = 0;
-				// The same step, as the task graph sees it: a timer written as a range is
-				// planned on its longest figure when active, its shortest when passive
-				// (`localActiveTime` and the timers' durations keep the average, for the
-				// deprecated fields).
-				let nominalActive = 0;
-				const timerFacts: TimerFact[] = [];
-				const stepPassiveTasks: StepSchedule["passiveTasks"] = [];
 				const stepContentObjects: StepToken[] = [];
-				const produced: string[] = [];
-				const consumed: string[] = [];
-
 				ctx.intermediateDecl = null;
 
 				block.children.forEach((item) => {
@@ -1160,112 +1133,22 @@ export function processSections(
 						sectionIngredients,
 						sectionCookware,
 					);
-
-					if (processed) {
-						if (Array.isArray(processed)) {
-							stepContentObjects.push(...processed);
-						} else {
-							stepContentObjects.push(processed);
-
-							if (typeof processed !== "string" && "type" in processed) {
-								if (processed.type === "reference" && processed.name) {
-									consumed.push(processed.name);
-								} else if (processed.type === "declaration" && processed.name) {
-									produced.push(processed.name);
-								} else if (
-									processed.type === "timer" &&
-									!("id" in processed) &&
-									processed.quantity
-								) {
-									const time = {
-										value: processed.quantity,
-										unit: processed.unit,
-									};
-									const duration = quantityToMinutes(time);
-									const { min, max } = quantityToMinutesRange(time);
-									if (processed.isPassive) {
-										timerFacts.push({
-											...(processed.name && { track: processed.name }),
-											offset: nominalActive,
-											duration:
-												min === max
-													? { nominal: min }
-													: { nominal: min, min, max },
-										});
-										stepPassiveTasks.push({
-											taskId: taskIds.timer(
-												sectionIndex,
-												steps.length,
-												stepPassiveTasks.length,
-											),
-											name: processed.name || "Timer",
-											duration: duration,
-											localOffset: localActiveTime,
-											isNamed: !!processed.name,
-											// Only set for genuinely named tracks — left undefined
-											// for anonymous passive timers so the renderer's own
-											// localized "Timer" fallback applies instead of a
-											// hardcoded English string baked into the JSON.
-											sourceName: processed.name || undefined,
-										});
-									} else {
-										localActiveTime += duration;
-										nominalActive += max;
-									}
-								}
-							}
-						}
-					}
+					if (processed) stepContentObjects.push(processed);
 				});
 
-				if (localActiveTime === 0 && stepPassiveTasks.length === 0) {
-					localActiveTime = 2;
-					nominalActive = 2;
-				}
-
-				let productionTime = localActiveTime;
-				for (const task of stepPassiveTasks) {
-					productionTime = Math.max(
-						productionTime,
-						task.localOffset + task.duration,
-					);
-				}
-
+				// `timings` and `backgroundTasks` are written by the legacy pass
+				// (`planLegacy`), once every step is known.
 				const stepObj: ProcessedStep = {
 					type: "step",
 					content: stepContentObjects,
-					timings: { start: 0, end: 0, activeDuration: localActiveTime },
+					timings: { start: 0, end: 0, activeDuration: 0 },
 					backgroundTasks: [],
 				};
 				if (block.action) stepObj.action = block.action;
 				if (ctx.intermediateDecl) {
 					stepObj.intermediate_preparation = ctx.intermediateDecl;
 				}
-
 				steps.push(stepObj);
-				stepFacts.push({
-					section: sectionIndex,
-					step: steps.length - 1,
-					active: nominalActive,
-					timers: timerFacts,
-					produced: [...produced],
-					consumed: [...consumed],
-				});
-				globalSchedules.push({
-					taskId: taskIds.step(sectionIndex, steps.length - 1),
-					sectionIndex,
-					stepIndex: steps.length - 1,
-					isComment: false,
-					localActiveTime,
-					productionTime,
-					produced,
-					consumed,
-					passiveTasks: stepPassiveTasks,
-					ls: 0,
-					lf: 0,
-				});
-
-				globalActiveTime += localActiveTime;
 			} else if (block.type === ASTNodeType.Comment) {
 				const commentObj: ProcessedComment = {
 					type: "comment",
@@ -1273,19 +1156,6 @@ export function processSections(
 					kind: block.kind,
 				};
 				steps.push(commentObj);
-				globalSchedules.push({
-					taskId: taskIds.step(sectionIndex, steps.length - 1),
-					sectionIndex,
-					stepIndex: steps.length - 1,
-					isComment: true,
-					localActiveTime: 0,
-					productionTime: 0,
-					produced: [],
-					consumed: [],
-					passiveTasks: [],
-					ls: 0,
-					lf: 0,
-				});
 			}
 		});
 	});
@@ -1307,33 +1177,22 @@ export function processSections(
 		});
 	}
 
-	// Phases 2-4 (ALAP backward pass, named-track re-serialization, rebase +
-	// commit) live in ./schedule — extracted so each is independently
-	// unit-testable on synthetic StepSchedule arrays, without going through
-	// the parser (audit 2026-07-22, kitchen finding F-004/P-001).
-	// This legacy pass only feeds the deprecated fields (`timings`,
-	// `backgroundTasks`, `metrics`); the default timeline comes from the task
-	// graph below and never reads what it writes.
+	// The time of every step, read from its tokens once all of them are
+	// known, then the legacy pass (ALAP backward pass, named-track
+	// re-serialization, rebase + commit, in ./legacy-timings). It only feeds
+	// the deprecated fields (`timings`, `backgroundTasks`, `metrics`); the
+	// default timeline comes from the task graph below and never reads what
+	// it writes.
 	const locationOf = (section: number) => sectionASTs[section]?.loc;
-
-	const legacyDiagnostics: SchedulingDiagnostic[] = [];
-	scheduleALAP(globalSchedules, sections, legacyDiagnostics);
-	const scheduledPassiveTasks = serializeTracks(
-		globalSchedules,
-		legacyDiagnostics,
-	);
+	const { facts: stepFacts, schedules } = recipeTimings(sections);
+	const legacy = planLegacy(sections, schedules);
 	pushSchedulingWarnings(
 		registry.warnings,
-		legacyDiagnostics,
+		legacy.diagnostics,
 		sections,
 		locationOf,
 	);
-	const legacyTimeline = computeTimeline(
-		globalSchedules,
-		scheduledPassiveTasks,
-		sections,
-	);
-	const metrics = commitTimeline(legacyTimeline, sections, globalActiveTime);
+	const metrics = legacy.metrics;
 
 	// Mise en place: one cost per section. With the steps, it makes the task
 	// graph; the scheduler lays it out into the default timeline.
