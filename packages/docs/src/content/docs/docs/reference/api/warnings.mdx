@@ -84,6 +84,8 @@ Subtraction is checked kind by kind: each kind of amount adds up and takes away 
 
 It also flags, with `reason: "zeroDenominator"`, a fraction over zero anywhere a number is written (`@flour{1/0 cup}`, `{1 1/0 cup}`, a term of a sum, `{1/0% &dough}`, `#pan{1/0}`, `^{1/0 °C}`). Such a number has no value: Gram leaves it out, as if no number had been written (`cup` alone, a sum without that term, an ingredient with no quantity for a percentage), where it used to vanish without a word. **Fix**: write the fraction you meant (`1/2`). A timer says it through `INVALID_DURATION`.
 
+With `reason: "relativeNotSupported"`, it flags a percentage on a composite parent (`@eggs{3}<@box{50% @&flour}>`), which Gram does not support yet: the parent is read with no quantity, where the percentage used to vanish without a word. **Fix**: write the parent's amount (`<@box{1}>`).
+
 ### `OZ_AFTER_VOLUME`
 <Since v="1.5.0" />
 

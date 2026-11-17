@@ -37,7 +37,13 @@ export type InvalidQuantityReason =
 	 * number of an ingredient, a reference, a piece of cookware or a
 	 * temperature. Since 1.5.0.
 	 */
-	| "zeroDenominator";
+	| "zeroDenominator"
+	/**
+	 * `@eggs{3}<@box{50% @&flour}>`: a share of another ingredient on a
+	 * composite parent. Refused until composites are reworked (1.6): the
+	 * parent reads with no quantity. Since 1.5.0.
+	 */
+	| "relativeNotSupported";
 
 export interface SumProblem {
 	reason: InvalidQuantityReason;
