@@ -266,12 +266,14 @@ function resolveRelativeQuantities(
 		sec.ingredients.forEach((item) => {
 			if (item.formula?.target) {
 				const targetId = item.dependencies?.[0];
-				const isVariable = item.formula.raw.includes("% of &");
 
 				let targetMass = 0;
 				let foundMass = false;
 
-				if (!isVariable && targetId) {
+				// The target's mentions in the section: an ingredient (`@&flour`),
+				// or a reference written with its amount (`&dough{200 g}`), which
+				// sits in `sec.ingredients` under the same id.
+				if (targetId) {
 					sec.ingredients.forEach((other) => {
 						if (other.id === targetId && other.normalizedMass !== undefined) {
 							targetMass += other.normalizedMass;
@@ -759,7 +761,12 @@ export function analyze(
 		result.registry.ingredients,
 	);
 
-	resolveRelativeQuantities(sections, result.warnings);
+	// The passes below add their warnings to a copy: the compiled result is
+	// never modified, so analyzing it again (LSP, playground) does not pile up
+	// the same warnings.
+	const warnings = [...result.warnings];
+
+	resolveRelativeQuantities(sections, warnings);
 
 	// Mass metrics are computed only now, after pass 1.5. They used to run
 	// straight after pass 1, on the very same objects — so an ingredient
@@ -785,7 +792,7 @@ export function analyze(
 		opts,
 	);
 
-	applyBakersMath(shopping_list, sections, opts, result.warnings);
+	applyBakersMath(shopping_list, sections, opts, warnings);
 
 	const nutrition = estimateNutrition(
 		shopping_list,
@@ -796,7 +803,7 @@ export function analyze(
 	);
 
 	const nutritionWarnings = nutrition?.warnings || [];
-	const allWarnings = [...result.warnings, ...nutritionWarnings];
+	const allWarnings = [...warnings, ...nutritionWarnings];
 
 	// 4. Assemble and return the final structurally and physically enriched recipe package
 	const analyzedResult: AnalyzedCompilationResult = {
