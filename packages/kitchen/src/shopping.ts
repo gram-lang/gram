@@ -294,12 +294,14 @@ export function generateShoppingList(
 			const entryTerms = termsByKey.get(key);
 			if (entryTerms) entryTerms.push(...terms);
 			else termsByKey.set(key, [...terms]);
-		} else {
-			if (item.qty) {
-				const qStr = formatQuantity(item.qty);
-				const uStr = unit ? ` ${unit}` : "";
-				existing.variableParts!.push(`${qStr}${uStr}`);
-			}
+		} else if (item.qty) {
+			const qStr = formatQuantity(item.qty);
+			const uStr = unit ? ` ${unit}` : "";
+			existing.variableParts!.push(`${qStr}${uStr}`);
+		} else if (unit && !item.parts?.length) {
+			// A quantity in words (`{une pincée}`, `{to taste}`): no number,
+			// so the whole text is its unit. Bought as written.
+			existing.variableParts!.push(unit);
 		}
 
 		if (!isGhost && item.isCircular) {

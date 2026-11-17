@@ -119,10 +119,14 @@ export function formatUsageQuantity(
 	} else if (!Array.isArray(summed)) {
 		// A text (`{une pincée}`) or a relative quantity (`{10%}`).
 		const qty = getQty(item, ctx);
+		const unit = typeof item.unit === "string" ? item.unit : "";
 		if (qty) {
-			const unit = typeof item.unit === "string" ? item.unit : "";
 			const value = qty.text || formatDecimalToFraction(qty.value, unit, ctx);
 			text = unit ? `${value} ${unit}` : value;
+		} else if (unit && !parts?.length) {
+			// A quantity in words (`{une pincée}`): no number, the whole text
+			// is its unit. Written as is, never scaled.
+			text = unit;
 		}
 	}
 	return joinAmounts([text, ...extra]);

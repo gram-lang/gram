@@ -20,6 +20,9 @@
       "name": "flour",
       "_usageIds": [
         "1"
+      ],
+      "variable_entries": [
+        "cups"
       ]
     }
   ],
