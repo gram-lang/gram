@@ -213,6 +213,10 @@ export const en = {
 		tooltipBakers: "Baker's %",
 		tooltipTakenFrom: "Taken from",
 		alternatives: "Alternatives",
+		// A ratio with units (`1 / 100 g @&flour`): its tooltip row, and either
+		// relative form (`70%`, `1 / 100 g`) while it stays unresolved.
+		tooltipRatio: "Ratio",
+		relativeOf: "{amount} of {target}",
 		// The deprecated portions stepper of the HTML recipe (`interactiveScaling`).
 		// @remove-in: 2.0.0 [renderer-interactive-scaling]
 		decreasePortions: "Decrease portions",

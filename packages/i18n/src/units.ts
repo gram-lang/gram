@@ -358,6 +358,75 @@ export function toLargerMetricUnit(
 	return { value, unit };
 }
 
+/**
+ * Converts a value between two units of the same family, mass to mass or
+ * volume to volume (`1 l` → `1000 ml`, `1 lb` → `453.59 g`), through
+ * `UNIT_CONVERSIONS` alone. The same unit, however spelled, gives the value
+ * back. Across families (mass and volume), or for a unit that is neither,
+ * `null`: crossing needs a density, which only the caller can bring.
+ */
+export function convertUnitInFamily(
+	value: number,
+	fromUnit: string | null | undefined,
+	toUnit: string | null | undefined,
+	lang?: string,
+): number | null {
+	const from = normalizeUnit(fromUnit, lang);
+	const to = normalizeUnit(toUnit, lang);
+	if (from === to) return value;
+
+	for (const family of [UNIT_CONVERSIONS.mass, UNIT_CONVERSIONS.volume]) {
+		const fromFactor = family.map[from];
+		const toFactor = family.map[to];
+		if (fromFactor !== undefined && toFactor !== undefined) {
+			return (value * fromFactor) / toFactor;
+		}
+	}
+	return null;
+}
+
+/** The spellings of "a piece": a count written with them has no unit. */
+const PIECE_UNITS = new Set([
+	"pièce",
+	"pièces",
+	"piece",
+	"pieces",
+	"pc",
+	"pcs",
+	"unité",
+	"unités",
+	"unit",
+	"units",
+]);
+
+/**
+ * True when two counting units (neither a mass nor a volume) name the same
+ * thing: the same spelling, or one is the other with a plural ending `s`,
+ * `es` or `x` (`gousse`/`gousses`, `tranche`/`tranches`, `box`/`boxes`,
+ * `chou`/`choux`). Forms are compared, never a suffix stripped (`tranches`
+ * less `es` is `tranch`), and no plural is looked for under three letters.
+ * No unit, and every spelling of "a piece" (`pièce`, `pc`, `unit`...), count
+ * as the same: no unit. For ratios only: the shopping list keeps `gousse` and
+ * `gousses` apart.
+ */
+export function sameCountUnit(
+	a: string | null | undefined,
+	b: string | null | undefined,
+	lang?: string,
+): boolean {
+	if (isMeasureUnit(a, lang) || isMeasureUnit(b, lang)) return false;
+	const countForm = (unit: string | null | undefined) => {
+		const form = normalizeUnit(unit, lang);
+		return PIECE_UNITS.has(form) ? "" : form;
+	};
+	const x = countForm(a);
+	const y = countForm(b);
+	if (x === y) return true;
+	const [short, long] = x.length <= y.length ? [x, y] : [y, x];
+	if (short.length < 3) return false;
+	return ["s", "es", "x"].some((ending) => long === short + ending);
+}
+
 /** True for a unit of mass or volume Gram knows (g, kg, cup, tbsp, c.à.s...). */
 export function isMeasureUnit(
 	rawUnit: string | undefined | null,

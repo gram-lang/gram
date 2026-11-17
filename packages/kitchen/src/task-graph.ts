@@ -148,27 +148,28 @@ function prepTasksOf(
 	return [...tasks, ...intermediates];
 }
 
-/**
- * The task graph of a compiled recipe: what the scheduler needs to lay it out,
- * independent of any option. Tasks come section by section, the mise en place
- * first, then each step followed by its timers.
- */
-export function buildTaskGraph(
-	sections: ProcessedSection[],
-	facts: StepFact[],
-	analysis: MiseEnPlaceAnalysis,
-): TaskGraph {
-	const days = sectionDays(sections);
+/** The steps' facts by section, in order. */
+function factsBySection(facts: StepFact[]): Map<number, StepFact[]> {
 	const factsOf = new Map<number, StepFact[]>();
 	for (const fact of facts) {
 		const list = factsOf.get(fact.section);
 		if (list) list.push(fact);
 		else factsOf.set(fact.section, [fact]);
 	}
-	const idOf = (fact: StepFact) => taskIds.step(fact.section, fact.step);
+	return factsOf;
+}
 
-	// Who makes each intermediate: the section that declares it as a whole (its
-	// last step finishes it), else the step that declares it.
+const idOf = (fact: StepFact) => taskIds.step(fact.section, fact.step);
+
+/**
+ * Who makes each intermediate: the section that declares it as a whole (its
+ * last step finishes it), else the step that declares it.
+ */
+function makersOf(
+	sections: ProcessedSection[],
+	facts: StepFact[],
+	factsOf: Map<number, StepFact[]>,
+): Map<string, string> {
 	const makerOf = new Map<string, string>();
 	for (const fact of facts) {
 		for (const name of fact.produced) makerOf.set(name, idOf(fact));
@@ -179,28 +180,25 @@ export function buildTaskGraph(
 			makerOf.set(sec.intermediate_preparation, idOf(last));
 		}
 	});
-	// The same, by the slug the mise en place knows an intermediate by.
-	const makerOfSlug = new Map<string, string>();
-	for (const [name, id] of makerOf) makerOfSlug.set(slugify(name), id);
-	const producerTask = (intermediate: string): string | undefined => {
-		const section = analysis.producers.get(intermediate);
-		if (section === undefined) return undefined;
-		const maker = makerOfSlug.get(intermediate);
-		if (maker !== undefined && maker.startsWith(`s${section}.`)) return maker;
-		const last = factsOf.get(section)?.at(-1);
-		return last === undefined ? undefined : idOf(last);
-	};
+	return makerOf;
+}
 
-	const prepsOf = new Map(
-		analysis.entries.map((entry) => [
-			entry.section,
-			prepTasksOf(entry, analysis, producerTask),
-		]),
-	);
+/**
+ * The step and timer tasks of every section (indexed by section), each step
+ * followed by its timers: what the steps' facts alone say, with no mise en
+ * place. A step waits for the step before it and for the step that makes an
+ * intermediate it uses. Shared by `buildTaskGraph` and by a recalculation of
+ * the schedule, which keeps the mise en place it already has.
+ */
+export function stepTasksOf(
+	sections: ProcessedSection[],
+	facts: StepFact[],
+): (StepTask | TimerTask)[][] {
+	const factsOf = factsBySection(facts);
+	const makerOf = makersOf(sections, facts, factsOf);
 
-	const tasks: Task[] = [];
-	sections.forEach((_, index) => {
-		tasks.push(...(prepsOf.get(index) ?? []));
+	return sections.map((_, index) => {
+		const tasks: (StepTask | TimerTask)[] = [];
 		let previous: string | undefined;
 		for (const fact of factsOf.get(index) ?? []) {
 			const id = idOf(fact);
@@ -236,6 +234,47 @@ export function buildTaskGraph(
 			});
 			previous = id;
 		}
+		return tasks;
+	});
+}
+
+/**
+ * The task graph of a compiled recipe: what the scheduler needs to lay it out,
+ * independent of any option. Tasks come section by section, the mise en place
+ * first, then each step followed by its timers.
+ */
+export function buildTaskGraph(
+	sections: ProcessedSection[],
+	facts: StepFact[],
+	analysis: MiseEnPlaceAnalysis,
+): TaskGraph {
+	const days = sectionDays(sections);
+	const factsOf = factsBySection(facts);
+	const makerOf = makersOf(sections, facts, factsOf);
+	// The same, by the slug the mise en place knows an intermediate by.
+	const makerOfSlug = new Map<string, string>();
+	for (const [name, id] of makerOf) makerOfSlug.set(slugify(name), id);
+	const producerTask = (intermediate: string): string | undefined => {
+		const section = analysis.producers.get(intermediate);
+		if (section === undefined) return undefined;
+		const maker = makerOfSlug.get(intermediate);
+		if (maker !== undefined && maker.startsWith(`s${section}.`)) return maker;
+		const last = factsOf.get(section)?.at(-1);
+		return last === undefined ? undefined : idOf(last);
+	};
+
+	const prepsOf = new Map(
+		analysis.entries.map((entry) => [
+			entry.section,
+			prepTasksOf(entry, analysis, producerTask),
+		]),
+	);
+	const stepsOf = stepTasksOf(sections, facts);
+
+	const tasks: Task[] = [];
+	sections.forEach((_, index) => {
+		tasks.push(...(prepsOf.get(index) ?? []));
+		tasks.push(...(stepsOf[index] ?? []));
 	});
 
 	return {

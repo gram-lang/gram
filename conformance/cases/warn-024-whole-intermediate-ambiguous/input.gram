@@ -1,0 +1,17 @@
+## Dough ->&dough
+
+Mix @flour{500 g}.
+
+## Cream ->&cream
+
+Whip @cream{200 ml}.
+
+## Bake
+
+Roll out the &dough, sprinkle @salt{2 g / 100 g &dough}.
+
+Spread the &cream with @sugar{10% &cream}.
+
+## Serve
+
+Cut the &dough.

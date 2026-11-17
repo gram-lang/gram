@@ -42,8 +42,10 @@ Formulations complémentaires pour enrichir la description des étapes :
 | **Préparation courte** | `(...)` | `@beurre{10g}(pommade)` | Précise l'état ou la découpe sans surcharger l'identifiant. |
 | **Alias de composant** | `:identifiant` | `@vin blanc sec:vin{10ml}` | Affiche un libellé clair tout en reliant l'ingrédient à un identifiant canonique. |
 | **Quantité relative** | `% @&cible` | `@eau{70% @&farine}` | Calcule la quantité par rapport à la masse d'un ingrédient pivot. |
+| **Proportion avec unités** | `a / b @&cible` | `@oeufs{1 / 100 g @&farine}`, `@sel{15 g / L @&eau}` | Une quantité par quantité d'un autre ingrédient, dans n'importe quelles unités ; une espace autour de la barre. Depuis la 1.5.0. |
 | **Ingrédient composite** | `<@parent` | `@zeste de citron{1}<@citron` | Rapproche des éléments (zeste, jus) sous un même article d'achat parent. |
 | **Minuteur passif** | `~_` | `~_{1h}` | Modélise un repos ou une pousse sans monopoliser le cuisinier. |
+| **Temps proportionnel** | `~{temps / b @&cible}` | `~{15 min / 500 g @&roti}`, `~{4 min / @&cotelette}` | Un temps qui suit un poids ou un nombre de pièces, recalculé à la mise à l'échelle. Depuis la 1.5.0. |
 | **Minuteur nommé** | `~nom{...}` | `~œufs{3min}`, `~_four{45min}` | Linéarise l'accès à un équipement partagé (piste dédiée). |
 | **Température sémantique** | `^{texte}` | `^{feu moyen}`, `^{frémissement}` | Exprime une intensité de chauffe qualitative. |
 | **Précision de température** | `^{...}(précision)` | `^{160°C}(chaleur tournante)`, `^{63°C}(à cœur)` | Mode du four ou condition, toujours affichée. Depuis la 1.5.0. |

@@ -1,6 +1,13 @@
-import { slugify, round2, termsByFamily } from "@gram-lang/kitchen";
+import {
+	slugify,
+	round2,
+	termsByFamily,
+	type TargetConverter,
+} from "@gram-lang/kitchen";
 import type { Meta } from "@gram-lang/parser";
 import {
+	convertUnitInFamily,
+	isMeasureUnit,
 	normalizeUnit,
 	type Term,
 	termsTotal,
@@ -44,37 +51,25 @@ export function convertUnit(
 	density?: number,
 	lang?: string,
 ): number | null {
-	const from = normalizeUnit(fromUnit, lang);
-	const to = normalizeUnit(toUnit, lang);
-	if (from === to) return value;
-
-	const massMap: Record<string, number> = UNIT_CONVERSIONS.mass.map;
-	const volMap: Record<string, number> = UNIT_CONVERSIONS.volume.map;
-
-	const fromMass = massMap[from];
-	const toMass = massMap[to];
-	if (fromMass !== undefined && toMass !== undefined) {
-		return (value * fromMass) / toMass;
-	}
-
-	const fromVol = volMap[from];
-	const toVol = volMap[to];
-	if (fromVol !== undefined && toVol !== undefined) {
-		return (value * fromVol) / toVol;
-	}
-
+	const inFamily = convertUnitInFamily(value, fromUnit, toUnit, lang);
+	if (inFamily !== null) return inFamily;
 	if (density === undefined || density <= 0) return null;
 
 	// Cross-family: bridge through grams using the density (g/mL).
+	const from = normalizeUnit(fromUnit, lang);
+	const to = normalizeUnit(toUnit, lang);
+	const massMap: Record<string, number> = UNIT_CONVERSIONS.mass.map;
+	const volMap: Record<string, number> = UNIT_CONVERSIONS.volume.map;
+	const fromMass = massMap[from];
+	const toMass = massMap[to];
+	const fromVol = volMap[from];
+	const toVol = volMap[to];
 	if (fromMass !== undefined && toVol !== undefined) {
-		const grams = value * fromMass;
-		return grams / density / toVol;
+		return (value * fromMass) / density / toVol;
 	}
 	if (fromVol !== undefined && toMass !== undefined) {
-		const grams = value * fromVol * density;
-		return grams / toMass;
+		return (value * fromVol * density) / toMass;
 	}
-
 	return null;
 }
 
@@ -106,6 +101,75 @@ export function resolveIngredientDensity(
 	}
 
 	return null;
+}
+
+export interface UnitWeightResolution {
+	unitWeight: number;
+	isEstimate: boolean;
+}
+
+/**
+ * Resolves the weight of one piece of an ingredient (g), checking the
+ * recipe-level overrides (frontmatter `densities:`, read as a unit weight for
+ * a count, as `standardizeMass` reads it) before the ingredient database.
+ * The mirror of `resolveIngredientDensity`.
+ */
+export function resolveIngredientUnitWeight(
+	ingredientName: string,
+	database: Record<string, IngredientData>,
+	overrides?: Record<string, number>,
+): UnitWeightResolution | null {
+	const override = overrides ? overrides[slugify(ingredientName)] : undefined;
+	if (override !== undefined)
+		return { unitWeight: override, isEstimate: false };
+	const unitWeight = getIngredientData(ingredientName, database)?.physical
+		?.unit_weight;
+	return unitWeight ? { unitWeight, isEstimate: true } : null;
+}
+
+/**
+ * The analyzer's converter for the ratios kitchen cannot resolve alone
+ * (`resolveRatios` in `@gram-lang/kitchen`): an amount of a target in its own
+ * unit, into the unit of a ratio's denominator. Within one family, as
+ * kitchen; across families through the target's weight in grams
+ * (`standardizeMass`: a density for a volume, a unit weight for a piece),
+ * then back into the denominator's unit (the density again, or the weight of
+ * one piece). `null` when a density or a unit weight is missing: the ratio
+ * then says which.
+ */
+export function analyzerConverter(
+	database: Record<string, IngredientData>,
+	overrides: Record<string, number>,
+	lang?: string,
+): TargetConverter {
+	return (targetId) => (value, fromUnit, toUnit) => {
+		const inFamily = convertUnitInFamily(value, fromUnit, toUnit, lang);
+		if (inFamily !== null) return inFamily;
+
+		const grams = standardizeMass(
+			value,
+			fromUnit || "unit",
+			database,
+			targetId,
+			overrides,
+			lang,
+		)?.mass;
+		if (grams === undefined) return null;
+
+		const to = normalizeUnit(toUnit, lang);
+		const toMass = UNIT_CONVERSIONS.mass.map[to];
+		if (toMass !== undefined) return grams / toMass;
+		const toVol = UNIT_CONVERSIONS.volume.map[to];
+		if (toVol !== undefined) {
+			const density = resolveIngredientDensity(targetId, database, overrides);
+			return density ? grams / density.density / toVol : null;
+		}
+		if (isMeasureUnit(toUnit, lang) || unitContainsQuantity(toUnit, lang)) {
+			return null;
+		}
+		const piece = resolveIngredientUnitWeight(targetId, database, overrides);
+		return piece ? grams / piece.unitWeight : null;
+	};
 }
 
 /**

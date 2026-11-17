@@ -71,6 +71,8 @@ gram view bread.gram --scale flour=400g
 
 Gram will compute the global factor (400/500 = 0.8), scale the anchor (flour) to 400g, and the relative ingredients will perfectly evaluate against this new base (Water: 70% of 400g = 280g).
 
+Ratios with units scale the same way (since 1.5.0): `@eggs{1 / 100 g @&flour}` gives 4 eggs for 400 g of flour, and a proportional time such as `~{15 min / 500 g @&roast}` follows the roast, the schedule with it.
+
 ### Limits of reference scaling
 
 Since scaling by reference derives the factor from an ingredient's own quantity, not every ingredient can be used as the target — only an ingredient with a genuine, standalone absolute quantity qualifies. If you pass one of the following, Gram rejects it with a specific error rather than silently computing a wrong factor:

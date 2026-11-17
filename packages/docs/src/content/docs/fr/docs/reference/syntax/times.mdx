@@ -145,6 +145,21 @@ L'interprétation d'une fourchette diffère fondamentalement selon la nature du 
 Les champs dépréciés de la recette compilée (`steps[].timings`, `steps[].backgroundTasks` et `metrics`) continuent d'évaluer une fourchette selon sa valeur moyenne jusqu'à leur retrait en version 2.0.0. Consommez désormais les blocs de `schedule`.
 :::
 
+### Temps proportionnels
+<Since v="1.5.0" />
+
+Certains temps suivent un poids : 15 minutes par 500 g de rôti, 4 minutes par côtelette. Écrivez la durée, une barre, puis la quantité d'un ingrédient écrit plus tôt dans la section, comme dans une [proportion avec unités](/fr/docs/reference/syntax/relative-quantities/#proportions-avec-unités) :
+
+```gram
+Assaisonner le @roti{1,2 kg} et le rôtir ~{15 min / 500 g @&roti}. // 36 min
+
+Braiser l'@epaule{2 kg} ~_{1:30 h / 1 kg @&epaule}. // 3 h
+
+Poêler les @cotelettes{4} ~{4 min / @&cotelettes}. // 16 min
+```
+
+La durée prend toutes les formes vues plus haut (`1h30`, `1:30 h`, une fourchette comme `15-20 min`), la quantité de la cible un seul nombre. Un temps par pièce compté sur un poids (`~{4 min / @&cotelettes}` avec `@cotelettes{800 g}`) passe par le `unit_weight` de la base d'ingrédients, et reste hors du compte, avec un avertissement, s'il manque. Mettre la recette à l'échelle recalcule le temps, et le planning avec. Un multiplicateur après un temps proportionnel (`~{15 min / 500 g @&roti * 2}`) n'est pas encore lu, pas plus qu'une ancre de section proportionnelle.
+
 ## Actif vs passif
 
 Le compilateur Gram construit une chronologie d'exécution complète pour chaque recette. Afin d'établir un ordonnancement réaliste, il distingue le travail mobilisant activement la brigade des opérations s'exécutant en tâche de fond.

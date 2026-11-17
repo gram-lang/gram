@@ -1,0 +1,292 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "dough",
+        "loc": {
+          "start": 9,
+          "end": 17
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 19,
+                "end": 23
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 30,
+                  "end": 35
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 23,
+                "end": 36
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 37,
+                "end": 41
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 60,
+                "text": "60",
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 48,
+                  "end": 59
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 41,
+                "end": 60
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 60,
+                "end": 61
+              }
+            }
+          ],
+          "loc": {
+            "start": 19,
+            "end": 63
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 63
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Roll out the ",
+              "loc": {
+                "start": 72,
+                "end": 85
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough",
+              "quantity": null,
+              "loc": {
+                "start": 85,
+                "end": 91
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", sprinkle ",
+              "loc": {
+                "start": 91,
+                "end": 102
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt",
+              "modifiers": [],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 2,
+                    "text": "2"
+                  },
+                  "unit": "g"
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 100,
+                    "text": "100"
+                  },
+                  "unit": "g"
+                },
+                "target": "dough",
+                "referenceType": "variable",
+                "raw": "2 g / 100 g &dough",
+                "loc": {
+                  "start": 108,
+                  "end": 126
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 102,
+                "end": 127
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 128,
+                "end": 132
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 5,
+                "text": "5",
+                "target": "dough",
+                "referenceType": "variable",
+                "loc": {
+                  "start": 139,
+                  "end": 148
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 132,
+                "end": 149
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 149,
+                "end": 150
+              }
+            }
+          ],
+          "loc": {
+            "start": 72,
+            "end": 152
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake ",
+              "loc": {
+                "start": 152,
+                "end": 157
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "30 min / 1 kg &dough",
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": null,
+                  "unit": null
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": "kg"
+                },
+                "durationRaw": "30 min",
+                "target": "dough",
+                "referenceType": "variable",
+                "raw": "30 min / 1 kg &dough",
+                "loc": {
+                  "start": 160,
+                  "end": 180
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 157,
+                "end": 181
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 181,
+                "end": 182
+              }
+            }
+          ],
+          "loc": {
+            "start": 152,
+            "end": 183
+          }
+        }
+      ],
+      "loc": {
+        "start": 63,
+        "end": 183
+      }
+    }
+  ]
+}

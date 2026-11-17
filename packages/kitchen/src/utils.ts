@@ -182,7 +182,9 @@ export const createCleanUsage = (
 			if (compQty.type === ASTNodeType.CompoundQuantity) {
 				const sum = readSum(compQty, item.loc);
 				writeSum(comp, sum.terms, sum.problems.length > 0, "quantity");
-			} else {
+			} else if (compQty.type !== ASTNodeType.RatioQuantity) {
+				// A ratio on a parent is refused (`relativeNotSupported`): the
+				// parent reads with no quantity.
 				const minified = minifyQuantity(compQty);
 				if (minified !== undefined) comp.quantity = minified;
 				if (compQty.type === ASTNodeType.Quantity && compQty.unit)

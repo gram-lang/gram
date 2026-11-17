@@ -12,7 +12,12 @@ import { loadDbSafe } from "../core/db";
 import { runPipeline } from "../core/pipeline";
 import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
-import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
+import {
+	resolveScaleArg,
+	getScaleWarnings,
+	type TimerKinds,
+	timerKinds,
+} from "../services/scaler";
 import { prepareRecipeData } from "../ui/cook/prepare";
 import {
 	TIMELINE_SETTINGS,
@@ -82,6 +87,7 @@ export default defineCommand({
 
 		let recipe;
 		let totalTime = 0;
+		let timers: TimerKinds | undefined;
 		try {
 			const { compiled, analyzed, usedStock } = await runPipeline(filePath, {
 				db,
@@ -93,6 +99,7 @@ export default defineCommand({
 				stock,
 			});
 			reportUnusedStock("gram cook", "cooked", stock, [{ usedStock }]);
+			timers = timerKinds(compiled);
 			totalTime = prepareViews(compiled, { miseEnPlace, rests }).times
 				.totalTime;
 			const massMap: Record<string, number> = {};
@@ -123,7 +130,7 @@ export default defineCommand({
 		}
 
 		if (scaleFactor !== 1) {
-			const warnings = getScaleWarnings(scaleFactor, totalTime);
+			const warnings = getScaleWarnings(scaleFactor, totalTime, timers);
 			for (const w of warnings) log.warn(w);
 		}
 

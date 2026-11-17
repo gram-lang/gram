@@ -3,6 +3,7 @@ import { type QuantityHolder, round2, termsOfUsage } from "@gram-lang/kitchen";
 import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
 import {
 	commonFraction,
+	fillTemplate,
 	formatNumber,
 	getDictionary,
 	isCoarseUnit,
@@ -171,17 +172,9 @@ export function getQty(
 				),
 			};
 		}
-		if (
-			typeof item.qty === "object" &&
-			item.qty !== null &&
-			(item.qty as any).type === ASTNodeType.RelativeQuantity
-		) {
-			const rel = item.qty as any;
-			return {
-				value: null,
-				text: `${rel.percent}% of ${rel.target}`,
-				isRelative: true,
-			};
+		const relative = formatRelative(item.qty, style.lang);
+		if (relative !== undefined) {
+			return { value: null, text: relative, isRelative: true };
 		}
 		return localizedQuantity(item.qty as ExtractedQuantity, style.lang);
 	}
@@ -223,14 +216,44 @@ function localizedQuantity(
 }
 
 /**
+ * A share or a ratio of another ingredient, in the reader's language: `70%
+ * of flour`, `1 / 100 g of flour` (`renderer.relativeOf`). It takes a
+ * percentage or a ratio node (`qty` while not resolved) or a ratio as
+ * written (`RatioSpec`); anything else gives `undefined`. Decimals follow
+ * the reader's language in the amount only, never in the target's name,
+ * which may hold a point (`@&sauce v1.2`).
+ */
+export function formatRelative(q: unknown, lang?: string): string | undefined {
+	if (!q || typeof q !== "object") return undefined;
+	const node = q as {
+		type?: string;
+		percent?: number;
+		text?: string;
+		target?: string;
+		raw?: string;
+	};
+	let amount: string;
+	if (node.type === ASTNodeType.RelativeQuantity) {
+		amount = `${node.text ?? node.percent}%`;
+	} else if (typeof node.raw === "string" && typeof node.target === "string") {
+		// A ratio (`1 / 100 g @&flour`): what comes before its target.
+		const sigil = node.raw.search(/@?&/);
+		amount = (sigil < 0 ? node.raw : node.raw.slice(0, sigil)).trim();
+	} else return undefined;
+	return fillTemplate(getDictionary(lang).renderer.relativeOf, {
+		amount: localizeDecimals(amount, lang),
+		target: node.target ?? "",
+	});
+}
+
+/**
  * Helper to display Timer/Temperature range or value.
  */
 export function formatQuantityValue(q: any, lang?: string): string {
 	if (!q) return "";
 	if (q.text) return localizeDecimals(String(q.text), lang);
-	if (q.type === ASTNodeType.RelativeQuantity) {
-		return `${q.percent}% of ${q.target}`;
-	}
+	const relative = formatRelative(q, lang);
+	if (relative !== undefined) return relative;
 	if (typeof q.value === "number") return formatNumber(q.value, lang);
 	if (q.value !== undefined) return String(q.value);
 	return String(q);

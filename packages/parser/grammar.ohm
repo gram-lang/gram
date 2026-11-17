@@ -133,7 +133,7 @@ GRAM {
   // after it (`&`), otherwise it would take `1 cup` from `{1 cup + 1 tbsp}`
   // and fail on the `+`. Tried before the sum, it also keeps its range
   // (`{1 - 2 cup}` is one range, not 1 minus 2 cups) and its AST.
-  ingredientAmount = "{" space* (relativeQuantity | closedQuantity | compoundQuantity) space* "}"
+  ingredientAmount = "{" space* (ratioQuantity | relativeQuantity | closedQuantity | compoundQuantity) space* "}"
   closedQuantity = absoluteQuantity &(space* "}")
   compoundQuantity = quantityTerm (space* compoundOp space* quantityTerm)+
   // The unit is optional so `{1 + 1 cup}` reaches the compiler, which says
@@ -141,6 +141,19 @@ GRAM {
   quantityTerm = (range | number) (space* unit)?
   compoundOp = "+" | "-"
   relativeQuantity = number space* "%" space* ("@&" | "&") space* name
+  // A ratio with units (`1 / 100 g @&farine`, `15 g / L @&eau`, `1 / @&côtelette`):
+  // an amount per amount of a target. A fraction glued to a slash stays a
+  // fraction (`plainNumber` takes `1/100`), so `{1/100g @&farine}` and
+  // `{1/2 @&farine}` fail here and end as malformedBraces: a ratio needs a
+  // space on one side of its slash at least. Since 1.5.0.
+  ratioQuantity = ratioTerm space* "/" space* ratioDenominator? space* targetRef
+  ratioTerm = (range | number) (space* unit)?
+  ratioDenominator =
+    | number (space* unit)? -- amount
+    | unit                  -- unit
+  // Stops at `*` and `×` so a cycle multiplier can follow a ratio later on.
+  targetRef = ("@&" | "&") space* ratioTargetName
+  ratioTargetName = (~(syntaxChar | "*" | "×" | nl) any)+
   absoluteQuantity = (range | number)? space* (unit space*)?
   textQuantity = "{" space* (~"}" any)+ space* "}"
   fixed = "="
@@ -204,11 +217,18 @@ GRAM {
   // braces, and the compiler reads the duration from it (`parseDuration` in
   // @gram-lang/i18n), never from the quantity. Only an unclosed brace is
   // still a syntax error.
+  //
+  // A proportional time (`~{15 min / 500 g @&roti}`) is tried first: its
+  // numerator is read by parseDuration like any timer (`1:30 h`, `5'30"`).
+  // Since 1.5.0.
   Timer =
+    | "~" "_"? name? timerRatio         -- ratio
     | "~" "_"? name? ingredientQuantity -- full
     | "~" "_"? name? timerText          -- text
     | "~" "_"? name? malformedBraces    -- malformed
   timerText = "{" (~("}" | nl) any)* "}"
+  timerRatio = "{" space* timerRatioDuration space* "/" space* ratioDenominator? space* targetRef space* "}"
+  timerRatioDuration = (number | (~("/" | "*" | "×" | "}" | nl) any))+
   
   // Temperature
   // Lexical, so only a note glued to `}` is one: `^{180°C}(fan)` has a note,

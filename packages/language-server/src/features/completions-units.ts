@@ -92,8 +92,20 @@ const timeUnitCompletions = (): CompletionItem[] =>
 		(key) => (key === "m" ? "min" : key),
 	);
 
+/**
+ * True when the cursor is past the slash of a ratio (`{1 / 100 `,
+ * `~{15 min / 500 `): one with a space on a side, never a fraction's
+ * (`1/2`). What follows measures the target: a weight, a volume, a piece.
+ */
+export function isAfterRatioSlash(prefix: string): boolean {
+	const braceIdx = prefix.lastIndexOf("{");
+	if (braceIdx === -1) return false;
+	return /(?<=\s)\/|\/(?=\s)/.test(prefix.slice(braceIdx + 1));
+}
+
 export function provideUnitCompletions(prefix: string): CompletionItem[] {
 	if (!hasNumberBeforeCursor(prefix)) return [];
-	if (isInsideTimer(prefix)) return timeUnitCompletions();
+	if (isInsideTimer(prefix) && !isAfterRatioSlash(prefix))
+		return timeUnitCompletions();
 	return unitCompletions(Object.keys(UNIT_DICTIONARIES.en), UNIT_DICTIONARIES);
 }

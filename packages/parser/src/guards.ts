@@ -16,6 +16,7 @@ import {
 	type CompoundQuantityAST,
 	type TextQuantityAST,
 	type RelativeQuantityAST,
+	type RatioQuantityAST,
 	type ImportDecl,
 } from "./types";
 
@@ -92,6 +93,7 @@ type QuantityValueNode =
 	| QuantityAST
 	| CompoundQuantityAST
 	| RelativeQuantityAST
+	| RatioQuantityAST
 	| TextQuantityAST
 	| null
 	| undefined;
@@ -111,6 +113,13 @@ export function isTextQuantity(
 	node: QuantityValueNode,
 ): node is TextQuantityAST {
 	return node != null && node.type === ASTNodeType.TextQuantity;
+}
+
+/** A ratio with units, `{1 / 100 g @&flour}`. Since 1.5.0. */
+export function isRatioQuantity(
+	node: QuantityValueNode,
+): node is RatioQuantityAST {
+	return node != null && node.type === ASTNodeType.RatioQuantity;
 }
 
 export function isRelativeQuantity(

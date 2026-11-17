@@ -49,6 +49,8 @@ A relative quantity references an ingredient (`50% of @name`) that hasn't appear
 ### `RELATIVE_QUANTITY_UNKNOWN_MASS`
 Pushed during analysis: the target of a relative quantity was found, but its own mass couldn't be computed (no resolvable unit/density), so the percentage can't be applied. **Fix**: give the target ingredient a standardizable unit, or a density/`unit_weight` entry in the ingredient database.
 
+For a ratio with units (`1 / 100 g @&flour`, `~{15 min / 500 g @&roast}`, since 1.5.0) it carries a `reason` and points at the ratio: `noTargetQuantity` (the target has no amount), `incompatibleUnits` (`2 slices` against garlic counted in cloves, a weight against a named piece, or a unit followed by a word, `100 g of`), `missingDensity` (a weight against a volume, with no density), `missingUnitWeight` (pieces against a weight, with no `unit_weight`), and for an intermediate used whole (`Roll out the &dough`) `wholeUseAmbiguous` (another section uses it too) or `producerMassUnknown` (the mass of the section that makes it is incomplete). Gram never guesses a ratio it cannot compute: the amount stays unresolved. **Fix**: write the ratio in the unit the target is written in, add the density or `unit_weight` to the ingredient database, or write the amount of the intermediate used (`&dough{500 g}`).
+
 ### `CIRCULAR_REFERENCE`
 An ingredient's relative quantity targets itself (`@flour{50% of @flour}`). **Fix**: remove the self-reference — a percentage-based quantity must target a *different* ingredient or variable.
 
@@ -84,7 +86,7 @@ Subtraction is checked kind by kind: each kind of amount adds up and takes away 
 
 It also flags, with `reason: "zeroDenominator"`, a fraction over zero anywhere a number is written (`@flour{1/0 cup}`, `{1 1/0 cup}`, a term of a sum, `{1/0% &dough}`, `#pan{1/0}`, `^{1/0 °C}`). Such a number has no value: Gram leaves it out, as if no number had been written (`cup` alone, a sum without that term, an ingredient with no quantity for a percentage), where it used to vanish without a word. **Fix**: write the fraction you meant (`1/2`). A timer says it through `INVALID_DURATION`.
 
-With `reason: "relativeNotSupported"`, it flags a percentage on a composite parent (`@eggs{3}<@box{50% @&flour}>`), which Gram does not support yet: the parent is read with no quantity, where the percentage used to vanish without a word. **Fix**: write the parent's amount (`<@box{1}>`).
+With `reason: "relativeNotSupported"`, it flags a percentage on a composite parent (`@eggs{3}<@box{50% @&flour}>`), which Gram does not support yet: the parent is read with no quantity, where the percentage used to vanish without a word. **Fix**: write the parent's amount (`<@box{1}>`). A ratio on a parent (`<@box{1 / 100 g @&flour}>`) is refused the same way, and a ratio over zero (`{1 / 0 g @&flour}`) raises `zeroDenominator`: the ingredient reads with no amount.
 
 ### `OZ_AFTER_VOLUME`
 <Since v="1.5.0" />
@@ -104,7 +106,7 @@ A comma followed by exactly three digits, after a whole part of one to three dig
 ### `INVALID_DURATION`
 <Since v="1.5.0" />
 
-A timer or a section's anchor is written with numbers and units Gram knows, but in a way it will not guess: `~{1:30}` (hours or minutes?), `~{30min 1h}` (units out of order), `~{1h75}` (75 minutes after an hour), `~{1-2h30}` (is the left side `1 h` or `1 h 30`?), `~{2-1 h}` (a range starts with the shorter duration), `~{2 * 2 min}` or `~{1 heure et demie}`. The message gives the reason and an example to write instead. The timer is not counted in the total time (only what was written is kept in the compiled JSON, as `raw`), and the anchor is dropped. A section anchor is also refused when it is a range (`~{-1-2d}`) or counts seconds (`~{-1min30}`, `~{-5'}`). **Fix**: write the duration the way the message suggests, e.g. `~{1h30}`, `~{1:30 min}` or `~{1h30-2h}`. A word right after a number is an unknown unit and keeps raising `INVALID_UNIT`, and a number alone keeps raising `MISSING_UNIT`.
+A timer or a section's anchor is written with numbers and units Gram knows, but in a way it will not guess: `~{1:30}` (hours or minutes?), `~{30min 1h}` (units out of order), `~{1h75}` (75 minutes after an hour), `~{1-2h30}` (is the left side `1 h` or `1 h 30`?), `~{2-1 h}` (a range starts with the shorter duration), `~{2 * 2 min}` or `~{1 heure et demie}`. The message gives the reason and an example to write instead. The timer is not counted in the total time (only what was written is kept in the compiled JSON, as `raw`), and the anchor is dropped. A section anchor is also refused when it is a range (`~{-1-2d}`) or counts seconds (`~{-1min30}`, `~{-5'}`). A proportional time is refused with a multiplier (`~{15 min / 500 g @&roast * 2}`, `reason: "ratioMultiplication"`) or a range as its target amount (`~{15 min / 1-2 kg @&roast}`, `"ratioShape"`), and an anchor can never be one (`"anchorRatio"`). **Fix**: write the duration the way the message suggests, e.g. `~{1h30}`, `~{1:30 min}` or `~{1h30-2h}`. A word right after a number is an unknown unit and keeps raising `INVALID_UNIT`, and a number alone keeps raising `MISSING_UNIT`.
 
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`>> name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.

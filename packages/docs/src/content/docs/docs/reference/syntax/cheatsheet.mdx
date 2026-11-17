@@ -42,8 +42,10 @@ Specialized patterns for flexible culinary instructions:
 | **Short-hand prep** | `(...)` | `@butter{10g}(room temp)` | Notes prep techniques without cluttering names. |
 | **Component alias** | `:slug` | `@dry white wine:wine{10ml}` | Displays user-friendly text while mapping to a canonical ID. |
 | **Relative quantity** | `% @&target` | `@water{70% @&flour}` | Computes amount relative to a reference ingredient mass. |
+| **Ratio with units** | `a / b @&target` | `@eggs{1 / 100 g @&flour}`, `@salt{15 g / L @&water}` | An amount per amount of another ingredient, in any units; a space around the slash. Since 1.5.0. |
 | **Composite child** | `<@parent` | `@lemon zest{1}<@lemon` | Bundles parts (zest, juice) into a single shopping item. |
 | **Passive timer** | `~_` | `~_{1h}` | Represents resting/rising time without blocking the cook. |
+| **Proportional time** | `~{time / b @&target}` | `~{15 min / 500 g @&roast}`, `~{4 min / @&cutlet}` | A time that follows a weight or a count, computed again when scaled. Since 1.5.0. |
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
 | **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown. Since 1.5.0. |
