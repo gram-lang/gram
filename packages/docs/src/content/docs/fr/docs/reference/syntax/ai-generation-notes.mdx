@@ -88,14 +88,14 @@ Une quantité que la recette donne en plusieurs mesures s'écrit en [somme](/fr/
 ```
 Ce qui accompagne une température (le mode du four, « à cœur », « à couvert ») va dans une [précision](/fr/docs/reference/syntax/temperatures/#mode-de-cuisson-et-précisions) collée à l'accolade fermante, dans la langue de la recette. Avec un espace devant, la parenthèse reste du texte et la précision est perdue.
 
-### Le repère de fin d'étape laissé dans la phrase
+### L'état attendu laissé dans la phrase
 <Since v="1.5.0" />
 
 ```gram
 ❌  Fouetter jusqu'au ruban.                  →   ✅  Fouetter jusqu'au ={ruban}.
 ❌  Cuire jusqu'à ={82°C} ou ={5 min}.        →   ✅  Cuire à ^{82°C}(à cœur) pendant ~{5 min}, jusqu'à ={la nappe}.
 ```
-Quand la source dit à quoi on reconnaît qu'une étape est terminée (une texture, une couleur, une odeur), notez-le en [état attendu](/fr/docs/reference/syntax/target-states/) : l'état seul entre les accolades, « jusqu'à » laissé dans la phrase, et un test en précision collée si la source en donne un. Jamais de température, de durée ni de quantité à l'intérieur, et jamais de repère que la source ne donne pas.
+Quand la source dit quel état atteindre (une texture, une couleur, une odeur), notez-le en [état attendu](/fr/docs/reference/syntax/target-states/), où qu'il se trouve dans l'étape : l'état seul entre les accolades, les mots de liaison (« jusqu'à », « dès que », « quand ») laissés dans la phrase, et un test en précision collée si la source en donne un. Jamais de température, de durée ni de quantité à l'intérieur, et jamais de repère que la source ne donne pas.
 
 ### Utiliser `@&` dès la première occurrence
 

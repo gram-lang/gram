@@ -452,7 +452,7 @@ Note: when the source gives the oven mode or what the temperature is measured on
 
 Syntax: \`={state}(note)?\`
 
-The state that ends a step, when the source gives one: the sensory cue that says the step is done (a texture, a color, a smell, a consistency), often written "until…". Wrap only the state; keep the linking words ("until", "jusqu'à") in the prose. The state and the note stay in the recipe's language.
+The state to reach, when the source gives one: the sensory cue the cook has to recognize (a texture, a color, a smell, a consistency). It is often at the end of the step ("until…"), but it can sit anywhere ("as soon as the butter turns ={nutty brown}, …"). Wrap only the state; keep the linking words ("until", "as soon as", "jusqu'à", "dès que") in the prose. The state and the note stay in the recipe's language.
 
 \`\`\`
 Whisk @egg yolks{4} and @sugar{80g} until ={ribbon stage}(the batter falls back in a continuous ribbon).

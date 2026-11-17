@@ -1,6 +1,6 @@
 ---
 title: "États attendus"
-description: "Dites quand une étape est terminée avec les ={états attendus} : la texture, la couleur ou l'odeur qui la conclut, et comment la vérifier."
+description: "Notez l'état à atteindre avec les ={états attendus} : la texture, la couleur ou l'odeur à reconnaître, et comment la vérifier."
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
@@ -9,15 +9,17 @@ import Term from '../../../../../../components/Term.astro';
 
 <Since v="1.5.0" />
 
-Une durée donne un ordre d'idée ; c'est rarement elle qui dit au cuisinier que c'est prêt. Une crème anglaise est cuite quand elle nappe la cuillère, des jaunes blanchis quand ils retombent en ruban, un beurre quand il sent la noisette. Un <Term id="targetState" link={false} /> note ce repère avec `={...}` : l'état qui met fin à l'étape.
+Une durée donne un ordre d'idée ; c'est rarement elle qui dit au cuisinier que c'est prêt. Une crème anglaise est cuite quand elle nappe la cuillère, des jaunes blanchis quand ils retombent en ruban, un beurre quand il sent la noisette. Un <Term id="targetState" link={false} /> note ce repère avec `={...}` : l'état à atteindre, celui que le cuisinier doit savoir reconnaître.
 
 ```gram
 Fouetter @jaunes{4} avec @sucre{80 g} jusqu'au ={ruban}.
 
-Laisser sur la #plaque jusqu'à ={refroidissement complet}.
+Dès que le beurre est ={noisette}, retirer la #poêle du feu.
+
+Les blancs doivent être ={fermes} avant d'y verser le @sucre{50 g}.
 ```
 
-On n'écrit entre les accolades que l'état lui-même, et on laisse dans la phrase les mots qui y mènent (« jusqu'à », « jusqu'au ») : l'étape se lit toujours aussi naturellement, et l'état ressort tout seul dans chaque vue.
+Un état attendu se place là où la phrase le demande. On le trouve le plus souvent en fin d'étape, puisqu'il marque en général ce qui la termine, mais il peut aussi ouvrir l'étape ou se glisser au milieu, et aucune formule n'est imposée : « jusqu'à », « dès que », « quand », ou rien du tout. On n'écrit entre les accolades que l'état lui-même et on laisse les autres mots dans la phrase : l'étape se lit toujours aussi naturellement, et l'état ressort tout seul dans chaque vue.
 
 ## Comment le vérifier
 
@@ -55,6 +57,28 @@ Un état attendu décrit un état, jamais une mesure :
 - une durée est un [minuteur](/fr/docs/reference/syntax/times/) : `~{5 min}` ;
 - un état attendu ne change jamais d'échelle : `={doublé de volume}` reste tel quel, quel que soit le nombre de portions.
 :::
+
+## Plusieurs états dans une étape
+
+Une étape peut en contenir plusieurs. Chacun s'affiche à sa place dans la phrase, `gram cook` les rappelle l'un sous l'autre et, quand un minuteur de l'étape sonne, invite à les vérifier tous.
+
+```gram
+Pétrir jusqu'à ce que la pâte soit ={lisse} et ={élastique}(elle se rétracte doucement quand on l'étire).
+```
+
+Comme pour les minuteurs et les températures, une étape courte se suit plus facilement. Si chaque état conclut un geste différent, mieux vaut en faire deux étapes, chacune avec son état. Plutôt que :
+
+```gram
+Faire fondre le @beurre{50 g} jusqu'à ={noisette}, puis le laisser refroidir jusqu'à ce qu'il soit ={tiède} et y incorporer les @œufs{2}.
+```
+
+écrivez :
+
+```gram
+Faire fondre le @beurre{50 g} jusqu'à ={noisette}.
+
+Le laisser refroidir jusqu'à ce qu'il soit ={tiède}, puis y incorporer les @œufs{2}.
+```
 
 ## Erreurs
 

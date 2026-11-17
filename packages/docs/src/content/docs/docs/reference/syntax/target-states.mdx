@@ -1,6 +1,6 @@
 ---
 title: "Target states"
-description: "Say when a step is done with ={target states}: the texture, color or smell that ends it, and how to check it."
+description: "Mark the state to reach with ={target states}: the texture, color or smell to recognize, and how to check it."
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
@@ -9,15 +9,17 @@ import Term from '../../../../../components/Term.astro';
 
 <Since v="1.5.0" />
 
-A time says how long a step should take; it is rarely what tells the cook it is done. Custard is ready when it coats the spoon, egg yolks and sugar when they fall back in a ribbon, butter when it smells of hazelnut. A <Term id="targetState" link={false} /> marks that cue with `={...}`: the state that ends the step.
+A time says how long a step should take; it is rarely what tells the cook it is done. Custard is ready when it coats the spoon, egg yolks and sugar when they fall back in a ribbon, butter when it smells of hazelnut. A <Term id="targetState" link={false} /> marks that cue with `={...}`: the state to reach, the one the cook has to recognize.
 
 ```gram
 Whisk @egg yolks{4} with @sugar{80 g} until ={ribbon stage}.
 
-Leave on the #tray until ={completely cool}.
+As soon as the butter turns ={nutty brown}, take the #pan off the heat.
+
+The egg whites should be ={stiff} before you add the @sugar{50 g}.
 ```
 
-Write only the state between the braces and leave the words that lead to it ("until", "till it is") in the sentence: the step still reads naturally, and the state stands out on its own in every view.
+A target state goes wherever the sentence needs it. It is most often at the end of the step, since it usually marks what ends it, but it can also open the step or sit in the middle, and no phrase is required: "until", "as soon as", "when", or nothing at all. Write only the state between the braces and leave the other words in the sentence: the step still reads naturally, and the state stands out on its own in every view.
 
 ## How to check it
 
@@ -55,6 +57,28 @@ A target state is a state, never a measure:
 - a time is a [timer](/docs/reference/syntax/times/): `~{5 min}`;
 - a target state is never scaled: `={doubled in volume}` stays as written, whatever the number of servings.
 :::
+
+## Several in one step
+
+A step can hold more than one. Each shows where it was written, `gram cook` lists them one under the other and, when a timer of the step rings, asks to check them all.
+
+```gram
+Knead until the dough is ={smooth} and ={elastic}(it springs back slowly when stretched).
+```
+
+As with timers and temperatures, a short step is easier to follow. When each state ends a different action, make two steps, each with its own state. Rather than:
+
+```gram
+Melt the @butter{50 g} until ={nutty brown}, then let it cool until ={lukewarm} and stir in the @eggs{2}.
+```
+
+write:
+
+```gram
+Melt the @butter{50 g} until ={nutty brown}.
+
+Let it cool until ={lukewarm}, then stir in the @eggs{2}.
+```
 
 ## Errors
 
