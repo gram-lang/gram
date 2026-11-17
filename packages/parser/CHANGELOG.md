@@ -1,5 +1,11 @@
 # @gram-lang/parser
 
+## 1.4.2
+
+### Patch Changes
+
+- 6620c24: **Parser**: Fixed an unclosed parenthesis in a preparation note (such as `@flour{200g}(sifted and`) swallowing the rest of the recipe up to the next `)`, including later steps and sections. Preparations now stay on one line, so an unclosed `(` or a note split across lines is kept as plain step text.
+
 ## 1.4.1
 
 ### Patch Changes
