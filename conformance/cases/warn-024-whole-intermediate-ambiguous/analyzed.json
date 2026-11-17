@@ -1,0 +1,788 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "dough": {
+        "id": "dough",
+        "name": "dough",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "cream": {
+        "id": "cream",
+        "name": "cream",
+        "is_intermediate": true,
+        "default_unit": "ml"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 500,
+      "unit": "g",
+      "normalizedMass": 500,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "cream",
+      "name": "cream",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 200,
+      "unit": "ml"
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "4"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "2 g / 100 g &dough"
+      ]
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "6"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "10% of cream"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Dough",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 500,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 500
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 500,
+              "unit": "g",
+              "normalizedMass": 500,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "dough",
+      "metrics": {
+        "totalMass": 500,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Cream",
+      "ingredients": [
+        {
+          "id": "cream",
+          "_usageId": "2",
+          "qty": 200,
+          "unit": "ml"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whip ",
+            {
+              "id": "cream",
+              "_usageId": "2",
+              "qty": 200,
+              "unit": "ml"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "cream",
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "cream"
+        ]
+      }
+    },
+    {
+      "title": "Bake",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "dough",
+          "name": "dough",
+          "_usageId": "3"
+        },
+        {
+          "id": "salt",
+          "_usageId": "4",
+          "qty": {
+            "type": "RatioQuantity",
+            "numerator": {
+              "value": {
+                "type": "single",
+                "value": 2,
+                "text": "2"
+              },
+              "unit": "g"
+            },
+            "denominator": {
+              "value": {
+                "type": "single",
+                "value": 100
+              },
+              "unit": "g"
+            },
+            "target": "dough",
+            "referenceType": "variable",
+            "raw": "2 g / 100 g &dough"
+          },
+          "dependencies": [
+            "dough"
+          ],
+          "formula": {
+            "raw": "2 g / 100 g &dough",
+            "target": "dough",
+            "ratio": {
+              "numerator": {
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": "g"
+              },
+              "denominator": {
+                "value": 100,
+                "unit": "g"
+              },
+              "target": "dough",
+              "targetId": "dough",
+              "referenceType": "variable",
+              "raw": "2 g / 100 g &dough",
+              "loc": {
+                "start": 125,
+                "end": 143
+              }
+            },
+            "isGhost": false
+          }
+        },
+        {
+          "type": "reference",
+          "id": "cream",
+          "name": "cream",
+          "_usageId": "5"
+        },
+        {
+          "id": "sugar",
+          "_usageId": "6",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 10,
+            "target": "cream",
+            "referenceType": "variable",
+            "loc": {
+              "start": 177,
+              "end": 187
+            }
+          },
+          "dependencies": [
+            "cream"
+          ],
+          "formula": {
+            "raw": "10% of cream",
+            "target": "cream",
+            "percent": 10,
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Roll out the ",
+            {
+              "type": "reference",
+              "id": "dough",
+              "name": "dough",
+              "_usageId": "3"
+            },
+            ", sprinkle ",
+            {
+              "id": "salt",
+              "_usageId": "4",
+              "qty": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 2,
+                    "text": "2"
+                  },
+                  "unit": "g"
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 100
+                  },
+                  "unit": "g"
+                },
+                "target": "dough",
+                "referenceType": "variable",
+                "raw": "2 g / 100 g &dough"
+              },
+              "dependencies": [
+                "dough"
+              ],
+              "formula": {
+                "raw": "2 g / 100 g &dough",
+                "target": "dough",
+                "ratio": {
+                  "numerator": {
+                    "value": {
+                      "type": "single",
+                      "value": 2,
+                      "text": "2"
+                    },
+                    "unit": "g"
+                  },
+                  "denominator": {
+                    "value": 100,
+                    "unit": "g"
+                  },
+                  "target": "dough",
+                  "targetId": "dough",
+                  "referenceType": "variable",
+                  "raw": "2 g / 100 g &dough",
+                  "loc": {
+                    "start": 125,
+                    "end": 143
+                  }
+                },
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Spread the ",
+            {
+              "type": "reference",
+              "id": "cream",
+              "name": "cream",
+              "_usageId": "5"
+            },
+            "with ",
+            {
+              "id": "sugar",
+              "_usageId": "6",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 10,
+                "target": "cream",
+                "referenceType": "variable",
+                "loc": {
+                  "start": 177,
+                  "end": 187
+                }
+              },
+              "dependencies": [
+                "cream"
+              ],
+              "formula": {
+                "raw": "10% of cream",
+                "target": "cream",
+                "percent": 10,
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "salt",
+          "sugar"
+        ]
+      }
+    },
+    {
+      "title": "Serve",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "dough",
+          "name": "dough",
+          "_usageId": "7"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Cut the ",
+            {
+              "type": "reference",
+              "id": "dough",
+              "name": "dough",
+              "_usageId": "7"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 8,
+            "end": 10,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
+      "message": "Cannot compute the amount of 'sugar': '&cream' is used whole and the mass of the section that makes it is unknown: write the amount used here (e.g. &cream{500 g}).",
+      "item": "sugar"
+    },
+    {
+      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
+      "message": "Cannot compute the amount of 'salt': '&dough' is used whole in several sections: write the amount used here (e.g. &dough{500 g}).",
+      "item": "salt",
+      "loc": {
+        "start": 125,
+        "end": 143
+      }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"cream\" — omitted from nutritional totals."
+    }
+  ],
+  "metrics": {
+    "totalTime": 15,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Cream",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 4
+      },
+      {
+        "label": "section_active:Serve",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 10,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Cream",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 4
+      },
+      {
+        "label": "section_active:Serve",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 5,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 5
+      }
+    ],
+    "totalMass": 500,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "cream",
+      "salt",
+      "sugar"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"cream\" — omitted from nutritional totals."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 1,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    },
+    {
+      "section": 2,
+      "duration": 4,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4,
+          "intermediates": 2
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s2.prep",
+        "kind": "prep",
+        "section": 2,
+        "duration": {
+          "nominal": 2
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s2.prep.dough",
+        "kind": "prep",
+        "section": 2,
+        "intermediate": "dough",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s2.prep.cream",
+        "kind": "prep",
+        "section": 2,
+        "intermediate": "cream",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s1.0"
+        ]
+      },
+      {
+        "id": "s2.0",
+        "kind": "step",
+        "section": 2,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "consumes": [
+          "dough"
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s2.1",
+        "kind": "step",
+        "section": 2,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "consumes": [
+          "cream"
+        ],
+        "after": [
+          "s2.0",
+          "s1.0"
+        ]
+      },
+      {
+        "id": "s3.0",
+        "kind": "step",
+        "section": 3,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "consumes": [
+          "dough"
+        ],
+        "after": [
+          "s0.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0,
+        "intermediate": "dough"
+      },
+      {
+        "day": 0,
+        "intermediate": "cream"
+      },
+      {
+        "day": 0
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 15,
+    "activeTime": 10,
+    "preparationTime": 5,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 1
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 1,
+        "end": 3
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 3,
+        "end": 5
+      },
+      {
+        "kind": "prep",
+        "task": "s2.prep",
+        "section": 2,
+        "start": 5,
+        "end": 9
+      },
+      {
+        "kind": "step",
+        "task": "s2.0",
+        "section": 2,
+        "step": 0,
+        "start": 9,
+        "end": 11
+      },
+      {
+        "kind": "step",
+        "task": "s2.1",
+        "section": 2,
+        "step": 1,
+        "start": 11,
+        "end": 13
+      },
+      {
+        "kind": "step",
+        "task": "s3.0",
+        "section": 3,
+        "step": 0,
+        "start": 13,
+        "end": 15
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 15,
+        "sections": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    ]
+  }
+}

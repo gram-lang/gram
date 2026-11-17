@@ -1,0 +1,685 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "dough": {
+        "id": "dough",
+        "name": "dough",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "water": {
+        "id": "water",
+        "name": "water"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 500,
+      "unit": "g",
+      "normalizedMass": 500,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "variable_entries": [],
+      "normalizedMass": 300,
+      "isEstimate": false,
+      "conversionMethod": "relative",
+      "qty": 300,
+      "unit": "g"
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "4"
+      ],
+      "relative": true,
+      "qty": 16,
+      "unit": "g",
+      "normalizedMass": 16,
+      "isEstimate": true,
+      "conversionMethod": "estimate"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "5"
+      ],
+      "relative": true,
+      "variable_entries": [],
+      "normalizedMass": 40,
+      "isEstimate": true,
+      "conversionMethod": "relative",
+      "qty": 40,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Dough",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 500,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 500
+        },
+        {
+          "id": "water",
+          "_usageId": "2",
+          "qty": {
+            "type": "single",
+            "value": 300
+          },
+          "dependencies": [
+            "flour"
+          ],
+          "formula": {
+            "raw": "60% of flour",
+            "target": "flour",
+            "percent": 60,
+            "isGhost": false
+          },
+          "normalizedMass": 300,
+          "unit": "g",
+          "conversionMethod": "relative"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 500,
+              "unit": "g",
+              "normalizedMass": 500,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "and ",
+            {
+              "id": "water",
+              "_usageId": "2",
+              "qty": {
+                "type": "single",
+                "value": 300
+              },
+              "dependencies": [
+                "flour"
+              ],
+              "formula": {
+                "raw": "60% of flour",
+                "target": "flour",
+                "percent": 60,
+                "isGhost": false
+              },
+              "normalizedMass": 300,
+              "unit": "g",
+              "conversionMethod": "relative"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "dough",
+      "metrics": {
+        "totalMass": 800,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Bake",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "dough",
+          "name": "dough",
+          "_usageId": "3"
+        },
+        {
+          "id": "salt",
+          "_usageId": "4",
+          "qty": {
+            "type": "single",
+            "value": 16
+          },
+          "dependencies": [
+            "dough"
+          ],
+          "formula": {
+            "raw": "2 g / 100 g &dough",
+            "target": "dough",
+            "ratio": {
+              "numerator": {
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": "g"
+              },
+              "denominator": {
+                "value": 100,
+                "unit": "g"
+              },
+              "target": "dough",
+              "targetId": "dough",
+              "referenceType": "variable",
+              "raw": "2 g / 100 g &dough",
+              "loc": {
+                "start": 108,
+                "end": 126
+              }
+            },
+            "isGhost": false
+          },
+          "conversionMethod": "physical",
+          "isEstimate": true,
+          "normalizedMass": 16,
+          "unit": "g"
+        },
+        {
+          "id": "sugar",
+          "_usageId": "5",
+          "qty": {
+            "type": "single",
+            "value": 40
+          },
+          "dependencies": [
+            "dough"
+          ],
+          "formula": {
+            "raw": "5% of dough",
+            "target": "dough",
+            "percent": 5,
+            "isGhost": false
+          },
+          "normalizedMass": 40,
+          "unit": "g",
+          "conversionMethod": "relative",
+          "isEstimate": true
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Roll out the ",
+            {
+              "type": "reference",
+              "id": "dough",
+              "name": "dough",
+              "_usageId": "3"
+            },
+            ", sprinkle ",
+            {
+              "id": "salt",
+              "_usageId": "4",
+              "qty": {
+                "type": "single",
+                "value": 16
+              },
+              "dependencies": [
+                "dough"
+              ],
+              "formula": {
+                "raw": "2 g / 100 g &dough",
+                "target": "dough",
+                "ratio": {
+                  "numerator": {
+                    "value": {
+                      "type": "single",
+                      "value": 2,
+                      "text": "2"
+                    },
+                    "unit": "g"
+                  },
+                  "denominator": {
+                    "value": 100,
+                    "unit": "g"
+                  },
+                  "target": "dough",
+                  "targetId": "dough",
+                  "referenceType": "variable",
+                  "raw": "2 g / 100 g &dough",
+                  "loc": {
+                    "start": 108,
+                    "end": 126
+                  }
+                },
+                "isGhost": false
+              },
+              "unit": "g",
+              "normalizedMass": 16,
+              "conversionMethod": "physical",
+              "isEstimate": true
+            },
+            "and ",
+            {
+              "id": "sugar",
+              "_usageId": "5",
+              "qty": {
+                "type": "single",
+                "value": 40
+              },
+              "dependencies": [
+                "dough"
+              ],
+              "formula": {
+                "raw": "5% of dough",
+                "target": "dough",
+                "percent": 5,
+                "isGhost": false
+              },
+              "normalizedMass": 40,
+              "unit": "g",
+              "conversionMethod": "relative",
+              "isEstimate": true
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Bake ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "raw": "30 min / 1 kg &dough",
+              "ratio": {
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 30
+                  },
+                  "unit": "min"
+                },
+                "denominator": {
+                  "value": 1,
+                  "unit": "kg"
+                },
+                "target": "dough",
+                "targetId": "dough",
+                "referenceType": "variable",
+                "raw": "30 min / 1 kg &dough",
+                "loc": {
+                  "start": 160,
+                  "end": 180
+                }
+              },
+              "quantity": {
+                "type": "single",
+                "value": 24
+              },
+              "unit": "min",
+              "minutes": 24
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 4,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 24,
+              "startOffset": 0
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "totalMass": 56,
+        "massStatus": "estimated",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"water\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"salt\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 33,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 2
+      },
+      {
+        "label": "timer_passive",
+        "duration": 24
+      }
+    ],
+    "idleTime": 24,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 5,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 5
+      }
+    ],
+    "totalMass": 856,
+    "massStatus": "estimated",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": true,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"water\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"salt\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 3,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 3,
+          "duration": 3,
+          "intermediates": 1
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s1.prep",
+        "kind": "prep",
+        "section": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s1.prep.dough",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "dough",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "consumes": [
+          "dough"
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.1",
+        "kind": "step",
+        "section": 1,
+        "step": 1,
+        "duration": {
+          "nominal": 0
+        },
+        "after": [
+          "s1.0"
+        ]
+      },
+      {
+        "id": "s1.1.t0",
+        "kind": "passive",
+        "section": 1,
+        "step": 1,
+        "offset": 0,
+        "duration": {
+          "nominal": 24
+        },
+        "after": [
+          "s1.1"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0,
+        "intermediate": "dough"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 33,
+    "activeTime": 4,
+    "preparationTime": 5,
+    "idleTime": 24,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 4
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep",
+        "section": 1,
+        "start": 4,
+        "end": 7
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 7,
+        "end": 9
+      },
+      {
+        "kind": "step",
+        "task": "s1.1",
+        "section": 1,
+        "step": 1,
+        "start": 9,
+        "end": 9
+      },
+      {
+        "kind": "passive",
+        "task": "s1.1.t0",
+        "section": 1,
+        "step": 1,
+        "start": 9,
+        "end": 33
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 9,
+        "sections": [
+          0,
+          1
+        ]
+      }
+    ]
+  }
+}

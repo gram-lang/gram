@@ -100,6 +100,13 @@ function walk(node: unknown, shapes: Set<string>, ctx: WalkContext): void {
 		case "RelativeQuantity":
 			shapes.add(`RelativeQuantity:referenceType=${String(record.referenceType)}`);
 			break;
+		case "RatioQuantity": {
+			shapes.add(`RatioQuantity:referenceType=${String(record.referenceType)}`);
+			const denominator = record.denominator as Record<string, unknown> | undefined;
+			if (!denominator?.unit) shapes.add("RatioQuantity:unitlessDenominator");
+			if (typeof record.durationRaw === "string") shapes.add("RatioQuantity:inTimer");
+			break;
+		}
 		case "IntermediateDecl":
 			shapes.add(ctx.inStepScope ? "IntermediateDecl:step-level" : "IntermediateDecl:section-level");
 			break;

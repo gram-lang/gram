@@ -1,0 +1,5 @@
+{
+  "water": { "name": "Water", "physical": { "density": 1 } },
+  "salt": { "name": "Salt", "physical": { "density": 1.2 } },
+  "eggs": { "name": "Eggs", "physical": { "density": 1, "unit_weight": 50 } }
+}

@@ -1,0 +1,546 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Guardrail",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Fry ",
+              "loc": {
+                "start": 14,
+                "end": 18
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "cutlets",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 800,
+                  "text": "800"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 27,
+                  "end": 32
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 18,
+                "end": 33
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "4 min / @&cutlets",
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": null,
+                  "unit": null
+                },
+                "denominator": {
+                  "value": null,
+                  "unit": null
+                },
+                "durationRaw": "4 min",
+                "target": "cutlets",
+                "referenceType": "ingredient",
+                "raw": "4 min / @&cutlets",
+                "loc": {
+                  "start": 36,
+                  "end": 53
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 34,
+                "end": 54
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 54,
+                "end": 55
+              }
+            }
+          ],
+          "loc": {
+            "start": 14,
+            "end": 57
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 57,
+                "end": 61
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 68,
+                  "end": 73
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 61,
+                "end": 74
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 74,
+                "end": 76
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "a",
+              "modifiers": [],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": null
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 0,
+                    "text": "0"
+                  },
+                  "unit": "g"
+                },
+                "target": "flour",
+                "referenceType": "ingredient",
+                "raw": "1 / 0 g @&flour",
+                "loc": {
+                  "start": 79,
+                  "end": 94
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 76,
+                "end": 95
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 96,
+                "end": 100
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "b",
+              "modifiers": [
+                "="
+              ],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": null
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 100,
+                    "text": "100"
+                  },
+                  "unit": "g"
+                },
+                "target": "flour",
+                "referenceType": "ingredient",
+                "raw": "1 / 100 g @&flour",
+                "loc": {
+                  "start": 104,
+                  "end": 121
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 100,
+                "end": 122
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 122,
+                "end": 123
+              }
+            }
+          ],
+          "loc": {
+            "start": 57,
+            "end": 125
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Roast ",
+              "loc": {
+                "start": 125,
+                "end": 131
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "roast",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "kg",
+                "fixed": false,
+                "loc": {
+                  "start": 138,
+                  "end": 142
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 131,
+                "end": 143
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "15 min / 500 g @&roast * 2",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "15 min / 500 g @&roast * 2",
+                "loc": {
+                  "start": 145,
+                  "end": 173
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 144,
+                "end": 173
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 173,
+                "end": 174
+              }
+            }
+          ],
+          "loc": {
+            "start": 125,
+            "end": 176
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 176,
+                "end": 180
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "yolks",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 187,
+                  "end": 188
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "eggs",
+                "quantity": {
+                  "type": "RatioQuantity",
+                  "numerator": {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": null
+                  },
+                  "denominator": {
+                    "value": {
+                      "type": "single",
+                      "value": 100,
+                      "text": "100"
+                    },
+                    "unit": "g"
+                  },
+                  "target": "flour",
+                  "referenceType": "ingredient",
+                  "raw": "1 / 100 g @&flour",
+                  "loc": {
+                    "start": 196,
+                    "end": 213
+                  }
+                },
+                "preparation": null,
+                "loc": {
+                  "start": 189,
+                  "end": 214
+                }
+              },
+              "loc": {
+                "start": 180,
+                "end": 214
+              }
+            },
+            {
+              "type": "Text",
+              "value": "> and ",
+              "loc": {
+                "start": 214,
+                "end": 220
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "c",
+              "modifiers": [],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": null
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 100,
+                    "text": "100"
+                  },
+                  "unit": "g de"
+                },
+                "target": "flour",
+                "referenceType": "ingredient",
+                "raw": "1 / 100 g de @&flour",
+                "loc": {
+                  "start": 223,
+                  "end": 243
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 220,
+                "end": 244
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 244,
+                "end": 245
+              }
+            }
+          ],
+          "loc": {
+            "start": 176,
+            "end": 247
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Crush ",
+              "loc": {
+                "start": 247,
+                "end": 253
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "garlic",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 3,
+                  "text": "3"
+                },
+                "unit": "cloves",
+                "fixed": false,
+                "loc": {
+                  "start": 261,
+                  "end": 269
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 253,
+                "end": 270
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 271,
+                "end": 275
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "d",
+              "modifiers": [],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": null
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 2,
+                    "text": "2"
+                  },
+                  "unit": "slices"
+                },
+                "target": "garlic",
+                "referenceType": "ingredient",
+                "raw": "1 / 2 slices @&garlic",
+                "loc": {
+                  "start": 278,
+                  "end": 299
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 275,
+                "end": 300
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 300,
+                "end": 301
+              }
+            }
+          ],
+          "loc": {
+            "start": 247,
+            "end": 302
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 302
+      }
+    }
+  ]
+}

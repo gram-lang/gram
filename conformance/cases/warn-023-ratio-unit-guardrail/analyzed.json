@@ -1,0 +1,973 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "cutlets": {
+        "id": "cutlets",
+        "name": "cutlets",
+        "default_unit": "g"
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "a": {
+        "id": "a",
+        "name": "a"
+      },
+      "b": {
+        "id": "b",
+        "name": "b"
+      },
+      "roast": {
+        "id": "roast",
+        "name": "roast",
+        "default_unit": "kg"
+      },
+      "yolks": {
+        "id": "yolks",
+        "name": "yolks",
+        "is_composite": true,
+        "parent": "eggs"
+      },
+      "eggs": {
+        "id": "eggs",
+        "name": "eggs",
+        "is_composite": true
+      },
+      "c": {
+        "id": "c",
+        "name": "c"
+      },
+      "garlic": {
+        "id": "garlic",
+        "name": "garlic",
+        "default_unit": "cloves"
+      },
+      "d": {
+        "id": "d",
+        "name": "d"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "cutlets",
+      "name": "cutlets",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 800,
+      "unit": "g",
+      "normalizedMass": 800,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "a",
+      "name": "a",
+      "_usageIds": [
+        "3"
+      ]
+    },
+    {
+      "id": "b",
+      "name": "b",
+      "_usageIds": [
+        "4"
+      ],
+      "relative": true,
+      "qty": 1
+    },
+    {
+      "id": "roast",
+      "name": "roast",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 1,
+      "unit": "kg",
+      "normalizedMass": 1000,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "c",
+      "name": "c",
+      "_usageIds": [
+        "7"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "1 / 100 g de @&flour"
+      ]
+    },
+    {
+      "id": "garlic",
+      "name": "garlic",
+      "_usageIds": [
+        "8"
+      ],
+      "qty": 3,
+      "unit": "cloves"
+    },
+    {
+      "id": "d",
+      "name": "d",
+      "_usageIds": [
+        "9"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "1 / 2 slices @&garlic"
+      ]
+    },
+    {
+      "type": "composite",
+      "id": "eggs",
+      "name": "eggs",
+      "qty": 1,
+      "usage": [
+        {
+          "id": "yolks",
+          "qty": 2
+        }
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Guardrail",
+      "ingredients": [
+        {
+          "id": "cutlets",
+          "_usageId": "1",
+          "qty": 800,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 800
+        },
+        {
+          "id": "flour",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        },
+        {
+          "id": "a",
+          "_usageId": "3"
+        },
+        {
+          "id": "b",
+          "_usageId": "4",
+          "qty": {
+            "type": "single",
+            "value": 1
+          },
+          "dependencies": [
+            "flour"
+          ],
+          "formula": {
+            "raw": "1 / 100 g @&flour",
+            "target": "flour",
+            "ratio": {
+              "numerator": {
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                }
+              },
+              "denominator": {
+                "value": 100,
+                "unit": "g"
+              },
+              "target": "flour",
+              "targetId": "flour",
+              "referenceType": "ingredient",
+              "raw": "1 / 100 g @&flour",
+              "loc": {
+                "start": 104,
+                "end": 121
+              }
+            },
+            "isGhost": false
+          }
+        },
+        {
+          "id": "roast",
+          "_usageId": "5",
+          "qty": 1,
+          "unit": "kg",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 1000
+        },
+        {
+          "id": "yolks",
+          "_usageId": "6",
+          "qty": 2,
+          "composite": {
+            "parent": "eggs"
+          }
+        },
+        {
+          "id": "c",
+          "_usageId": "7",
+          "qty": {
+            "type": "RatioQuantity",
+            "numerator": {
+              "value": {
+                "type": "single",
+                "value": 1,
+                "text": "1"
+              }
+            },
+            "denominator": {
+              "value": {
+                "type": "single",
+                "value": 100
+              },
+              "unit": "g de"
+            },
+            "target": "flour",
+            "referenceType": "ingredient",
+            "raw": "1 / 100 g de @&flour"
+          },
+          "dependencies": [
+            "flour"
+          ],
+          "formula": {
+            "raw": "1 / 100 g de @&flour",
+            "target": "flour",
+            "ratio": {
+              "numerator": {
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                }
+              },
+              "denominator": {
+                "value": 100,
+                "unit": "g de"
+              },
+              "target": "flour",
+              "targetId": "flour",
+              "referenceType": "ingredient",
+              "raw": "1 / 100 g de @&flour",
+              "loc": {
+                "start": 223,
+                "end": 243
+              }
+            },
+            "isGhost": false
+          }
+        },
+        {
+          "id": "garlic",
+          "_usageId": "8",
+          "qty": 3,
+          "unit": "cloves"
+        },
+        {
+          "id": "d",
+          "_usageId": "9",
+          "qty": {
+            "type": "RatioQuantity",
+            "numerator": {
+              "value": {
+                "type": "single",
+                "value": 1,
+                "text": "1"
+              }
+            },
+            "denominator": {
+              "value": {
+                "type": "single",
+                "value": 2
+              },
+              "unit": "slices"
+            },
+            "target": "garlic",
+            "referenceType": "ingredient",
+            "raw": "1 / 2 slices @&garlic"
+          },
+          "dependencies": [
+            "garlic"
+          ],
+          "formula": {
+            "raw": "1 / 2 slices @&garlic",
+            "target": "garlic",
+            "ratio": {
+              "numerator": {
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                }
+              },
+              "denominator": {
+                "value": 2,
+                "unit": "slices"
+              },
+              "target": "garlic",
+              "targetId": "garlic",
+              "referenceType": "ingredient",
+              "raw": "1 / 2 slices @&garlic",
+              "loc": {
+                "start": 278,
+                "end": 299
+              }
+            },
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Fry ",
+            {
+              "id": "cutlets",
+              "_usageId": "1",
+              "qty": 800,
+              "unit": "g",
+              "normalizedMass": 800,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            {
+              "type": "timer",
+              "raw": "4 min / @&cutlets",
+              "ratio": {
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 4
+                  },
+                  "unit": "min"
+                },
+                "denominator": {
+                  "value": 1
+                },
+                "target": "cutlets",
+                "targetId": "cutlets",
+                "referenceType": "ingredient",
+                "raw": "4 min / @&cutlets",
+                "loc": {
+                  "start": 36,
+                  "end": 53
+                }
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            ", ",
+            {
+              "id": "a",
+              "_usageId": "3"
+            },
+            "and ",
+            {
+              "id": "b",
+              "_usageId": "4",
+              "qty": {
+                "type": "single",
+                "value": 1
+              },
+              "dependencies": [
+                "flour"
+              ],
+              "formula": {
+                "raw": "1 / 100 g @&flour",
+                "target": "flour",
+                "ratio": {
+                  "numerator": {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    }
+                  },
+                  "denominator": {
+                    "value": 100,
+                    "unit": "g"
+                  },
+                  "target": "flour",
+                  "targetId": "flour",
+                  "referenceType": "ingredient",
+                  "raw": "1 / 100 g @&flour",
+                  "loc": {
+                    "start": 104,
+                    "end": 121
+                  }
+                },
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Roast ",
+            {
+              "id": "roast",
+              "_usageId": "5",
+              "qty": 1,
+              "unit": "kg",
+              "normalizedMass": 1000,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            {
+              "type": "timer",
+              "raw": "15 min / 500 g @&roast * 2"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "yolks",
+              "_usageId": "6",
+              "qty": 2,
+              "composite": {
+                "parent": "eggs"
+              }
+            },
+            "> and ",
+            {
+              "id": "c",
+              "_usageId": "7",
+              "qty": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  }
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 100
+                  },
+                  "unit": "g de"
+                },
+                "target": "flour",
+                "referenceType": "ingredient",
+                "raw": "1 / 100 g de @&flour"
+              },
+              "dependencies": [
+                "flour"
+              ],
+              "formula": {
+                "raw": "1 / 100 g de @&flour",
+                "target": "flour",
+                "ratio": {
+                  "numerator": {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    }
+                  },
+                  "denominator": {
+                    "value": 100,
+                    "unit": "g de"
+                  },
+                  "target": "flour",
+                  "targetId": "flour",
+                  "referenceType": "ingredient",
+                  "raw": "1 / 100 g de @&flour",
+                  "loc": {
+                    "start": 223,
+                    "end": 243
+                  }
+                },
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Crush ",
+            {
+              "id": "garlic",
+              "_usageId": "8",
+              "qty": 3,
+              "unit": "cloves"
+            },
+            "and ",
+            {
+              "id": "d",
+              "_usageId": "9",
+              "qty": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  }
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 2
+                  },
+                  "unit": "slices"
+                },
+                "target": "garlic",
+                "referenceType": "ingredient",
+                "raw": "1 / 2 slices @&garlic"
+              },
+              "dependencies": [
+                "garlic"
+              ],
+              "formula": {
+                "raw": "1 / 2 slices @&garlic",
+                "target": "garlic",
+                "ratio": {
+                  "numerator": {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    }
+                  },
+                  "denominator": {
+                    "value": 2,
+                    "unit": "slices"
+                  },
+                  "target": "garlic",
+                  "targetId": "garlic",
+                  "referenceType": "ingredient",
+                  "raw": "1 / 2 slices @&garlic",
+                  "loc": {
+                    "start": 278,
+                    "end": 299
+                  }
+                },
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 8,
+            "end": 10,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 1900,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "a",
+          "b",
+          "yolks",
+          "c",
+          "garlic",
+          "d"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Number \"1 / 0 g @&flour\" of \"a\" is not read: a fraction cannot have 0 below the bar (write e.g. 1/2). It is left out, as if no number had been written.",
+      "item": "a",
+      "loc": {
+        "start": 79,
+        "end": 94
+      },
+      "data": {
+        "reason": "zeroDenominator"
+      }
+    },
+    {
+      "code": "INVALID_MODIFIER_COMBINATION",
+      "message": "Incompatible modifiers on \"b\": = and a ratio.",
+      "item": "b",
+      "loc": {
+        "start": 100,
+        "end": 122
+      }
+    },
+    {
+      "code": "INVALID_DURATION",
+      "message": "Timer duration \"15 min / 500 g @&roast * 2\" is not read: Gram does not multiply a proportional time yet: write the ratio alone, e.g. ~{15 min / 500 g @&roast}. It is not counted in the total time.",
+      "item": "Timer",
+      "loc": {
+        "start": 144,
+        "end": 173
+      }
+    },
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Quantity \"1 / 100 g @&flour\" of \"eggs\" is not read: a share of another ingredient is not supported on a composite parent yet: write the parent's amount. The parent is read with no quantity.",
+      "item": "eggs",
+      "loc": {
+        "start": 196,
+        "end": 213
+      },
+      "data": {
+        "reason": "relativeNotSupported"
+      }
+    },
+    {
+      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
+      "message": "Cannot compute the amount of 'c': the unit \"g de\" takes the word after it: write the unit alone, e.g. 1 / 100 g @&flour.",
+      "item": "c",
+      "loc": {
+        "start": 223,
+        "end": 243
+      }
+    },
+    {
+      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
+      "message": "Cannot compute the amount of 'd': \"slices\" and the unit 'garlic' is written in do not measure the same thing: write the ratio in the unit 'garlic' is written in.",
+      "item": "d",
+      "loc": {
+        "start": 278,
+        "end": 299
+      }
+    },
+    {
+      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
+      "message": "Cannot compute the amount of 'Timer': 'cutlets' is counted in pieces and the ratio in a weight (or the reverse), and the weight of one piece is unknown: add its unit_weight to the ingredient database, or write both the same way.",
+      "item": "Timer",
+      "loc": {
+        "start": 36,
+        "end": 53
+      }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"cutlets\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"b\" — omitted from nutritional totals."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"roast\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"garlic\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"yolks\" — omitted from nutritional totals."
+    }
+  ],
+  "metrics": {
+    "totalTime": 20,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Guardrail",
+        "duration": 10
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 10,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Guardrail",
+        "duration": 10
+      }
+    ],
+    "preparationTime": 10,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 10
+      }
+    ],
+    "totalMass": 1900,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "a",
+      "b",
+      "yolks",
+      "c",
+      "garlic",
+      "d"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"cutlets\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"b\" — omitted from nutritional totals."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"roast\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"garlic\" — omitted from nutritional totals."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"yolks\" — omitted from nutritional totals."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 10,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 10,
+          "duration": 10
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 10
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 10,
+            "duration": 10
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s0.3",
+        "kind": "step",
+        "section": 0,
+        "step": 3,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.2"
+        ]
+      },
+      {
+        "id": "s0.4",
+        "kind": "step",
+        "section": 0,
+        "step": 4,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.3"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 20,
+    "activeTime": 10,
+    "preparationTime": 10,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 10
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 10,
+        "end": 12
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 12,
+        "end": 14
+      },
+      {
+        "kind": "step",
+        "task": "s0.2",
+        "section": 0,
+        "step": 2,
+        "start": 14,
+        "end": 16
+      },
+      {
+        "kind": "step",
+        "task": "s0.3",
+        "section": 0,
+        "step": 3,
+        "start": 16,
+        "end": 18
+      },
+      {
+        "kind": "step",
+        "task": "s0.4",
+        "section": 0,
+        "step": 4,
+        "start": 18,
+        "end": 20
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 20,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}

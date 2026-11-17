@@ -1,0 +1,7 @@
+{
+  "message": "Gram Syntax Error: Invalid quantity '{1/100g @&flour}' for ingredient 'eggs'. Expected a ratio with a space around its slash, e.g. {1 / 100 g @&flour}.",
+  "offset": 37,
+  "expected": "a valid quantity in braces, e.g. {1 / 100 g @&flour}",
+  "code": null,
+  "file": null
+}

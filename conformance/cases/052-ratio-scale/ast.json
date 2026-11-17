@@ -1,0 +1,288 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Roast",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Season ",
+              "loc": {
+                "start": 10,
+                "end": 17
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "roast",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "kg",
+                "fixed": false,
+                "loc": {
+                  "start": 24,
+                  "end": 28
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 17,
+                "end": 29
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 30,
+                "end": 35
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt",
+              "modifiers": [],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 15,
+                    "text": "15"
+                  },
+                  "unit": "g"
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": "kg"
+                },
+                "target": "roast",
+                "referenceType": "ingredient",
+                "raw": "15 g / 1 kg @&roast",
+                "loc": {
+                  "start": 41,
+                  "end": 60
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 35,
+                "end": 61
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 62,
+                "end": 66
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "pepper",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": "g",
+                "fixed": true,
+                "loc": {
+                  "start": 75,
+                  "end": 78
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 66,
+                "end": 79
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then ",
+              "loc": {
+                "start": 79,
+                "end": 86
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "chili",
+              "modifiers": [],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": null
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": "g"
+                },
+                "target": "pepper",
+                "referenceType": "ingredient",
+                "raw": "1 / 1 g @&pepper",
+                "loc": {
+                  "start": 93,
+                  "end": 109
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 86,
+                "end": 110
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 110,
+                "end": 111
+              }
+            }
+          ],
+          "loc": {
+            "start": 10,
+            "end": 113
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Roast ",
+              "loc": {
+                "start": 113,
+                "end": 119
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "15 min / 500 g @&roast",
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": null,
+                  "unit": null
+                },
+                "denominator": {
+                  "value": {
+                    "type": "single",
+                    "value": 500,
+                    "text": "500"
+                  },
+                  "unit": "g"
+                },
+                "durationRaw": "15 min",
+                "target": "roast",
+                "referenceType": "ingredient",
+                "raw": "15 min / 500 g @&roast",
+                "loc": {
+                  "start": 121,
+                  "end": 143
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 119,
+                "end": 144
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then rest ",
+              "loc": {
+                "start": 144,
+                "end": 156
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "10 min",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 10,
+                  "text": "10"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 159,
+                  "end": 165
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 156,
+                "end": 166
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 166,
+                "end": 167
+              }
+            }
+          ],
+          "loc": {
+            "start": 113,
+            "end": 168
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 168
+      }
+    }
+  ]
+}
