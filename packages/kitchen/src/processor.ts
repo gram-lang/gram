@@ -19,6 +19,7 @@ import {
 	type IntermediateDecl,
 	type TimerAST,
 	type TemperatureAST,
+	type CheckpointAST,
 	type TextAST,
 	type CompoundQuantityAST,
 	ASTNodeType,
@@ -33,6 +34,7 @@ import type {
 	StepToken,
 	ProcessedTimer,
 	ProcessedTemperature,
+	ProcessedCheckpoint,
 	ProcessedComment,
 	RetroPlanning,
 	TimeBreakdownItem,
@@ -758,6 +760,13 @@ function processTemperature(
 	return obj;
 }
 
+// A target state is words for the cook: passed on as written, never read.
+function processCheckpoint(item: CheckpointAST): ProcessedBlockResult {
+	const obj: ProcessedCheckpoint = { type: "checkpoint", state: item.state };
+	if (item.note) obj.note = item.note;
+	return obj;
+}
+
 function processRetroPlanning(
 	section: SectionAST,
 	ctx: ProcessorContext,
@@ -869,6 +878,8 @@ export function processBlockItem(
 			return processTimer(item as TimerAST, ctx);
 		case ASTNodeType.Temperature:
 			return processTemperature(item as TemperatureAST, ctx);
+		case ASTNodeType.Checkpoint:
+			return processCheckpoint(item as CheckpointAST);
 		case ASTNodeType.Comment:
 			return processComment(item as CommentAST);
 		default: {
