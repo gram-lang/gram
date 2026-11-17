@@ -1,6 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { getAST } from "@gram-lang/parser";
 import { compile, WarningCode } from "@gram-lang/kitchen";
+import type { Usage } from "@gram-lang/kitchen";
 import { analyze } from "../src/index";
 import type { IngredientData } from "../src/types";
 
@@ -19,9 +20,14 @@ function run(body: string) {
 	return { compiled, ...analyze(compiled, database) };
 }
 
-function optionsOf(items: any[]) {
-	const alt = items.find((item) => item.type === "alternative");
-	return alt.options.map((opt: any) => ({
+function optionsOf(items: unknown[]) {
+	const alt = items.find(
+		(item): item is Usage =>
+			typeof item === "object" &&
+			item !== null &&
+			(item as Usage).type === "alternative",
+	);
+	return ((alt?.options ?? []) as Usage[]).map((opt) => ({
 		id: opt.id,
 		qty: opt.qty,
 		unit: opt.unit,
@@ -56,8 +62,11 @@ describe("relative quantities inside an alternative", () => {
 		expect(optionsOf(result.sections[0]!.ingredients)).toEqual(expected);
 		expect(optionsOf(result.shopping_list)).toEqual(expected);
 
-		const step = result.sections[0]!.steps[0] as any;
-		expect(optionsOf(step.content)).toEqual(expected);
+		const step = result.sections[0]!.steps[0];
+		expect(step?.type).toBe("step");
+		expect(
+			optionsOf(step && "content" in step ? (step.content as unknown[]) : []),
+		).toEqual(expected);
 		expect(
 			result.warnings.some(
 				(w) => w.code === WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS,
