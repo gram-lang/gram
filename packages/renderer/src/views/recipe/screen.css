@@ -1449,6 +1449,20 @@
 		color: var(--color-bg);
 	}
 
+	/* A target state is words of the sentence: underlined, never boxed. */
+	.checkpoint {
+		font-weight: 600;
+		color: var(--color-text-strong);
+		text-decoration: underline dotted var(--item-checkpoint-text);
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 0.2em;
+	}
+
+	.checkpoint .gicon {
+		color: var(--item-checkpoint-text);
+		vertical-align: -0.1em;
+	}
+
 	/*
 	 * Hovered in a step, an element takes back the color it has in the `.gram`
 	 * source: the text of an ingredient or a tool, the box of a temperature or
@@ -1457,7 +1471,8 @@
 	.steps .ingredient,
 	.steps .cookware,
 	.steps .temp,
-	.steps .timer {
+	.steps .timer,
+	.steps .checkpoint {
 		transition:
 			color 0.15s ease,
 			background-color 0.15s ease,
@@ -1476,6 +1491,10 @@
 	.steps .temp:hover {
 		color: var(--item-temp-text);
 		border-color: var(--item-temp-text);
+	}
+
+	.steps .checkpoint:hover {
+		color: var(--item-checkpoint-text);
 	}
 
 	.steps .timer:hover {

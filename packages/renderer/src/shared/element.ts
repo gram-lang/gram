@@ -146,6 +146,25 @@ function ingredientTooltip(
 	);
 }
 
+/**
+ * An element of a step and the note glued to it (a temperature, a target
+ * state), in HTML. The note sits outside the element, which may never wrap:
+ * held with it in a group of its own, it may go to the next line
+ * (`.gram-nobr` only keeps its direct text unbreakable).
+ */
+function withNote(html: string, note: string, context: RenderContext): string {
+	if (!note) return html;
+	const groupClass = context.classes?.noteGroup || "note-group";
+	const prepClass = context.classes?.prepText || "prep";
+	return `<span class="${groupClass}">${html} <span class="${prepClass}">(${escapeHtml(note)})</span></span>`;
+}
+
+/** The note glued to an element, in Markdown or plain text: ` (note)`. */
+function noteSuffix(note: string, format: ElementFormat): string {
+	if (!note) return "";
+	return ` (${format === "text" ? note : escapeMarkdownHtml(note)})`;
+}
+
 const strategies: Record<
 	string,
 	(item: any, format: ElementFormat, context: RenderContext) => string
@@ -475,23 +494,44 @@ const strategies: Record<
 		// sentence, on paper too, never only in a tooltip.
 		const note = item.note ? String(item.note) : "";
 		if (format === "text") {
-			return styled(context, "timer", value) + (note ? ` (${note})` : "");
+			return styled(context, "timer", value) + noteSuffix(note, format);
 		}
 		if (format !== "html") {
-			return `${termIcon}${escapeMarkdownHtml(value)}${note ? ` (${escapeMarkdownHtml(note)})` : ""}`;
+			return `${termIcon}${escapeMarkdownHtml(value)}${noteSuffix(note, format)}`;
 		}
 		const className = context.classes?.temperature || "temp";
 		const data = item.text
 			? `data-semantic="${escapeHtml(item.text)}"`
 			: `data-value="${escapeHtml((item.quantity || { value: "" }).value)}" data-unit="${escapeHtml(item.unit || "")}"`;
-		const html = `<span class="${className}" ${data}>${termIcon} ${escapeHtml(value)}</span>`;
-		if (!note) return html;
-		// The note sits outside the pill, which never wraps: held in a group of
-		// its own, it may go to the next line (`.gram-nobr` only keeps its
-		// direct text unbreakable).
-		const groupClass = context.classes?.temperatureGroup || "temp-group";
-		const prepClass = context.classes?.prepText || "prep";
-		return `<span class="${groupClass}">${html} <span class="${prepClass}">(${escapeHtml(note)})</span></span>`;
+		return withNote(
+			`<span class="${className}" ${data}>${termIcon} ${escapeHtml(value)}</span>`,
+			note,
+			context,
+		);
+	},
+
+	// A target state (`={ribbon stage}`, 1.5): part of the sentence, marked
+	// so the cook sees what to look for, its note (how to check) always shown.
+	checkpoint: (item, format, context) => {
+		const state = String(item.state ?? "");
+		const note = item.note ? String(item.note) : "";
+		const icon =
+			context.icons?.checkpoint ??
+			(format === "html"
+				? DEFAULT_ICONS.html.checkpoint
+				: DEFAULT_ICONS.md.checkpoint);
+		if (format === "text") {
+			return styled(context, "checkpoint", state) + noteSuffix(note, format);
+		}
+		if (format !== "html") {
+			return `${icon}${escapeMarkdownHtml(state)}${noteSuffix(note, format)}`;
+		}
+		const className = context.classes?.checkpoint || "checkpoint";
+		return withNote(
+			`<span class="${className}" data-state="${escapeHtml(state)}">${icon} ${escapeHtml(state)}</span>`,
+			note,
+			context,
+		);
 	},
 
 	reference: (item, format, context) => {

@@ -355,6 +355,11 @@ h3 {
 	font-size: 0.9em;
 	letter-spacing: 0.05em;
 }
+.checkpoint {
+	font-weight: 600;
+	text-decoration: underline dotted;
+	text-underline-offset: 2pt;
+}
 .quantity {
 	font-weight: normal;
 }
