@@ -266,6 +266,68 @@ function checkAmbiguousNumbers(
 	}
 }
 
+/** The numbers the parser refused in a `{…}` (`invalidNumber`), one per term of a sum. */
+const refusedNumbers = (
+	quantity: { type: ASTNodeType } | null | undefined,
+): { text: string; loc?: Location }[] => {
+	if (!quantity) return [];
+	if (quantity.type === ASTNodeType.CompoundQuantity) {
+		return (quantity as CompoundQuantityAST).terms.flatMap((term) =>
+			term.invalidNumber ? [{ text: term.invalidNumber, loc: term.loc }] : [],
+		);
+	}
+	const text = (quantity as { invalidNumber?: string }).invalidNumber;
+	return text ? [{ text, loc: (quantity as { loc?: Location }).loc }] : [];
+};
+
+/**
+ * `{1/0 cup}`: a fraction over zero has no value, so the parser leaves it out
+ * and the element reads as if it had no number (`cup` alone, a sum without
+ * that term, `1%` for `{1/0% &dough}`). Said here, on every element that
+ * holds a number. A timer is left to INVALID_DURATION, which already says it.
+ */
+function checkRefusedNumbers(
+	item: StepAST["children"][number],
+	ctx: ProcessorContext,
+) {
+	const push = (
+		refused: { text: string; loc?: Location }[],
+		name: string,
+		loc?: Location,
+	) => {
+		for (const number of refused) {
+			pushWarning(ctx, WarningCode.INVALID_QUANTITY, {
+				value: number.text,
+				reason: "zeroDenominator",
+				item: name,
+				loc: number.loc ?? loc,
+			});
+		}
+	};
+	switch (item.type) {
+		case ASTNodeType.Ingredient:
+			push(refusedNumbers(item.quantity), item.name, item.loc);
+			push(
+				refusedNumbers(item.composite?.quantity),
+				item.composite?.parent ?? item.name,
+				item.loc,
+			);
+			return;
+		case ASTNodeType.Cookware:
+		case ASTNodeType.Reference:
+			push(refusedNumbers(item.quantity), item.name, item.loc);
+			return;
+		case ASTNodeType.Temperature:
+			if (item.invalidNumber)
+				push(
+					[{ text: item.invalidNumber }],
+					item.name || "Temperature",
+					item.loc,
+				);
+			return;
+	}
+}
+
 // Moved to `compound.ts`, which reads each term of a sum with it too.
 export { looksLikeTwoQuantities } from "./compound";
 
@@ -405,8 +467,14 @@ function processIngredient(
 		});
 	}
 
-	// Process RelativeQuantity nodes (e.g. 50% of another ingredient/variable)
-	if (item.quantity && item.quantity.type === ASTNodeType.RelativeQuantity) {
+	// Process RelativeQuantity nodes (e.g. 50% of another ingredient/variable).
+	// One whose number was refused (`{1/0% &dough}`, INVALID_QUANTITY) reads
+	// as if no number had been written: an ingredient with no quantity.
+	if (
+		item.quantity &&
+		item.quantity.type === ASTNodeType.RelativeQuantity &&
+		!item.quantity.invalidNumber
+	) {
 		const rel = item.quantity;
 		const targetName = rel.target;
 		const targetId = registry.getIngredientId(targetName);
@@ -845,6 +913,7 @@ export function processBlockItem(
 ): ProcessedBlockResult | null {
 	if (!item) return null;
 	checkAmbiguousNumbers(item, ctx);
+	checkRefusedNumbers(item, ctx);
 
 	switch (item.type) {
 		case ASTNodeType.Ingredient: {

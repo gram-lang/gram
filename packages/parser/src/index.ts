@@ -155,6 +155,19 @@ const parseRetroPlanning = (raw: string): RetroPlanningAST => {
 const getOpt = (node: any) =>
 	node.children.length > 0 ? node.children[0].toAST() : null;
 
+/**
+ * `{ invalidNumber }` when a number was written but has no value (a fraction
+ * over zero, `1/0`), so the compiler can say why the element lost it;
+ * nothing otherwise, which keeps the AST of every valid quantity unchanged.
+ */
+const refusedNumber = (
+	node: { sourceString: string },
+	value: unknown,
+): { invalidNumber?: string } =>
+	value == null && node.sourceString.trim()
+		? { invalidNumber: node.sourceString.trim() }
+		: {};
+
 // The number/fraction layer lives in ./numbers.ts (audit 2026-07-22, parser
 // finding P3), imported (not re-exported) here — it's an internal
 // implementation detail of the grammar actions below, not part of this
@@ -674,9 +687,11 @@ semantics.addOperation("toAST", {
 	},
 
 	quantityTerm(val, _s, unit): QuantityTermAST {
+		const value = val.toAST();
 		return {
-			value: val.toAST(),
+			value,
 			unit: getOpt(unit),
+			...refusedNumber(val, value),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
@@ -690,37 +705,42 @@ semantics.addOperation("toAST", {
 		_s3,
 		name,
 	): RelativeQuantityAST {
+		const value = val.toAST() as QuantityValueAST | null;
 		return {
 			type: ASTNodeType.RelativeQuantity,
 			// The grammar's number, not `parseFloat` of its text, which stops at
 			// a decimal comma: `{12,5% &dough}` must not become 12%. A fraction
-			// over zero has no value (`parseNumber`): its text is read as before.
-			percent:
-				(val.toAST() as QuantityValueAST | null)?.value ??
-				readDecimal(val.sourceString),
+			// over zero has no value (`parseNumber`): its text is read as before,
+			// and `invalidNumber` lets the compiler say so.
+			percent: value?.value ?? readDecimal(val.sourceString),
 			text: val.sourceString,
 			target: clean(name.sourceString),
 			referenceType: marker.sourceString === "&" ? "variable" : "ingredient",
+			...refusedNumber(val, value),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
 
 	absoluteQuantity(val, _s2, unit, _sUnit): QuantityAST {
+		const value = getOpt(val);
 		return {
 			type: ASTNodeType.Quantity,
-			value: getOpt(val),
+			value,
 			unit: getOpt(unit),
 			fixed: false, // In v1, fixed is a modifier on the element, not the quantity
+			...refusedNumber(val, value),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
 
 	cookwareQuantity(_lb, _s1, val, _s2, _rb): QuantityAST {
+		const value = getOpt(val);
 		return {
 			type: ASTNodeType.Quantity,
-			value: getOpt(val),
+			value,
 			unit: null,
 			fixed: false,
+			...refusedNumber(val, value),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
@@ -741,10 +761,12 @@ semantics.addOperation("toAST", {
 		return parseNumber(this.sourceString);
 	},
 
-	mixedFraction(whole, _sp, num, _slash, den): QuantityValueAST {
+	mixedFraction(whole, _sp, num, _slash, den): QuantityValueAST | null {
 		const w = parseInt(whole.sourceString, 10);
 		const n = parseInt(num.sourceString, 10);
 		const d = parseInt(den.sourceString, 10);
+		// Over zero it has no value, like `1/0` (`parseNumber`).
+		if (d === 0) return null;
 		return makeMixedFraction(w, n, d, this.sourceString);
 	},
 
@@ -937,7 +959,11 @@ semantics.addOperation("toAST", {
 			return { ...base, text: qAST.value };
 		}
 		if (qAST.type === ASTNodeType.Quantity && !qAST.value) {
-			return { ...base, text: qAST.unit || "" };
+			return {
+				...base,
+				text: qAST.unit || "",
+				...(qAST.invalidNumber ? { invalidNumber: qAST.invalidNumber } : {}),
+			};
 		}
 		return {
 			...base,

@@ -83,6 +83,8 @@ Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quant
 
 La soustraction se vérifie nature par nature : chaque nature s'additionne et se soustrait de son côté. `{1 tasse - 2 càs + 30 g}` passe donc (les 2 càs se retirent de la tasse), alors que `{1 tasse - 20 g}` n'a aucune masse dont retirer les 20 g. Le survol d'une somme dans l'éditeur montre ce que donne chaque nature.
 
+Il signale aussi, avec `reason: "zeroDenominator"`, une fraction dont le dénominateur vaut zéro, partout où s'écrit un nombre (`@farine{1/0 tasse}`, `{1 1/0 tasse}`, un terme de somme, `{1/0% &pâte}`, `#poêle{1/0}`, `^{1/0 °C}`). Un tel nombre n'a pas de valeur : Gram l'écarte, comme si aucun nombre n'avait été écrit (`tasse` seule, une somme privée de ce terme, un ingrédient sans quantité pour un pourcentage). Avant, il disparaissait sans un mot. **Correction** : écrivez la fraction voulue (`1/2`). Pour un minuteur, c'est `INVALID_DURATION` qui le signale.
+
 ### `OZ_AFTER_VOLUME`
 <Since v="1.5.0" />
 
