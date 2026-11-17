@@ -281,7 +281,7 @@ export const warningTemplates: {
 		`Cannot resolve relative quantity: target ingredient '@${p.targetName}' was not found in the current section.`,
 	[WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: (p) =>
 		p.reason
-			? `Cannot compute ratio for '${p.item}': ${ratioHint(p.reason, p.targetName, p.unit)}`
+			? `Cannot compute the amount of '${p.item}': ${ratioHint(p.reason, p.targetName, p.unit)}`
 			: `Cannot compute relative quantity for '${p.item}': mass of target '${p.targetName}' is unknown.`,
 	[WarningCode.CIRCULAR_REFERENCE]: (p) =>
 		`Circular reference detected: '${p.name}' depends on itself.`,

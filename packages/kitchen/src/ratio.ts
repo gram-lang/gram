@@ -256,6 +256,15 @@ export interface ResolveOptions {
 	/** `kitchen` defers what needs a density or a unit weight; `analyzer` decides. */
 	mode: "kitchen" | "analyzer";
 	lang?: string;
+	/**
+	 * What an intermediate used whole weighs (`Roll out the &dough`, no
+	 * amount written in the section): the terms to count from, or why it
+	 * cannot be told. Only the analyzer knows a section's mass; without it,
+	 * such a ratio waits (`deferred`).
+	 */
+	wholeUse?: (
+		spec: RatioSpec,
+	) => { terms: Term[] } | { reason: RatioFailure } | null;
 }
 
 /**
@@ -281,14 +290,29 @@ export function resolveRatios(
 	const problems: RatioProblem[] = [];
 	let timersChanged = false;
 
-	const resolveIn = (spec: RatioSpec, pool: Usage[], self?: Usage) => {
+	const resolveIn = (
+		spec: RatioSpec,
+		pool: Usage[],
+		self?: Usage,
+	): RatioResolution => {
 		const targets = pool.filter((o) => o.id === spec.targetId && o !== self);
-		if (targets.some(isPending)) {
-			return { ok: false, reason: "deferred" } as RatioResolution;
+		if (targets.some(isPending)) return { ok: false, reason: "deferred" };
+		let terms = targets.flatMap((t) => termsOfUsage(t));
+		// An intermediate only used whole here: its section's mass, if known.
+		if (
+			terms.length === 0 &&
+			targets.length > 0 &&
+			spec.referenceType === "variable"
+		) {
+			const whole = options.wholeUse?.(spec);
+			if (!whole)
+				return { ok: false, reason: final ? "noTargetQuantity" : "deferred" };
+			if ("reason" in whole) return { ok: false, reason: whole.reason };
+			terms = whole.terms;
 		}
 		return resolveRatio(
 			spec,
-			targets.flatMap((t) => termsOfUsage(t)),
+			terms,
 			convertFor(spec.targetId),
 			final,
 			options.lang,

@@ -2,8 +2,7 @@ import { type Task, layout } from "@gram-lang/scheduler";
 import { planLegacy } from "./legacy-timings";
 import { recipeTimings } from "./step-timing";
 import { stepTasksOf } from "./task-graph";
-import type { CompilationResult, ProcessedSection } from "./types";
-import { cleanObject } from "./utils";
+import type { CompilationResult, ProcessedStep } from "./types";
 
 /**
  * Lays a compiled recipe out again once a timer's duration has changed (a
@@ -37,9 +36,16 @@ export function recomputeSchedule(result: CompilationResult): void {
 	result.schedule = layout(result.tasks).schedule;
 
 	const { metrics } = planLegacy(result.sections, schedules);
-	// `compile` hands its sections to `cleanObject`: an empty
-	// `backgroundTasks` is left out there, so it is here too.
-	result.sections = cleanObject(result.sections) as ProcessedSection[];
+	// `compile` hands its sections to `cleanObject`, which leaves an empty
+	// `backgroundTasks` out: so does this, and nothing else (an analyzed
+	// section keeps its own empty lists).
+	for (const sec of result.sections) {
+		for (const step of sec.steps) {
+			if (step.type === "step" && step.backgroundTasks.length === 0) {
+				delete (step as Partial<ProcessedStep>).backgroundTasks;
+			}
+		}
+	}
 	// @remove-in: 2.0.0 [kitchen-metrics-times, kitchen-metrics-active-time, kitchen-metrics-breakdowns]
 	result.metrics = {
 		...result.metrics,

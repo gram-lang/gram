@@ -113,6 +113,27 @@ function formatQuantity(q: Usage["qty"]): string | number {
 }
 
 /**
+ * What a usage with no number adds to its shopping entry, as written: a
+ * share or a ratio whose target was not found (`(10% of flour ❓)`), an
+ * amount Gram does not count (a percentage, a ratio still waiting for its
+ * target), or a quantity in words (`{une pincée}`, `{to taste}`, bought as
+ * written). The analyzer writes an entry's `variable_entries` again with it
+ * once it has resolved what it could.
+ */
+export function variablePartsOf(item: Usage): string[] {
+	// isGhost is only ever set on a formula: a target not found.
+	if (item.formula?.isGhost === true) return [`(${item.formula.raw} ❓)`];
+	const unit = item.unit || "";
+	if (item.qty) {
+		const uStr = unit ? ` ${unit}` : "";
+		return [`${formatQuantity(item.qty)}${uStr}`];
+	}
+	// A quantity in words: no number, so the whole text is its unit.
+	if (unit && !item.parts?.length) return [unit];
+	return [];
+}
+
+/**
  * Working accumulator for a composite parent while `generateShoppingList` is
  * still folding sub-ingredient usages into it — kept separate from
  * `CompositeItem` so that type never has to carry build-only state (it used
@@ -284,28 +305,13 @@ export function generateShoppingList(
 			});
 		}
 
-		if (isGhost) {
-			// isGhost is only ever set from `item.formula.isGhost` above, so
-			// `item.formula` is always truthy here — the `.qty`/`.value`
-			// fallback below it was dead code (also, `.value` doesn't exist
-			// on every Usage["qty"] variant, e.g. RelativeQuantityAST).
-			const text = item.formula?.raw ?? "";
-			const display = `${text} ❓`;
-			existing.variableParts!.push(`(${display})`);
-		} else if (numericQty !== null) {
+		if (!isGhost && numericQty !== null) {
 			const entryTerms = termsByKey.get(key);
 			if (entryTerms) entryTerms.push(...terms);
 			else termsByKey.set(key, [...terms]);
-		} else if (item.qty) {
-			const qStr = formatQuantity(item.qty);
-			const uStr = unit ? ` ${unit}` : "";
-			existing.variableParts!.push(`${qStr}${uStr}`);
-		} else if (unit && !item.parts?.length) {
-			// A quantity in words (`{une pincée}`, `{to taste}`): no number,
-			// so the whole text is its unit. Bought as written.
-			existing.variableParts!.push(unit);
+		} else {
+			existing.variableParts!.push(...variablePartsOf(item));
 		}
-
 		if (!isGhost && item.isCircular) {
 			existing.variableParts!.push("⚠️ Circular Ref.");
 		}

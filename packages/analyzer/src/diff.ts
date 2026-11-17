@@ -242,9 +242,14 @@ const numericQty = (item: ShoppingItem): number | null =>
  */
 const amountText = (item: ShoppingItem): string | undefined => {
 	const terms = termsOfUsage(item);
-	return terms.length > 0
-		? formatTerms(terms, { minus: " - ", mode: "computed", buying: true })
-		: undefined;
+	if (terms.length > 0)
+		return formatTerms(terms, { minus: " - ", mode: "computed", buying: true });
+	// A ratio still waiting for its target's amount, as written.
+	const qty = (item as { qty?: unknown }).qty as {
+		type?: string;
+		raw?: string;
+	};
+	return qty?.type === "RatioQuantity" ? qty.raw : undefined;
 };
 
 /** `fromText` / `toText` of a delta, each only when there is one. */
@@ -734,7 +739,13 @@ function diffTimers(
 	bSections: ProcessedSection[],
 ): TimerDelta[] {
 	return diffStepTokens(aSections, bSections, isProcessedTimer, (t) =>
-		fmtTimerQty(t.quantity, t.unit, t.raw),
+		// A proportional time: its ratio as written, so changing the ratio
+		// shows, and the duration it comes to when it is known.
+		t.ratio
+			? t.quantity !== undefined
+				? `${t.ratio.raw} (${fmtTimerQty(t.quantity, t.unit)})`
+				: t.ratio.raw
+			: fmtTimerQty(t.quantity, t.unit, t.raw),
 	);
 }
 
