@@ -1,0 +1,442 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Target State"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Crème",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Fouetter ",
+              "loc": {
+                "start": 39,
+                "end": 48
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "jaunes",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 4,
+                  "text": "4"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 56,
+                  "end": 57
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 48,
+                "end": 58
+              }
+            },
+            {
+              "type": "Text",
+              "value": "et ",
+              "loc": {
+                "start": 59,
+                "end": 62
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sucre",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 80,
+                  "text": "80"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 69,
+                  "end": 73
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 62,
+                "end": 74
+              }
+            },
+            {
+              "type": "Text",
+              "value": "jusqu'au ",
+              "loc": {
+                "start": 75,
+                "end": 84
+              }
+            },
+            {
+              "type": "Checkpoint",
+              "state": "ruban",
+              "note": "la pâte retombe en ruban continu",
+              "loc": {
+                "start": 84,
+                "end": 126
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 126,
+                "end": 127
+              }
+            }
+          ],
+          "loc": {
+            "start": 39,
+            "end": 129
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Saler avec ",
+              "loc": {
+                "start": 129,
+                "end": 140
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sel",
+              "modifiers": [],
+              "quantity": null,
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 140,
+                "end": 144
+              }
+            },
+            {
+              "type": "Text",
+              "value": "jusqu'à ",
+              "loc": {
+                "start": 145,
+                "end": 153
+              }
+            },
+            {
+              "type": "Checkpoint",
+              "state": "goût",
+              "loc": {
+                "start": 153,
+                "end": 160
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 160,
+                "end": 161
+              }
+            }
+          ],
+          "loc": {
+            "start": 129,
+            "end": 163
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Cuire dans la ",
+              "loc": {
+                "start": 163,
+                "end": 177
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "casserole",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 177,
+                  "end": 187
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 177,
+                "end": 187
+              }
+            },
+            {
+              "type": "Text",
+              "value": "à ",
+              "loc": {
+                "start": 188,
+                "end": 190
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 190,
+                "end": 205
+              },
+              "note": "à cœur",
+              "value": {
+                "type": "single",
+                "value": 82,
+                "text": "82"
+              },
+              "unit": "°C"
+            },
+            {
+              "type": "Text",
+              "value": ", en remuant, jusqu'à ",
+              "loc": {
+                "start": 205,
+                "end": 227
+              }
+            },
+            {
+              "type": "Checkpoint",
+              "state": "la nappe",
+              "note": "la crème nappe la cuillère",
+              "loc": {
+                "start": 227,
+                "end": 266
+              }
+            },
+            {
+              "type": "IntermediateDecl",
+              "name": "crème anglaise",
+              "loc": {
+                "start": 267,
+                "end": 286
+              }
+            }
+          ],
+          "loc": {
+            "start": 163,
+            "end": 288
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Laisser jusqu'à ",
+              "loc": {
+                "start": 288,
+                "end": 304
+              }
+            },
+            {
+              "type": "Checkpoint",
+              "state": "refroidissement complet",
+              "loc": {
+                "start": 304,
+                "end": 330
+              }
+            },
+            {
+              "type": "Text",
+              "value": "(environ 1 h).",
+              "loc": {
+                "start": 331,
+                "end": 345
+              }
+            }
+          ],
+          "loc": {
+            "start": 288,
+            "end": 347
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Verser ",
+              "loc": {
+                "start": 347,
+                "end": 354
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "crème anglaise",
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 370,
+                  "end": 370
+                }
+              },
+              "loc": {
+                "start": 354,
+                "end": 371
+              }
+            },
+            {
+              "type": "Text",
+              "value": "jusqu'à ",
+              "loc": {
+                "start": 372,
+                "end": 380
+              }
+            },
+            {
+              "type": "Checkpoint",
+              "state": "tiède",
+              "loc": {
+                "start": 380,
+                "end": 390
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 390,
+                "end": 391
+              }
+            }
+          ],
+          "loc": {
+            "start": 347,
+            "end": 393
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Battre ",
+              "loc": {
+                "start": 393,
+                "end": 400
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "5 min",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 5,
+                  "text": "5"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 402,
+                  "end": 407
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 400,
+                "end": 408
+              }
+            },
+            {
+              "type": "Text",
+              "value": "jusqu'à ",
+              "loc": {
+                "start": 409,
+                "end": 417
+              }
+            },
+            {
+              "type": "Checkpoint",
+              "state": "mousseux",
+              "loc": {
+                "start": 417,
+                "end": 428
+              }
+            },
+            {
+              "type": "Text",
+              "value": "(environ 5 min",
+              "loc": {
+                "start": 428,
+                "end": 442
+              }
+            }
+          ],
+          "loc": {
+            "start": 393,
+            "end": 444
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Servir (froid).",
+              "loc": {
+                "start": 444,
+                "end": 459
+              }
+            }
+          ],
+          "loc": {
+            "start": 444,
+            "end": 460
+          }
+        }
+      ],
+      "loc": {
+        "start": 29,
+        "end": 460
+      }
+    }
+  ]
+}

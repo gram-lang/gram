@@ -75,6 +75,11 @@ function walk(node: unknown, shapes: Set<string>, ctx: WalkContext): void {
 			if (record.note) shapes.add("Temperature:hasNote");
 			break;
 		}
+		case "Checkpoint": {
+			// A target state (`={ribbon stage}(note)`, 1.5).
+			if (record.note) shapes.add("Checkpoint:hasNote");
+			break;
+		}
 		case "Timer":
 			shapes.add(`Timer:isPassive=${Boolean(record.isPassive)}`);
 			addDurationShapes(record.raw, "Timer", shapes);
