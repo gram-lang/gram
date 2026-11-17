@@ -46,10 +46,12 @@ Specialized patterns for flexible culinary instructions:
 | **Passive timer** | `~_` | `~_{1h}` | Represents resting/rising time without blocking the cook. |
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
-| **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown; the parenthesis touches the brace. Since 1.5.0. |
-| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to check the state, always shown; the parenthesis touches the brace. Since 1.5.0. |
+| **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown. Since 1.5.0. |
+| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to check the state, always shown. Since 1.5.0. |
 | **Fractions** | `n/d` or Unicode | `@flour{1 1/2 cups}`, `@sugar{½ cup}` | Fully supported across imperial and metric systems. |
 | **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Kept as written and added up; a volume and a weight stay side by side. Since 1.5.0. |
+
+Every parenthetical note `(...)` — on an ingredient, cookware, a temperature, or a target state — must touch the element before it on the same line; with a space, it stays ordinary text.
 
 ## Intermediate variables
 

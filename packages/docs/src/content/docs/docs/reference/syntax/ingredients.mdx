@@ -128,8 +128,16 @@ Gram encourages writing dense, data-oriented recipes. Instead of creating dedica
 Each preparation counts toward the mise en place of **its own section**, where it adds 2 minutes. In the HTML view, a "Mise en place" label on the section's ingredient list shows that its preparation happens there; hover it for the detail. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 :::
 
-:::caution[Spacing is strict]
-The preparation parenthesis `(...)` MUST be immediately adjacent to the quantity braces `{...}` (or to the name if there are no braces). Do not add a space between them, otherwise it will be parsed as plain text.
+:::caution[No space before the parenthesis]
+Only a parenthesis that touches the `}` (or the name when there are no braces) is read as a preparation, and it ends on the same line. With a space, the parenthesis stays part of the sentence:
+
+```gram
+Add the @butter{100 g}(softened).
+
+Add the @butter{100 g} (about 1 stick).
+```
+
+The first butter carries the preparation `softened`; the second has none, and `(about 1 stick)` stays ordinary text. The same rule applies to parentheses on cookware, temperatures, and target states.
 :::
 
 ### Component alias (renaming)

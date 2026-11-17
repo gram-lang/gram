@@ -452,8 +452,16 @@ Gram encourages writing dense, data-oriented recipes. Instead of creating dedica
 Each preparation counts toward the mise en place of **its own section**, where it adds 2 minutes. In the HTML view, a "Mise en place" label on the section's ingredient list shows that its preparation happens there; hover it for the detail. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 :::
 
-:::caution[Spacing is strict]
-The preparation parenthesis `(...)` MUST be immediately adjacent to the quantity braces `{...}` (or to the name if there are no braces). Do not add a space between them, otherwise it will be parsed as plain text.
+:::caution[No space before the parenthesis]
+Only a parenthesis that touches the `}` (or the name when there are no braces) is read as a preparation, and it ends on the same line. With a space, the parenthesis stays part of the sentence:
+
+```gram
+Add the @butter{100 g}(softened).
+
+Add the @butter{100 g} (about 1 stick).
+```
+
+The first butter carries the preparation `softened`; the second has none, and `(about 1 stick)` stays ordinary text. The same rule applies to parentheses on cookware, temperatures, and target states.
 :::
 
 ### Component alias (renaming)
@@ -637,6 +645,8 @@ To specify size, diameter, material, or surface characteristics, use parentheses
 #pan(20cm)                  // 1 pan, sized 20cm
 #baking sheet{2}(non-stick) // 2 baking sheets, non-stick
 ```
+
+As with ingredients, keep the opening `(` glued to the name or `}` on the same line: in `#pan (20cm)`, `(20cm)` stays ordinary text.
 
 :::caution
 Do not put dimensions inside quantity braces (e.g. ❌ `#pan{20cm}`). Gram expects a pure integer inside `{}`. Use parentheses instead: ✅ `#pan(20cm)`.
@@ -1100,17 +1110,7 @@ Cook on ^stove{high heat}(uncovered) for ~{5min}.
 
 The note is always shown next to the temperature, on screen and on paper, since baking at 160 °C fan or conventional is not the same thing. It is words for the cook, in the recipe's language: Gram keeps it as written and never reads it.
 
-:::caution[No space before the parenthesis]
-Only a parenthesis that touches the `}` is a note, and it ends on the same line. With a space, the parenthesis stays part of the sentence:
-
-```gram
-Bake at ^{180°C}(fan).
-
-Bake at ^{180°C} (the oven must be hot).
-```
-
-The first temperature has the note `fan`; the second has none, and `(the oven must be hot)` is ordinary text.
-:::
+As with ingredients and cookware, keep the opening `(` glued to the `}` on the same line: with a space (`^{180°C} (preheated)`), the parenthesis stays ordinary text in the sentence.
 
 ## Error handling
 
@@ -1568,10 +1568,12 @@ Specialized patterns for flexible culinary instructions:
 | **Passive timer** | `~_` | `~_{1h}` | Represents resting/rising time without blocking the cook. |
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
-| **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown; the parenthesis touches the brace. Since 1.5.0. |
-| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to check the state, always shown; the parenthesis touches the brace. Since 1.5.0. |
+| **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown. Since 1.5.0. |
+| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to check the state, always shown. Since 1.5.0. |
 | **Fractions** | `n/d` or Unicode | `@flour{1 1/2 cups}`, `@sugar{½ cup}` | Fully supported across imperial and metric systems. |
 | **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Kept as written and added up; a volume and a weight stay side by side. Since 1.5.0. |
+
+Every parenthetical note `(...)` — on an ingredient, cookware, a temperature, or a target state — must touch the element before it on the same line; with a space, it stays ordinary text.
 
 ## Intermediate variables
 

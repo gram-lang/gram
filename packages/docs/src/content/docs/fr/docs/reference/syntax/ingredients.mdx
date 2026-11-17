@@ -128,8 +128,16 @@ Gram prône des recettes denses et très orientées données. Au lieu de multipl
 Chaque préparation compte dans la mise en place de **sa propre section**, où elle ajoute 2 minutes. Dans la vue HTML, un libellé « Mise en place » sur la liste d'ingrédients de la section indique que sa préparation se fait à cet endroit ; survolez-le pour le détail. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 :::
 
-:::caution[L'espacement est strict]
-La parenthèse de préparation `(...)` DOIT être immédiatement collée aux accolades de quantité `{...}` (ou au nom s'il n'y a pas d'accolades). N'ajoutez pas d'espace entre les deux, sinon cela sera analysé comme du texte brut.
+:::caution[Pas d'espace avant la parenthèse]
+Seule une parenthèse collée à la `}` (ou au nom s'il n'y a pas d'accolades) est lue comme une préparation, et elle se termine sur la même ligne. Avec un espace, la parenthèse reste dans la phrase :
+
+```gram
+Ajouter le @beurre{100 g}(pommade).
+
+Ajouter le @beurre{100 g} (environ une plaquette).
+```
+
+Le premier beurre porte la préparation `pommade` ; le second n'en a pas, et `(environ une plaquette)` reste du texte ordinaire. La même règle vaut pour le matériel, les températures et les états attendus.
 :::
 
 ### Alias de composant (renommage)
