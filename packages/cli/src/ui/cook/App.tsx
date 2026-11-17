@@ -248,6 +248,7 @@ export default function App({ recipe }: Props) {
 				registry={recipe.registry}
 				massMap={recipe.massMap}
 				width={width}
+				lang={recipe.lang}
 			/>
 		);
 	}

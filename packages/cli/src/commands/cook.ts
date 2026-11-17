@@ -100,7 +100,10 @@ export default defineCommand({
 				if (item.id && typeof item.normalizedMass === "number")
 					massMap[item.id] = item.normalizedMass;
 			}
-			recipe = prepareRecipeData(compiled, massMap, rests);
+			recipe = {
+				...prepareRecipeData(compiled, massMap, rests),
+				lang: config.language,
+			};
 			const factorStr =
 				scaleFactor !== 1
 					? ` ${chalk.dim(scaleFactor === Math.round(scaleFactor) ? `(x${scaleFactor})` : `(x${scaleFactor.toFixed(2)})`)}`

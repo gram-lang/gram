@@ -8,6 +8,7 @@ import type {
 	MetaDelta,
 	TemperatureDelta,
 	TimerDelta,
+	CheckpointDelta,
 	PrepDelta,
 	ModuleDelta,
 } from "@gram-lang/analyzer";
@@ -156,6 +157,20 @@ function renderTimer(d: TimerDelta): string {
 	return `  ${chalk.yellow("~")} ${section}${label}${chalk.dim(d.from ?? "?")} → ${chalk.yellow(d.to ?? "?")}`;
 }
 
+function fmtCheckpointValue(v?: { state: string; note?: string }): string {
+	if (!v) return "?";
+	return `${v.state}${v.note ? ` (${v.note})` : ""}`;
+}
+
+function renderCheckpoint(d: CheckpointDelta): string {
+	const section = d.section ? chalk.dim(`[${d.section}] `) : "";
+	if (d.change === "added")
+		return `  ${chalk.green("+")} ${section}${chalk.green(fmtCheckpointValue(d.to))}`;
+	if (d.change === "removed")
+		return `  ${chalk.red("-")} ${section}${chalk.red(fmtCheckpointValue(d.from))}`;
+	return `  ${chalk.yellow("~")} ${section}${chalk.dim(fmtCheckpointValue(d.from))} → ${chalk.yellow(fmtCheckpointValue(d.to))}`;
+}
+
 export function renderDiffResult(result: DiffResult, label: string): void {
 	console.log();
 	console.log(`  ${chalk.bold("Semantic diff:")} ${chalk.dim(label)}`);
@@ -201,6 +216,12 @@ export function renderDiffResult(result: DiffResult, label: string): void {
 		console.log();
 		console.log(`  ${chalk.bold("TIMERS")}`);
 		for (const d of result.timers) console.log(renderTimer(d));
+	}
+
+	if (result.checkpoints.length > 0) {
+		console.log();
+		console.log(`  ${chalk.bold("TARGET STATES")}`);
+		for (const d of result.checkpoints) console.log(renderCheckpoint(d));
 	}
 
 	if (result.timings.length > 0) {
