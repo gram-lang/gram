@@ -487,12 +487,21 @@ export const en = {
 			show: "Show",
 			expandConsole: "Expand console",
 			collapseConsole: "Collapse console",
+			notInDatabase: "Not in the example database.",
+			showDatabase: "See the database",
 		},
 		errorState: {
 			title: VIEWS_PAUSED.title,
 			blockingDescription: VIEWS_PAUSED.description,
 			jumpToError: "Jump to error",
 			line: "Line",
+		},
+		database: {
+			tabLabel: "Ingredient database, read-only",
+			project:
+				"In a project, this is your own ingredients.yaml, which the CLI fills for you. Here it is read-only.",
+			docLink: "How to manage an ingredient database",
+			docHref: "/docs/how-to/manage-database",
 		},
 		tabs: {
 			addFile: "Add file",

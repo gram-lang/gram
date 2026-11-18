@@ -449,12 +449,21 @@ export const fr: GramLocale = {
 			show: "Afficher",
 			expandConsole: "Développer la console",
 			collapseConsole: "Réduire la console",
+			notInDatabase: "Absent de la base d'exemple.",
+			showDatabase: "Voir la base",
 		},
 		errorState: {
 			title: VIEWS_PAUSED.title,
 			blockingDescription: VIEWS_PAUSED.description,
 			jumpToError: "Aller à l'erreur",
 			line: "Ligne",
+		},
+		database: {
+			tabLabel: "Base d'ingrédients, en lecture seule",
+			project:
+				"Base d'exemple en lecture seule. Dans un projet, ce fichier ingredients.yaml est le vôtre (modifiable à la main ou aidé par le CLI).",
+			docLink: "Gérer sa base de données d'ingrédients",
+			docHref: "/fr/docs/how-to/manage-database",
 		},
 		tabs: {
 			addFile: "Ajouter un fichier",

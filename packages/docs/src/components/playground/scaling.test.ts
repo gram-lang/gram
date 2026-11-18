@@ -4,14 +4,11 @@ import { join } from "node:path";
 import { analyze, type IngredientData } from "@gram-lang/analyzer";
 import { compile } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
-import { DEFAULT_SOURCES } from "./db";
+import { EXAMPLE_DATABASE } from "./db";
 import { compiledTargetId, scaleRecipe } from "./scaling";
 
 // The playground's own database and recipes: what the cook has in front of them.
-const database: Record<string, IngredientData> = {};
-for (const source of DEFAULT_SOURCES) {
-	if (source.data) Object.assign(database, source.data);
-}
+const database: Record<string, IngredientData> = EXAMPLE_DATABASE;
 const example = (file: string) =>
 	readFileSync(
 		join(import.meta.dir, "..", "..", "..", "public", "examples", file),
