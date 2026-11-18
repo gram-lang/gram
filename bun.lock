@@ -132,6 +132,7 @@
         "@types/mdast": "^4.0.4",
         "starlight-links-validator": "^0.26.0",
         "vue-tsc": "^3.3.14",
+        "yaml": "^2.9.0",
       },
     },
     "packages/format": {

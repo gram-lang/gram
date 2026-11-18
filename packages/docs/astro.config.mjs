@@ -10,9 +10,26 @@ import { unified } from '@astrojs/markdown-remark';
 import { remarkMermaid } from './src/plugins/remark-mermaid.ts';
 import { remarkFrenchTypography } from './src/plugins/remark-french-typography.ts';
 import gramGrammar from '@gram-lang/parser/textmate';
+import { parse as parseYaml } from 'yaml';
 import { UMAMI_WEBSITE_ID, UMAMI_SCRIPT_SRC, FR_REDIRECT_SCRIPT, GLOBAL_TRACKING_SCRIPT } from './src/lib/head-scripts.ts';
 
 const isProd = process.env.NODE_ENV === 'production';
+
+// `import data from './x.yaml'` gives the parsed data, read at build time, so
+// the YAML parser never ships to the browser. Bun's own loader does the same
+// for the tests. `./x.yaml?raw` (the text, for showing it) is left to Vite.
+/** @returns {import('vite').Plugin} */
+function yamlData() {
+  return {
+    name: 'gram-yaml-data',
+    enforce: 'pre',
+    /** @param {string} code @param {string} id */
+    transform(code, id) {
+      if (!/\.ya?ml$/.test(id)) return;
+      return { code: `export default ${JSON.stringify(parseYaml(code))};`, map: null };
+    }
+  };
+}
 const SITE_URL = 'https://gram-lang.org';
 
 // https://astro.build/config
@@ -246,6 +263,7 @@ export default defineConfig({
     }
   ],
   vite: {
+    plugins: [yamlData()],
     build: {
       target: 'esnext'
     },

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick } from "vue";
+import { computed, ref, nextTick } from "vue";
 import { useI18n } from "./useI18n";
 
 const props = defineProps<{
@@ -8,6 +8,10 @@ const props = defineProps<{
 	entryFile: string;
 	errorFiles: Set<string>;
 	editorPanelId?: string;
+	// A tab after the files that is not one of them: shown, never renamed or
+	// removed (the example database).
+	pinnedTab?: string;
+	pinnedTabLabel?: string;
 }>();
 
 const emit = defineEmits<{
@@ -29,6 +33,11 @@ function label(path: string): string {
 function tabId(path: string): string {
 	return `file-tab-${path.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
 }
+
+// Every tab, in order, for the arrow keys: the files, then the pinned tab.
+const allTabs = computed(() =>
+	props.pinnedTab ? [...props.files, props.pinnedTab] : props.files,
+);
 
 const renamingPath = ref<string | null>(null);
 const renameValue = ref("");
@@ -55,25 +64,24 @@ function focusAndSelectTab(path: string) {
 
 // biome-ignore lint/correctness/noUnusedVariables: onTabKeydown is used in the <template> block below, which Biome's Vue support doesn't see.
 function onTabKeydown(e: KeyboardEvent, path: string) {
-	const idx = props.files.indexOf(path);
+	const tabs = allTabs.value;
+	const idx = tabs.indexOf(path);
 	switch (e.key) {
 		case "ArrowRight":
 			e.preventDefault();
-			focusAndSelectTab(props.files[(idx + 1) % props.files.length]);
+			focusAndSelectTab(tabs[(idx + 1) % tabs.length]);
 			break;
 		case "ArrowLeft":
 			e.preventDefault();
-			focusAndSelectTab(
-				props.files[(idx - 1 + props.files.length) % props.files.length],
-			);
+			focusAndSelectTab(tabs[(idx - 1 + tabs.length) % tabs.length]);
 			break;
 		case "Home":
 			e.preventDefault();
-			focusAndSelectTab(props.files[0]);
+			focusAndSelectTab(tabs[0]);
 			break;
 		case "End":
 			e.preventDefault();
-			focusAndSelectTab(props.files[props.files.length - 1]);
+			focusAndSelectTab(tabs[tabs.length - 1]);
 			break;
 		case "Enter":
 		case " ":
@@ -81,12 +89,13 @@ function onTabKeydown(e: KeyboardEvent, path: string) {
 			emit("select", path);
 			break;
 		case "F2":
+			if (path === props.pinnedTab) break;
 			e.preventDefault();
 			startRename(path);
 			break;
 		case "Delete":
 		case "Backspace":
-			if (path !== props.entryFile) {
+			if (path !== props.entryFile && path !== props.pinnedTab) {
 				e.preventDefault();
 				emit("remove", path);
 				nextTick(() => tabRefs.value.get(props.entryFile)?.focus());
@@ -96,6 +105,7 @@ function onTabKeydown(e: KeyboardEvent, path: string) {
 }
 
 async function startRename(path: string) {
+	if (path === props.pinnedTab) return;
 	renamingPath.value = path;
 	renameValue.value = label(path);
 	await nextTick();
@@ -190,6 +200,24 @@ defineExpose({
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="12" height="12" fill="currentColor"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
       </button>
     </div>
+    <div
+      v-if="pinnedTab"
+      :id="tabId(pinnedTab)"
+      :ref="(el) => setTabRef(pinnedTab!, el)"
+      class="file-tab file-tab-pinned"
+      :class="{ active: pinnedTab === activeFile }"
+      role="tab"
+      :aria-selected="pinnedTab === activeFile"
+      :aria-label="pinnedTabLabel ? `${pinnedTab} (${pinnedTabLabel})` : pinnedTab"
+      :aria-controls="pinnedTab === activeFile ? editorPanelId : undefined"
+      :tabindex="pinnedTab === activeFile ? 0 : -1"
+      :title="pinnedTabLabel"
+      @click="emit('select', pinnedTab!)"
+      @keydown="onTabKeydown($event, pinnedTab!)"
+    >
+      <svg class="file-tab-lock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"></path></svg>
+      <span class="file-tab-label">{{ pinnedTab }}</span>
+    </div>
     </div>
 
     <button class="file-tab-add" :title="t.playground.tabs.addFile" :aria-label="t.playground.tabs.addFile" @click="emit('add')">
@@ -254,6 +282,15 @@ defineExpose({
   border-radius: 50%;
   background-color: var(--sl-color-red);
   flex-shrink: 0;
+}
+
+.file-tab-pinned {
+  font-style: italic;
+}
+
+.file-tab-lock {
+  flex-shrink: 0;
+  opacity: 0.7;
 }
 
 .rename-input {
