@@ -138,7 +138,7 @@ One step = one paragraph, separated by blank lines.
 Always start with an action verb in brackets:
 
 \`\`\`
-[Mix] The @flour{250g} with @butter{125g}(cold, cubed) until sandy.
+[Mix] @flour{250g} with @butter{125g}(cold, cubed) until sandy.
 
 [Bind] Add @powdered sugar{70g} and mix until it just comes together.
 \`\`\`

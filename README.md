@@ -56,7 +56,7 @@ description: A simple, highly hydrated dough.
 
 ## Dough
 
-[Mix] The @flour{500g}, @water{70% @&flour}, and @salt{10g} in a #large bowl{}. ->&dough
+[Mix] @flour{500g}, @water{70% @&flour}, and @salt{10g} in a #bowl(large). ->&dough
 
 [Rest] Let the &dough rest for ~_{2h} at ^{room temperature} until doubled in size.
 

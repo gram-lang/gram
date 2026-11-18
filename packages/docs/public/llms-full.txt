@@ -243,7 +243,7 @@ A different step.
 Steps can optionally start with an **Action** enclosed in brackets `[]`. This highlights the primary method used in that step, making it easy to parse visually or programmatically.
 
 ```gram
-[Mix] The @flour and @water.
+[Mix] @flour and @water.
 
 [Bake] In the #oven for ~{30min}.
 ```
@@ -426,7 +426,7 @@ In baking, recipes are often built around the **Baker's Percentage**, where the 
 Gram provides a dedicated modifier to mark the reference `@ingredient`. By placing a `*` after the `@` symbol, you tell the Gram Compiler: *"This is the 100% reference point"*.
 
 ```gram
-[Add] The @*flour{500g}, @water{350g} and @salt{10g}.
+[Add] @*flour{500g}, @water{350g} and @salt{10g}.
 ```
 
 This allows tools (like the CLI or web renderers) to automatically calculate and display the baker's percentages for all other items (e.g., Water: 70%, Salt: 2%) without you having to define them manually as relative quantities.
@@ -1200,7 +1200,7 @@ When placed at the end of a `## Section` title, the variable captures the cumula
 
 [Rest] In the #fridge for ~_{1h}.
 
-[Incorporate] The @butter{200g} by folding the dough multiple times.
+[Incorporate] @butter{200g} by folding the dough multiple times.
 
 // The &puff pastry variable now represents the final output of the entire section.
 ```

@@ -26,7 +26,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
     ```gram title="Original section"
     ## Sweet Pastry Dough ->&pastry dough{}
 
-    [Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
+    [Process] In a #food processor{}, @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
     [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
@@ -44,7 +44,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
     ## Sweet Pastry Dough
 
-    [Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
+    [Process] In a #food processor{}, @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
     [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
@@ -70,7 +70,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
     ## Lemon Curd ->&curd
 
-    [Whisk] In a #saucepan{}, the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
+    [Whisk] In a #saucepan{}, @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
 
     [Cook] Over ^{medium heat} for ~{8min} until thickened.
 
@@ -187,11 +187,11 @@ title: 'Tart Elements'
 
 ## Sweet Pastry ->&crust
 
-[Mix] The @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
+[Mix] @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
 
 ## Frangipane Cream ->&frangipane
 
-[Cream] The @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
+[Cream] @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
 ```
 
 In your main recipe, destructured imports let you bind both components cleanly in a single line:
@@ -255,7 +255,7 @@ When a preparation must begin days before cooking (such as a sourdough starter, 
 @use "@/components/bases/sourdough-starter.gram" as &starter ~{-2d}
 
 ## Main Dough
-[Knead] the @bread flour{500g}, @water{350g}, and @salt{10g} with &starter{150g}.
+[Knead] @bread flour{500g}, @water{350g}, and @salt{10g} with &starter{150g}.
 ```
 
 * The sourdough starter's completion is anchored to **2 days before** the main dough is mixed.
