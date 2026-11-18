@@ -234,7 +234,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		scaleInput: `## Country Loaf\n\n[Mix] The @*bread flour{400g}, @whole wheat flour{100g}, @water{75% @&bread flour}, @salt{2% @&bread flour}, and @levain{20% @&bread flour}.`,
+		scaleInput: `## Country Loaf\n\n[Mix] @*bread flour{400g}, @whole wheat flour{100g}, @water{75% @&bread flour}, @salt{2% @&bread flour}, and @levain{20% @&bread flour}.`,
 		scaleOutput: JSON.stringify(
 			{
 				shopping_list: [

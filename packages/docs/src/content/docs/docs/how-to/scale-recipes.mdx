@@ -11,7 +11,7 @@ This guide shows you how to use **Relative Quantities** to build dynamic, self-d
 
 Imagine a bread recipe:
 ```gram
-[Mix] The @flour{500g}, @water{350ml}, @salt{10g} and @yeast{5g}.
+[Mix] @flour{500g}, @water{350ml}, @salt{10g} and @yeast{5g}.
 ```
 
 If you scale this by 2 (e.g., using `gram build --scale 2`), everything doubles. And if you only have `400g` of flour left, you can use reference scaling: `gram build --scale flour=400g`. Gram will compute the multiplier (`0.8`) and adjust everything automatically.
@@ -34,16 +34,16 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
    First, define the flour as a standard ingredient in your recipe.
    
    ```gram
-   [Add] The @flour{500g}.
+   [Add] @flour{500g}.
    ```
 
 2. ### Define the relatives
    Now, replace the static quantities of water, salt, and yeast with percentages pointing to the flour. Since the flour was already defined in a previous step, you reference it using `@&flour`.
    
    ```gram
-   [Add] The @flour{500g}.
+   [Add] @flour{500g}.
    
-   [Pour in] The @water{70% @&flour}, @salt{2% @&flour}, and @yeast{1% @&flour}.
+   [Pour in] @water{70% @&flour}, @salt{2% @&flour}, and @yeast{1% @&flour}.
    ```
    
    :::tip
@@ -57,7 +57,7 @@ Because the relationships are encoded directly in the recipe, Gram handles the m
 
 If you want to tweak the recipe to a wetter 75% hydration, you just change one number:
 ```gram
-[Pour in] The @water{75% @&flour}
+[Pour in] @water{75% @&flour}
 ```
 Gram handles the math. You never have to manually calculate absolute weights again when designing or tweaking your recipes.
 
@@ -103,7 +103,7 @@ While Relative Quantities are great for *designing* dynamic recipes, professiona
 If you have a standard recipe with absolute weights, you can use the **Baker's Percentage Modifier** (`*`) to explicitly tell Gram: *"This ingredient is the 100% reference point"*.
 
 ```gram
-[Add] The @*flour{500g}, @water{350g} and @salt{10g}.
+[Add] @*flour{500g}, @water{350g} and @salt{10g}.
 ```
 
 The parsed recipe will automatically compute these percentages for any frontend to display. 
