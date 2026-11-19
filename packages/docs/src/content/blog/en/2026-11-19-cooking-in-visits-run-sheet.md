@@ -10,7 +10,7 @@ description: "How a 7-minute discrepancy led to eliminating hidden compiler timi
 
 That question on Reddit (alongside a remark about mise en place being lumped together at the very start) looked like a minor rounding quirk at first glance. Inspecting the compiler revealed a deeper issue: Gram's timing model was out of touch with real cooking.
 
-Pulling on that thread led to a complete overhaul in [Gram 1.4.0](/blog/2026-11-13-release-1.4.0/): retiring the Gantt view, rethinking time around a visit-based **run sheet**, and extracting scheduling into `@gram-lang/scheduler`.
+Pulling on that thread led to a complete overhaul in [Gram 1.4.0](/blog/2026-11-13-release-140/): retiring the Gantt view, rethinking time around a visit-based **run sheet**, and extracting scheduling into `@gram-lang/scheduler`.
 
 ## The 7-minute mystery: the black-box trap
 

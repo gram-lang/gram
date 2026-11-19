@@ -10,7 +10,7 @@ description: "Comment 7 minutes d'écart ont conduit à supprimer les temps cach
 
 Cette question posée sur Reddit (accompagnée d'une remarque sur une mise en place entassée au tout début) ressemblait à un banal souci d'arrondi. En inspectant le compilateur, le problème s'est révélé plus profond : le modèle temporel de Gram était déconnecté de la cuisine réelle.
 
-Tirer ce fil a mené à une refonte complète dans [Gram 1.4.0](/fr/blog/2026-11-13-release-1.4.0/) : abandonner la vue Gantt, repenser le temps autour du **plan de marche** par visites et isoler l'ordonnancement dans `@gram-lang/scheduler`.
+Tirer ce fil a mené à une refonte complète dans [Gram 1.4.0](/fr/blog/2026-11-13-release-140/) : abandonner la vue Gantt, repenser le temps autour du **plan de marche** par visites et isoler l'ordonnancement dans `@gram-lang/scheduler`.
 
 ## L'énigme des 7 minutes : le piège de la boîte noire
 
