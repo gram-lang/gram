@@ -50,6 +50,15 @@ describe("parseServe", () => {
 		expect(parseServe("2026-10-11T9:05")).toBe("2026-10-11T09:05");
 	});
 
+	it("reads a time in 12 hours", () => {
+		expect(parseServe("2026-10-11 1:00 pm")).toBe("2026-10-11T13:00");
+		expect(parseServe("2026-10-11 8PM")).toBe("2026-10-11T20:00");
+		expect(parseServe("2026-10-11 12:15am")).toBe("2026-10-11T00:15");
+		expect(messageOf(() => parseServe("2026-10-11 13pm"))).toContain(
+			'"2026-10-11 1:00 pm"',
+		);
+	});
+
 	it("explains what it expects", () => {
 		expect(messageOf(() => parseServe("sunday"))).toContain(
 			'"2026-10-11 13:00"',
@@ -71,6 +80,27 @@ describe("parseFindRange", () => {
 			from: "2026-10-12",
 			to: "2026-10-15T20:00",
 		});
+	});
+
+	it("reads bounds in 12 hours", () => {
+		expect(parseFindRange("2026-10-12 6pm/2026-10-12 10:30 pm")).toEqual({
+			from: "2026-10-12T18:00",
+			to: "2026-10-12T22:30",
+		});
+	});
+
+	it("compares the bounds once padded, not as written", () => {
+		// "9:00" sorts after "10:00" as text: it must be read as 09:00.
+		expect(parseFindRange("2026-10-12 9:00/2026-10-12 10:00")).toEqual({
+			from: "2026-10-12T09:00",
+			to: "2026-10-12T10:00",
+		});
+		expect(
+			messageOf(() => parseFindRange("2026-10-12 25:99/2026-10-13")),
+		).toContain("--find");
+		expect(messageOf(() => parseFindRange("2026-10-13/2026-10-12"))).toContain(
+			"in that order",
+		);
 	});
 
 	it("refuses a bound the calendar does not have", () => {
@@ -178,6 +208,16 @@ describe("parseAvailability", () => {
 					{ start: "23:00", end: "02:00" },
 				],
 			},
+		});
+	});
+
+	it("reads ranges in 12 hours, the midnight that ends one as 24:00", () => {
+		expect(parseAvailability(["8am-10pm", "sat=6pm-12am"])).toEqual({
+			daily: [{ start: "08:00", end: "22:00" }],
+			weekdays: { sat: [{ start: "18:00", end: "24:00" }] },
+		});
+		expect(parseAvailability([], "8:30 am - 10:00 pm")).toEqual({
+			daily: [{ start: "08:30", end: "22:00" }],
 		});
 	});
 

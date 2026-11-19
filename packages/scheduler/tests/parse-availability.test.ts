@@ -32,6 +32,51 @@ describe("parseAvailability", () => {
 		});
 	});
 
+	it("reads ranges in 12 hours, padding and with spaces around the dash", () => {
+		expect(
+			parseAvailability([
+				"8am-10pm",
+				"fri=8:30 am - 10:00 PM, 11pm-12am",
+				"sat=6pm-12am",
+				"9:00-17:00",
+			]),
+		).toEqual({
+			ok: true,
+			availability: {
+				daily: [
+					{ start: "08:00", end: "22:00" },
+					{ start: "09:00", end: "17:00" },
+				],
+				weekdays: {
+					fri: [
+						{ start: "08:30", end: "22:00" },
+						{ start: "23:00", end: "24:00" },
+					],
+					sat: [{ start: "18:00", end: "24:00" }],
+				},
+			},
+		});
+	});
+
+	it("takes the en dash of a range copied from typeset text", () => {
+		expect(parseAvailability(["8am\u201310pm"])).toEqual({
+			ok: true,
+			availability: { daily: [{ start: "08:00", end: "22:00" }] },
+		});
+	});
+
+	it("takes 12 and 24 hours together, and midnight at the start as 00:00", () => {
+		expect(parseAvailability(["12am-2am,8am-22:00"])).toEqual({
+			ok: true,
+			availability: {
+				daily: [
+					{ start: "00:00", end: "02:00" },
+					{ start: "08:00", end: "22:00" },
+				],
+			},
+		});
+	});
+
 	it("says which range or key is wrong, as data", () => {
 		expect(parseAvailability(["08:00-22:00,8-22"])).toEqual({
 			ok: false,
@@ -56,6 +101,17 @@ describe("parseAvailability", () => {
 			ok: true,
 		});
 		expect(parseAvailability(["25:00-26:00"])).toMatchObject({
+			ok: false,
+			reason: "range",
+		});
+		expect(parseAvailability(["08:00-09:00, 13pm-2pm"])).toEqual({
+			ok: false,
+			reason: "range",
+			entry: "08:00-09:00, 13pm-2pm",
+			part: "13pm-2pm",
+		});
+		// Midnight never starts a range as the end of the day.
+		expect(parseAvailability(["24:00-24:00"])).toMatchObject({
 			ok: false,
 			reason: "range",
 		});

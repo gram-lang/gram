@@ -302,6 +302,13 @@ describe("gram plan --find", () => {
 		expect(out).not.toContain("20:00");
 	});
 
+	it("tries meal times written in 12 hours", () => {
+		const { code, out } = gram(...FIND, "--meal-times", "7pm");
+		expect(code).toBe(0);
+		expect(out).toContain("October 11 19:00");
+		expect(out).not.toContain("20:00");
+	});
+
 	it("takes the meal times from the project setting", async () => {
 		const project = await mkdtemp(join(tmpdir(), "gram-cli-meals-"));
 		try {

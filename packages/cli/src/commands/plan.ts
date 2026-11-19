@@ -52,7 +52,7 @@ export default defineCommand({
 		"meal-times": {
 			type: "string",
 			description:
-				"Times of day --find tries, comma-separated (default: the `mealTimes` setting, else 12:30,20:00)",
+				"Times of day --find tries, comma-separated, in 24 or 12 hours: 12:30,20:00 or 12:30pm,8pm (default: the `mealTimes` setting, else 12:30,20:00)",
 		},
 		format: {
 			type: "string",
