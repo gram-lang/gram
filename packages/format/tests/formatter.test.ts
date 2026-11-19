@@ -484,3 +484,38 @@ describe("a target state (1.5)", () => {
 		).toMatchObject({ state: "la nappe", note: "test" });
 	});
 });
+
+describe("trailing zeros, the same rule for every quantity", () => {
+	const format = (step: string) => formatGram(`## T\n\n${step}\n`).content;
+
+	for (const [input, output] of [
+		["@flour{1.50 cup + 1 tbsp}", "@flour{1.5 cup + 1 tbsp}"],
+		["@flour{1.50 kg}", "@flour{1.5 kg}"],
+		["@flour{1.50kg}", "@flour{1.5kg}"],
+		["@flour{2.0 kg}", "@flour{2 kg}"],
+		["@b{0.50 / 100 g @&a}", "@b{0.5 / 100 g @&a}"],
+		["~{1.50 h}", "~{1.5 h}"],
+		["@flour{1.50-2.50 cup+1 tbsp}", "@flour{1.5-2.5 cup + 1 tbsp}"],
+		["@flour{1,50-2,0 kg}", "@flour{1,5-2 kg}"],
+		["@flour{1 1/2-2.0 cups}", "@flour{1 1/2-2 cups}"],
+	]) {
+		it(`writes ${input} as ${output}, then leaves it`, () => {
+			const once = format(input);
+			expect(once).toContain(output);
+			expect(format(output)).toBe(once);
+			expect(hasChanges(formatGram(once).changes)).toBe(false);
+		});
+	}
+
+	for (const kept of [
+		"@flour{1,000 g}",
+		"@flour{1,000-2,500 g}",
+		"@flour{1.25 kg}",
+		"@salt{2.0 g / 100 g @&chocolat-70.0}",
+		"@x{v2.0 sachets}",
+	]) {
+		it(`keeps the zeros that may matter in ${kept}`, () => {
+			expect(format(kept)).toContain(kept.replace("@salt{2.0 g", "@salt{2 g"));
+		});
+	}
+});

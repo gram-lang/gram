@@ -12,7 +12,7 @@ const format = (step: string) =>
 describe("format: ratios with units", () => {
 	for (const ratio of [
 		"@eggs{1 / 100 g @&flour}",
-		"@eggs{1,50 / 100 g @&flour}",
+		"@eggs{1,5 / 100 g @&flour}",
 		"@x{1/2 / 100 g @&flour}",
 		"@x{15-20 g / 100 g @&flour}",
 		"@x{1 /100 g @&flour}",
