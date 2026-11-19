@@ -24,7 +24,7 @@ import { slugify } from "@gram-lang/kitchen";
 /** `modifier = "?" | "-" | "*" | "&" | "="` */
 const MODIFIERS = new Set(["?", "-", "*", "&", "="]);
 
-/** `syntaxChar = "{" | "}" | "[" | "]" | "(" | ")" | "<" | "|" | ":"` */
+/** `syntaxChar = "={" | "{" | "}" | "[" | "]" | "(" | ")" | "<" | "|" | ":"` */
 const SYNTAX_CHARS = new Set(["{", "}", "[", "]", "(", ")", "<", "|", ":"]);
 
 /** `refSigil = "@" | "#" | "~" | "^" | "&"` */
@@ -33,15 +33,23 @@ const REF_SIGILS = new Set(["@", "#", "~", "^", "&"]);
 /** `sentencePunct = "," | ";" | "!" | "?" | "."` */
 const SENTENCE_PUNCT = new Set([",", ";", "!", "?", "."]);
 
+function isSyntaxCharAt(src: string, i: number): boolean {
+	const c = src[i] as string;
+	// A `=` ends a name only before `{`, where a target state starts (`@oil until ={translucent}`).
+	return SYNTAX_CHARS.has(c) || (c === "=" && src[i + 1] === "{");
+}
+
 /** `refName = (~(syntaxChar | refSigil | nl) any)+` */
-function isRefNameChar(c: string): boolean {
-	return !SYNTAX_CHARS.has(c) && !REF_SIGILS.has(c) && c !== "\n";
+function isRefNameChar(src: string, i: number): boolean {
+	const c = src[i] as string;
+	return !isSyntaxCharAt(src, i) && !REF_SIGILS.has(c) && c !== "\n";
 }
 
 /** `singleWordName = (~(syntaxChar | space | nl | sentencePunct) any)+` */
-function isSingleWordNameChar(c: string): boolean {
+function isSingleWordNameChar(src: string, i: number): boolean {
+	const c = src[i] as string;
 	return (
-		!SYNTAX_CHARS.has(c) &&
+		!isSyntaxCharAt(src, i) &&
 		!SENTENCE_PUNCT.has(c) &&
 		!/\s/.test(c) &&
 		c !== "\n"
@@ -136,14 +144,11 @@ export function findWrittenIngredients(text: string): WrittenIngredient[] {
 
 		// -- full: refName alias? "{"
 		let end = p;
-		while (end < src.length && isRefNameChar(src[end] as string)) end++;
+		while (end < src.length && isRefNameChar(src, end)) end++;
 		let afterAlias = end;
 		if (src[afterAlias] === ":") {
 			afterAlias++;
-			while (
-				afterAlias < src.length &&
-				isRefNameChar(src[afterAlias] as string)
-			)
+			while (afterAlias < src.length && isRefNameChar(src, afterAlias))
 				afterAlias++;
 		}
 
@@ -158,10 +163,7 @@ export function findWrittenIngredients(text: string): WrittenIngredient[] {
 		} else {
 			// -- bare: singleWordName
 			let bareEnd = p;
-			while (
-				bareEnd < src.length &&
-				isSingleWordNameChar(src[bareEnd] as string)
-			)
+			while (bareEnd < src.length && isSingleWordNameChar(src, bareEnd))
 				bareEnd++;
 			if (bareEnd === p) continue; // a lone "@" is not an ingredient
 			name = src.slice(p, bareEnd);

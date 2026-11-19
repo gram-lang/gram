@@ -47,11 +47,11 @@ resolveTimeUnit('minutes'); // "m"
 resolveTimeUnit('heures', 'fr'); // "h"
 ```
 
-### Reading a duration
+### Parsing a duration
 
 <Since v="1.5.0" />
 
-`parseDuration` reads a duration as a timer writes it (`1h30`, `1 hr 30 mins`, `1:30 h`, `5'30"`, `45 min - 1 h`), in any language of `TIME_DICTIONARIES`, into minutes. It never guesses: a text it cannot read comes back with the reason, which kitchen turns into `MISSING_UNIT`, `INVALID_UNIT` or `INVALID_DURATION`. Each side keeps its terms (`parts`, in the unit written) and its form (`units`, `clock` or `prime`). It has no ceiling and no sign: the caller checks both.
+`parseDuration` parses timer durations (`1h30`, `1 hr 30 mins`, `1:30 h`, `5'30"`, `45 min - 1 h`) into minutes across every language in `TIME_DICTIONARIES`. Unrecognized inputs return a failure reason—which `@gram-lang/kitchen` maps to `MISSING_UNIT`, `INVALID_UNIT`, or `INVALID_DURATION`—without guessing. Each side preserves its parsed `parts` and `form` (`units`, `clock`, or `prime`), with sign and upper-bound checks left to the caller.
 
 ```typescript
 function parseDuration(text: string): DurationResult
@@ -107,8 +107,6 @@ TIME_TO_MINUTES.h; // 60 (minutes)
 ```
 
 ### Numbers in the reader's language
-
-<Since v="1.4.1" />
 
 `formatNumber` writes a number as a reader of the language does (`1.5` in English, `1,5` in French), rounded to two decimals by default and with no thousands separator, as a recipe writes `1500 g`. `localizeDecimals` does the same for a quantity already written as text (a range, a timer), and `decimalSeparator` gives the separator itself. Every view and the CLI write the numbers they show through these; a number read back by a script or a file (a `data-*` attribute, JSON, `.gram` source) keeps its point.
 

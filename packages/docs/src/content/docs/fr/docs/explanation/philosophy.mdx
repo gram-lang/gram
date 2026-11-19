@@ -4,6 +4,7 @@ description: "Pourquoi Gram traite les recettes comme du code, avec une logique 
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import Term from '../../../../../components/Term.astro';
 
 Gram est un DSL (*Domain-Specific Language*) déclaratif open-source pour les recettes de cuisine, pensé pour les développeurs et les passionnés d'art culinaire.
 
@@ -15,7 +16,7 @@ Cuisiner, c'est un peu comme exécuter un algorithme : on prend des ingrédients
 
 J'ai toujours aimé l'idée d'écrire des recettes en texte brut (*plain text*), en m'inspirant de projets pionniers comme l'excellent [Cooklang](https://cooklang.org) (idéal pour des recettes maison simples et rapides). Mais dès que les choses se compliquent (comme en pâtisserie, avec ses multiples préparations, le « pourcentage du boulanger » ou des plannings complexes) s'appuyer uniquement sur le langage naturel montre vite ses limites.
 
-Structurellement, Gram s'inspire beaucoup du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes présentées sous forme de tableaux. Puisque Gram compile les recettes en un arbre JSON déterministe, il permet de générer automatiquement des rendus visuels avancés : plans de marche pour la cuisine, tableaux de flux et exports de calendrier.
+Structurellement, Gram s'inspire beaucoup du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes présentées sous forme de tableaux. Puisque Gram compile les recettes en un arbre JSON déterministe, il permet de générer automatiquement des rendus visuels avancés : un <Term id="runSheet" /> pour la cuisine, des tableaux de flux et des exports de calendrier. Le moteur calcule ; les vues, comme le plan de marche, ne font qu'afficher ce qu'il a calculé.
 
 J'ai créé Gram comme une alternative pour ces scénarios plus exigeants. Il introduit une **logique relationnelle**, une **précision physique**, une **composition modulaire** et un **ordonnancement prédictif** dans la rédaction de vos recettes :
 
@@ -84,10 +85,10 @@ portions: 10
 {
   "title": "Cannelés",
   "meta": { "portions": "10" },
-  "generator": "@gram-lang/kitchen@1.4.0",
+  "generator": "@gram-lang/kitchen@1.5.0",
   "metrics": {
-    "preparationTime": 24,
-    "activeTime": 41,
+    "preparationTime": 9,
+    "activeTime": 56,
     "totalMass": 2132,
     "nutrition": {
       "total": {

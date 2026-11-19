@@ -14,7 +14,7 @@
     An open-source declarative and computational recipe DSL. Built to handle complex culinary logic, Gram compiles your plain-text instructions into structured, calculated, and relational data.
   </p>
   <p>
-    <a href="https://gram-lang.org">Website</a> • <a href="https://play.gram-lang.org">Playground</a> • <a href="https://docs.gram-lang.org/">Documentation</a>
+    <a href="https://gram-lang.org">Website</a> • <a href="https://gram-lang.org/play">Playground</a> • <a href="https://gram-lang.org/docs/">Documentation</a>
   </p>
   <br/>
   <img src="screenshot.png" alt="Gram Playground Screenshot" style="border-radius: 8px;" />
@@ -22,9 +22,9 @@
 <br/>
 
 > [!NOTE]
-> I develop **Gram** on my primary [Forgejo instance](https://git.gram-lang.org/gram-lang/gram), with automatic mirrors on [GitHub](https://github.com/gram-lang/gram) and [Codeberg](https://codeberg.org/gram-lang/gram).  
-
-> Contributions, issues, and discussions are welcome on any of these platforms.
+> I develop **Gram** on my primary [Forgejo instance](https://git.gram-lang.org/gram-lang/gram), with read-only automatic mirrors on [GitHub](https://github.com/gram-lang/gram) and [Codeberg](https://codeberg.org/gram-lang/gram).
+>
+> Issues and pull requests are handled on [Forgejo](https://git.gram-lang.org/gram-lang/gram).
 
 Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to get involved.
 
@@ -103,7 +103,7 @@ Commands to maintain your `ingredients.yaml` file:
 ## Documentation
 
 The full technical documentation is available online:
-[**https://docs.gram-lang.org/**](https://docs.gram-lang.org/)
+[**https://gram-lang.org/docs/**](https://gram-lang.org/docs/)
 
 The source code for the Astro & Starlight documentation can be found locally in `packages/docs/`.
 
@@ -190,7 +190,7 @@ Gram stands on the shoulders of giants.
 
 ## Community & Support
 
-- **Bugs & Feature Requests**: Please use our primary [Forgejo issues](https://git.gram-lang.org/gram-lang/gram/issues) (or [GitHub mirror](https://github.com/gram-lang/gram/issues)).
+- **Bugs & Feature Requests**: Please use our primary [Forgejo issues](https://git.gram-lang.org/gram-lang/gram/issues).
 - **Chat & Discussions**: Join us on [Discord](https://discord.gg/nsCBkhjuAR) or visit [r/gramlang](https://www.reddit.com/r/gramlang/) for casual community discussions.
 
 ---

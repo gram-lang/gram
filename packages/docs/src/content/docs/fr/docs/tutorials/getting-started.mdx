@@ -4,9 +4,13 @@ description: "Installez le CLI Gram, configurez votre éditeur et compilez votre
 ---
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
-import { CodePackageManagers } from 'starlight-theme-nova/components';
+import { CodeTabs, CodeTabItem } from 'starlight-theme-nova/components';
 
-Ce guide vous accompagne pas à pas pour installer l'écosystème Gram et compiler votre première recette.
+Ce guide vous accompagne pas à pas pour installer l'écosystème Gram et compiler votre première recette. Si vous cherchez d'abord la philosophie et une vue d'ensemble, lisez [C'est quoi Gram ?](/fr/docs/explanation/philosophy/).
+
+:::tip[Tester sans rien installer ?]
+Vous pouvez découvrir le langage directement dans le navigateur grâce au [Playground](/fr/play/) : éditez les exemples en direct, inspectez le JSON compilé et basculez entre la vue recette, le plan de marche et l'aperçu d'impression.
+:::
 
 <Steps>
 
@@ -14,11 +18,10 @@ Ce guide vous accompagne pas à pas pour installer l'écosystème Gram et compil
 
    Installez le CLI `gram` de manière globale via votre gestionnaire de paquets favori. Il s'exécute aussi bien sur Node.js (>=22) que sur [Bun](https://bun.sh/) :
 
-   <CodePackageManagers
-   packages="@gram-lang/cli"
-   dev={true}
-   packageManagers={['npm', 'bun']}
-   />
+   <CodeTabs syncKey="code-group-installation">
+     <CodeTabItem label="npm" lang="shell" code="npm install -g @gram-lang/cli" themes={{ light: 'github-light', dark: 'github-dark' }} />
+     <CodeTabItem label="bun" lang="shell" code="bun add -g @gram-lang/cli" themes={{ light: 'github-light', dark: 'github-dark' }} />
+   </CodeTabs>
 
    :::note
    Si vous préférez compiler le CLI depuis les sources (par exemple pour contribuer au projet), consultez le fichier [CONTRIBUTING.md](https://git.gram-lang.org/gram-lang/gram/src/branch/main/CONTRIBUTING.md).
@@ -29,7 +32,7 @@ Ce guide vous accompagne pas à pas pour installer l'écosystème Gram et compil
    Gram traitant les recettes comme du code, un éditeur bien configuré améliore grandement votre expérience de développement.
 
    :::note[Extension VS Code Gram]
-   Nous vous recommandons d'installer l'**extension Gram pour VS Code**. Elle apporte :
+   L'**extension Gram pour VS Code** est vivement recommandée. Elle apporte :
    - La coloration syntaxique
    - L'autocomplétion
    - La détection d'erreurs et des diagnostics en temps réel
@@ -58,7 +61,7 @@ Ce guide vous accompagne pas à pas pour installer l'écosystème Gram et compil
 
 3. **Initialiser un projet**
 
-   Avant de rédiger votre première recette, nous vous conseillons d'initialiser un espace de travail (*workspace*) Gram. Dans un **nouveau dossier**, exécutez :
+   Avant de rédiger votre première recette, il est conseillé d'initialiser un espace de travail (*workspace*) Gram. Dans un **nouveau dossier**, exécutez :
 
    ```bash
    gram init
@@ -72,7 +75,7 @@ Ce guide vous accompagne pas à pas pour installer l'écosystème Gram et compil
 
 4. **Écrire une recette simple**
 
-   Créons maintenant une recette de pancakes.
+   Passons à une recette de pancakes.
 
    Créez un fichier `pancakes.gram`, ouvrez-le dans votre éditeur et copiez-y la recette suivante :
 
@@ -84,14 +87,16 @@ Ce guide vous accompagne pas à pas pour installer l'écosystème Gram et compil
 
    ## Appareil ->&appareil
 
-   Dans un #bol moyen{}, mélanger la @farine{160 g}, la @levure chimique{1 c.à.c}, le @sucre{1 c.à.s} et le @sel{1/4 c.à.c}. ->&mélange sec{}
+   [Mélanger] Dans un #bol moyen{}, la @farine{160 g}, la @levure chimique{1 c.à.c}, le @sucre{1 c.à.s} et le @sel{1/4 c.à.c}. ->&mélange sec{}
 
-   Au &mélange sec{}, ajouter le @lait ribot{1 tasse}, l'@œuf{1} et l'@extrait de vanille{1/2 c.à.c}.
+   [Incorporer] Au &mélange sec{}, ajouter le @lait ribot{1 tasse}, l'@œuf{1} et l'@extrait de vanille{1/2 c.à.c}.
 
    ## Cuisson
 
-   Verser l'&appareil sur une #plaque de cuisson{} à ^{feu moyen} et cuire pendant ~{2 min}.
+   [Cuire] Verser l'&appareil sur une #plaque de cuisson{} à ^{feu moyen} pendant ~{2 min}.
    ```
+
+   Les marqueurs `->&appareil` et `->&mélange sec{}` capturent le résultat d'une section ou d'une étape pour pouvoir le réutiliser ensuite avec `&appareil` ou `&mélange sec{}` sans ressaisir ses ingrédients (le tutoriel [Votre première recette](/fr/docs/tutorials/first-recipe/) détaille ce mécanisme).
 
 5. **Compiler la recette**
 
@@ -128,6 +133,6 @@ Ce guide vous accompagne pas à pas pour installer l'écosystème Gram et compil
 Maintenant que vous maîtrisez les bases, découvrez les fonctionnalités avancées de Gram : variables, minuteurs passifs et ajustement automatique des portions.
 
 <CardGrid>
-  <LinkCard title="Tutoriel : votre première recette complexe" description="Apprenez à utiliser les variables intermédiaires, les minuteurs passifs et les ingrédients composites." href="/fr/docs/tutorials/first-recipe/" />
+  <LinkCard title="Tutoriel : votre première recette" description="Apprenez à utiliser les variables intermédiaires, les minuteurs passifs, les états attendus et les ingrédients composites." href="/fr/docs/tutorials/first-recipe/" />
   <LinkCard title="Structure du document" description="Découvrez comment est organisé un fichier Gram." href="/fr/docs/reference/syntax/document-structure/" />
 </CardGrid>

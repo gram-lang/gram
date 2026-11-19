@@ -25,7 +25,7 @@ interface Warning {
 
 `compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
 
-<Since v="1.5.0" /> A few codes also carry `data`, the facts a tool needs to act on the warning without parsing `.message`: the language server passes it on as the diagnostic's `data`, and its Quick Fixes read it. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`) and an ingredient's `INVALID_UNIT` (`{ reason, suggestion? }`) set it; for the other codes it is absent.
+<Since v="1.5.0" /> Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
 
 ## Severity & `--strict`
 
@@ -41,7 +41,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 <GeneratedTable table={warningCodesTable("en")} />
 
 ### `VARIABLE_NOT_FOUND`
-A relative quantity references an intermediate variable (`50% of &name`) that hasn't been declared as an intermediate output (`>> name`) anywhere in the recipe. **Fix**: declare the variable before referencing it, or check for a typo in the name.
+A relative quantity references an intermediate variable (`50% of &name`) that hasn't been declared as an intermediate output (`->&name`) anywhere in the recipe. **Fix**: declare the variable before referencing it, or check for a typo in the name.
 
 ### `RELATIVE_QUANTITY_UNRESOLVED`
 A relative quantity references an ingredient (`50% of @name`) that hasn't appeared earlier **in the same section** — relative-to-ingredient targets are section-scoped, unlike variables. **Fix**: move the referenced ingredient earlier in the same section, or reference a variable (`&name`) instead if it's meant to be recipe-wide.
@@ -49,7 +49,13 @@ A relative quantity references an ingredient (`50% of @name`) that hasn't appear
 ### `RELATIVE_QUANTITY_UNKNOWN_MASS`
 Pushed during analysis: the target of a relative quantity was found, but its own mass couldn't be computed (no resolvable unit/density), so the percentage can't be applied. **Fix**: give the target ingredient a standardizable unit, or a density/`unit_weight` entry in the ingredient database.
 
-For a ratio with units (`1 / 100 g @&flour`, `~{15 min / 500 g @&roast}`, since 1.5.0) it carries a `reason` and points at the ratio: `noTargetQuantity` (the target has no amount), `incompatibleUnits` (`2 slices` against garlic counted in cloves, a weight against a named piece, or a unit followed by a word, `100 g of`), `missingDensity` (a weight against a volume, with no density), `missingUnitWeight` (pieces against a weight, with no `unit_weight`), and for an intermediate used whole (`Roll out the &dough`) `wholeUseAmbiguous` (another section uses it too) or `producerMassUnknown` (the mass of the section that makes it is incomplete). Gram never guesses a ratio it cannot compute: the amount stays unresolved. **Fix**: write the ratio in the unit the target is written in, add the density or `unit_weight` to the ingredient database, or write the amount of the intermediate used (`&dough{500 g}`).
+For a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units) (`1 / 100 g @&flour`, `~{15 min / 500 g @&roast}`, <Since v="1.5.0" />), it includes a `reason` pointing to the ratio and leaves the amount unresolved:
+- `noTargetQuantity`: the target has no quantity.
+- `incompatibleUnits`: mismatched counts (`2 slices` against cloves), a weight against a named piece, or trailing words (`100 g of`).
+- `missingDensity` / `missingUnitWeight`: converting between weight and volume or pieces requires `density` or `unit_weight` in the database.
+- `wholeUseAmbiguous` / `producerMassUnknown`: for an intermediate used whole (`&dough`), either another section also consumes it or the producing section's mass is incomplete.
+
+**Fix**: match the target's unit, add `density` or `unit_weight` to the database, or specify the intermediate's used quantity (`&dough{500 g}`).
 
 ### `CIRCULAR_REFERENCE`
 An ingredient's relative quantity targets itself (`@flour{50% of @flour}`). **Fix**: remove the self-reference — a percentage-based quantity must target a *different* ingredient or variable.
@@ -61,55 +67,56 @@ A bare reference (`&name`) or a referenceable ingredient (`@&name`) points to so
 A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` instead of `~{10 min}`). **Fix**: add an explicit unit.
 
 ### `INVALID_UNIT`
-Either the word right after a number in a `Timer` (or a section's anchor) is not a time unit, as in `~{3 bananas}`, or a `Temperature` was given a unit other than Celsius/Fahrenheit. **Fix**: use a recognized time unit for timers (`h`, `hr`, `min`, `heures`…); use `°C` or `°F` for temperatures.
-
-<Since v="1.4.1" type="changed" /> It also flags an ingredient whose unit reads as two quantities: a known unit, a number and another known unit, as in `@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`. The whole `cup 5 tbsp` is taken as one unknown unit: no mass, and a scaled recipe reads `2 cup 5 tbsp`. **Fix**: <Since v="1.5.0" type="changed" /> write the two quantities as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities), `@flour{1 cup + 5 tbsp}`; the editor offers this fix, and `data.suggestion` holds the unit to write (`cup + 5 tbsp`). A number that only describes the unit, as in `@tomatoes{1 tin of 400 g}`, raises nothing: scaling the number of tins stays right.
-
-It flags as well a unit that hides a quantity, as in `@flour{about 200g}`: a quantity starts with its number, so with words in front the whole text was read as a unit, with no mass, and the quantity vanished from a scaled recipe. **Fix**: write the quantity alone (`@flour{200g}`), and the "about" in the step if it matters. Words with no number, such as `{a pinch}` or `{to taste}`, raise nothing.
+Emitted in three situations:
+- **Time or temperature units**: a word after a number in a `Timer` or section anchor is not a recognized time unit (`~{3 bananas}`), or a `Temperature` uses a unit other than Celsius or Fahrenheit. **Fix**: use a recognized time unit (`h`, `hr`, `min`, `heures`…), or `°C` / `°F` for temperatures.
+- **Unjoined quantities in a unit** <Since v="1.5.0" type="changed" />: an ingredient's unit looks like two quantities without an operator (`@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`), where `cup 5 tbsp` would otherwise be treated as one unknown unit with no mass. **Fix**: write it as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities) (`@flour{1 cup + 5 tbsp}`); `data.suggestion` provides the corrected unit (`cup + 5 tbsp`) for editor quick fixes. Descriptive unit text like `@tomatoes{1 tin of 400 g}` is unaffected.
+- **Leading prose before a number**: a unit hides a leading word before the number (`@flour{about 200g}`), since quantities must start with a number. **Fix**: write `@flour{200g}` and keep `"about"` in the prose. Pure text quantities (`{a pinch}`, `{to taste}`) raise nothing.
 
 ### `INVALID_QUANTITY`
 <Since v="1.5.0" />
 
-A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) Gram refuses to add up. The recipe still compiles and the sum is shown as written, but it counts for nothing in the shopping list and the nutrition. The message and `data.reason` name the problem:
+Emitted when a [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) or number expression cannot be evaluated. The recipe still compiles and renders the text as written, but the value is excluded from shopping list and nutrition totals. `data.reason` identifies the cause:
 
 | `reason` | Example | Fix |
 | :--- | :--- | :--- |
-| `unitlessTerm` | `{1 + 1 cup}` | Give every term its unit: `{1 cup + 1 tbsp}`. |
-| `percentTerm` | `{100 g + 10%}` | Write the result (`{110 g}`, given in `data.suggestion` and offered by the editor), or a relative quantity such as `{10% &flour}`. |
-| `expressionTerm` | `{2 x 100 g + 50 g}` | A sum only adds or takes away: write `{250 g}`. |
-| `quantityInUnit` | `{1 tin of 400 g + 50 g}` | Write the amount in one unit: `{450 g}`. |
-| `nonPositiveTotal` | `{1 tbsp - 1 cup}` | What is taken away is as much as what is added, or more: check the terms. |
-| `rangeAfterMinus` | `{1 cup - 1-2 tbsp}` | A range taken away would swap its bounds: put it on a term that is added, or write the total as a range. |
-| `minusAcrossFamilies` | `{1 cup - 20 g}` | Take an amount away from one of its kind only (a volume from a volume, a weight from a weight). |
+| `unitlessTerm` | `{1 + 1 cup}` | Give every term a unit (`{1 cup + 1 tbsp}`). |
+| `percentTerm` | `{100 g + 10%}` | Write the computed total (`{110 g}`, provided in `data.suggestion`) or use a relative quantity (`{10% &flour}`). |
+| `expressionTerm` | `{2 x 100 g + 50 g}` | Sums only support `+` and `-`; write `{250 g}`. |
+| `quantityInUnit` | `{1 tin of 400 g + 50 g}` | Express the amount in a single unit (`{450 g}`). |
+| `nonPositiveTotal` | `{1 tbsp - 1 cup}` | Subtracted amount equals or exceeds what was added. |
+| `rangeAfterMinus` | `{1 cup - 1-2 tbsp}` | Put ranges on added terms, or write the total as a range. |
+| `minusAcrossFamilies` | `{1 cup - 20 g}` | Subtract only from the same unit family (volume from volume, weight from weight). |
+| `zeroDenominator` | `{1/0 cup}`, `{1/0% &dough}`, `#pan{1/0}`, `^{1/0 °C}` | Division by zero is ignored; write a valid fraction (`1/2`). |
+| `relativeNotSupported` | `@eggs{3}<@box{50% @&flour}`, `@eggs{1}<@box{1 / 100 g @&flour}` | Percentages and ratios are not supported on composite parents yet; specify the parent's quantity (`@eggs{3}<@box{1}`). |
 
-Subtraction is checked kind by kind: each kind of amount adds up and takes away on its own, so `{1 cup - 2 tbsp + 30 g}` is fine (the 2 tbsp come off the cup), while `{1 cup - 20 g}` has no weight to take the 20 g from. The editor's hover on a sum shows what each kind comes to.
-
-It also flags, with `reason: "zeroDenominator"`, a fraction over zero anywhere a number is written (`@flour{1/0 cup}`, `{1 1/0 cup}`, a term of a sum, `{1/0% &dough}`, `#pan{1/0}`, `^{1/0 °C}`). Such a number has no value: Gram leaves it out, as if no number had been written (`cup` alone, a sum without that term, an ingredient with no quantity for a percentage), where it used to vanish without a word. **Fix**: write the fraction you meant (`1/2`). A timer says it through `INVALID_DURATION`.
-
-With `reason: "relativeNotSupported"`, it flags a percentage on a composite parent (`@eggs{3}<@box{50% @&flour}>`), which Gram does not support yet: the parent is read with no quantity, where the percentage used to vanish without a word. **Fix**: write the parent's amount (`<@box{1}>`). A ratio on a parent (`<@box{1 / 100 g @&flour}>`) is refused the same way, and a ratio over zero (`{1 / 0 g @&flour}`) raises `zeroDenominator`: the ingredient reads with no amount.
+Subtraction is checked per unit family: `{1 cup - 2 tbsp + 30 g}` is valid (2 tbsp are subtracted from 1 cup), while `{1 cup - 20 g}` has no weight to subtract from.
 
 ### `OZ_AFTER_VOLUME`
 <Since v="1.5.0" />
 
-Information: a sum puts `oz` after a volume, as in `@water{1 cup + 2 oz}`. `oz` is an ounce of weight, so Gram reads it as one: the sum is a volume plus a weight. **Fix**: write `fl oz` if a fluid ounce was meant (`data.suggestion`, offered by the editor); otherwise there's nothing to do.
+Informational notice when `oz` follows a volume in a sum (`@water{1 cup + 2 oz}`). Because `oz` denotes weight, Gram keeps it separate from the volume. **Fix**: change to `fl oz` if fluid ounces were intended (`data.suggestion` offers this quick fix).
 
 ### `DURATION_OUT_OF_RANGE`
-<Since v="1.4.0" />
 
 A timer or a section's retro-planning offset lasts longer than 1000 years. **Fix**: check the number, often a stray digit or a missing unit letter (`~{-3000d}` is eight years, `~{-3000000000d}` is not a recipe). The duration is capped at 1000 years, so the timeline stays finite instead of coming out as `0`, `Infinity` or `NaN`. That limit is a technical bound, not a judgement on recipes: anything up to it, a solera that runs for decades included, is planned as written and raises nothing.
 
 ### `AMBIGUOUS_NUMBER`
 <Since v="1.5.0" />
 
-A comma followed by exactly three digits, after a whole part of one to three digits, as in `@flour{1,000 g}` or `@flour{12,500 g}`. Gram reads a comma between two digits as a decimal and has no thousands separator, so this is 1 g (and 12.5 g); the warning says how the number was read, because an English reader would see a thousand. The quantity stays usable either way. **Fix**: write `{1000 g}` if a thousand was meant, or `{1 g}` otherwise. A number that cannot be a thousands separator, such as `{0,125 kg}` or `{1,25 kg}`, raises nothing, and neither does a point: `{1.000 kg}` has always meant 1 kg. Every number of a recipe is checked: quantities, timers and temperatures, but also a percentage (`{1,000% &dough}`) and a section's anchor (`~{-1,000h}`, read as one hour), including one written on `@use`. An anchor that is dropped anyway, positive or with no valid unit, only raises `MISSING_UNIT`, `INVALID_UNIT` or `INVALID_DURATION`.
+A comma followed by three digits after one to three integer digits (`@flour{1,000 g}`, `@flour{12,500 g}`). Because Gram supports decimal commas and has no thousands separator, `{1,000 g}` is parsed as `1 g` (and `{12,500 g}` as `12.5 g`). Checked across quantities, timers, temperatures, percentages, and section anchors (including on `@use`). **Fix**: write `{1000 g}` if a thousand was meant, or `{1 g}` otherwise. Periods (`{1.000 kg}`) always parse as decimals without warning.
 
 ### `INVALID_DURATION`
 <Since v="1.5.0" />
 
-A timer or a section's anchor is written with numbers and units Gram knows, but in a way it will not guess: `~{1:30}` (hours or minutes?), `~{30min 1h}` (units out of order), `~{1h75}` (75 minutes after an hour), `~{1-2h30}` (is the left side `1 h` or `1 h 30`?), `~{2-1 h}` (a range starts with the shorter duration), `~{2 * 2 min}` or `~{1 heure et demie}`. The message gives the reason and an example to write instead. The timer is not counted in the total time (only what was written is kept in the compiled JSON, as `raw`), and the anchor is dropped. A section anchor is also refused when it is a range (`~{-1-2d}`) or counts seconds (`~{-1min30}`, `~{-5'}`). A proportional time is refused with a multiplier (`~{15 min / 500 g @&roast * 2}`, `reason: "ratioMultiplication"`) or a range as its target amount (`~{15 min / 1-2 kg @&roast}`, `"ratioShape"`), and an anchor can never be one (`"anchorRatio"`). **Fix**: write the duration the way the message suggests, e.g. `~{1h30}`, `~{1:30 min}` or `~{1h30-2h}`. A word right after a number is an unknown unit and keeps raising `INVALID_UNIT`, and a number alone keeps raising `MISSING_UNIT`.
+A timer or section anchor uses numbers and units Gram recognizes, but in an ambiguous or unsupported shape:
+- **Ambiguous or malformed timers**: `~{1:30}` (hours or minutes?), `~{30min 1h}` (wrong order), `~{1h75}` (`≥ 60` after hours), `~{1-2h30}` (ambiguous range bound), `~{2-1 h}` (reversed range), `~{2 * 2 min}`, or prose (`~{half an hour}`). The timer is excluded from total time while keeping its `raw` string.
+- **Unsupported anchors**: ranges (`~{-1-2d}`), seconds (`~{-1min30}`, `~{-5'}`), or proportional anchors (`reason: "anchorRatio"`).
+- **Proportional timer limits**: multipliers (`~{15 min / 500 g @&roast * 2}`, `reason: "ratioMultiplication"`) or ranged targets (`~{15 min / 1-2 kg @&roast}`, `reason: "ratioShape"`).
+
+**Fix**: follow the suggested format in `.message` (e.g. `~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). Unknown units after a number still raise `INVALID_UNIT`, and bare numbers raise `MISSING_UNIT`.
 
 ### `SCOPE_CONFLICT`
-Two sections declare the same intermediate/global variable name (`>> name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
+Two sections declare the same intermediate/global variable name (`->&name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
 
 ### `MISSING_INGREDIENT`
 During nutrition estimation, an ingredient with a computable mass has no matching entry (by id or alias) in the ingredient database at all. **Fix**: add the ingredient (or an alias to an existing entry) to your database.
@@ -131,19 +138,13 @@ Baker's math was explicitly requested (`enableBakersMath` with a bare `*` search
 
 ### `COMPOSITE_PARENT_CONFLICT`
 
-<Since v="1.2.0" />
-
 A short composite child name (e.g. `@juice`) is drawn from two different parent ingredients within the same recipe (e.g. `<@lemon` in one step and `<@orange` in another). **Fix**: use the full name for the child (e.g. `@lemon juice` and `@orange juice`) to prevent database identity collisions.
 
 ### `MODULE_NOT_FOUND`
 
-<Since v="1.2.0" />
-
 An imported module specified in a `@use` directive could not be resolved or found on the filesystem. **Fix**: verify the module path, file extension (`.gram`), or configured path aliases in `config.yaml`.
 
 ### `DAY_OVERFLOW`
-
-<Since v="1.4.0" />
 
 A working day (derived from a section's `~{-Nd}` anchor) starts before its 24-hour window opens because a long passive rest pushes it backward. **Fix**: anchor the section further back (for example `~{-2d}` instead of `~{-1d}`), or shorten the rest duration.
 
@@ -156,8 +157,6 @@ During ALAP reverse scheduling, a producing task is pulled earlier than the begi
 Multiple passive timers share the same equipment track (e.g. `~_oven`) and cannot execute simultaneously. The scheduler serializes them sequentially to prevent equipment collision, delaying the second task. **Fix**: this is an informational notice; if you have access to multiple appliances, assign them distinct track names (e.g. `~_oven1` and `~_oven2`).
 
 ### `PASSIVE_OVERLAP_SAME_COOKWARE`
-
-<Since v="1.4.0" />
 
 Two passive timers overlap in time, in steps that cite the same cookware (`#oven` in both), with no named track in common. If one is meant to follow the other, they are probably on one oven: the plan shows them side by side. **Fix**: give them the same named track (`~_oven{30min}` then `~_oven{20min}`) so they take turns; if both fit in the oven at once, this is only an informational notice. Only names are compared (`#oven` with `#oven`), so it works whatever the language of the recipe, and the overlap is read on the default timeline.
 

@@ -10,11 +10,6 @@
     "path": "/examples/empanadas.gram"
   },
   {
-    "id": "chocolate-chip-cookies.gram",
-    "title": "Chocolate Chip Cookies (cups and spoons)",
-    "path": "/examples/chocolate-chip-cookies.gram"
-  },
-  {
     "id": "lemon-tart",
     "title": "Lemon Tart (multi-file, @use)",
     "entry": "lemon-tart.gram",

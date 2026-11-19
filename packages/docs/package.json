@@ -4,21 +4,21 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.23.4"
   },
   "scripts": {
-    "dev": "astro dev",
-    "prebuild": "bun scripts/vendor-starlight-tokens.ts && bun scripts/generate-changelog.ts && bun scripts/generate-llms-full.ts",
-    "build": "astro build && node scripts/check-bundle-size.mjs",
-    "preview": "astro preview",
-    "astro": "astro",
-    "typecheck": "astro check && vue-tsc --noEmit"
+    "dev": "bunx --bun astro dev",
+    "prebuild": "bun scripts/vendor-starlight-tokens.ts && bun scripts/generate-llms-full.ts",
+    "build": "bunx --bun astro build && node scripts/check-bundle-size.mjs",
+    "preview": "bunx --bun astro preview",
+    "astro": "bunx --bun astro",
+    "typecheck": "bunx --bun astro check && vue-tsc -p tsconfig.vue.json --noEmit"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "^7.3.0",
-    "@astrojs/mdx": "^8.0.2",
-    "@astrojs/starlight": "^0.42.4",
-    "@astrojs/vue": "^7.0.1",
+    "@astrojs/markdown-remark": "^7.3.10",
+    "@astrojs/mdx": "^8.1.6",
+    "@astrojs/starlight": "^0.43.1",
+    "@astrojs/vue": "^7.1.6",
     "@codemirror/commands": "^6.10.4",
     "@codemirror/lint": "^6.9.7",
     "@codemirror/state": "^6.7.1",
@@ -32,18 +32,18 @@
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",
     "@gram-lang/scheduler": "workspace:*",
-    "astro": "^7.3.5",
+    "astro": "^7.4.13",
     "mermaid": "^12.0.0",
     "shiki": "^4.3.1",
-    "starlight-theme-nova": "^0.12.2",
+    "starlight-theme-nova": "^0.12.3",
     "unist-util-visit": "^5.1.0",
     "vite": "^8.0.13",
     "vue": "^3.5.39"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.12",
     "@types/mdast": "^4.0.4",
-    "starlight-links-validator": "^0.26.0",
+    "starlight-links-validator": "^0.27.0",
     "vue-tsc": "^3.3.14",
     "yaml": "^2.9.0"
   }

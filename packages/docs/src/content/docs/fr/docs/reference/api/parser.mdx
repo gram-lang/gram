@@ -102,7 +102,7 @@ interface IngredientAST {
   type: ASTNodeType.Ingredient;
   name: string;
   modifiers: Modifier[];               // Modificateurs sous forme de sigles présents sur l'ingrédient
-  quantity: QuantityAST | RelativeQuantityAST | TextQuantityAST | null;
+  quantity: QuantityAST | CompoundQuantityAST | RelativeQuantityAST | RatioQuantityAST | TextQuantityAST | null;
   alias?: string | null;
   preparation?: string | null;
   composite?: CompositeAST | null;     // défini pour les ingrédients composites "<@parent"
@@ -129,9 +129,9 @@ Les autres interfaces de nœuds (`CookwareAST`, `ReferenceAST`, `TimerAST`, `Tem
 
 ## Type guards
 
-13 fonctions de garde (*type guards*) sont exportées pour *narrow* de manière sécurisée des entrées `ASTNode | StepAST | ... | null | undefined`, et vous éviter les vérifications manuelles du champ `.type` :
+17 fonctions de garde (*type guards*) sont exportées pour *narrow* de manière sécurisée des entrées `ASTNode | StepAST | ... | null | undefined`, et vous éviter les vérifications manuelles du champ `.type` :
 
-`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isCheckpoint`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isQuantity`, `isTextQuantity`, `isRelativeQuantity`.
+`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isCheckpoint`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isImportDecl`, `isQuantity`, `isCompoundQuantity`, `isTextQuantity`, `isRatioQuantity`, `isRelativeQuantity`.
 
 ```typescript
 import { getAST, isIngredient, isTimer } from '@gram-lang/parser';

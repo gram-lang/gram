@@ -673,15 +673,11 @@
 
 	/* A target state is words of the sentence: underlined, never boxed. */
 	.step-content .checkpoint {
-		font-weight: 600;
+		font-weight: 500;
 		color: var(--color-text);
-		text-decoration: underline dotted var(--item-checkpoint-text);
-		text-decoration-thickness: 1.5px;
-		text-underline-offset: 0.2em;
 	}
 
 	.step-content .checkpoint .gicon {
-		color: var(--item-checkpoint-text);
 		vertical-align: -0.1em;
 	}
 

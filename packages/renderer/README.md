@@ -11,7 +11,7 @@ The renderer of the Gram recipe language. It turns a compiled (or analyzed) reci
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://docs.gram-lang.org/)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/docs/)**.
 
 ---
 

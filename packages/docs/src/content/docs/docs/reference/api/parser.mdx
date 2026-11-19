@@ -120,7 +120,7 @@ interface IngredientAST {
   type: ASTNodeType.Ingredient;
   name: string;
   modifiers: Modifier[];               // Sigil modifiers present on the ingredient
-  quantity: QuantityAST | RelativeQuantityAST | TextQuantityAST | null;
+  quantity: QuantityAST | CompoundQuantityAST | RelativeQuantityAST | RatioQuantityAST | TextQuantityAST | null;
   alias?: string | null;
   preparation?: string | null;
   composite?: CompositeAST | null;     // set for "<@parent" composite ingredients
@@ -147,9 +147,9 @@ The remaining node interfaces (`CookwareAST`, `ReferenceAST`, `TimerAST`, `Tempe
 
 ## Type guards
 
-13 type guards are exported for safely narrowing `ASTNode | StepAST | ... | null | undefined` inputs without manual `.type` checks:
+17 type guards are exported for safely narrowing `ASTNode | StepAST | ... | null | undefined` inputs without manual `.type` checks:
 
-`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isCheckpoint`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isQuantity`, `isTextQuantity`, `isRelativeQuantity`.
+`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isCheckpoint`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isImportDecl`, `isQuantity`, `isCompoundQuantity`, `isTextQuantity`, `isRatioQuantity`, `isRelativeQuantity`.
 
 ```typescript
 import { getAST, isIngredient, isTimer } from '@gram-lang/parser';

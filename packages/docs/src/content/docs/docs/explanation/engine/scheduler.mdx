@@ -3,13 +3,10 @@ title: "The scheduling engine (@gram-lang/scheduler)"
 description: "How @gram-lang/scheduler lays a task graph out on a timeline and places it on the calendar: neutral input, two levels, pure functions."
 ---
 
-import Since from '../../../../../components/Since.astro';
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../components/Term.astro';
 
-<Since v="1.4.0" />
-
-`@gram-lang/scheduler` is the component in Gram responsible for the temporal dimension: it determines **precisely when** each task must be executed. Until version 1.4.0, this logic was part of the Kitchen compiler. It is now isolated in its own package, allowing the same engine to serve the compiler, renderer, CLI, Language Server (LSP), and your custom integrations.
+`@gram-lang/scheduler` is the component in Gram responsible for the temporal dimension: it determines **precisely when** each task must be executed. Isolated in its own package, it allows the same engine to serve the compiler, renderer, CLI, Language Server (LSP), and custom integrations.
 
 The scheduler sits **beneath** the Kitchen: `@gram-lang/kitchen` depends on it, never the other way around. It has no knowledge of the AST, the `.gram` syntax, or the compiled recipe. Its only input is an agnostic **task graph**, and architecture tests strictly forbid importing any other Gram package into it.
 

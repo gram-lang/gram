@@ -13,7 +13,7 @@ Cooking is a bit like an algorithm: you take raw ingredients as input and output
 
 I've always loved the idea of writing recipes in plain text, heavily inspired by pioneering projects like the excellent [Cooklang](https://cooklang.org). Cooklang is fantastic for quick, straightforward home recipes. But when things get a bit more complex—like professional pastry formulas with multiple sub-components, baker's math, or tricky scheduling—relying entirely on natural language can get messy. 
 
-Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced presentations: a <Term id="runSheet" /> for the kitchen, tabular flowcharts, and calendar exports. The engine computes; the views, like the run sheet, only show what it computed.
+Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced presentations: a **run sheet** for the kitchen, tabular flowcharts, and calendar exports. The engine computes; the views, like the run sheet, only show what it computed.
 
 I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic**, **physical accuracy**, **modular composition**, and **predictive scheduling** into your recipe writing:
 
@@ -75,7 +75,7 @@ portions: 10
 
 [Mix] In a #mixing bowl{}, combine the @flour{300 g}, @sugar{500 g}, and @salt{3 g}. ->&dry ingredients{}
 
-[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to ^{85C}. ->&hot milk{}
+[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to ^{185°F}. ->&hot milk{}
 
 [Mix] Pour the &hot milk{} over the &dry ingredients{} all at once. Whisk vigorously.
 
@@ -87,10 +87,10 @@ portions: 10
 {
   "title": "Cannelés",
   "meta": { "portions": "10" },
-  "generator": "@gram-lang/kitchen@1.4.0",
+  "generator": "@gram-lang/kitchen@1.5.0",
   "metrics": {
-    "preparationTime": 24,
-    "activeTime": 41,
+    "preparationTime": 9,
+    "activeTime": 56,
     "totalMass": 2132,
     "nutrition": {
       "total": {
@@ -214,16 +214,14 @@ densities:
 
 ## 2. Module imports
 
-*(since v1.2.0)*
-
 Right after the frontmatter, before any step, a recipe can `@use` other `.gram` files as reusable sub-components.
 
 ```gram
-@use "./bases/pate-sablee.gram" as &pate
+@use "./bases/shortcrust-pastry.gram" as &pastry
 
-## Montage
+## Assembly
 
-[Foncer] le moule avec &pate{250g}.
+[Line] The #pan{} with &pastry{250g}.
 ```
 
 *See [Module Imports](/docs/reference/syntax/modules) for the full syntax, scaling rules, and encapsulation guarantees.*
@@ -249,7 +247,7 @@ Steps can optionally start with an **Action** enclosed in brackets `[]`. This hi
 ```
 
 :::tip[Name the action]
-Starting steps with an action verb in brackets is strongly recommended, especially for timed steps: the <Term id="runSheet" /> and summary views rely on these actions to name each step clearly.
+Starting steps with an action verb in brackets is strongly recommended, especially for timed steps: the **run sheet** and summary views rely on these actions to name each step clearly.
 :::
 
 ## 4. Sections
@@ -259,11 +257,11 @@ Complex recipes often have multiple components (e.g., dough, filling, frosting) 
 ```gram
 ## Dough
 
-Mix @flour{200g} and @water{100ml} together until smooth.
+[Mix] @flour{200g} and @water{100ml} together until smooth.
 
 ## Filling
 
-Combine @cheese{100g} and @spinach{50g}, then season to taste.
+[Combine] @cheese{100g} and @spinach{50g}, then season to taste.
 ```
 
 ### Retro-planning (scheduling)
@@ -291,12 +289,12 @@ You can add comments to explain instructions without affecting the compiled outp
 
 **Inline Comments (`//`)**:
 ```gram
-Mash @potato{2kg} until smooth // alternatively, boil 'em first.
+[Mash] @potato{2kg} until smooth // alternatively, boil 'em first.
 ```
 
 **Block Comments (`/* ... */`)**:
 ```gram
-Slowly add @milk{4 cup} /* TODO change units to litres */, keep mixing.
+[Add] Slowly pour in @milk{4 cup} /* TODO change units to litres */, keep mixing.
 ```
 
 :::note[Comments vs YAML Notes]
@@ -325,6 +323,272 @@ Comments are preserved during compilation and are rendered alongside the instruc
     title="Gram syntax cheatsheet"
     description="Quick visual reference for all syntax markers, symbols, and annotations."
     href="/docs/reference/syntax/cheatsheet/"
+  />
+
+---
+
+<!-- Source: https://gram-lang.org/docs/reference/syntax/modules -->
+
+A recipe can `@use` another `.gram` file as a reusable sub-component — a shortcrust pastry, a stock, a batch of egg whites — instead of copy-pasting its steps into every recipe that needs it.
+
+```gram
+---
+title: 'Lemon Meringue Tart'
+---
+
+@use "./bases/shortcrust-pastry.gram" as &shortcrust
+
+## Assembly
+
+[Line] The #tart ring{} with &shortcrust{250g}.
+
+[Fill] With @lemon curd{300g}.
+```
+
+The imported recipe's steps are seamlessly inlined into the timeline: a base's resting time interleaves with the host's steps, and its raw ingredients merge directly onto the unified shopping list.
+
+
+## Syntax
+
+`@use` directives must be declared immediately after the frontmatter, before any cooking step — see [Document Structure](/docs/reference/syntax/document-structure#2-module-imports).
+
+```gram title="@use directive variants"
+@use "./bases/shortcrust.gram" as &crust
+
+// 2. Destructuring (imports multiple distinct components)
+@use "./bases/tart-elements.gram" as { &crust, &frangipane }
+
+// 3. Renaming (resolves naming conflicts in the host recipe)
+@use "./bases/cream.gram" as { &cream as &pastry-cream }
+
+// 4. Multi-word identifiers (wrapped in braces)
+@use "./bases/tart-elements.gram" as &sweet pastry{}
+
+// 5. Time-anchoring (schedules preparation 2 days ahead)
+@use "./bases/starter.gram" as &starter ~{-2d}
+```
+
+### Specifier rules
+* The specifier must end in `.gram`.
+* Supported formats: relative path (`./`, `../`), project root (`@/`), or custom alias (`@alias/`).
+* Paths are strictly confined to the project root containing `.gram/` — absolute paths or URLs are rejected.
+
+
+## Project-root & aliased paths
+
+`./` and `../` resolve relative to the *importing file's directory*. For deeply nested recipes, Gram provides two clean alternatives:
+
+**Project Root (@/)**
+
+`@/` always points to the project root (the directory containing `.gram/`), regardless of file depth:
+
+    ```gram
+    @use "@/bases/shortcrust-pastry.gram" as &pastry
+    ```
+
+  **Path Aliases (@alias/)**
+
+Configure path aliases in `.gram/config.yaml`:
+
+    ```yaml
+    # .gram/config.yaml
+    paths:
+      bases: ./shared/bases
+      sauces: ./shared/sauces
+    ```
+
+    Then import directly using `@alias/`:
+
+    ```gram
+    @use "@bases/shortcrust-pastry.gram" as &pastry
+    @use "@sauces/bechamel.gram" as &sauce
+    ```
+
+
+## What a module exports
+
+Only **section-level** intermediate variables (`->&` on a `## Section` header) are exported. Step-level intermediates (`->&` inside a step) remain private to the module. See [Intermediate Variables](/docs/reference/syntax/intermediate-variables).
+
+```gram title="bases/tart-elements.gram"
+title: 'Tart Elements'
+
+## Sweet Pastry ->&crust
+
+[Mix] @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
+
+## Frangipane Cream ->&frangipane
+
+[Cream] @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
+```
+
+:::note[Default Exports & Re-exporting]
+* **Default Export**: A module with a single section export binds that target when using `as &name`. A module with multiple exports defaults to the output of its **last** section.
+* **Destructured Exports**: Use `as { &a, &b }` to target specific components by name.
+* **No Implicit Re-exports**: If `sauce.gram` imports `&stock` from `stock.gram`, importing `sauce.gram` only provides `&sauce`, not `&stock`. Re-exporting must be explicit via a dedicated section.
+:::
+
+
+## Scaling
+
+Gram measures a module's own output from its ingredients — nothing to declare:
+
+```gram title="bases/shortcrust.gram"
+title: 'Shortcrust Pastry'
+
+## Pastry
+
+[Mix] @flour{300g} with @butter{200g}.
+```
+
+`shortcrust.gram` sums its own ingredients to 500g. When an importing recipe requests `&pastry{250g}`, Gram scales every ingredient in it by `0.5` automatically — the ratio between what was asked for and what the module actually measures out to.
+
+:::note[When the measurement is only an estimate]
+If working out a module's mass depends on an estimated density or a default unit weight rather than an explicit mass, Gram emits an `ESTIMATED_MODULE_YIELD` diagnostic rather than treating the scale factor as exact.
+:::
+
+### Scaling destructured exports
+
+When importing multiple components from the same module, each component is measured on its own — from its own section's ingredients, plus anything that section itself references. If different ratios are requested, the **largest ratio** applies to the entire module, and Gram reports the extra production:
+
+```gram title="bases/tart-elements.gram"
+title: 'Tart Elements'
+
+## Sweet Pastry ->&crust
+
+[Mix] @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
+
+## Frangipane Cream ->&frangipane
+
+[Cream] @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
+```
+
+```gram
+@use "./bases/tart-elements.gram" as { &crust, &frangipane }
+
+## Pear Tart
+
+[Line] The #tart ring{} with the &crust{800g}.
+
+[Spread] The &frangipane{400g} over the base and top with sliced @pears{3}.
+```
+
+`&crust{800g}` against a measured 400g of sweet pastry requires a ×2 ratio; `&frangipane{400g}` against 400g of frangipane cream requires ×1. The larger ratio (×2) applies to the whole module, so frangipane comes out to 800g produced against the 400g actually used.
+
+:::caution[Production Surplus (`MODULE_SURPLUS`)]
+When asymmetrical ingredient demands force Gram to apply the higher multiplier across the entire module, the compiler flags the resulting excess production (here 400g of frangipane cream) with a `MODULE_SURPLUS` diagnostic rather than silently ignoring it.
+:::
+
+### Timers & batches
+
+**Cooking and resting times are never scaled.** Doubling a cookie dough does not double or halve the baking duration.
+
+When a discrete count is requested against a module's measured mass (`&cookies{2}` against a module that measures out to 500g), Gram interprets the request as *2 full batches* and emits `MODULE_BATCH_INTERPRETATION`.
+
+
+## Chained imports & transitivity
+
+Modules can import other modules, creating a dependency chain:
+
+```text
+recipe.gram ──▶ @use "./sauce.gram" ──▶ @use "./stock.gram"
+```
+
+* **Encapsulation**: `recipe.gram` interacts only with `&sauce`. Private steps and local variables of `stock.gram` remain isolated.
+* **Unified Schedule & Shopping List**: Raw ingredients (carrots, aromatics, bones) and simmering steps from `stock.gram` automatically bubble up into the main recipe.
+
+
+## Diamond dependencies & cycle prevention
+
+### Diamond dependencies
+
+When a menu imports multiple dishes sharing a common base (e.g. an entrée and a dessert both importing `shortcrust-pastry.gram`):
+* The shared base file is parsed **only once**.
+* The compiler creates independent instances scaled to each dish's requirements.
+* Raw ingredients (flour, butter) merge cleanly on the shopping list.
+
+### Cycle prevention
+
+:::danger[Circular Dependencies (`MODULE_CYCLE`)]
+If Recipe A imports B which imports A (directly or indirectly), Gram detects the circular dependency, cuts off that one import branch, and reports a `MODULE_CYCLE` error diagnostic displaying the full dependency loop (`A -> B -> A`). The rest of the recipe still compiles — the cyclic binding is left unresolved rather than crashing the whole build — but `gram check` (and any `--strict` run) fails on it, since `MODULE_CYCLE` is error-severity.
+:::
+
+
+## Encapsulation
+
+* **Section Scoping**: Relative quantities (`@water{70% @&flour}`) and ingredient checks resolve only within the module's own sections. Host recipes using identical ingredient names never cause conflicts.
+* **Headless Modules**: A module without section headers (`##`) is isolated into its own dedicated section upon import — it never merges into the host's untitled section.
+
+
+## Frontmatter inheritance
+
+Informational metadata (`title`, `description`, `author`, `tags`, `category`) belongs strictly to the host recipe — importing a `vegan` base does not make an egg-based host tart vegan.
+
+**Exceptions:**
+* `densities:` merges into the host (host values take precedence on conflict).
+* Baker's percentage references (`*`) inside imported modules are stripped on import.
+
+
+## Stocking an import (`--stock`)
+
+When a component is already on hand (bought ready-made or prepared ahead of time), pass `--stock` to the CLI:
+
+```bash
+gram shop dinner.gram --stock @bases/bouillon.gram
+gram cook dinner.gram --stock @bases/bouillon.gram
+```
+
+* **Run sheet**: Preparation steps for stocked modules are omitted and open no dedicated kitchen visits; the base is simply listed "in stock" within the visit using it.
+* **Shopping List**: Appears as a single purchasable item (e.g. `1 bouillon`) instead of raw ingredients.
+* **Nutrition**: Exact caloric and macronutrient values are preserved.
+
+Supported by all CLI commands resolving `@use` (`build`, `check`, `view`, `export`, `cook`, `print`, `watch`, `shop`, `scale`).
+
+
+## Anchoring an import in time (`~{-2d}`)
+
+When a fresh preparation must be started in advance (e.g. a sourdough starter or marinade), anchor it directly on the `@use` line:
+
+```gram
+@use "./bases/starter.gram" as &starter ~{-2d}
+
+## Bread
+
+[Knead] With &starter{150g}.
+```
+
+:::tip[Time-Anchor Precedence]
+* An importer-level `~{...}` clause overrides any retro-planning header declared inside the base (`RETRO_PLANNING_OVERRIDE_SHADOWED`).
+* Combining `--stock` with `~{...}` on the same import causes the time anchor to be ignored, triggering a `STOCKED_RETRO_PLANNING_IGNORED` diagnostic.
+:::
+
+
+## Editor & language server support
+
+The Gram Language Server resolves `@use` directives in real time:
+
+* **Instant Diagnostics**: Cross-file validation updates live as you type.
+* **Run sheet & live preview**: Real-time update incorporating spliced steps and scaled quantities. An imported base integrates into kitchen visits, and a time anchor (e.g. `~{-2d}`) on its `@use` directive automatically opens a dedicated working day.
+* **Go to Definition**: Jumping to `&pastry` opens the source module at the exact exported section.
+* **Auto-completion**: Typing `@use "` completes `./`, `../`, `@/`, and configured `paths:` aliases.
+
+
+## Related documentation
+
+
+  <LinkCard 
+    title="How-to: organize modular recipes" 
+    description="Hands-on guide to splitting recipes, configuring aliases, multi-day scheduling, and --stock workflows." 
+    href="/docs/how-to/organize-modular-recipes" 
+  />
+  <LinkCard 
+    title="Document structure" 
+    description="Overview of frontmatter metadata, directives, sections, and overall file layout." 
+    href="/docs/reference/syntax/document-structure" 
+  />
+  <LinkCard 
+    title="CLI reference" 
+    description="Complete documentation for gram build, gram shop, and global CLI options." 
+    href="/docs/reference/tooling/cli" 
   />
 
 ---
@@ -369,7 +633,7 @@ If you scale a recipe from 2 to 4 portions, an `@ingredient` with `{100g}` becom
 Some `@ingredient` items (like salt, yeast, or spices) should not scale linearly. You can lock their quantity using the `=` modifier.
 
 ```gram
-Season with @=salt{1 tsp} to taste.
+[Season] With @=salt{1 tsp} to taste.
 ```
 This keeps the salt at 1 tsp regardless of how many portions the user calculates.
 
@@ -456,9 +720,9 @@ Each preparation counts toward the mise en place of **its own section**, where i
 Only a parenthesis that touches the `}` (or the name when there are no braces) is read as a preparation, and it ends on the same line. With a space, the parenthesis stays part of the sentence:
 
 ```gram
-Add the @butter{100 g}(softened).
+[Add] The @butter{100 g}(softened).
 
-Add the @butter{100 g} (about 1 stick).
+[Add] The @butter{100 g} (about 1 stick).
 ```
 
 The first butter carries the preparation `softened`; the second has none, and `(about 1 stick)` stays ordinary text. The same rule applies to parentheses on cookware, temperatures, and target states.
@@ -471,10 +735,10 @@ You can rename an `@ingredient` for display purposes using a colon `:` immediate
 
 <CodeTabs>
 ```gram title="Code"
-Deglaze with @dry white wine:wine{100ml}.
+[Deglaze] With @dry white wine:wine{100ml}.
 ```
 ```markdown title="Rendered Recipe"
-1. Deglaze with **wine** (100ml).
+1. **[Deglaze]** With **wine** (100ml).
 ```
 ```markdown title="Shopping List"
 - **dry white wine**: 100ml
@@ -495,91 +759,90 @@ This `:` syntax only renames how the ingredient is *displayed* in the rendered s
 You can define acceptable alternatives for an `@ingredient` using the pipe `|` operator.
 
 ```gram
-Add @milk{100ml}|@water{95ml}.
+[Add] @milk{100ml}|@water{95ml}.
 ```
 This works with short-hand preparations as well:
 ```gram
-@onion{1}(peeled and chopped)|@shallots{2}(minced)
+[Add] @onion{1}(peeled and chopped)|@shallots{2}(minced)
 ```
 
 ### Ranges
 Recipes aren't always exact. You can specify a range using a hyphen `-`.
 
 ```gram
-Add @eggs{2-4}.
+[Add] @eggs{2-4}.
 
-Pour @water{1.5-2l}.
+[Pour] @water{1.5-2l}.
 ```
 
 ### Fractions
 Quantities accept fractions in three forms — a plain fraction, a mixed number, or a Unicode fraction glyph — all normalized to the same decimal value.
 
 ```gram
-Add @sugar{1/2 cup}.
+[Add] @sugar{1/2 cup}.
 
-Add @flour{1 1/2 cups}.
+[Add] @flour{1 1/2 cups}.
 
-Add @butter{1½ sticks}.
+[Add] @butter{1½ sticks}.
 ```
 
 ### Decimal numbers
 *(since v1.5.0)*
 
-A decimal number takes a point or a comma, whichever you are used to: `{1.5 kg}` and `{1,5 kg}` are the same quantity. This holds for every number in braces: ingredients, ranges (`{0,5-0,75 l}`), relative quantities (`{12,5% &dough}`), cookware, temperatures (`^{37,5°C}`), timers and section anchors.
+Decimals accept either a period or a comma: `{1.5 kg}` and `{1,5 kg}` mean the same thing. This applies to every number inside braces—ingredients, ranges (`{0,5-0,75 l}`), relative quantities (`{12,5% &dough}`), cookware, temperatures (`^{37,5°C}`), timers, and section anchors.
 
 ```gram
-Add @flour{1,5 kg} and @salt{0.125 kg}.
+[Add] @flour{1,5 kg} and @salt{0.125 kg}.
 
-Pour @milk{0,5-0,75 l}.
+[Pour] @milk{0,5-0,75 l}.
 ```
 
-Gram has no thousands separator: write `{1500 g}`, never `{1,500 g}`. A comma followed by exactly three digits is read as a decimal like any other (`{1,000 g}` is 1 g), but since a reader could mean a thousand, the compiler warns `AMBIGUOUS_NUMBER` and says how it read the number. A point keeps the meaning it has always had: `{1.000 kg}` is 1 kg, with no warning.
+:::caution[No thousands separator]
+Gram has no thousands separator: write `{1500 g}`, never `{1,500 g}`. A comma followed by three digits like `{1,000 g}` is parsed as a decimal (`1 g`) and triggers an `AMBIGUOUS_NUMBER` warning; a period (`{1.000 kg}`) always means `1 kg` with no warning.
+:::
 
 ### Sums of quantities
 *(since v1.5.0)*
 
-A measure that doesn't fit one unit is written the way a recipe says it: terms joined by `+`, or `-` for an amount taken away.
+When a measurement combines more than one unit, write it as a sum with `+`, or `-` for an amount subtracted:
 
 ```gram
-Add @flour{1 cup + 1 tbsp} and @sugar{1 cup - 2 tbsp}.
+[Add] @flour{1 cup + 1 tbsp} and @sugar{1 cup - 2 tbsp}.
 
-Pour @milk{1 cup + 1-2 tbsp}.
+[Pour] @milk{1 cup + 1-2 tbsp}.
 
-Mix in @butter{2 1/2 tbsp + ½ tsp} and @rice{1 cup + 20 g}.
+[Mix] In @butter{2 1/2 tbsp + ½ tsp} and @rice{1 cup + 20 g}.
 ```
 
-Each term is a number (or a range, or a fraction) with its unit. Gram keeps the terms as written and works out their total: `{1 cup + 1 tbsp}` is 17 tbsp, `{1 cup - 2 tbsp}` is 14 tbsp. The recipe shows the sum as you wrote it; once scaled, it is worked out again into amounts a cook can measure (`{1 cup + 1 tbsp}` doubled reads `2 cup + 2 tbsp`, never `2 1/8 cup`). The `=` modifier locks a sum like any other quantity (`@=salt{1,5 g + 1 pinch}`).
+Each term is a quantity (number, range, or fraction) with its unit. Gram preserves the sum as written in the unscaled recipe, and recomputes it into practical kitchen measures when scaling (for example, doubling `{1 cup + 1 tbsp}` gives `2 cup + 2 tbsp`). Adding `=` locks the entire sum (`@=salt{1,5 g + 1 pinch}`).
 
-A sum counts as **separate mentions** of the ingredient: `@rice{1 cup + 20 g}` goes into the shopping list exactly like `@rice{1 cup}` followed by `@&rice{20 g}`. Terms of the same kind of unit add up (cups and spoons, kilos and grams); a volume next to a weight, or two units Gram doesn't know (`{1 head + 2 cloves}`), stay side by side.
+In the shopping list, a sum behaves like separate mentions of the ingredient: compatible units add up (cups and spoons, grams and kilograms), while a volume and a weight (`{1 cup + 20 g}`) or unrecognized units stay side by side.
 
-A few rules keep a sum readable:
+A few rules keep sums unambiguous:
 
-- **Every term has its unit**: `{1 + 1 cup}` is refused.
-- **Only amounts**: no percentage (`{100 g + 10%}`, write `{110 g}`, or a [relative quantity](/docs/reference/syntax/relative-quantities/)), no multiplication (`{2 x 100 g + 50 g}`).
-- **Take away from the same kind**: `{1 cup - 2 tbsp}` works, `{1 cup - 20 g}` doesn't, and what is taken away must leave something (`{1 tbsp - 1 cup}` is refused).
-- **No range after `-`**: `{1 cup - 1-2 tbsp}` would swap its bounds; write the range on a term that is added.
+- **Every term needs a unit**: `{1 + 1 cup}` is rejected.
+- **Plain quantities only**: no percentages (`{100 g + 10%}`) or multiplications (`{2 x 100 g}`).
+- **Subtract within the same kind**: `{1 cup - 2 tbsp}` works, `{1 cup - 20 g}` does not, and the result must remain positive (`{1 tbsp - 1 cup}` is rejected).
+- **No range after `-`**: put ranges on added terms (`{1 cup + 1-2 tbsp}`), never subtracted ones.
 
-Each kind of amount adds up and takes away **on its own**, because a volume and a weight can't be compared without a density. In `{1 cup - 2 tbsp + 30 g}`, the 2 tbsp come off the cup and the 30 g are added beside them: the sum is 14 tbsp of volume plus 30 g of weight. In `{1 cup - 20 g}`, there is no weight to take the 20 g from, so Gram refuses it rather than guess. Hover a sum in the editor to see what each kind comes to.
+An invalid sum still compiles with an `INVALID_QUANTITY` warning explaining why, and is excluded from shopping list and nutrition totals. See [Scaling sums of quantities](/docs/explanation/scaling/#scaling-sums-of-quantities) for details.
 
-A refused sum compiles with an `INVALID_QUANTITY` warning that says why, and counts for nothing in the shopping list and the nutrition. Two quantities written side by side without an operator (`{1 cup 5 tbsp}`) raise `INVALID_UNIT`; the editor offers to insert the ` + `.
-
-:::caution[oz is a weight]
-In `{1 cup + 2 oz}`, `oz` is an ounce of weight, not of volume: Gram reads it as written and adds a note (`OZ_AFTER_VOLUME`). Write `fl oz` for a fluid ounce.
+:::caution[`oz` means weight]
+In `{1 cup + 2 oz}`, `oz` is parsed as weight (ounces), not fluid volume (`OZ_AFTER_VOLUME`). Write `fl oz` for fluid ounces.
 :::
 
 ## Error handling
 
-Some syntax errors stop the recipe from being read before it is even compiled: an unreadable quantity in braces (`@salt{1 g/l}`), a brace that is never closed. The message points at the exact spot to fix, and the editor underlines it.
+Some syntax errors stop parsing before compilation: an unreadable quantity in braces (such as `@salt{1/2/3}`) or an unclosed brace. The error points to the exact spot to fix.
 
-The compiler checks for semantic errors in your `@ingredient` declarations and will output specific warnings:
+The compiler checks for semantic errors in your `@ingredient` declarations and emits structured warnings:
 
-- **Invalid Modifier**: If you combine incompatible modifiers (like `?*`), the compiler warns `INVALID_MODIFIER_COMBINATION` and ignores them.
-- **Undefined Reference**: If you use a reference (`@&ingredient`) but that item hasn't been declared previously in the recipe, the compiler warns `UNDEFINED_REFERENCE`.
-- **Database Missing**: If you compile with a database and the `@ingredient` is not found, it warns `MISSING_INGREDIENT`.
-- **Missing Macros**: If the database lacks nutritional information for the `@ingredient`, it warns `MISSING_MACROS`.
-- **Unknown Mass**: If it cannot convert a volume or count into grams to estimate nutrition, it warns `UNKNOWN_MASS`.
-- **Invalid Quantity**: If a sum of quantities can't be read (a term without a unit, a percentage, an amount taken away from another kind…), it warns `INVALID_QUANTITY` and gives the reason.
-- **Ambiguous Number**: If a comma is followed by exactly three digits (`{1,000 g}`), it reads a decimal and warns `AMBIGUOUS_NUMBER`, in case a thousand was meant.
+- **Invalid Modifier**: Combining incompatible modifiers (like `?*`) triggers `INVALID_MODIFIER_COMBINATION`.
+- **Undefined Reference**: Using a reference (`@&ingredient`) before it has been declared triggers `UNDEFINED_REFERENCE`.
+- **Database Missing**: An `@ingredient` missing from the supplied database triggers `MISSING_INGREDIENT`.
+- **Missing Macros**: An entry without nutritional information triggers `MISSING_MACROS`.
+- **Unknown Mass**: A volume or count that cannot be converted into grams triggers `UNKNOWN_MASS`.
+- **Invalid Quantity / Ambiguous Number**: Malformed sums trigger `INVALID_QUANTITY`, and a comma followed by three digits (`{1,000 g}`) triggers `AMBIGUOUS_NUMBER`.
 
 ## Related resources
 
@@ -616,13 +879,13 @@ You can define the tools and equipment needed for a recipe using the `#` symbol.
 Like an `@ingredient`, if the `#cookware` name is a single word and you only need one of it, you can omit the braces `{}`.
 
 ```gram
-Heat the #pan.
+[Heat] The #pan.
 ```
 
 If the name contains spaces or you want to specify a quantity, you must use braces `{}`.
 
 ```gram
-Take a #baking sheet{}.
+[Take] A #baking sheet{}.
 ```
 
 ## Quantities vs dimensions
@@ -675,23 +938,23 @@ Cookware items required by a section are inventoried in the mise en place of the
 You can apply Optional (`?`), Hidden (`-`), Fixed (`=`), and Reference (`&`) modifiers directly after `#`:
 
 ```gram
-Use a #?wok if you have one, otherwise a #-large pan will do.
+[Use] A #?wok if you have one, otherwise a #-large pan will do.
 
-Return to the #&wok to finish the sauce.
+[Return] To the #&wok to finish the sauce.
 ```
   **Component alias**
 
 You can rename an equipment item for display while keeping a clean canonical slug using the `:` operator:
 
 ```gram
-Use the #cast iron skillet:skillet{}.
+[Use] The #cast iron skillet:skillet{}.
 ```
   **Alternatives**
 
 You can declare acceptable equipment substitutions using the pipe `|` operator:
 
 ```gram
-Cook in a #pan|#wok.
+[Cook] In a #pan|#wok.
 ```
 
 ## Related resources
@@ -719,25 +982,21 @@ Cook in a #pan|#wok.
 
 You can define `~timer` declarations and durations in your recipes using the `~` symbol.
 
-## Basic declaration
+## Writing a duration
 
-A `~timer` **must** state its unit inside the braces. Words are not durations: `~{about 10 minutes}` or `~{half an hour}` are not read, and the compiler warns about them.
+Every `~timer` requires a recognizable duration and unit inside braces (`~{25min}`); free-text durations like `~{about 10 minutes}` or `~{half an hour}` trigger a compiler warning.
 
 ```gram
-Bake for ~{25min}.
+[Bake] For ~{25min}.
 ```
 
 **Supported units:**
-- `min` (minutes) - Canonical preferred standard.
+- `min` (minutes) — canonical preferred standard (`m` and `minutes` normalize to `min`).
 - `h` (hours).
 - `d` (days).
 - `s` (seconds).
 
-:::note
-Shorthand `m` or the word `minutes` are automatically normalized to `min` by the compiler.
-:::
-
-These units are resolved through Gram's multi-language time dictionary: localized aliases below are recognized natively regardless of the recipe language (e.g. in a French recipe, `~{2j}` resolves identically to `~{2d}`, and `~{1 hr}` reads in any recipe).
+Units resolve through Gram's multi-language time dictionary, so localized aliases work regardless of the recipe language (`~{2j}` equals `~{2d}`, and `~{1 hr}` works anywhere).
 
 | Canonical | Aliases |
 | --- | --- |
@@ -746,132 +1005,74 @@ These units are resolved through Gram's multi-language time dictionary: localize
 | `m` | `min`, `mins`, `minute`, `minutes` |
 | `s` | `sec`, `secs`, `second`, `seconds` |
 
-## Writing a duration
+### Natural and compound forms
 *(since v1.5.0)*
 
-Write a duration the way a recipe does, in American or British English, in French or in international notation. Spaces carry no meaning: `~{1h30}`, `~{1 h 30}`, `~{1hr 30}` and `~{1 hr. 30 mins}` all read as 1 hour 30 minutes.
+Write durations the way recipes naturally do. Spaces don't matter (`~{1h30}`, `~{1 h 30}`, `~{1 hr 30 mins}` all mean 1 h 30 min), and every view formats them consistently in the reader's language:
 
 ```gram
-Simmer the @stock{2 l} for ~{1h30}.
+[Simmer] The @stock{2 l} for ~{1h30}.
 
-Let the @dough{} rise ~_{1 hr 30 mins}.
+[Rise] Let the @dough{} rise ~_{1 hr 30 mins}.
 
-Age the @ham{1} in the cellar ~_{2d 4h}.
+[Age] The @ham{1} in the cellar ~_{2d 4h}.
 ```
 
-Whatever the writing, the views display every duration the same way, in the reader's language (`1 h 30 min`), and hovering a timer in your editor shows how Gram read it.
-
-### Several units
-
-A duration can chain several units, optionally joined by `+`: `~{1h30min}`, `~{1 h 30 min}`, `~{2 d 4 h}`, `~{1h + 30min}`.
-
-- Units go **from the largest to the smallest**, each one once: `~{30min 1h}` and `~{1h 2h}` are not read.
-- A **last number without a unit** is allowed right after hours (it counts minutes) or minutes (it counts seconds), when it is a whole number under 60: `~{1h30}`, `~{2min30}`. `~{1h75}` is not read: write `~{2h15}`.
-- **Decimals and fractions** only work in a duration of a single unit: `~{1.5 h}`, `~{1½ h}`, `~{1 1/2 hours}`. `~{1.5h30}` is not read.
-
-### Clock notation
-
-A clock with three parts always reads: `~{1:30:00}` is 1 hour 30 minutes, `~{0:04:30}` is 4 minutes 30 seconds. With two parts, a unit says what the first part is: `~{1:30 h}` is 1 hour 30 minutes, `~{4:30 min}` is 4 minutes 30 seconds.
-
-```gram
-Steam the @pudding{1} for ~_{1:30 h}.
-```
-
-`~{1:30}` alone is not read: it could be 1 hour 30 or 1 minute 30. Write `~{1h30}` or `~{1:30 min}`. After the first part, each part has two digits and stays under 60.
-
-### Prime notation
-
-Common in Italian and French recipes, `'` counts minutes and `"` seconds: `~{5'}`, `~{5'30"}`, `~{45"}`, `~{90'}`. A last number without a prime counts seconds (`~{5'30}`). Primes only count minutes and seconds, in whole numbers.
-
-```gram
-Cook the @spaghetti{500g} for ~{9'}, then toss for ~{1'30"}.
-```
-
-The typographic variants read too: the curly apostrophe `’` that word processors put in place of `'`, the primes `′` and `″`, and two apostrophes `''` for seconds.
-
-### Decimal numbers
-
-A duration can be a decimal, with a point or a comma (`~{1.5 h}`, `~{1,5 h}`; see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
+- **Compound units** (`~{1h30min}`, `~{2 d 4 h}`, `~{1h + 30min}`): list units from largest to smallest, each once. A trailing number without a unit is allowed right after hours (minutes) or minutes (seconds) if it is a whole number under 60 (`~{1h30}`, `~{2min30}`, not `~{1h75}`). Decimals and fractions only apply to single-unit durations (`~{1.5 h}`, `~{1½ h}`, not `~{1.5h30}`).
+- **Clock notation** (`~{1:30:00}`, `~{1:30 h}`, `~{4:30 min}`): three parts always work (`hh:mm:ss`); two parts require a leading unit so `1:30` isn't ambiguous between hours and minutes.
+- **Prime notation** (`~{5'}`, `~{5'30"}`, `~{45"}`): `'` counts whole minutes and `"` counts whole seconds (typographic quotes `’`, `′`, `″`, and `''` also work).
+- **Decimals** (`~{1.5 h}`, `~{1,5 h}`): periods and commas both work (see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
 
 :::caution
-A decimal is a fraction of the unit, not minutes: `~{1.30 h}` (or `~{1,30 h}`) is 1 hour 18 minutes, not 1 hour 30. Write `~{1h30}` or `~{1.5 h}` for an hour and a half.
+A decimal is a fraction of the unit, not minutes: `~{1.30 h}` is 1 h 18 min, not 1 h 30 min. Write `~{1h30}` or `~{1.5 h}` for an hour and a half.
 :::
 
-### What Gram reads, at a glance
-
-| Written | Read as |
-| :--- | :--- |
-| `~{90min}`, `~{1.5 h}`, `~{1,5 h}`, `~{1½ h}`, `~{1 1/2 hours}` | 1 h 30 min |
-| `~{1h30}`, `~{1 h 30}`, `~{1hr 30}`, `~{1 hr 30 mins}`, `~{1 hour 30 minutes}`, `~{1h30m}` | 1 h 30 min |
-| `~{1 heure 30}`, `~{1h + 30min}`, `~{1:30 h}`, `~{1:30:00}` | 1 h 30 min |
-| `~{4min30}`, `~{4:30 min}`, `~{4'30"}`, `~{0:04:30}` | 4 min 30 s |
-| `~{2 d 4 h}`, `~{2 j 4 h}` | 2 days 4 hours |
-| `~{45 min - 1 h}`, `~{1h30-2h}`, `~{5-7'}` | a range (see below) |
-
-| Not read | Why | Write instead |
+| Accepted | Rejected | Use instead |
 | :--- | :--- | :--- |
-| `~{1:30}` | hours or minutes? | `~{1h30}` or `~{1:30 min}` |
-| `~{1h75}` | 60 minutes or more after the hours | `~{2h15}` |
-| `~{30min 1h}` | units from the smallest to the largest | `~{1h30}` |
-| `~{1.5h30}` | a decimal in a duration of several units | `~{1h30}` or `~{1.5 h}` |
-| `~{half an hour}`, `~{2 to 3 hours}` | words | `~{30min}`, `~{2-3h}` |
-| `~{2 * 2 min}` | a multiplication | the total, `~{4min}` |
-| `~{PT1H30M}` | ISO 8601, a notation for machines | `~{1h30}` |
+| `~{1h30}`, `~{1 hr 30}`, `~{1h + 30min}` | `~{1:30}` *(ambiguous)* | `~{1h30}` or `~{1:30 min}` |
+| `~{1:30 h}`, `~{1:30:00}` | `~{1h75}` *(≥ 60 min)* | `~{2h15}` |
+| `~{4'30"}`, `~{4min30}` | `~{30min 1h}` *(wrong order)* | `~{1h30}` |
+| `~{1.5 h}`, `~{1,5 h}`, `~{1½ h}` | `~{1.5h30}` *(decimal in compound)* | `~{1h30}` or `~{1.5 h}` |
+| `~{45 min - 1 h}`, `~{1h30-2h}` | `~{half an hour}` *(words)* | `~{30min}` |
 
-A duration Gram does not read raises a [warning](#error-handling) with a suggestion, and is not counted in the total time: Gram never guesses.
-
-### Timer names
-You can assign an explicit name to a `~timer`. This is especially useful for passive background tasks: when multiple timers run concurrently (like a dough fermenting while a stock simmers), named timers allow user interfaces and production run sheets to track each process simultaneously without confusion.
-
-```gram
-Boil @eggs{2} for ~eggs{3min}.
-```
+Unrecognized durations raise an `INVALID_DURATION` warning with a suggested fix and are excluded from total times.
 
 ### Exact times and ranges
-*(since v1.4.0)*
 
-By default, a timer is **exact**: `~_{12h}` lasts exactly 12 hours. When an operation has variable or flexible duration, specify an interval: this provides official elasticity for Gram's scheduling engine.
-
-```gram
-Let the dough rest in the fridge ~_{12-24h}.
-
-Roast the chicken for ~{40-50min}.
-```
-
-Each side of a range follows the rules above, and the shorter duration comes first. The left side takes the unit of the right side only when it is a bare number and the right side has a single unit: `~{1-2 h}`, `~{5-7'}`, `~{1.5-2 h}` (and two clocks before a unit: `~{1:30-2:00 h}`). Otherwise, write both sides in full (since 1.5.0):
+By default, a timer is **exact**: `~_{12h}` lasts exactly 12 hours. When an operation has a variable or flexible duration, specify a range:
 
 ```gram
-Braise the @beef cheeks{1 kg} ~_{2h30-3h}.
+[Chill] Let the dough rest in the fridge ~_{12-24h}.
 
-Poach the @pears{4} for ~{45 min - 1 h}.
+[Roast] The chicken for ~{40-50min}.
 ```
 
-`~{1-2h30}` is not read (is the left side 1 hour or 1 hour 30?): write `~{1h-2h30}`. Neither is `~{2-1 h}`: write `~{1-2 h}`.
+Write the shorter duration first, following the duration formats above. You can omit the left-hand unit only when it is a bare number and the right side has a single unit (`~{1-2 h}`, `~{5-7'}`, `~{1:30-2:00 h}`); for compound or mixed-unit bounds, write both sides in full (`~_{2h30-3h}`, `~{45 min - 1 h}`).
 
-The interpretation of a range differs fundamentally based on timer type:
+Ranges behave differently depending on whether the timer is passive or active:
 
-- **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning and run sheets](/docs/explanation/planning/)).
-- **How the <Term id="runSheet" /> reflects ranges.** The run sheet displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 min (12–48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Can't start earlier"). See [Plan a meal](/docs/how-to/plan-a-meal/).
-- **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
+- **Passive range (`~_{12-24h}`) — elasticity**: "ready from 12 hours, optimal up to 24 hours." By default, timelines use the shortest bound (configurable to `shortest`, `balanced`, or `longest` via `--rests` / `gram.rests`), and calendar planning can stretch or compress it within those bounds to fit your kitchen hours.
+- **Active range (`~{40-50min}`) — safety margin**: planned on the longest bound (50 minutes) so service is never delayed (`rests` does not apply).
 
-:::note
-Deprecated fields of the compiled recipe (`steps[].timings`, `steps[].backgroundTasks`, and `metrics`) continue to evaluate ranges as their average value until version 2.0.0. Consume the modern `schedule` blocks instead.
-:::
+For how ranges shape margins and kitchen visits on the **run sheet**, see [Planning and run sheets](/docs/explanation/planning/) and [Plan a meal](/docs/how-to/plan-a-meal/).
 
 ### Proportional times
 *(since v1.5.0)*
 
-Some times follow a weight: 15 minutes per 500 g of roast, 4 minutes per cutlet. Write the duration, a slash, then the amount of an ingredient written earlier in the section, as in a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units):
+Some cooking times scale with weight or count—such as 15 minutes per 500 g of roast, or 4 minutes per cutlet. Write the duration, a slash, and the reference amount of an ingredient declared earlier in the section, following the same syntax as a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units):
 
 ```gram
-Season the @roast{1.2 kg} and roast ~{15 min / 500 g @&roast}. // 36 min
+[Season] The @roast{1.2 kg} and roast ~{15 min / 500 g @&roast}. // 36 min
 
-Braise the @shoulder{2 kg} ~_{1:30 h / 1 kg @&shoulder}. // 3 h
+[Braise] The @shoulder{2 kg} ~_{1:30 h / 1 kg @&shoulder}. // 3 h
 
-Fry the @cutlets{4} ~{4 min / @&cutlets}. // 16 min
+[Fry] The @cutlets{4} ~{4 min / @&cutlets}. // 16 min
 ```
 
-The duration takes every form above (`1h30`, `1:30 h`, a range such as `15-20 min`), the target amount a single number. A time per piece counted from a weight (`~{4 min / @&cutlets}` with `@cutlets{800 g}`) uses the `unit_weight` of the ingredient database, and stays uncounted, with a warning, when there is none. Scaling the recipe computes the time again, and the schedule with it. A multiplier after a proportional time (`~{15 min / 500 g @&roast * 2}`) is not read yet, nor is a proportional section anchor.
+- The duration accepts any standard format (`1h30`, `1:30 h`, or a range like `15-20 min`), while the target amount must be a single number.
+- A time per piece applied to a weight (`~{4 min / @&cutlets}` with `@cutlets{800 g}`) relies on `unit_weight` in your ingredient database; if missing, the timer stays uncomputed with a warning.
+- Scaling the recipe recalculates proportional times and updates the schedule automatically.
+- Multipliers (`~{15 min / 500 g @&roast * 2}`) and proportional section anchors are not supported yet.
 
 ## Active vs passive
 
@@ -890,7 +1091,7 @@ The Gram compiler builds a complete execution timeline for each recipe. To achie
 By default, a `~timer` is active. It requires direct hands-on involvement: the step is **blocking** and demands undivided attention before moving on to subsequent operations.
 
 ```gram
-Whisk the @heavy cream{} continuously for ~{5min}.
+[Whisk] The @heavy cream{} continuously for ~{5min}.
 ```
 > ⏱️ **Result:** Adds 5 minutes to **active time**.
 
@@ -898,21 +1099,32 @@ Whisk the @heavy cream{} continuously for ~{5min}.
 Add the `_` modifier to designate a passive `~timer`. This represents a **background task**. You initiate the timer (e.g. putting a dish into the oven) and can immediately proceed with subsequent steps.
 
 ```gram
-Bake in the #oven for ~_{45min}.
+[Bake] In the #oven for ~_{45min}.
 
-Meanwhile, prepare the glaze...
+[Prepare] Meanwhile, prepare the glaze...
 ```
 > ⏱️ **Result:** Adds 0 minutes to active time, but extends **idle / passive duration** to ensure these 45 minutes elapse before removing the dish.
+
+## Naming timers and tracks
+
+You can assign an explicit identifier right after `~` or `~_` to label a timer or queue background tasks on a shared resource.
+
+### Timer labels
+When multiple operations run concurrently (like eggs boiling while a stock simmers), naming a timer allows user interfaces and run sheets to track each process clearly:
+
+```gram
+[Boil] @eggs{2} for ~eggs{3min}.
+```
 
 ### Sequential passive timers (named tracks)
 By default, passive timers run concurrently with the rest of the recipe. However, certain background operations sharing equipment cannot physically overlap (e.g. blind-baking a crust for 10 minutes, then lowering the heat and continuing baking for 30 minutes in the same oven).
 
-To enforce **sequential** execution of passive timers, assign them the **same track name**:
+To enforce **sequential** execution of passive timers, give them the **same track name**:
 
 ```gram
-Bake in the #oven at 240°C for ~_baking{10min}.
+[Bake] In the #oven at ^{465°F} for ~_baking{10min}.
 
-Lower the heat to 180°C and bake for ~_baking{30min}.
+[Bake] Lower the heat to ^{350°F} and bake for ~_baking{30min}.
 ```
 
 > ⏱️ **Result:** Because both timers share the track name `baking`, Gram places them on the same background track. The 30-minute timer will only start *after* the 10-minute timer completes. Idle waiting time increases by 40 minutes, while active hands-on time remains zero.
@@ -921,11 +1133,62 @@ Lower the heat to 180°C and bake for ~_baking{30min}.
 Two passive timers that overlap in steps citing the **same cookware** (`#oven` in both) with no track in common are reported by `PASSIVE_OVERLAP_SAME_COOKWARE`: the message suggests a named track. It is only informational, since two trays can share an oven. See [Warnings](/docs/reference/api/warnings/#passive_overlap_same_cookware).
 :::
 
+## Section retro-planning
+
+Adding a `~{...}` annotation to a `## Section` header defines an anticipation deadline. This tells the compiler when the section must conclude relative to the final step where it is consumed.
+
+**This acts as a temporal anchor.** An annotation like `~{-2d}` instructs the compiler to complete this section **2 full days before** it is needed in subsequent steps.
+
+To ensure positive relative timestamps starting at `0`, the compiler normalizes the timeline: this anticipated section becomes the new start point (Time 0), and all subsequent operations are shifted proportionally. Its mise en place moves accordingly, scheduled immediately before the section, two days prior to service.
+
+```gram
+## Puff pastry ~{-2d}
+```
+
+The puff pastry must be completed **2 days** before final assembly.
+
+### Days and hours
+
+The chosen unit defines the anchor's semantics:
+
+- **An anchor in days** (`~{-1d}`, `~{-2d}`) opens a distinct working day (day before, two days before), anchoring the "by working day" strategy and day labels (D-1, D-2).
+- **An anchor in hours or minutes** (`~{-18h}`, `~{-90min}`) specifies a precise deadline within that section's scheduled day, without opening a new working day.
+
+Working days are designed to fit within a 24-hour span: if a long passive duration pushes a day's work out of its window (such as a `~{-1d}` dough fermenting for 50 hours), the compiler emits `DAY_OVERFLOW` and recommends anchoring the section further back.
+
+### Strict syntax
+
+Section header retro-planning annotations require a **strictly negative** duration:
+
+- A **required** leading `-` sign.
+- A non-zero duration in days, hours, or minutes (compound and clock forms are both supported; see [Writing a duration](#writing-a-duration)).
+- A single duration—anchors cannot be ranges or include seconds.
+
+```gram
+## Puff pastry ~{-2d}
+
+[Fold] The @butter{250g} into the @dough{500g}.
+
+## Brioche ~{-1d 12h}
+
+[Knead] The @flour{500g}.
+
+## Ganache ~{-1h30}
+
+[Pour] The @cream{200ml} over the @chocolate{200g}.
+```
+
+Free prose (`~{the day before}`), positive values (`~{2h}`), and zero values (`~{0h}`) are invalid and trigger compiler warnings.
+
+Units resolve through the multi-language time dictionary used by `~timer`: `j`, `jour`, and `jours` are recognized aliases for `d`.
+
+See also: [Retro-planning (Scheduling)](/docs/reference/syntax/document-structure#retro-planning-scheduling) in the document structure reference.
+
 ## How time is calculated
 
 Behind the scenes, Gram tracks four distinct time metrics to establish realistic schedules:
 
-:::note[⏱️ The 4 time metrics]
+:::note[The 4 time metrics]
 1. **Preparation time** (mise en place): Time spent gathering and preparing raw ingredients and cookware (fetching, weighing, peeling, chopping).
 2. **Active time**: Cumulative hands-on duration spent executing culinary steps.
 3. **Passive time**: Autonomous baking, resting, fermentation, or idle waiting time.
@@ -947,7 +1210,6 @@ Here is how the compiler converts syntax elements into working minutes:
 | **Step without any timer** | - | **+ 2 min** (default fallback) | - |
 
 ### When the mise en place happens
-*(since v1.4.0)*
 
 Each section has its own mise en place (gathering and preparing ingredients and cookware). Gram supports three layout strategies without requiring any changes to the recipe source text:
 
@@ -968,64 +1230,6 @@ Gram natively implements an **As Late As Possible (ALAP)** scheduling algorithm.
 
 For a deeper architectural exploration, see the [ALAP scheduling deep dive](/docs/explanation/alap-scheduling/).
 
-## Section retro-planning
-
-Adding a `~{...}` annotation to a `## Section` header defines an anticipation deadline. This tells the compiler when the section must conclude relative to the final step where it is consumed.
-
-**This acts as a temporal anchor.** An annotation like `~{-2d}` instructs the compiler to complete this section **2 full days before** it is needed in subsequent steps.
-
-To ensure positive relative timestamps starting at `0`, the compiler normalizes the timeline: this anticipated section becomes the new start point (Time 0), and all subsequent operations are shifted proportionally. Its mise en place moves accordingly, scheduled immediately before the section, two days prior to service.
-
-```gram
-## Puff pastry ~{-2d}
-```
-
-The puff pastry must be completed **2 days** before final assembly.
-
-### Days and hours
-*(since v1.4.0)*
-
-The chosen unit defines the anchor's semantics:
-
-- **An anchor in days** (`~{-1d}`, `~{-2d}`) opens a distinct working day (day before, two days before), anchoring the "by working day" strategy and day labels (D-1, D-2).
-- **An anchor in hours or minutes** (`~{-18h}`, `~{-90min}`) specifies a precise deadline within that section's scheduled day, without opening a new working day.
-
-Working days are designed to fit within a 24-hour span: if a long passive duration pushes a day's work out of its window (such as a `~{-1d}` dough fermenting for 50 hours), the compiler emits `DAY_OVERFLOW` and recommends anchoring the section further back.
-
-### Strict syntax
-
-Section header retro-planning annotations require a **strictly negative** duration:
-
-- A **required** leading `-` sign.
-- A non-zero duration, written like a timer (see [Writing a duration](#writing-a-duration)) in days, hours and minutes (compound and clock forms since 1.5.0).
-- A single duration: an anchor is never a range, and never counts seconds.
-
-```gram
-## Puff pastry ~{-2d}
-
-Fold the @butter{250g} into the @dough{500g}.
-
-## Brioche ~{-1d 12h}
-
-Knead the @flour{500g}.
-
-## Ganache ~{-1h30}
-
-Pour the @cream{200ml} over the @chocolate{200g}.
-
-## Custard ~{-1:30 h}
-
-Whisk the @yolks{4} with the @sugar{80g}.
-```
-
-An anchor written with days stays in days (`~{-1d 12h}` is a day and a half, and opens a working day); otherwise it counts in its smallest unit (`~{-1h30}` is 90 minutes, `~{-1:30 h}` too).
-
-Free prose (`~{the day before}`), positive values (`~{2h}`), and zero values (`~{0h}`) are invalid. Existing recipes using legacy formats still compile for backward compatibility, but produce compiler warnings.
-
-Units resolve through the multi-language time dictionary used by `~timer`: `j`, `jour`, and `jours` are recognized aliases for `d`.
-
-See also: [Retro-planning (Scheduling)](/docs/reference/syntax/document-structure#retro-planning-scheduling) in the document structure reference.
-
 ## Error handling
 
 The compiler validates `~timer` declarations and section retro-planning annotations, emitting typed warnings for malformed data:
@@ -1034,11 +1238,11 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (`~timer`): Unrecognized units (e.g. `~{30 lightyears}`) trigger `INVALID_UNIT`.
 - **Missing Unit** (section retro-planning): `~{-2}`, free text, positive (`~{2h}`), or zero values (`~{0h}`) trigger `MISSING_UNIT`.
 - **Invalid Unit** (section retro-planning): Unrecognized units trigger `INVALID_UNIT`.
-- **Invalid Duration** *(Since 1.5.0)*: A duration in a shape Gram does not read (`~{1:30}`, `~{1h75}`, `~{30min 1h}`, `~{1-2h30}`, `~{half an hour}`, or a range or seconds in an anchor) triggers `INVALID_DURATION`. The message says why and how to write it; the timer is not counted in the total time, and the section is not anchored. See [Writing a duration](#writing-a-duration).
-- **Ambiguous Number** *(Since 1.5.0)*: A comma followed by exactly three digits (`~{1,000 min}`, `~{-1,000h}`) is read as a decimal, one minute or one hour, and triggers `AMBIGUOUS_NUMBER` in case a thousand was meant.
+- **Invalid Duration**: Unrecognized or ambiguous duration formats (`~{1:30}`, `~{1h75}`, `~{30min 1h}`, `~{1-2h30}`, `~{half an hour}`, or ranges/seconds in anchors) trigger `INVALID_DURATION` with a suggested fix; the timer is excluded from total time and the anchor is ignored.
+- **Ambiguous Number**: A comma followed by three digits (`~{1,000 min}`, `~{-1,000h}`) is parsed as a decimal (`1`) and triggers `AMBIGUOUS_NUMBER`.
 - **Time Paradox**: Anchors conflicting with dependency order (e.g. an ingredient anchored at `-10 min` needed by a section anchored at `-1 h`) trigger `TIME_PARADOX`.
 - **Track Contention**: Concurrent passive timers delayed on the same named track trigger `TRACK_CONTENTION`.
-- **Day overflow** *(Since 1.4.0)*: Passive durations pushing working day tasks beyond the 24-hour window trigger `DAY_OVERFLOW`.
+- **Day overflow**: Passive durations pushing working day tasks beyond the 24-hour window trigger `DAY_OVERFLOW`.
 - **Duration Out Of Range**: Durations exceeding 1,000 years are capped and trigger `DURATION_OUT_OF_RANGE`.
 
 Warnings are non-blocking by default, but can be enforced as errors via `gram check --strict`.
@@ -1082,16 +1286,16 @@ Exact temperatures specify a numeric value accompanied by a recognized unit: `C`
 **Standard exact temperature**
 
 ```gram
-Preheat the #oven to ^{180°C}.
+[Preheat] The #oven to ^{180°C}.
 
-Bake at ^{350°F} until golden brown.
+[Bake] At ^{350°F} until golden brown.
 ```
   **Appliance-labeled temperature**
 
 Just like with `~timers`, you can assign an appliance or process name to a temperature to help renderers and tools highlight equipment setup at a glance:
 
 ```gram
-Preheat the #oven to ^oven{180°C}.
+[Preheat] The #oven to ^oven{350°F}.
 ```
 
 ## Semantic temperatures
@@ -1099,9 +1303,9 @@ Preheat the #oven to ^oven{180°C}.
 For stovetop cooking, searing, or subjective heat levels where exact degree values are impractical, you can write qualitative free-text strings:
 
 ```gram
-Cook on ^stove{high heat} for ~{2min}.
+[Cook] On ^stove{high heat} for ~{2min}.
 
-Turn down to ^{low heat} and let simmer.
+[Simmer] Turn down to ^{low heat} and let simmer.
 ```
 
 :::note[Parsing distinction]
@@ -1113,19 +1317,19 @@ When the Gram compiler inspects a `^temperature` token:
 ## Cooking mode and notes
 *(since v1.5.0)*
 
-A note in parentheses, right after the closing brace, says what goes with the temperature: the oven mode, where it is measured, how to cook. It works on exact and semantic temperatures, named or not, the way a preparation follows an ingredient.
+Add a parenthetical note right after the closing brace to specify the oven mode, measurement point, or cooking condition. This works on both exact and semantic temperatures, named or unnamed, just like ingredient preparation notes:
 
 ```gram
-Preheat the #oven to ^{160°C}(fan).
+[Preheat] The #oven to ^{320°F}(fan).
 
-Roast until the meat reaches ^{63°C}(internal).
+[Roast] Until the meat reaches ^{145°F}(internal).
 
-Cook on ^stove{high heat}(uncovered) for ~{5min}.
+[Cook] On ^stove{high heat}(uncovered) for ~{5min}.
 ```
 
-The note is always shown next to the temperature, on screen and on paper, since baking at 160 °C fan or conventional is not the same thing. It is words for the cook, in the recipe's language: Gram keeps it as written and never reads it.
+The note is always shown next to the temperature on screen and in print, and is preserved as written in your recipe's language without being parsed.
 
-As with ingredients and cookware, keep the opening `(` glued to the `}` on the same line: with a space (`^{180°C} (preheated)`), the parenthesis stays ordinary text in the sentence.
+As with ingredients and cookware, keep the opening `(` attached to `}` on the same line: with a space (`^{350°F} (preheated)`), the parentheses remain ordinary step text.
 
 ## Error handling
 
@@ -1144,13 +1348,104 @@ Only Celsius and Fahrenheit temperature scales are supported. The compiler emits
   />
   <LinkCard
     title="Cookware syntax"
-    description="Learn how to declare appliances like ovens, pans, and pans with #cookware."
+    description="Learn how to declare appliances like ovens, pots, and pans with #cookware."
     href="/docs/reference/syntax/cookware/"
   />
   <LinkCard
     title="Gram syntax cheatsheet"
     description="Quick visual reference for all temperature, timer, and ingredient markers."
     href="/docs/reference/syntax/cheatsheet/"
+  />
+
+---
+
+<!-- Source: https://gram-lang.org/docs/reference/syntax/target-states -->
+
+*(since v1.5.0)*
+
+A timer tells you how long a step should take, not when it is truly done. Custard is ready when it coats the spoon, yolks when they fall in a ribbon, brown butter when it smells nutty. A **target state** marks that visual or sensory cue with `={...}`:
+
+```gram
+[Whisk] @egg yolks{4} with @sugar{80 g} until ={ribbon stage}.
+
+[Brown] As soon as the butter turns ={nutty brown}, take the #pan off the heat.
+
+[Whip] The egg whites should be ={stiff} before you add the @sugar{50 g}.
+```
+
+Place a target state wherever the sentence flows best—at the end, start, or middle of a step—with no required connecting word ("until", "when", or none at all). Put only the state itself inside the braces and keep surrounding words in the prose so the step reads naturally while the cue stands out in every view.
+
+## How to check it
+
+Add a parenthetical note directly after the closing brace to explain how to verify the state—the practical test a cook can rely on:
+
+```gram
+[Cook] On ^{low heat}, stirring, until ={it coats the spoon}(a finger drawn across the back of the spoon leaves a clean line) ->&custard{}
+```
+
+Both the state and its note are always displayed, on screen and in print, and `gram cook` highlights them beneath the step. Gram preserves them as written in your recipe's language without interpreting them.
+
+Just like ingredients, cookware, and temperatures, keep the opening `(` attached to `}` on the same line: with a space (`={stiff peaks} (about 5 min)`), the parentheses remain ordinary step text.
+
+## With a time and a temperature
+
+A step can combine a target state with a timer and a temperature. The timer estimates duration for the schedule; the state tells the cook when to stop at the stove.
+
+```gram
+[Cook] At ^{180°F}(internal) for ~{8 min}, until ={it coats the spoon}.
+```
+
+:::tip[What does not go inside]
+A target state describes a sensory cue, never a measurement:
+- use a [temperature](/docs/reference/syntax/temperatures/) with a note for target temperatures (`^{145°F}(internal)`);
+- use a [timer](/docs/reference/syntax/times/) for durations (`~{5 min}`);
+- target states never scale (`={doubled in volume}` stays unchanged regardless of servings).
+:::
+
+## Several in one step
+
+A step can contain multiple target states. Each renders inline in the prose, and `gram cook` lists them together—reminding you to check them when a step's timer finishes.
+
+```gram
+[Knead] Until the dough is ={smooth} and ={elastic}(it springs back slowly when stretched).
+```
+
+As with timers and temperatures, shorter steps are easier to follow. If two states mark distinct actions, split them into separate steps rather than chaining them:
+
+```gram
+[Melt] The @butter{50 g} until ={nutty brown}.
+
+[Cool] Until ={lukewarm}, then stir in the @eggs{2}.
+```
+
+## Errors
+
+A target state must be non-empty and closed on the same line. `={}` or an unclosed `={ribbon stage` raises a syntax error pointing to the opening marker.
+
+A standalone `=` not followed by `{` stays ordinary text, and fixed ingredient modifiers (`@=salt{1 tsp}`) are unaffected.
+
+## Related resources
+
+
+  <LinkCard
+    title="Temperatures"
+    description="Exact or semantic ^temperatures, and their notes."
+    href="/docs/reference/syntax/temperatures/"
+  />
+  <LinkCard
+    title="Times and scheduling"
+    description="Active work and passive timers with ~timer."
+    href="/docs/reference/syntax/times/"
+  />
+  <LinkCard
+    title="Gram syntax cheatsheet"
+    description="Quick visual reference for every marker."
+    href="/docs/reference/syntax/cheatsheet/"
+  />
+  <LinkCard
+    title="Data formats"
+    description="How target states are represented as checkpoint tokens in compiled JSON."
+    href="/docs/reference/api/data-formats/"
   />
 
 ---
@@ -1210,13 +1505,13 @@ When placed at the end of a `## Section` title, the variable captures the cumula
 To use a previously declared variable, prefix its name with `&`:
 
 ```gram
-Use the &puff pastry{} to line the tart tin.
+[Line] Use the &puff pastry{} to line the tart tin.
 ```
 
 You can also assign a quantity to it for display purposes in the rendered recipe:
 
 ```gram
-Take &puff pastry{200g} and roll it out.
+[Roll] Take &puff pastry{200g} and roll it out.
 ```
 
 :::note[Shopping list vs recipe ingredients]
@@ -1244,7 +1539,8 @@ You can calculate an ingredient's mass as a percentage of an intermediate variab
 The compiler helps you maintain clean and conflict-free code by checking variable usage:
 
 - **`SCOPE_CONFLICT`**: Triggered if the same intermediate variable name is declared multiple times across different sections.
-- **`UNUSED_VARIABLE`**: Triggered if an intermediate variable is declared with `->&` but never referenced in any downstream step.
+- **`UNDEFINED_REFERENCE`**: Triggered if `&name` references an intermediate variable that has not been declared yet.
+- **`CIRCULAR_REFERENCE`**: Triggered if an intermediate variable depends on itself directly or through another variable.
 
 ## Related resources
 
@@ -1287,9 +1583,9 @@ You can target either a base ingredient or an intermediate variable:
 Prefix the target ingredient's name with `@&`:
 
 ```gram
-Add @flour{100g} to the bowl.
+[Add] @flour{100g} to the bowl.
 
-Then mix in @water{70% @&flour}. // 70g of water
+[Mix] In @water{70% @&flour}. // 70g of water
 ```
 
 **Pattern:** `@name{ percentage% @&TargetIngredient }`
@@ -1298,9 +1594,9 @@ Then mix in @water{70% @&flour}. // 70g of water
 Reference the target intermediate variable with `&`:
 
 ```gram
-Mix the ingredients to form the dough. ->&dough
+[Mix] The ingredients to form the dough. ->&dough
 
-Add @salt{2% &dough}. // 2% of the total mass of the &dough variable
+[Add] @salt{2% &dough}. // 2% of the total mass of the &dough variable
 ```
 
 **Pattern:** `@name{ percentage% &TargetVariable }`
@@ -1314,61 +1610,46 @@ When the compiler resolves a relative quantity, it follows four strict scoping a
 | **Section scoping** | Current section only | You cannot directly target a base `@ingredient` declared in a different section. To bridge sections, capture the result into a globally scoped `&variable`. |
 | **Accumulation** | Sums all occurrences | If the target `@ingredient` appears multiple times within the same section, the percentage applies to their **cumulative total**. |
 | **Mass-based** | Evaluated in grams | Calculations are always performed against **physical mass in grams**. For example, 50% of "2 eggs" (each standardized at 50g) produces **50g**, not 1 egg. |
-| **Alternatives** | One option at a time | Each option of an alternative gets its own amount, never added to the others: `@butter{10% @&flour}\|@oil{8% @&flour}` reads "20 g of butter or 16 g of oil" for 200 g of flour. An option can also take a share of an earlier option of the same group: `@butter{100g}\|@oil{80% @&butter}`. |
+| **Alternatives** | One option at a time | Each option in an alternative group computes independently (`@butter{10% @&flour}\|@oil{8% @&flour}` gives 20 g of butter or 16 g of oil for 200 g of flour). An option may also target an earlier option in the same group (`@butter{100g}\|@oil{80% @&butter}`). |
 
 ## Ratios with units
 *(since v1.5.0)*
 
-A percentage weighs grams against grams. A <Term id="ratio" link={false} /> relates two amounts in any units, the way recipes state their rules: one egg per 100 g of flour, 15 g of salt per liter of water, 15 minutes per 500 g of roast.
+While a percentage compares mass to mass, a **ratio with units** relates two quantities in any compatible units—just as recipes state them: 1 egg per 100 g of flour, 15 g of salt per liter of water, or 15 minutes per 500 g of roast.
 
 ```gram
-Mix @flour{500 g} with @eggs{1 / 100 g @&flour}. // 5 eggs
+[Mix] @flour{500 g} with @eggs{1 / 100 g @&flour}. // 5 eggs
 
-Pour @water{2 l} and @salt{15 g / 1 L @&water}. // 30 g of salt
+[Pour] @water{2 l} and @salt{15 g / 1 L @&water}. // 30 g of salt
 
-Crush @garlic{3 cloves} with @parsley{1 tsp / 2 cloves @&garlic}. // 1.5 tsp
+[Crush] @garlic{3 cloves} with @parsley{1 tsp / 2 cloves @&garlic}. // 1.5 tsp
 ```
 
-**Pattern:** `@name{ amount / target amount @&TargetIngredient }`, or `&TargetVariable` for an intermediate. The amount takes its unit (`15 g`) or none (`1` egg); the target amount is a number and a unit (`100 g`), a unit alone (`L`), or nothing for one piece (`{1 / @&cutlet}`). A range works as the amount (`{15-20 g / 100 g @&flour}`), never as the target amount.
+**Pattern:** `@name{ amount / targetAmount @&TargetIngredient }` (or `&TargetVariable`).
 
-Write a space on at least one side of the slash: `{1/100g @&flour}` reads as the fraction `1/100` and is refused with a message that shows the spaced form. Write the unit alone, too: in `{1 / 100 g of @&flour}` the unit is `g of`, which Gram refuses.
+- `amount` takes its unit (`15 g`) or none for counts (`1` egg), and may be a range (`15-20 g`).
+- `targetAmount` is a single number and unit (`100 g`), a unit alone (`L`), or omitted for one piece (`{1 / @&cutlet}`).
+- **Always put a space around `/`** (at least on one side) and write the unit alone before the target: `{1/100g @&flour}` parses as the fraction `1/100`, and `{1 / 100 g of @&flour}` treats `g of` as the unit.
 
-### The unit guardrail
+### Unit compatibility
 
-A ratio is computed only when its units can be compared, never guessed:
+Gram only computes a ratio when its units can be compared safely—it never guesses:
 
 | Target amount | Target written in | Result |
 | :--- | :--- | :--- |
-| A weight (`100 g`) | A weight (`1 kg`) | Computed by the compiler |
-| A weight | A volume, or pieces | Computed with the density or the `unit_weight` of the ingredient database |
-| Pieces (`2 cloves`, nothing) | The same pieces (`3 clove`, `4`) | Computed by the compiler: singular and plural match |
-| Pieces | Other pieces (`2 slices` for garlic in cloves) | Refused |
+| Weight (`100 g`) | Weight (`1 kg`) | Computed directly |
+| Weight | Volume or count | Computed using density or `unit_weight` from the ingredient database |
+| Count (`2 cloves`, or none) | Same count (`3 clove`, `4`) | Computed directly (singular/plural matched) |
+| Count | Different count (`2 slices` for cloves) | Refused (`RELATIVE_QUANTITY_UNKNOWN_MASS`) |
 
-A ratio that cannot be computed keeps its writing (`1 / 100 ml @&flour` in the views and the shopping list) and raises `RELATIVE_QUANTITY_UNKNOWN_MASS` with the reason. Unlike a percentage, a computed ratio keeps the unit of its amount: `5` eggs, `15 g` of salt, merged with the other uses of the ingredient in the shopping list.
+If a ratio cannot be resolved, it remains as written in views and shopping lists and raises `RELATIVE_QUANTITY_UNKNOWN_MASS`. Unlike percentages, a resolved ratio keeps the unit of its own `amount` (e.g. `5` eggs, `15 g` of salt) and merges normally in the shopping list.
 
-### Where the target is
+### Scope, intermediates & scaling
 
-The same rules as a percentage: an `@&ingredient` written earlier in the section with an amount (every amount in the section adds up), or an `&intermediate`. An option of an alternative may take an earlier option as its target. When the section uses an intermediate whole, with no amount (`Roll out the &dough`), the ratio counts from the mass of the section that makes it, an estimate of what went into the bowl, before cooking. Gram refuses when another section uses the intermediate too, since it cannot tell who takes what:
-
-```gram
-## Dough ->&dough
-
-Mix @flour{500 g} and @water{60% @&flour}.
-
-## Bake
-
-Roll out the &dough, sprinkle @salt{2 g / 100 g &dough}. // 16 g of 800 g
-```
-
-This applies to a percentage as well (`@sugar{5% &dough}`), which used to give up there.
-
-### On references and composites
-
-A reference to a homemade preparation takes a ratio or a percentage too: `&stock{250 ml / 100 g @&rice}`, `&stock{250% @&rice}`. A composite parent does not yet (`<@box{1 / 100 g @&flour}>` is refused until composites are reworked).
-
-### Scaling
-
-Scaling a recipe computes its ratios again on the scaled amounts: twice the flour, twice the eggs. A ratio whose target is fixed (`@=pepper{2 g}`) stays as it is. `=` on a ratio itself is refused: a ratio always follows its target.
+- **Same scope as percentages**: target an `@&ingredient` declared earlier in the section (repeated uses sum up), an earlier option in an alternative group, or an `&intermediate`.
+- **Whole intermediates**: if a section consumes an intermediate without a quantity (`Roll out the &dough`), ratios and percentages (`@salt{2 g / 100 g &dough}`, `@sugar{5% &dough}`) resolve against the total mass of the section that produces it—provided only that section consumes it.
+- **References & composites**: ratios and percentages work on homemade intermediate references (`&stock{250 ml / 100 g @&rice}`), but are not yet supported on composite parents (`@eggs{1}<@box{1 / 100 g @&flour}>`).
+- **Scaling**: scaling a recipe recalculates ratios from the scaled targets (unless the target is fixed with `@=`). Marking a ratio itself with `=` is not allowed.
 
 ## Mass calculation rules
 
@@ -1460,8 +1741,6 @@ You define a composite ingredient using the `<` operator (which can be read as *
 
 ### Naming the child
 
-*(since v1.2.0)*
-
 While Gram accepts a bare single-word child (`@juice<@lemon{1}`), you should write its full name instead (`@lemon juice{}<@lemon{1}`). That name becomes the ingredient's identity in the shared database (`ingredients.yaml`), used for mass standardization, nutrition, and `gram db enrich`.
 
 Because the database only indexes the child's identifier, generic names collide: `@juice<@lemon` and `@juice<@orange` in another recipe would map to the same entry despite having nothing in common. Using the full name (`lemon juice`, `orange juice`) prevents collisions and automatically links with standalone, non-composite uses of the ingredient (e.g. `@orange juice{1l}` bought in a carton).
@@ -1477,7 +1756,7 @@ Both the child and the parent can carry independent `()` preparation notes:
 Attach the note to the part it actually describes (what is done to the extracted part vs. the whole item). You can also combine both:
 
 ```gram
-Add the @lemon juice{150ml}(strained)<@lemon{1}(cut in half) to the bowl.
+[Add] The @lemon juice{150ml}(strained)<@lemon{1}(cut in half) to the bowl.
 ```
 
 ### Example
@@ -1485,9 +1764,9 @@ Add the @lemon juice{150ml}(strained)<@lemon{1}(cut in half) to the bowl.
 Here is how you would declare that 100ml of juice requires 2 lemons, but the zest only requires 1 lemon:
 
 ```gram
-Add the @lemon juice{100ml}<@lemon{2}.
+[Add] The @lemon juice{100ml}<@lemon{2}.
 
-Then add the @lemon zest{1}<@lemon. // Implicitly costs 1 lemon
+[Add] Then add the @lemon zest{1}<@lemon. // Implicitly costs 1 lemon
 ```
 **Total required in Shopping List**: 2 Lemons.
 
@@ -1505,9 +1784,9 @@ How does the compiler actually calculate the total number of lemons you need to 
 If you use different parts of the same parent (like zest and juice), Gram knows they can come from the exact same physical lemon. It takes the **maximum** required amount across those parts.
 
 ```gram
-Add @lemon zest{1}<@lemon.  // Needs 1 lemon
+[Add] @lemon zest{1}<@lemon.  // Needs 1 lemon
 
-Add @lemon juice{1}<@lemon. // Needs 1 lemon
+[Add] @lemon juice{1}<@lemon. // Needs 1 lemon
 ```
 > 🛒 **Shopping List**: 1 Lemon (The single lemon provides both parts).
 
@@ -1515,9 +1794,9 @@ Add @lemon juice{1}<@lemon. // Needs 1 lemon
 If you use the *same* part multiple times across different steps of your recipe, Gram adds them up. You can't magically get two zests from one lemon!
 
 ```gram
-Add @lemon zest{1}<@lemon.  // Needs 1 lemon
+[Add] @lemon zest{1}<@lemon.  // Needs 1 lemon
 
-Add @lemon zest{1}<@lemon.  // Needs another lemon
+[Add] @lemon zest{1}<@lemon.  // Needs another lemon
 ```
 > 🛒 **Shopping List**: 2 Lemons.
 
@@ -1525,11 +1804,11 @@ Add @lemon zest{1}<@lemon.  // Needs another lemon
 If you also use the whole parent ingredient directly (e.g., cutting a whole lemon into wedges for garnish), Gram simply adds it to the optimized total.
 
 ```gram
-Add @lemon zest{1}<@lemon.  // Covered by the 1st lemon
+[Add] @lemon zest{1}<@lemon.  // Covered by the 1st lemon
 
-Add @lemon juice{1}<@lemon. // Covered by the 1st lemon
+[Add] @lemon juice{1}<@lemon. // Covered by the 1st lemon
 
-Cut @lemon{2} into wedges.  // Needs 2 whole lemons
+[Cut] @lemon{2} into wedges.  // Needs 2 whole lemons
 ```
 > 🛒 **Shopping List**: 3 Lemons.
 
@@ -1607,9 +1886,9 @@ Essential markup tokens used directly inside recipe steps:
 | :--- | :--- | :--- | :--- | :--- |
 | **Ingredient** | `@` | `@name[{quantity}]` | `@flour{200g}` | Declares an ingredient. Omitting `{}` indicates no specific quantity (e.g. `@salt`). |
 | **Cookware** | `#` | `#name[{quantity}]` | `#pan{2}`, `#whisk` | Specifies kitchen equipment. Omitting `{}` defaults to a single item (`1`). |
-| **Timer** | `~` | `~{time}` | `~{30min}`, `~{1h30}` | Defines an active cooking or preparation duration, written as in a recipe (`1 hr 30 mins`, `1:30 h`, `5'30"`). |
-| **Temperature** | `^` | `^{temperature}` | `^{180°C}`, `^{350°F}` | Declares an exact heat setting (`C` or `F`, case-insensitive). |
-| **Target state** | `=` | `={state}` | `={ribbon stage}`, `={golden}` | The state to reach, in the cook's words, anywhere in the step. Since 1.5.0. |
+| **Timer** | `~` | `~{time}` | `~{30min}`, `~{1h30}` | Active cooking or preparation duration (`1 hr 30 mins`, `1:30 h`, `5'30"`). |
+| **Temperature** | `^` | `^{temperature}` | `^{180°C}`, `^{350°F}` | Exact heat setting (`C` or `F`, case-insensitive). |
+| **Target state** | `=` | `={state}` | `={ribbon stage}`, `={golden}` | Sensory cue to reach, placed anywhere in the step. |
 
 ## Modifiers
 
@@ -1634,18 +1913,18 @@ Specialized patterns for flexible culinary instructions:
 | **Short-hand prep** | `(...)` | `@butter{10g}(room temp)` | Notes prep techniques without cluttering names. |
 | **Component alias** | `:slug` | `@dry white wine:wine{10ml}` | Displays user-friendly text while mapping to a canonical ID. |
 | **Relative quantity** | `% @&target` | `@water{70% @&flour}` | Computes amount relative to a reference ingredient mass. |
-| **Ratio with units** | `a / b @&target` | `@eggs{1 / 100 g @&flour}`, `@salt{15 g / L @&water}` | An amount per amount of another ingredient, in any units; a space around the slash. Since 1.5.0. |
+| **Ratio with units** | `a / b @&target` | `@eggs{1 / 100 g @&flour}`, `@salt{15 g / L @&water}` | Amount per reference amount of another ingredient, in any compatible units (space around `/`). |
 | **Composite child** | `<@parent` | `@lemon zest{1}<@lemon` | Bundles parts (zest, juice) into a single shopping item. |
 | **Passive timer** | `~_` | `~_{1h}` | Represents resting/rising time without blocking the cook. |
-| **Proportional time** | `~{time / b @&target}` | `~{15 min / 500 g @&roast}`, `~{4 min / @&cutlet}` | A time that follows a weight or a count, computed again when scaled. Since 1.5.0. |
+| **Proportional time** | `~{time / b @&target}` | `~{15 min / 500 g @&roast}`, `~{4 min / @&cutlet}` | Duration scaled dynamically by an ingredient's weight or count. |
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
-| **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown. Since 1.5.0. |
-| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to check the state, always shown. Since 1.5.0. |
+| **Temperature note** | `^{...}(note)` | `^{320°F}(fan)`, `^{145°F}(internal)` | Oven mode or measurement condition, always displayed. |
+| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to verify the target state, always displayed. |
 | **Fractions** | `n/d` or Unicode | `@flour{1 1/2 cups}`, `@sugar{½ cup}` | Fully supported across imperial and metric systems. |
-| **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Kept as written and added up; a volume and a weight stay side by side. Since 1.5.0. |
+| **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Preserved as written and summed; incompatible kinds stay side by side. |
 
-Every parenthetical note `(...)` — on an ingredient, cookware, a temperature, or a target state — must touch the element before it on the same line; with a space, it stays ordinary text.
+Every parenthetical note `(...)`—on an ingredient, cookware, temperature, or target state—must touch the preceding token on the same line; with a space, it remains ordinary text.
 
 ## Intermediate variables
 
@@ -1711,9 +1990,9 @@ When turning an existing recipe into `.gram`, working through these five points 
 
 
 1. **Structure** — Identify distinct phases (dough, filling, sauce, assembly…). Each phase with its own ingredient list is a candidate for a `## Section`. Anything that must be prepared in advance gets a retro-planning lead time (see [Document Structure](/docs/reference/syntax/document-structure#retro-planning-scheduling)).
-2. **Frontmatter** — Extract `title`, `author`, `source`, `category`, `portions`, and dates from whatever metadata the source provides. Never invent a value that isn't in the source.
-3. **Ingredients** — List every unique `@ingredient` using its full name with spaces (`"olive oil"`, not `"olive-oil"`). Note which ones appear more than once — the second and later mentions should use `@&`. Prefer SI units for precision, but keep `tbsp`/`tsp`/`cup` for small amounts when that's how the source expresses them. For parts of an ingredient (juice, zest, yolk…), plan the [composite syntax](/docs/reference/syntax/composite-ingredients) instead of a separate prep step.
-4. **Steps** — Write each step as a paragraph with a `[Verb]` action prefix, inlining every `@ingredient`, `#cookware`, `~timer`, and `^temperature` as it's introduced. Use passive timers (`~_`) for hands-off waits (oven, resting, chilling, rising) and active timers (`~`) for anything that keeps the cook busy. If multiple passive timers must happen sequentially (one after another, e.g. baking in stages), give them the SAME NAME (`~_baking{10m}` then `~_baking{30m}`) to automatically sequence them without adding to the cook's active time.
+2. **Frontmatter** — Extract `title`, `author`, `source`, `category`, `portions` (not `servings`), `makes` (not the obsolete `size`), and dates from whatever metadata the source provides. Keep it flat (`key: value` lines only, with inline arrays like `source: [...]` or `densities: [flour:0.55]` — never nested/indented YAML), omit computed time fields (`prep`, `total`), and never invent a value that isn't in the source.
+3. **Ingredients** — List every unique `@ingredient` using its full name with spaces (`"olive oil"`, not `"olive-oil"`), keeping the core noun short and moving state qualifiers into `()` (`@chicken breast{500g}(boneless, skinless)` rather than `@boneless skinless chicken breast{500g}`). Note which ingredients appear more than once — the second and later mentions should use `@&`. Prefer SI units for precision, but keep `tbsp`/`tsp`/`cup` for small amounts when that's how the source expresses them. For parts of an ingredient (juice, zest, yolk…), plan the [composite syntax](/docs/reference/syntax/composite-ingredients) instead of a separate prep step.
+4. **Steps** — Write each step as a paragraph separated by a **blank line** (including right after `## Section` headers — consecutive lines merge into one step). Start each step with a `[Verb]` action prefix, inlining every `@ingredient`, `#cookware`, `~timer`, and `^temperature` as it's introduced. Use passive timers (`~_`) for hands-off waits (oven, resting, chilling, rising) and active timers (`~`) for anything that keeps the cook busy. If multiple passive timers must happen sequentially (one after another, e.g. baking in stages), give them the SAME NAME (`~_baking{10min}` then `~_baking{30min}`) to automatically sequence them without adding to the cook's active time.
 5. **Review** — Before finalizing, check for the mistakes listed below: kebab-case names, units inside cookware braces, missing `@&` on repeat mentions, redundant `->&name` declarations, and standalone steps that only prepare an ingredient for a later step.
 
 
@@ -1753,9 +2032,19 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ```gram
 ❌  @salt{to taste}        →   ✅  @salt{}   or   @salt
 ❌  @flour{about 200g}     →   ✅  @flour{200g}
+❌  @flour{1,000 g}        →   ✅  @flour{1000 g}
 ❌  ~{about 10 minutes}    →   ✅  ~{10min}
+❌  ~{1.30 h}              →   ✅  ~{1h30}
 ```
-Quantities and timers need a real number (or empty braces for "to taste"); fuzzy text doesn't parse.
+Quantities and timers need a real number (or empty braces when no quantity is given); fuzzy prefixes like `about` trigger compiler warnings (`INVALID_UNIT` / `INVALID_DURATION`), and free text in a timer loses its duration for scheduling. Gram has no thousands separator: `{1,000 g}` parses as `1 g` and triggers `AMBIGUOUS_NUMBER`. Similarly, decimals in timers are fractions of the unit (`~{1.30 h}` means 1 h 18 min), so write `~{1h30}` for an hour and a half.
+
+### Space between braces and preparations
+
+```gram
+❌  @onion{1} (diced)          →   ✅  @onion{1}(diced)
+❌  #pan{} (20cm, non-stick)   →   ✅  #pan{}(20cm, non-stick)
+```
+A preparation note `(...)` must touch the closing `}` (or bare single-word name). Any space before `(` leaves it in ordinary step prose instead of attaching it to the ingredient or cookware.
 
 ### One amount given in several measures
 *(since v1.5.0)*
@@ -1763,25 +2052,25 @@ Quantities and timers need a real number (or empty braces for "to taste"); fuzzy
 ```gram
 ❌  @flour{1 cup 5 tbsp}    →   ✅  @flour{1 cup + 5 tbsp}
 ```
-Write an amount the recipe gives in several measures as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities), exactly as the source says it: "1 cup plus 1 tablespoon" is `{1 cup + 1 tbsp}`, "1 cup minus 2 tablespoons" is `{1 cup - 2 tbsp}`, and a volume next to a weight is fine (`{1 cup + 20 g}`). Don't work it out into one number either (`{1.0625 cup}`, `{17 tbsp}`): Gram adds the terms itself and shows them as the cook measures them. Every term needs its unit, and a term is only an amount: no percentage (`{100g + 10%}`), no multiplication (`{2 x 100g}`), no range after `-` (a range may be a term that is added: `{1 cup + 1-2 tbsp}`).
+Write multi-measure amounts as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities) (`{1 cup + 1 tbsp}`, `{1 cup - 2 tbsp}`, `{1 cup + 20 g}`) rather than collapsing them into decimals (`{1.0625 cup}`). Every term needs a unit, and only plain quantities are allowed (no `%`, no `×`, and no range after `-`).
 
 ### The oven mode left in the prose
 *(since v1.5.0)*
 
 ```gram
-❌  Bake at ^{160°C} fan.         →   ✅  Bake at ^{160°C}(fan).
-❌  Bake at ^{180°C} (fan).       →   ✅  Bake at ^{180°C}(fan).
+❌  Bake at ^{320°F} fan.         →   ✅  Bake at ^{320°F}(fan).
+❌  Bake at ^{350°F} (fan).       →   ✅  Bake at ^{350°F}(fan).
 ```
-What goes with a temperature (the oven mode, "internal", "covered") belongs in a [note](/docs/reference/syntax/temperatures/#cooking-mode-and-notes) glued to the closing brace, in the recipe's language. With a space before it, the parenthesis is ordinary text and the note is lost.
+Attach oven modes and conditions ("fan", "internal", "covered") as a [parenthetical note](/docs/reference/syntax/temperatures/#cooking-mode-and-notes) directly touching `}`, in the recipe's language. Any space before `(` leaves it as plain text.
 
 ### The target state left in the prose
 *(since v1.5.0)*
 
 ```gram
 ❌  Whisk until ribbon stage.                 →   ✅  Whisk until ={ribbon stage}.
-❌  Cook until ={82°C} or ={5 min}.           →   ✅  Cook at ^{82°C}(internal) for ~{5 min}, until ={it coats the spoon}.
+❌  Cook until ={180°F} or ={5 min}.           →   ✅  Cook at ^{180°F}(internal) for ~{5 min}, until ={it coats the spoon}.
 ```
-When the source says what state the cook should reach (a texture, a color, a smell), mark it as a [target state](/docs/reference/syntax/target-states/), wherever it sits in the step: only the state between the braces, the linking words ("until", "as soon as", "when") left in the sentence, a test in a glued note if the source gives one. Never a temperature, a time or a quantity inside, and never a cue the source does not give.
+Mark visual or sensory cues stated by the source as [target states](/docs/reference/syntax/target-states/) (`={...}`), keeping linking words ("until", "when") outside the braces and putting any verification test in a glued `(...)` note. Never put temperatures, durations, or quantities inside `={...}`, and never invent cues absent from the source.
 
 ### A proportional rule computed by hand
 *(since v1.5.0)*
@@ -1791,7 +2080,7 @@ When the source says what state the cook should reach (a texture, a color, a sme
 ❌  Roast ~{36 min} (15 min per 500 g).             →   ✅  Roast ~{15 min / 500 g @&roast}.
 ❌  Add @eggs{1/100g @&flour}.                       →   ✅  Add @eggs{1 / 100 g @&flour}.
 ```
-When the source states a proportional rule ("per 100 g", "per liter", "per pound", "per piece"), write it as a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units): it follows the target when the recipe is scaled. Only then: an amount the source gives as such stays an amount. Always a space around the slash, the unit alone before the target (never `100 g of @&flour`), and no multiplier after a proportional time.
+When the source states a proportional rule ("per 100 g", "per liter", "per piece"), write it as a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units) so it scales with its target. Always leave a space around `/`, write the unit alone before the target (never `100 g of @&flour`), and omit multipliers on proportional times.
 
 ### Using `@&` on the first occurrence
 
@@ -1843,16 +2132,16 @@ Any step whose entire purpose is "take X and do Y to it before the real step" sh
 ### Attaching a composite's preparation to the wrong side
 
 ```gram
-❌  @lemon juice(cut in half, one half sliced for garnish)<@lemon{1}    // says the JUICE was cut in half
-✅  @lemon juice<@lemon{1}(cut in half, one half sliced for garnish)    // says the LEMON was cut in half
+❌  @lemon juice{}(cut in half, one half sliced for garnish)<@lemon{1}    // says the JUICE was cut in half
+✅  @lemon juice{}<@lemon{1}(cut in half, one half sliced for garnish)    // says the LEMON was cut in half
 ```
 Both the child and the parent of a composite can carry their own independent `()` preparation:
-- **Child's preparation** goes right after its own name (and quantity, if any).
+- **Child's preparation** goes right after its own `{}` / `{quantity}`.
 - **Parent's preparation** goes right after `<@parentName{parentCost}`.
 
 Attach it to whichever one it actually describes — "cut in half" happens to the whole lemon, not to the extracted juice. They can also combine when both genuinely need one: `@lemon juice{150ml}(strained)<@lemon{1}(cut in half)`.
 
-### A redundant `->&name` when the section title already declares one
+### A redundant or duplicate `->&name`
 
 ```gram
 ❌ ## Seasoning Mix ->&seasoning
@@ -1863,7 +2152,7 @@ Attach it to whichever one it actually describes — "cut in half" happens to th
 
    [Mix] @paprika{2 tsp} with @salt{1 tsp}.            // no local declaration needed
 ```
-A section-level `->&name` already captures the output of every step inside it — see [Intermediate Variables](/docs/reference/syntax/intermediate-variables#section-level-declaration).
+A section-level `->&name` already captures the output of every step inside it, and every intermediate name must be unique across the whole recipe (declaring `->&dough` twice triggers a hard `SCOPE_CONFLICT` error) — see [Intermediate Variables](/docs/reference/syntax/intermediate-variables#section-level-declaration).
 
 ### An active timer for passive cooking
 
@@ -1993,7 +2282,7 @@ Mix @flour{200g} and @milk{200ml}.
 
 ```json
 {
-  "generator": "@gram-lang/kitchen@1.4.0",
+  "generator": "@gram-lang/kitchen@1.5.0",
   "title": "Crepes",
   "slug": "crepes",
   "meta": { "title": "Crepes" },
@@ -2078,7 +2367,7 @@ Mix @flour{200g} and @milk{200ml}.
 
 ```json
 {
-  "generator": "@gram-lang/kitchen@1.4.0",
+  "generator": "@gram-lang/kitchen@1.5.0",
   "title": "Crepes",
   "slug": "crepes",
   "meta": { "title": "Crepes" },
@@ -2180,7 +2469,7 @@ Mix @flour{200g} and @milk{200ml}.
 }
 ```
 
-*(since v1.4.0)* The compiled recipe exposes `generator` (which compiler generated it), `miseEnPlace` (operational prep tasks and durations per section), `tasks` (the neutral task graph), and `schedule` (the default theoretical schedule laid out from it; alternative schedules are generated via `layout(tasks, options)`).
+The compiled recipe exposes `generator` (which compiler generated it), `miseEnPlace` (operational prep tasks and durations per section), `tasks` (the neutral task graph), and `schedule` (the default theoretical schedule laid out from it; alternative schedules are generated via `layout(tasks, options)`).
 
 :::note[Deprecated timing fields]
 *(since v1.4.0)* Legacy per-step `timings` and `backgroundTasks`, along with `metrics.totalTime`, `metrics.idleTime`, and time breakdowns are deprecated: they remain populated until removed in version 2.0.0, but are omitted from the example above for clarity. The [Kitchen API reference](/docs/reference/api/kitchen) documents each field and its modern counterpart.
@@ -2188,7 +2477,7 @@ Mix @flour{200g} and @milk{200ml}.
 
 Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a bare `string`; ingredients, cookware, and intermediate references share the `Usage` structure (no `type` field, identified by the presence of an `id`); timers, temperatures, target states (`checkpoint`, since 1.5.0: `{ type, state, note? }`), comments, and declarations each carry an explicit lowercase `type`. This distinction from the parser's PascalCase `ASTNodeType` is intentional: it describes compiled *output*, not parsed source syntax. See [How to build a custom UI](/docs/how-to/build-custom-ui) for a tutorial on consuming this structure in frontend frameworks.
 
-*(since v1.5.0)* A timer token carries `raw`, the duration as written between the braces, and `minutes`, the duration the schedule uses (the middle of a range). `quantity` and `unit` stay, in the smallest unit written (`1h20` gives `80` `min`), so a program that reads them stays right; a duration written as before 1.5 (`1.5h`) keeps them unchanged. A timer Gram does not read keeps only `raw` (and `name`, `isPassive`): show it as written.
+*(since v1.5.0)* A timer token carries `raw` (the duration as written inside the braces) and `minutes` (the scheduled duration, or the midpoint of a range). `quantity` and `unit` remain populated in the smallest written unit (`1h20` produces `80` `min`) for backwards compatibility, while pre-1.5 single-unit formats (`1.5h`) stay unchanged. Unrecognized timers keep only `raw` (plus `name` and `isPassive`) so views can display them as written.
 
 ```json
 { "type": "timer", "raw": "1h30", "quantity": { "type": "single", "value": 90 }, "unit": "min", "minutes": 90 }
@@ -2196,11 +2485,11 @@ Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a
 { "type": "timer", "raw": "1:30" }
 ```
 
-*(since v1.5.0)* A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) (`@flour{1 cup + 1 tbsp}`) adds `parts` to its `Usage`: each term as written, with its `qty` (a number or a `QuantityValue`) and `unit`, and `minus: true` on a term taken away. **`parts` is the only source of truth**; `qty` and `unit` are a total kept so that a program reading them stays right:
+*(since v1.5.0)* A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) (`@flour{1 cup + 1 tbsp}`) adds `parts` to its `Usage`: each written term with `qty` (a number or `QuantityValue`), `unit`, and `minus: true` for subtracted terms. **`parts` is the source of truth**; `qty` and `unit` retain a compatibility summary:
 
-- **One kind of unit**: `qty` / `unit` hold the total, in the smallest unit written when the units share a scale (`{1 cup + 1 tbsp}` gives `17` `tbsp`), in `ml` or `g` otherwise. A range in a term makes the total a range.
-- **Several kinds** (a volume and a weight, or units Gram doesn't know): no `qty`, and `unit` holds the sum written out (`"1 cup + 20 g"`), like a quantity in words (`{a pinch}`). Read `parts` rather than parsing it.
-- **Refused** (an `INVALID_QUANTITY` warning): `parts` alone, no `qty` nor `unit`.
+- **Single unit family**: `qty` and `unit` hold the total, in the smallest written unit when terms share a scale (`{1 cup + 1 tbsp}` → `17` `tbsp`), or in `ml` / `g` otherwise. Any range term makes the total a range.
+- **Multiple families** (a volume and a weight, or unknown units): `qty` is omitted and `unit` holds the written expression (`"1 cup + 20 g"`), similar to text quantities (`{a pinch}`). Read `parts` instead of parsing this string.
+- **Invalid** (`INVALID_QUANTITY`): `parts` only, with neither `qty` nor `unit`.
 
 ```json
 { "id": "flour", "_usageId": "1", "qty": 17, "unit": "tbsp", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 1, "unit": "tbsp" } ] }
@@ -2294,7 +2583,7 @@ flour:
 
 ## 5. The run sheet
 
-Data structure of the <Term id="runSheet" /> (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
+Data structure of the **run sheet** (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
 
 ```json
 {
@@ -2385,7 +2674,7 @@ interface Warning {
 
 `compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
 
-*(since v1.5.0)* A few codes also carry `data`, the facts a tool needs to act on the warning without parsing `.message`: the language server passes it on as the diagnostic's `data`, and its Quick Fixes read it. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`) and an ingredient's `INVALID_UNIT` (`{ reason, suggestion? }`) set it; for the other codes it is absent.
+*(since v1.5.0)* Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
 
 ## Severity & `--strict`
 
@@ -2445,7 +2734,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `STOCKED_DESTRUCTURED_NUTRITION_BLENDED` | info | `Stocked module "{specifier}" uses destructured imports — nutrition profile is averaged across the entire module.` |
 
 ### `VARIABLE_NOT_FOUND`
-A relative quantity references an intermediate variable (`50% of &name`) that hasn't been declared as an intermediate output (`>> name`) anywhere in the recipe. **Fix**: declare the variable before referencing it, or check for a typo in the name.
+A relative quantity references an intermediate variable (`50% of &name`) that hasn't been declared as an intermediate output (`->&name`) anywhere in the recipe. **Fix**: declare the variable before referencing it, or check for a typo in the name.
 
 ### `RELATIVE_QUANTITY_UNRESOLVED`
 A relative quantity references an ingredient (`50% of @name`) that hasn't appeared earlier **in the same section** — relative-to-ingredient targets are section-scoped, unlike variables. **Fix**: move the referenced ingredient earlier in the same section, or reference a variable (`&name`) instead if it's meant to be recipe-wide.
@@ -2453,7 +2742,13 @@ A relative quantity references an ingredient (`50% of @name`) that hasn't appear
 ### `RELATIVE_QUANTITY_UNKNOWN_MASS`
 Pushed during analysis: the target of a relative quantity was found, but its own mass couldn't be computed (no resolvable unit/density), so the percentage can't be applied. **Fix**: give the target ingredient a standardizable unit, or a density/`unit_weight` entry in the ingredient database.
 
-For a ratio with units (`1 / 100 g @&flour`, `~{15 min / 500 g @&roast}`, since 1.5.0) it carries a `reason` and points at the ratio: `noTargetQuantity` (the target has no amount), `incompatibleUnits` (`2 slices` against garlic counted in cloves, a weight against a named piece, or a unit followed by a word, `100 g of`), `missingDensity` (a weight against a volume, with no density), `missingUnitWeight` (pieces against a weight, with no `unit_weight`), and for an intermediate used whole (`Roll out the &dough`) `wholeUseAmbiguous` (another section uses it too) or `producerMassUnknown` (the mass of the section that makes it is incomplete). Gram never guesses a ratio it cannot compute: the amount stays unresolved. **Fix**: write the ratio in the unit the target is written in, add the density or `unit_weight` to the ingredient database, or write the amount of the intermediate used (`&dough{500 g}`).
+For a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units) (`1 / 100 g @&flour`, `~{15 min / 500 g @&roast}`, *(since v1.5.0)*), it includes a `reason` pointing to the ratio and leaves the amount unresolved:
+- `noTargetQuantity`: the target has no quantity.
+- `incompatibleUnits`: mismatched counts (`2 slices` against cloves), a weight against a named piece, or trailing words (`100 g of`).
+- `missingDensity` / `missingUnitWeight`: converting between weight and volume or pieces requires `density` or `unit_weight` in the database.
+- `wholeUseAmbiguous` / `producerMassUnknown`: for an intermediate used whole (`&dough`), either another section also consumes it or the producing section's mass is incomplete.
+
+**Fix**: match the target's unit, add `density` or `unit_weight` to the database, or specify the intermediate's used quantity (`&dough{500 g}`).
 
 ### `CIRCULAR_REFERENCE`
 An ingredient's relative quantity targets itself (`@flour{50% of @flour}`). **Fix**: remove the self-reference — a percentage-based quantity must target a *different* ingredient or variable.
@@ -2465,55 +2760,56 @@ A bare reference (`&name`) or a referenceable ingredient (`@&name`) points to so
 A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` instead of `~{10 min}`). **Fix**: add an explicit unit.
 
 ### `INVALID_UNIT`
-Either the word right after a number in a `Timer` (or a section's anchor) is not a time unit, as in `~{3 bananas}`, or a `Temperature` was given a unit other than Celsius/Fahrenheit. **Fix**: use a recognized time unit for timers (`h`, `hr`, `min`, `heures`…); use `°C` or `°F` for temperatures.
-
-*(since v1.4.1)* It also flags an ingredient whose unit reads as two quantities: a known unit, a number and another known unit, as in `@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`. The whole `cup 5 tbsp` is taken as one unknown unit: no mass, and a scaled recipe reads `2 cup 5 tbsp`. **Fix**: *(since v1.5.0)* write the two quantities as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities), `@flour{1 cup + 5 tbsp}`; the editor offers this fix, and `data.suggestion` holds the unit to write (`cup + 5 tbsp`). A number that only describes the unit, as in `@tomatoes{1 tin of 400 g}`, raises nothing: scaling the number of tins stays right.
-
-It flags as well a unit that hides a quantity, as in `@flour{about 200g}`: a quantity starts with its number, so with words in front the whole text was read as a unit, with no mass, and the quantity vanished from a scaled recipe. **Fix**: write the quantity alone (`@flour{200g}`), and the "about" in the step if it matters. Words with no number, such as `{a pinch}` or `{to taste}`, raise nothing.
+Emitted in three situations:
+- **Time or temperature units**: a word after a number in a `Timer` or section anchor is not a recognized time unit (`~{3 bananas}`), or a `Temperature` uses a unit other than Celsius or Fahrenheit. **Fix**: use a recognized time unit (`h`, `hr`, `min`, `heures`…), or `°C` / `°F` for temperatures.
+- **Unjoined quantities in a unit** *(since v1.5.0)*: an ingredient's unit looks like two quantities without an operator (`@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`), where `cup 5 tbsp` would otherwise be treated as one unknown unit with no mass. **Fix**: write it as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities) (`@flour{1 cup + 5 tbsp}`); `data.suggestion` provides the corrected unit (`cup + 5 tbsp`) for editor quick fixes. Descriptive unit text like `@tomatoes{1 tin of 400 g}` is unaffected.
+- **Leading prose before a number**: a unit hides a leading word before the number (`@flour{about 200g}`), since quantities must start with a number. **Fix**: write `@flour{200g}` and keep `"about"` in the prose. Pure text quantities (`{a pinch}`, `{to taste}`) raise nothing.
 
 ### `INVALID_QUANTITY`
 *(since v1.5.0)*
 
-A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) Gram refuses to add up. The recipe still compiles and the sum is shown as written, but it counts for nothing in the shopping list and the nutrition. The message and `data.reason` name the problem:
+Emitted when a [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) or number expression cannot be evaluated. The recipe still compiles and renders the text as written, but the value is excluded from shopping list and nutrition totals. `data.reason` identifies the cause:
 
 | `reason` | Example | Fix |
 | :--- | :--- | :--- |
-| `unitlessTerm` | `{1 + 1 cup}` | Give every term its unit: `{1 cup + 1 tbsp}`. |
-| `percentTerm` | `{100 g + 10%}` | Write the result (`{110 g}`, given in `data.suggestion` and offered by the editor), or a relative quantity such as `{10% &flour}`. |
-| `expressionTerm` | `{2 x 100 g + 50 g}` | A sum only adds or takes away: write `{250 g}`. |
-| `quantityInUnit` | `{1 tin of 400 g + 50 g}` | Write the amount in one unit: `{450 g}`. |
-| `nonPositiveTotal` | `{1 tbsp - 1 cup}` | What is taken away is as much as what is added, or more: check the terms. |
-| `rangeAfterMinus` | `{1 cup - 1-2 tbsp}` | A range taken away would swap its bounds: put it on a term that is added, or write the total as a range. |
-| `minusAcrossFamilies` | `{1 cup - 20 g}` | Take an amount away from one of its kind only (a volume from a volume, a weight from a weight). |
+| `unitlessTerm` | `{1 + 1 cup}` | Give every term a unit (`{1 cup + 1 tbsp}`). |
+| `percentTerm` | `{100 g + 10%}` | Write the computed total (`{110 g}`, provided in `data.suggestion`) or use a relative quantity (`{10% &flour}`). |
+| `expressionTerm` | `{2 x 100 g + 50 g}` | Sums only support `+` and `-`; write `{250 g}`. |
+| `quantityInUnit` | `{1 tin of 400 g + 50 g}` | Express the amount in a single unit (`{450 g}`). |
+| `nonPositiveTotal` | `{1 tbsp - 1 cup}` | Subtracted amount equals or exceeds what was added. |
+| `rangeAfterMinus` | `{1 cup - 1-2 tbsp}` | Put ranges on added terms, or write the total as a range. |
+| `minusAcrossFamilies` | `{1 cup - 20 g}` | Subtract only from the same unit family (volume from volume, weight from weight). |
+| `zeroDenominator` | `{1/0 cup}`, `{1/0% &dough}`, `#pan{1/0}`, `^{1/0 °C}` | Division by zero is ignored; write a valid fraction (`1/2`). |
+| `relativeNotSupported` | `@eggs{3}<@box{50% @&flour}`, `@eggs{1}<@box{1 / 100 g @&flour}` | Percentages and ratios are not supported on composite parents yet; specify the parent's quantity (`@eggs{3}<@box{1}`). |
 
-Subtraction is checked kind by kind: each kind of amount adds up and takes away on its own, so `{1 cup - 2 tbsp + 30 g}` is fine (the 2 tbsp come off the cup), while `{1 cup - 20 g}` has no weight to take the 20 g from. The editor's hover on a sum shows what each kind comes to.
-
-It also flags, with `reason: "zeroDenominator"`, a fraction over zero anywhere a number is written (`@flour{1/0 cup}`, `{1 1/0 cup}`, a term of a sum, `{1/0% &dough}`, `#pan{1/0}`, `^{1/0 °C}`). Such a number has no value: Gram leaves it out, as if no number had been written (`cup` alone, a sum without that term, an ingredient with no quantity for a percentage), where it used to vanish without a word. **Fix**: write the fraction you meant (`1/2`). A timer says it through `INVALID_DURATION`.
-
-With `reason: "relativeNotSupported"`, it flags a percentage on a composite parent (`@eggs{3}<@box{50% @&flour}>`), which Gram does not support yet: the parent is read with no quantity, where the percentage used to vanish without a word. **Fix**: write the parent's amount (`<@box{1}>`). A ratio on a parent (`<@box{1 / 100 g @&flour}>`) is refused the same way, and a ratio over zero (`{1 / 0 g @&flour}`) raises `zeroDenominator`: the ingredient reads with no amount.
+Subtraction is checked per unit family: `{1 cup - 2 tbsp + 30 g}` is valid (2 tbsp are subtracted from 1 cup), while `{1 cup - 20 g}` has no weight to subtract from.
 
 ### `OZ_AFTER_VOLUME`
 *(since v1.5.0)*
 
-Information: a sum puts `oz` after a volume, as in `@water{1 cup + 2 oz}`. `oz` is an ounce of weight, so Gram reads it as one: the sum is a volume plus a weight. **Fix**: write `fl oz` if a fluid ounce was meant (`data.suggestion`, offered by the editor); otherwise there's nothing to do.
+Informational notice when `oz` follows a volume in a sum (`@water{1 cup + 2 oz}`). Because `oz` denotes weight, Gram keeps it separate from the volume. **Fix**: change to `fl oz` if fluid ounces were intended (`data.suggestion` offers this quick fix).
 
 ### `DURATION_OUT_OF_RANGE`
-*(since v1.4.0)*
 
 A timer or a section's retro-planning offset lasts longer than 1000 years. **Fix**: check the number, often a stray digit or a missing unit letter (`~{-3000d}` is eight years, `~{-3000000000d}` is not a recipe). The duration is capped at 1000 years, so the timeline stays finite instead of coming out as `0`, `Infinity` or `NaN`. That limit is a technical bound, not a judgement on recipes: anything up to it, a solera that runs for decades included, is planned as written and raises nothing.
 
 ### `AMBIGUOUS_NUMBER`
 *(since v1.5.0)*
 
-A comma followed by exactly three digits, after a whole part of one to three digits, as in `@flour{1,000 g}` or `@flour{12,500 g}`. Gram reads a comma between two digits as a decimal and has no thousands separator, so this is 1 g (and 12.5 g); the warning says how the number was read, because an English reader would see a thousand. The quantity stays usable either way. **Fix**: write `{1000 g}` if a thousand was meant, or `{1 g}` otherwise. A number that cannot be a thousands separator, such as `{0,125 kg}` or `{1,25 kg}`, raises nothing, and neither does a point: `{1.000 kg}` has always meant 1 kg. Every number of a recipe is checked: quantities, timers and temperatures, but also a percentage (`{1,000% &dough}`) and a section's anchor (`~{-1,000h}`, read as one hour), including one written on `@use`. An anchor that is dropped anyway, positive or with no valid unit, only raises `MISSING_UNIT`, `INVALID_UNIT` or `INVALID_DURATION`.
+A comma followed by three digits after one to three integer digits (`@flour{1,000 g}`, `@flour{12,500 g}`). Because Gram supports decimal commas and has no thousands separator, `{1,000 g}` is parsed as `1 g` (and `{12,500 g}` as `12.5 g`). Checked across quantities, timers, temperatures, percentages, and section anchors (including on `@use`). **Fix**: write `{1000 g}` if a thousand was meant, or `{1 g}` otherwise. Periods (`{1.000 kg}`) always parse as decimals without warning.
 
 ### `INVALID_DURATION`
 *(since v1.5.0)*
 
-A timer or a section's anchor is written with numbers and units Gram knows, but in a way it will not guess: `~{1:30}` (hours or minutes?), `~{30min 1h}` (units out of order), `~{1h75}` (75 minutes after an hour), `~{1-2h30}` (is the left side `1 h` or `1 h 30`?), `~{2-1 h}` (a range starts with the shorter duration), `~{2 * 2 min}` or `~{1 heure et demie}`. The message gives the reason and an example to write instead. The timer is not counted in the total time (only what was written is kept in the compiled JSON, as `raw`), and the anchor is dropped. A section anchor is also refused when it is a range (`~{-1-2d}`) or counts seconds (`~{-1min30}`, `~{-5'}`). A proportional time is refused with a multiplier (`~{15 min / 500 g @&roast * 2}`, `reason: "ratioMultiplication"`) or a range as its target amount (`~{15 min / 1-2 kg @&roast}`, `"ratioShape"`), and an anchor can never be one (`"anchorRatio"`). **Fix**: write the duration the way the message suggests, e.g. `~{1h30}`, `~{1:30 min}` or `~{1h30-2h}`. A word right after a number is an unknown unit and keeps raising `INVALID_UNIT`, and a number alone keeps raising `MISSING_UNIT`.
+A timer or section anchor uses numbers and units Gram recognizes, but in an ambiguous or unsupported shape:
+- **Ambiguous or malformed timers**: `~{1:30}` (hours or minutes?), `~{30min 1h}` (wrong order), `~{1h75}` (`≥ 60` after hours), `~{1-2h30}` (ambiguous range bound), `~{2-1 h}` (reversed range), `~{2 * 2 min}`, or prose (`~{half an hour}`). The timer is excluded from total time while keeping its `raw` string.
+- **Unsupported anchors**: ranges (`~{-1-2d}`), seconds (`~{-1min30}`, `~{-5'}`), or proportional anchors (`reason: "anchorRatio"`).
+- **Proportional timer limits**: multipliers (`~{15 min / 500 g @&roast * 2}`, `reason: "ratioMultiplication"`) or ranged targets (`~{15 min / 1-2 kg @&roast}`, `reason: "ratioShape"`).
+
+**Fix**: follow the suggested format in `.message` (e.g. `~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). Unknown units after a number still raise `INVALID_UNIT`, and bare numbers raise `MISSING_UNIT`.
 
 ### `SCOPE_CONFLICT`
-Two sections declare the same intermediate/global variable name (`>> name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
+Two sections declare the same intermediate/global variable name (`->&name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
 
 ### `MISSING_INGREDIENT`
 During nutrition estimation, an ingredient with a computable mass has no matching entry (by id or alias) in the ingredient database at all. **Fix**: add the ingredient (or an alias to an existing entry) to your database.
@@ -2535,19 +2831,13 @@ Baker's math was explicitly requested (`enableBakersMath` with a bare `*` search
 
 ### `COMPOSITE_PARENT_CONFLICT`
 
-*(since v1.2.0)*
-
 A short composite child name (e.g. `@juice`) is drawn from two different parent ingredients within the same recipe (e.g. `<@lemon` in one step and `<@orange` in another). **Fix**: use the full name for the child (e.g. `@lemon juice` and `@orange juice`) to prevent database identity collisions.
 
 ### `MODULE_NOT_FOUND`
 
-*(since v1.2.0)*
-
 An imported module specified in a `@use` directive could not be resolved or found on the filesystem. **Fix**: verify the module path, file extension (`.gram`), or configured path aliases in `config.yaml`.
 
 ### `DAY_OVERFLOW`
-
-*(since v1.4.0)*
 
 A working day (derived from a section's `~{-Nd}` anchor) starts before its 24-hour window opens because a long passive rest pushes it backward. **Fix**: anchor the section further back (for example `~{-2d}` instead of `~{-1d}`), or shorten the rest duration.
 
@@ -2560,8 +2850,6 @@ During ALAP reverse scheduling, a producing task is pulled earlier than the begi
 Multiple passive timers share the same equipment track (e.g. `~_oven`) and cannot execute simultaneously. The scheduler serializes them sequentially to prevent equipment collision, delaying the second task. **Fix**: this is an informational notice; if you have access to multiple appliances, assign them distinct track names (e.g. `~_oven1` and `~_oven2`).
 
 ### `PASSIVE_OVERLAP_SAME_COOKWARE`
-
-*(since v1.4.0)*
 
 Two passive timers overlap in time, in steps that cite the same cookware (`#oven` in both), with no named track in common. If one is meant to follow the other, they are probably on one oven: the plan shows them side by side. **Fix**: give them the same named track (`~_oven{30min}` then `~_oven{20min}`) so they take turns; if both fit in the oven at once, this is only an informational notice. Only names are compared (`#oven` with `#oven`), so it works whatever the language of the recipe, and the overlap is read on the default timeline.
 

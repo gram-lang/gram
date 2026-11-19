@@ -3,18 +3,11 @@ title: "How to manage an ingredient database"
 description: "Sync, lint, and enrich your ingredients.yaml database with the Gram CLI to power nutrition and mass calculations."
 ---
 
-Gram uses a local `ingredients.yaml` file to store physical and nutritional data about the ingredients you use in your recipes. Maintaining this database ensures that features like Mass Standardization, Yield Calculation, and Nutritional Estimation work perfectly.
+Gram uses a local `ingredients.yaml` file (created when you run `gram init`) to store physical and nutritional data about the ingredients you use in your recipes. Maintaining this database ensures that features like mass standardization, yield calculation, and nutritional estimation work accurately.
 
 This guide explains the standard workflow for maintaining your database using the Gram CLI.
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
-import Since from '../../../../components/Since.astro';
-
-<Since v="1.5.0" />
-
-:::tip[See it in the playground]
-The [playground](/play) shows the database its examples use, in its `ingredients.yaml` tab, beside the recipe files. It is the same format as your own file, read-only: an ingredient you add to a recipe there has no mass and no nutrition until it is in such a database.
-:::
 
 ## The database workflow
 
@@ -57,7 +50,6 @@ The recommended workflow consists of three steps, to be run in this exact order:
    :::
 
 3. ### Enriching data
-   <Since v="1.1.0" type="changed" />
    
    Now that your database has clean, deduplicated entries, you need to fill in their physical (density, unit weight, yield) and nutritional (calories, macros) data. 
    
@@ -78,8 +70,6 @@ The recommended workflow consists of three steps, to be run in this exact order:
 
 ## Validating your database
 
-<Since v="1.1.0" />
-
 Before committing your `ingredients.yaml` to version control, it is good practice to validate it against the Gram schema to ensure there are no formatting errors (like overlapping aliases).
 
 ```bash
@@ -95,6 +85,10 @@ gram db merge ~/Downloads/community-db.yaml
 ```
 
 If there are conflicts (e.g., the community database says butter has 717 kcal, but yours says 740 kcal), the CLI will ask you interactively how to resolve them.
+
+## Inspecting an example database in the playground
+
+If you want to see how a working `ingredients.yaml` looks alongside real recipes before setting up your own workspace, open the [playground](/play): it shows the example database in a read-only tab next to the recipe files. Note that any new ingredient you type there will have no mass or nutrition estimates unless it already exists in that database.
 
 ## Related resources
 

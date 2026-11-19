@@ -3,9 +3,12 @@ title: "Ajustement dynamique des proportions des recettes"
 description: "Utilisez les Quantités Relatives et le Pourcentage du Boulanger pour écrire des recettes par ratios qui se recalculent automatiquement."
 ---
 
-Gram est conçu pour que les recettes se recalculent (*scale*) avec une précision mathématique parfaite dans tout l'écosystème. Que vous utilisiez le Playground interactif, génériez des documents HTML/Markdown ou lanciez des commandes CLI, Gram intègre nativement deux fonctionnalités taillées pour la cuisine basée sur les ratios (comme la boulangerie ou la pâtisserie) : les **Quantités Relatives** et le **Pourcentage du Boulanger** (*Baker's Math*).
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../../components/Term.astro';
 
-Ce guide vous montre comment exploiter les **Quantités Relatives** pour architecturer des recettes dynamiques et auto-documentées, et comment utiliser le **Pourcentage du Boulanger** pour formater des recettes traditionnelles en pourcentages purs.
+Gram est conçu pour que les recettes se recalculent (*scale*) avec une précision mathématique parfaite dans tout l'écosystème. Que vous utilisiez le Playground interactif, génériez des documents HTML/Markdown ou lanciez des commandes CLI, Gram intègre nativement deux fonctionnalités taillées pour la cuisine basée sur les proportions (boulangerie, pâtisserie, rôtisserie) : les **quantités relatives** (pourcentages et la <Term id="ratio" /> `a / b`) et le **pourcentage du boulanger** (*Baker's Math*).
+
+Ce guide montre comment exploiter les **quantités relatives** (`%` et `a / b`) pour concevoir des recettes dynamiques et auto-documentées, et comment utiliser le **pourcentage du boulanger** pour analyser des recettes traditionnelles en pourcentages.
 
 ## Les limites des quantités statiques
 
@@ -16,18 +19,16 @@ Prenons une recette de pain classique :
 
 Si vous ajustez les proportions de cette recette avec un facteur 2 (via `gram build --scale 2`), l'ensemble des quantités est multiplié par deux. Et si vos placards sont vides et qu'il ne vous reste que `400 g` de farine, vous pouvez utiliser l'ajustement par ingrédient repère : `gram build --scale farine=400g`. Gram calculera le multiplicateur (`0.8`) et ajustera tout automatiquement.
 
-Alors, pourquoi aurions-nous besoin d'autre chose ?
+Alors, pourquoi aller plus loin ?
 
 Le hic survient **lorsque vous voulez modifier la logique de la recette elle-même**. 
-Et si vous vouliez passer l'hydratation de 70 % à 75 % ? Vous devriez calculer de tête ce que représentent 75 % de 500 g, puis remplacer `350 ml` par `375 ml`. La logique métier de la recette (ses ratios) est masquée par des valeurs statiques (hardcodées), la rendant laborieuse à lire et à maintenir.
+Et si vous vouliez passer l'hydratation de 70 % à 75 % ? Vous devriez calculer de tête ce que représentent 75 % de 500 g, puis remplacer `350 ml` par `375 ml`. La logique de la recette (ses ratios) est masquée par des valeurs figées en dur, ce qui la rend plus laborieuse à lire et à ajuster.
 
 ## La solution pour les recettes par ratios : les quantités relatives
 
-Certaines préparations reposent fondamentalement sur des relations mathématiques entre leurs composants, plutôt que sur des quantités absolues (ex: une pâte à pain entièrement définie par son hydratation à 70 %).
+Certaines préparations reposent fondamentalement sur des relations mathématiques entre leurs composants, plutôt que sur des quantités absolues (ex. : une pâte à pain entièrement définie par son hydratation à 70 %).
 
-Gram permet d'exprimer ces relations directement dans le code source via des **Quantités Relatives** (`% @&cible` pour un ingrédient, ou `% &cible` pour une variable intermédiaire). La recette devient alors capable de se recalculer dynamiquement à la volée dès que vous tweakez un seul pourcentage.
-
-import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+Gram permet d'exprimer ces relations directement dans le code source via des **quantités relatives** : en pourcentage de masse (`% @&cible`) lorsque les deux ingrédients se pèsent, ou en **proportions avec unités** (`a / b @&cible`) lorsqu'un nombre de pièces, un volume ou une durée de cuisson dépend du poids ou du nombre d'un autre ingrédient. La recette se recalcule ainsi dynamiquement dès qu'un chiffre change.
 
 <Steps>
 1. ### Définir l'ancre (la cible)
@@ -51,6 +52,16 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
    :::
 </Steps>
 
+### Proportions avec unités
+
+Les pourcentages raisonnent toujours en grammes de masse — parfaits pour l'hydratation ou le sel, moins naturels lorsqu'une recette indique « 1 œuf par 100 g de farine » ou « 15 min par 500 g de rôti ». Écrivez dans ce cas une proportion avec unités (`quantité / quantitéCible @&cible`) pour conserver l'unité ou le comptage d'origine :
+
+```gram
+[Mélanger] La @farine{500 g} avec @œufs{1 / 100 g @&farine}. // 5 œufs
+
+[Rôtir] Assaisonner le @rôti{1,2 kg} et cuire ~{15 min / 500 g @&rôti}. // 36 min
+```
+
 ## Ajuster les proportions d'une recette dynamique
 
 Puisque ces relations sont encodées à la racine de la recette, Gram assure toute la gymnastique mathématique dynamiquement. Tout développeur ou boulanger lisant le `.gram` comprend instantanément qu'il s'agit d'une pâte hydratée à 70 %. 
@@ -69,17 +80,15 @@ Vous pouvez ajuster les proportions des recettes visuellement dans le Playground
 gram view pain.gram --scale farine=400g
 ```
 
-Gram va résoudre le facteur global (400/500 = 0.8), ajuster l'ancre `farine` à 400 g, et tous les ingrédients relatifs s'évalueront en cascade sur cette nouvelle base (Eau : 70 % de 400 g = 280 g).
-
-Les proportions avec unités suivent de la même façon (depuis la 1.5.0) : `@oeufs{1 / 100 g @&farine}` donne 4 œufs pour 400 g de farine, et un temps proportionnel comme `~{15 min / 500 g @&roti}` suit le rôti, et le planning avec lui.
+Gram résout le facteur global (400/500 = 0,8), ajuste l'ancre `farine` à 400 g, et tous les ingrédients relatifs ou temps proportionnels s'évaluent sur cette nouvelle base (Eau : 70 % de 400 g = 280 g ; `@œufs{1 / 100 g @&farine}` passe à 4 œufs ; `~{15 min / 500 g @&rôti}` met à jour la durée et le planning).
 
 ### Les limites de l'ajustement par ingrédient repère
 
-Puisque l'ajustement par ingrédient repère dérive le facteur depuis la quantité d'un ingrédient, tout n'est pas éligible comme cible — seul un ingrédient doté d'une quantité absolue explicite fait l'affaire. Si vous tentez de passer l'un des cas suivants, Gram jettera une erreur (*throw*) plutôt que de calculer silencieusement un facteur aberrant :
+Puisque l'ajustement par ingrédient repère dérive le facteur depuis la quantité d'un ingrédient, tout n'est pas éligible comme cible — seul un ingrédient doté d'une quantité absolue explicite fait l'affaire. Si vous tentez de passer l'un des cas suivants, Gram renvoie une erreur explicite plutôt que de calculer silencieusement un facteur aberrant :
 
 | Vous avez tenté d'utiliser... | Pourquoi c'est rejeté | Que faire à la place |
 | :--- | :--- | :--- |
-| Une **quantité relative** (ex : `eau`, définie comme `70% @&farine`) | Sa valeur est *dérivée* d'un autre ingrédient — elle ne peut pas non plus servir de référence | Ajustez les proportions de l'ingrédient ancre (`--scale farine=400g`) |
+| Une **quantité relative ou proportion** (ex : `eau` en `70% @&farine`, ou `œufs` en `1 / 100 g @&farine`) | Sa valeur est *dérivée* d'un autre ingrédient — elle ne peut pas non plus servir de référence | Ajustez les proportions de l'ingrédient ancre (`--scale farine=400g`) |
 | Un **ingrédient fixe** (`@=`) ou une quantité textuelle comme `une pincée` | Il ne s'ajuste jamais par définition, il ne peut donc pas non plus décrire un facteur d'ajustement | Choisissez un autre ingrédient qui évolue effectivement avec la recette |
 | Un ingrédient utilisé **uniquement à l'intérieur** d'une sous-recette (ex : `zeste-de-citron`, partie d'un composite `<@citron`) | Il n'est pas directement déclaré avec sa propre quantité — seul le parent composite en possède une | Ajustez les proportions du parent composite (ex : `--scale citron=4`) — son propre total est une cible valide |
 | Une option au sein d'un groupe d'**ingrédients alternatifs** (`@beurre{100 g}\|@margarine{100 g}`) | Choisir une option de manière isolée ne représente pas le choix "soit l'un soit l'autre" qu'exprime la recette | Ajustez les proportions d'un ingrédient différent et non ambigu, ailleurs dans la recette |
@@ -96,11 +105,11 @@ densities: ["eau:1.0"]
 
 Avec cela, `--scale eau=150g` sur une recette écrite en `ml` se résout correctement — pas besoin de base de données pour cet ingrédient précis.
 
-## Pourcentage du boulanger (Baker's Math)
+## Pourcentage du boulanger (*Baker's Math*)
 
-Si les Quantités Relatives sont idéales pour *concevoir* des recettes dynamiques, les professionnels se reposent souvent sur un concept appelé **Pourcentage du Boulanger** (*Baker's Math*) pour déchiffrer et analyser des recettes *statiques*. Dans ce paradigme, l'ingrédient phare (généralement la farine) fait office de base de référence (100 %), et tous les autres ingrédients s'expriment en pourcentage de ce poids.
+Si les quantités relatives sont idéales pour *concevoir* des recettes dynamiques, les professionnels s'appuient souvent sur le **pourcentage du boulanger** (*Baker's Math*) pour lire et analyser des recettes *statiques*. Dans ce modèle, l'ingrédient principal (généralement la farine) fait office de référence (100 %), et tous les autres ingrédients s'expriment en pourcentage de son poids.
 
-Si vous avez une recette classique avec des poids absolus, vous pouvez utiliser le **Modificateur de Pourcentage du Boulanger** (`*`) pour indiquer explicitement à Gram : *"Cet ingrédient est le point de référence de 100 %"*.
+Si vous avez une recette classique avec des poids absolus, vous pouvez utiliser le **modificateur de pourcentage du boulanger** (`*`) pour indiquer explicitement à Gram : *« Cet ingrédient est le point de référence de 100 % »*.
 
 ```gram
 [Ajouter] La @*farine{500 g}, l'@eau{350 g} et le @sel{10 g}.
@@ -133,16 +142,16 @@ gram view pain.gram --bakers-reference=farine
 
 Parfois, une recette contient des ingrédients dont les proportions ne doivent **jamais** varier, peu importe le nombre de portions générées. Pensez à l'huile de friture au fond d'une poêle, ou à une pincée de sel pour l'assaisonnement.
 
-Vous pouvez utiliser le **Modificateur Fixe** (`=`) pour protéger un ingrédient de l'ajustement des proportions :
+Vous pouvez utiliser le **modificateur fixe** (`=`) pour protéger un ingrédient de l'ajustement des proportions :
 
 ```gram
-Faire chauffer @=huile de friture{1 L} dans une sauteuse.
+[Chauffer] Faire chauffer @=huile de friture{1 L} dans une sauteuse.
 ```
 
 Si vous exécutez `gram build --scale 2`, l'`huile de friture` restera à `1 L`.
 
 ## Résumé
-En combinant les **Quantités Relatives** pour les ratios et les **Quantités Fixes** pour les constantes immuables, vous pouvez écrire des recettes qui s'adaptent parfaitement à n'importe quelle contrainte de votre garde-manger ou taille de portion.
+En combinant les **quantités relatives** pour les ratios et les **quantités fixes** pour les constantes immuables, vous pouvez écrire des recettes qui s'adaptent parfaitement à n'importe quelle contrainte de votre garde-manger ou taille de portion.
 
 ## Ressources associées
 

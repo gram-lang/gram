@@ -58,7 +58,7 @@ samp {
 	--sl-color-black: hsl(30, 16%, 7%);
 	--sl-color-bg: hsl(30, 12%, 10%);
 	--sl-color-bg-nav: var(--sl-color-gray-6);
-	--sl-color-bg-sidebar: var(--sl-color-gray-6);
+	--sl-color-bg-sidebar: var(--sl-color-bg);
 	--sl-color-bg-inline-code: var(--sl-color-gray-5);
 	--sl-color-border-inline-code: var(--sl-color-gray-4);
 	--sl-color-hairline: var(--sl-color-gray-6);
@@ -301,6 +301,7 @@ div[data-nova-code-container] pre,
 .post-content pre {
 	background-color: var(--sl-color-bg) !important;
 	border-color: var(--sl-color-gray-5) !important;
+	border-radius: 0 !important;
 }
 
 html[data-theme="dark"] .astro-code,
@@ -342,7 +343,7 @@ html[data-theme="light"] pre.astro-code span {
 /* Nova code container title bar */
 div[data-nova-code-container] [data-nova-code-title],
 div[data-nova-code-container] > div:first-child:not(pre) {
-	background-color: var(--sl-color-gray-6) !important;
+	background-color: var(--sl-color-gray-7) !important;
 	border-bottom: 1px solid var(--sl-color-gray-5) !important;
 	color: var(--sl-color-gray-3) !important;
 }
@@ -351,11 +352,12 @@ div[data-nova-code-container] > div:first-child:not(pre) {
 .sl-markdown-content .code-tabs.code-tabs-border {
 	border-color: var(--sl-color-gray-5) !important;
 	background-color: var(--sl-color-bg) !important;
+	border-radius: 0 !important;
 }
 
 .sl-markdown-content .code-tabs [role="tablist"] {
 	border-bottom: 1px solid var(--sl-color-gray-5) !important;
-	background-color: var(--sl-color-gray-6) !important;
+	background-color: var(--sl-color-gray-7) !important;
 }
 
 .sl-markdown-content .code-tabs [role="tab"] {
@@ -373,9 +375,9 @@ div[data-nova-code-container] > div:first-child:not(pre) {
  */
 .sl-link-card,
 .sl-markdown-content .sl-link-card {
-	background-color: var(--sl-color-gray-6) !important;
+	background-color: var(--sl-color-gray-7) !important;
 	border: 1px solid var(--sl-color-gray-5) !important;
-	border-radius: 0.5rem !important;
+	border-radius: 0 !important;
 	box-shadow: none !important;
 	transition:
 		border-color 0.2s ease,
@@ -421,11 +423,19 @@ div[data-nova-code-container] > div:first-child:not(pre) {
 	transform: translateX(3px);
 }
 
-.sl-markdown-content .card,
-.card:where(.astro-e6yapmfz) {
-	background-color: var(--sl-color-gray-6) !important;
+.sl-markdown-content .card {
+	background-color: var(--sl-color-gray-7) !important;
 	border: 1px solid var(--sl-color-gray-5) !important;
-	border-radius: 0.5rem !important;
+	border-radius: 0 !important;
+}
+
+.starlight-aside,
+.sl-markdown-content .starlight-aside {
+	border-radius: 0 !important;
+}
+
+.sl-markdown-content .card .title .icon {
+	border-radius: 0 !important;
 }
 
 /*

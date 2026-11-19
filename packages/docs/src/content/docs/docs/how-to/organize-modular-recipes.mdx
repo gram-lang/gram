@@ -4,10 +4,7 @@ description: "A practical guide to splitting recipes into reusable modules, orga
 ---
 
 import { Steps, Tabs, TabItem, FileTree, CardGrid, LinkCard } from '@astrojs/starlight/components';
-import Since from '../../../../components/Since.astro';
 import Term from '../../../../components/Term.astro';
-
-<Since v="1.2.0" />
 
 As your collection of `.gram` recipes grows, decomposing complex dishes into reusable components — pastries, sauces, stocks, infusions — saves time and ensures consistency across your culinary repertoire. Extracting these core components into their own dedicated files eliminates repetitive copy-pasting: whenever you refine your dough (a dialed-in resting time, a tweaked flour ratio), every recipe in your collection immediately benefits from the improvement.
 
@@ -15,11 +12,11 @@ This guide walks you through practical patterns for structuring, organizing, and
 
 ## Step-by-step: extracting and importing your first module
 
-If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon Meringue Tart** was written from start to finish in a single `.gram` file. Here is how to extract the sweet pastry dough into a reusable component and import it with `@use`.
-
 <Steps>
 
 1.  **Extract the base into its own file**
+
+    If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon Tart** was written from start to finish in a single `.gram` file. Here is how to extract the sweet pastry dough into a reusable component and import it with `@use`.
 
     Start from the dough section in your recipe:
 
@@ -28,9 +25,9 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
     [Process] In a #food processor{}, @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
-    [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
+    [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until ={sandy}.
 
-    [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
+    [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until ={the dough comes together}.
 
     [Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~_{1h}.
     ```
@@ -46,9 +43,9 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
     [Process] In a #food processor{}, @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
-    [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
+    [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until ={sandy}.
 
-    [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
+    [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until ={the dough comes together}.
 
     [Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~_{1h}.
     ```
@@ -62,7 +59,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
     ```gram title="lemon-tart.gram"
     ---
-    title: Lemon Meringue Tart
+    title: Lemon Tart
     portions: 8
     ---
 
@@ -72,15 +69,15 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
     [Whisk] In a #saucepan{}, @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
 
-    [Cook] Over ^{medium heat} for ~{8min} until thickened.
+    [Cook] Over ^{medium heat} for ~{8min} until ={thickened}(a finger drawn across the back of the spoon leaves a clean line).
 
     ## Baking the Tart Shell ->&baked shell{}
 
-    [Preheat] The #oven to ^{350F}.
+    [Preheat] The #oven to ^{350°F}.
 
     [Roll out] The &dough{450g} for ~{5min} and place it in a #tart ring{}.
 
-    [Bake] For ~_{20min} until golden. Let cool.
+    [Bake] For ~_{20min} until ={golden}. Let cool.
 
     ## Assembly
 
@@ -104,7 +101,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
     [Divide] The &dough{450g} into 12 small tart tins.
 
-    [Bake] At ^{180C} for ~_{15min} until golden.
+    [Bake] At ^{350°F} for ~_{15min} until golden.
 
     [Fill] Each shell with a spoonful of @jam{15g}.
     ```
@@ -205,7 +202,7 @@ In your main recipe, destructured imports let you bind both components cleanly i
 
 [Spread] The &frangipane{400g} evenly over the base.
 
-[Top] With sliced @pears{3} and bake at ^{180C} for ~_{35min}.
+[Top] With sliced @pears{3} and bake at ^{350°F} for ~_{35min}.
 ```
 
 :::tip[Local renaming]
@@ -291,11 +288,7 @@ The web-based [Playground](/play) supports editing multi-file recipes: open the 
 
 ## Planning with imports
 
-When generating a [run sheet](/docs/how-to/plan-a-meal/), every base imported via `@use` is fully integrated into the global schedule: its preparation steps and mise en place are coordinated alongside the host recipe.
-
-- **Multi-day scheduling:** Adding a day anchor to an import directive (for example `@use "./bases/sponge.gram" as &sponge ~{-2d}`) automatically schedules the preparation of that sub-recipe two days before the service.
-- **Stocked bases (`--stock`):** If you mark a base as already on hand in your freezer or pantry (`--stock ./bases/sponge.gram`), no cooking visit is scheduled for it. It simply appears annotated as "in stock" in the mise en place of the visit where the host recipe needs it.
-- **Step traceability:** In the execution part of a visit, a section that comes from an imported module explicitly displays its source file name next to its title (for example: `SPONGE — sponge.gram`).
+When generating a [run sheet](/docs/how-to/plan-a-meal/), imported sections are fully coordinated with the host recipe and keep their origin visible right next to their title (for example: `SPONGE — sponge.gram`). Stocked bases (`--stock`) skip production and appear as "in stock" in the mise en place of the visit that uses them.
 
 ## Related resources
 

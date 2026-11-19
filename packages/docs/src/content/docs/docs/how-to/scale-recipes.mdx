@@ -3,9 +3,12 @@ title: "How to scale recipes dynamically"
 description: "Use Relative Quantities and Baker's Math to write ratio-based recipes that recalculate themselves automatically."
 ---
 
-Gram is designed to ensure that recipes scale mathematically across its entire ecosystem. Whether you are using the interactive Playground, rendering HTML/Markdown documents, or running CLI commands, Gram natively supports two powerful features for ratio-based cooking (like pastry or bread): **Relative Quantities** and **Baker's Math**.
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Term from '../../../../components/Term.astro';
 
-This guide shows you how to use **Relative Quantities** to build dynamic, self-documenting recipes based on ratios, and how to use **Baker's Math** to display traditional recipes in percentage format.
+Gram is designed to ensure that recipes scale mathematically across its entire ecosystem. Whether you are using the interactive Playground, rendering HTML/Markdown documents, or running CLI commands, Gram natively supports two powerful features for ratio-based cooking (like pastry, bread, or roasting): **relative quantities** (percentages and the <Term id="ratio" /> `a / b`) and **Baker's Math**.
+
+This guide shows you how to use **Relative Quantities** (`%` and `a / b`) to build dynamic, self-documenting recipes based on ratios, and how to use **Baker's Math** to display traditional recipes in percentage format.
 
 ## The limit of static quantities
 
@@ -25,9 +28,7 @@ What if you want to increase the hydration from 70% to 75%? You would have to ma
 
 Some recipes are fundamentally built around the mathematical relationship between ingredients, rather than strict absolute quantities (e.g., a bread dough defined by its 70% hydration).
 
-In Gram, you can express these relationships directly in the source code using **Relative Quantities** (`% @&target` for ingredients, or `% &target` for intermediate variables). This allows the recipe to recalculate itself dynamically when you tweak a single percentage.
-
-import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+In Gram, you can express these relationships directly in the source code using **Relative Quantities**: mass percentages (`% @&target`) when both ingredients are weighed, or **ratios with units** (`a / b @&target`) when a count, volume, or cooking time depends on another ingredient's weight or count. This allows the recipe to recalculate itself dynamically when you tweak a single figure.
 
 <Steps>
 1. ### Define the anchor (target)
@@ -51,6 +52,16 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
    :::
 </Steps>
 
+### Ratios with units
+
+Percentages always work in grams of mass—great for hydration or salt, less natural when a recipe says "1 egg per 100 g of flour" or "15 minutes per 500 g of roast". Write a ratio with units (`amount / targetAmount @&target`) instead to preserve the target unit or count:
+
+```gram
+[Mix] @flour{500g} with @eggs{1 / 100 g @&flour}. // 5 eggs
+
+[Roast] Season @beef{1.2 kg} and roast ~{15 min / 500 g @&beef}. // 36 min
+```
+
 ## Scaling the dynamic recipe
 
 Because the relationships are encoded directly in the recipe, Gram handles the math dynamically. Any baker reading your `.gram` file immediately sees that this is a 70% hydration dough. 
@@ -69,9 +80,7 @@ You can scale recipes visually in the Playground, or from the CLI using the `--s
 gram view bread.gram --scale flour=400g
 ```
 
-Gram will compute the global factor (400/500 = 0.8), scale the anchor (flour) to 400g, and the relative ingredients will perfectly evaluate against this new base (Water: 70% of 400g = 280g).
-
-Ratios with units scale the same way (since 1.5.0): `@eggs{1 / 100 g @&flour}` gives 4 eggs for 400 g of flour, and a proportional time such as `~{15 min / 500 g @&roast}` follows the roast, the schedule with it.
+Gram will compute the global factor (400/500 = 0.8), scale the anchor (flour) to 400g, and any relative ingredients or proportional timers will evaluate against this new base (Water: 70% of 400g = 280g; `@eggs{1 / 100 g @&flour}` becomes 4 eggs; `~{15 min / 500 g @&roast}` updates both duration and schedule).
 
 ### Limits of reference scaling
 
@@ -79,7 +88,7 @@ Since scaling by reference derives the factor from an ingredient's own quantity,
 
 | You tried to scale by... | Why it's rejected | What to do instead |
 | :--- | :--- | :--- |
-| A **relative quantity** (e.g. `water`, defined as `70% @&flour`) | Its value is *derived* from another ingredient — it can't also be the reference | Scale the anchor ingredient instead (`--scale flour=400g`) |
+| A **relative quantity or ratio** (e.g. `water` as `70% @&flour`, or `eggs` as `1 / 100 g @&flour`) | Its value is *derived* from another ingredient — it can't also be the reference | Scale the anchor ingredient instead (`--scale flour=400g`) |
 | A **fixed ingredient** (`@=`) or a text quantity like `a pinch` | It never scales, by definition, so it can't describe a scale factor either | Pick a different ingredient that actually changes with the recipe |
 | An ingredient only used **inside** a sub-recipe (e.g. `lemon-zest`, part of a `<@lemon` composite) | It's not directly declared with its own quantity — only the composite parent has one | Scale the composite parent instead (e.g. `--scale lemon=4`) — its own total is a valid target |
 | One option inside an **alternative-ingredient** group (`@butter{100g}\|@margarine{100g}`) | Picking one option in isolation doesn't represent the either/or choice the recipe expresses | Scale a different, unambiguous ingredient elsewhere in the recipe |
@@ -136,7 +145,7 @@ Sometimes, a recipe contains ingredients that **should never scale**, regardless
 You can use the **Fixed Modifier** (`=`) to protect an ingredient from scaling:
 
 ```gram
-Heat @=frying oil{1L} in a deep pan.
+[Heat] @=frying oil{1L} in a deep pan.
 ```
 
 If you run `gram build --scale 2`, the `frying oil` will remain at `1L`.

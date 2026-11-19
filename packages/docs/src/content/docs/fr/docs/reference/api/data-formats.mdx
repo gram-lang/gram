@@ -90,7 +90,7 @@ Mélanger @farine{200g} et @lait{200ml}.
   <TabItem label="Recette compilée (Kitchen)">
 ```json
 {
-  "generator": "@gram-lang/kitchen@1.4.0",
+  "generator": "@gram-lang/kitchen@1.5.0",
   "title": "Crêpes",
   "slug": "crepes",
   "meta": { "title": "Crêpes" },
@@ -175,7 +175,7 @@ Mélanger @farine{200g} et @lait{200ml}.
   <TabItem label="Recette analysée (Analyzer)">
 ```json
 {
-  "generator": "@gram-lang/kitchen@1.4.0",
+  "generator": "@gram-lang/kitchen@1.5.0",
   "title": "Crêpes",
   "slug": "crepes",
   "meta": { "title": "Crêpes" },
@@ -279,7 +279,7 @@ Mélanger @farine{200g} et @lait{200ml}.
   </TabItem>
 </Tabs>
 
-<Since v="1.4.0" /> La recette compilée expose `generator` (version du compilateur), `miseEnPlace` (opérations et durées de préparation requises par section), `tasks` (le graphe de tâches agnostique) et `schedule` (l'ordonnancement théorique par défaut calculé à partir du graphe ; tout ordonnancement alternatif est généré via `layout(tasks, options)`).
+La recette compilée expose `generator` (version du compilateur), `miseEnPlace` (opérations et durées de préparation requises par section), `tasks` (le graphe de tâches agnostique) et `schedule` (l'ordonnancement théorique par défaut calculé à partir du graphe ; tout ordonnancement alternatif est généré via `layout(tasks, options)`).
 
 :::note[Champs de synchronisation dépréciés]
 <Since type="deprecated" v="1.4.0" /> Les anciens champs `timings` et `backgroundTasks` par étape, ainsi que `metrics.totalTime`, `metrics.idleTime` et les ventilations temporelles de `metrics` sont dépréciés : ils sont maintenus jusqu'à la version 2.0.0, mais ont été omis de l'exemple ci-dessus par souci de clarté. La [référence de l'API Kitchen](/fr/docs/reference/api/kitchen) documente chaque champ et ses remplaçants.
@@ -287,7 +287,7 @@ Mélanger @farine{200g} et @lait{200ml}.
 
 Remarquez le vocabulaire `StepToken` généré par le compilateur au sein de `content` : le texte narratif pur est une simple `string` ; les ingrédients, le matériel et les références partagent la forme `Usage` (sans champ `type`, identifiés par la présence d'un `id`) ; les minuteurs, températures, états attendus (`checkpoint`, depuis la 1.5.0 : `{ type, state, note? }`), commentaires et déclarations portent chacun un discriminant `type` explicite en minuscules. Cette distinction avec l'énumération `ASTNodeType` (en PascalCase) du parseur est délibérée : elle caractérise la charge utile *compilée*, non la syntaxe d'entrée. Consultez le guide [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui) pour un exemple d'intégration dans un framework front-end.
 
-<Since v="1.5.0" /> Un minuteur porte `raw`, la durée telle qu'écrite entre les accolades, et `minutes`, la durée que retient le planning (le milieu d'une fourchette). `quantity` et `unit` restent, dans la plus petite unité écrite (`1h20` donne `80` `min`), pour que les programmes qui les lisent restent justes ; une durée écrite comme avant la 1.5 (`1.5h`) les garde inchangés. Un minuteur que Gram ne lit pas ne garde que `raw` (et `name`, `isPassive`) : il s'affiche tel qu'écrit.
+<Since v="1.5.0" /> Un jeton minuteur comporte `raw` (la durée telle qu'écrite entre accolades) et `minutes` (la durée retenue pour l'ordonnancement, ou le milieu d'une fourchette). `quantity` et `unit` restent renseignés dans la plus petite unité écrite (`1h20` donne `80` `min`) pour la compatibilité ascendante, tandis que les formats antérieurs à la 1.5 (`1.5h`) restent inchangés. Un minuteur non reconnu ne conserve que `raw` (ainsi que `name` et `isPassive`) afin de pouvoir s'afficher tel qu'écrit.
 
 ```json
 { "type": "timer", "raw": "1h30", "quantity": { "type": "single", "value": 90 }, "unit": "min", "minutes": 90 }
@@ -295,11 +295,11 @@ Remarquez le vocabulaire `StepToken` généré par le compilateur au sein de `co
 { "type": "timer", "raw": "1:30" }
 ```
 
-<Since v="1.5.0" /> Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) (`@farine{1 cup + 1 tbsp}`) ajoute `parts` à son `Usage` : chaque terme tel qu'écrit, avec son `qty` (un nombre ou une `QuantityValue`) et son `unit`, et `minus: true` sur un terme retiré. **`parts` est la seule source de vérité** ; `qty` et `unit` gardent un total pour qu'un programme qui les lit reste juste :
+<Since v="1.5.0" /> Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) (`@farine{1 cup + 1 tbsp}`) ajoute `parts` à son `Usage` : chaque terme écrit avec `qty` (nombre ou `QuantityValue`), `unit`, et `minus: true` pour les termes soustraits. **`parts` fait foi** ; `qty` et `unit` fournissent un résumé de compatibilité :
 
-- **Une seule nature d'unité** : `qty` / `unit` portent le total, dans la plus petite unité écrite quand les unités partagent une échelle (`{1 cup + 1 tbsp}` donne `17` `tbsp`), sinon en `ml` ou en `g`. Une fourchette dans un terme fait du total une fourchette.
-- **Plusieurs natures** (un volume et une masse, ou des unités que Gram ne connaît pas) : pas de `qty`, et `unit` contient la somme écrite en toutes lettres (`"1 cup + 20 g"`), comme une quantité en mots (`{une pincée}`). Lisez `parts` plutôt que de décortiquer ce texte.
-- **Refusée** (avertissement `INVALID_QUANTITY`) : `parts` seul, ni `qty` ni `unit`.
+- **Une seule nature d'unité** : `qty` et `unit` contiennent le total, dans la plus petite unité écrite quand les termes partagent une échelle (`{1 cup + 1 tbsp}` donne `17` `tbsp`), ou sinon en `ml` / `g`. Une fourchette dans un terme rend le total sous forme de fourchette.
+- **Plusieurs natures** (un volume et une masse, ou des unités inconnues) : `qty` est omis et `unit` contient l'expression écrite (`"1 cup + 20 g"`), à la manière d'une quantité textuelle (`{une pincée}`). Lisez `parts` plutôt que d'analyser cette chaîne.
+- **Invalide** (`INVALID_QUANTITY`) : `parts` seul, sans `qty` ni `unit`.
 
 ```json
 { "id": "farine", "_usageId": "1", "qty": 17, "unit": "tbsp", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 1, "unit": "tbsp" } ] }

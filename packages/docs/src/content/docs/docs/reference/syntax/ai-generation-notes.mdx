@@ -25,9 +25,9 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 1. **Structure** — Identify distinct phases (dough, filling, sauce, assembly…). Each phase with its own ingredient list is a candidate for a `## Section`. Anything that must be prepared in advance gets a retro-planning lead time (see [Document Structure](/docs/reference/syntax/document-structure#retro-planning-scheduling)).
-2. **Frontmatter** — Extract `title`, `author`, `source`, `category`, `portions`, and dates from whatever metadata the source provides. Never invent a value that isn't in the source.
-3. **Ingredients** — List every unique `@ingredient` using its full name with spaces (`"olive oil"`, not `"olive-oil"`). Note which ones appear more than once — the second and later mentions should use `@&`. Prefer SI units for precision, but keep `tbsp`/`tsp`/`cup` for small amounts when that's how the source expresses them. For parts of an ingredient (juice, zest, yolk…), plan the [composite syntax](/docs/reference/syntax/composite-ingredients) instead of a separate prep step.
-4. **Steps** — Write each step as a paragraph with a `[Verb]` action prefix, inlining every `@ingredient`, `#cookware`, `~timer`, and `^temperature` as it's introduced. Use passive timers (`~_`) for hands-off waits (oven, resting, chilling, rising) and active timers (`~`) for anything that keeps the cook busy. If multiple passive timers must happen sequentially (one after another, e.g. baking in stages), give them the SAME NAME (`~_baking{10m}` then `~_baking{30m}`) to automatically sequence them without adding to the cook's active time.
+2. **Frontmatter** — Extract `title`, `author`, `source`, `category`, `portions` (not `servings`), `makes` (not the obsolete `size`), and dates from whatever metadata the source provides. Keep it flat (`key: value` lines only, with inline arrays like `source: [...]` or `densities: [flour:0.55]` — never nested/indented YAML), omit computed time fields (`prep`, `total`), and never invent a value that isn't in the source.
+3. **Ingredients** — List every unique `@ingredient` using its full name with spaces (`"olive oil"`, not `"olive-oil"`), keeping the core noun short and moving state qualifiers into `()` (`@chicken breast{500g}(boneless, skinless)` rather than `@boneless skinless chicken breast{500g}`). Note which ingredients appear more than once — the second and later mentions should use `@&`. Prefer SI units for precision, but keep `tbsp`/`tsp`/`cup` for small amounts when that's how the source expresses them. For parts of an ingredient (juice, zest, yolk…), plan the [composite syntax](/docs/reference/syntax/composite-ingredients) instead of a separate prep step.
+4. **Steps** — Write each step as a paragraph separated by a **blank line** (including right after `## Section` headers — consecutive lines merge into one step). Start each step with a `[Verb]` action prefix, inlining every `@ingredient`, `#cookware`, `~timer`, and `^temperature` as it's introduced. Use passive timers (`~_`) for hands-off waits (oven, resting, chilling, rising) and active timers (`~`) for anything that keeps the cook busy. If multiple passive timers must happen sequentially (one after another, e.g. baking in stages), give them the SAME NAME (`~_baking{10min}` then `~_baking{30min}`) to automatically sequence them without adding to the cook's active time.
 5. **Review** — Before finalizing, check for the mistakes listed below: kebab-case names, units inside cookware braces, missing `@&` on repeat mentions, redundant `->&name` declarations, and standalone steps that only prepare an ingredient for a later step.
 </Steps>
 
@@ -67,9 +67,19 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ```gram
 ❌  @salt{to taste}        →   ✅  @salt{}   or   @salt
 ❌  @flour{about 200g}     →   ✅  @flour{200g}
+❌  @flour{1,000 g}        →   ✅  @flour{1000 g}
 ❌  ~{about 10 minutes}    →   ✅  ~{10min}
+❌  ~{1.30 h}              →   ✅  ~{1h30}
 ```
-Quantities and timers need a real number (or empty braces for "to taste"); fuzzy text doesn't parse.
+Quantities and timers need a real number (or empty braces when no quantity is given); fuzzy prefixes like `about` trigger compiler warnings (`INVALID_UNIT` / `INVALID_DURATION`), and free text in a timer loses its duration for scheduling. Gram has no thousands separator: `{1,000 g}` parses as `1 g` and triggers `AMBIGUOUS_NUMBER`. Similarly, decimals in timers are fractions of the unit (`~{1.30 h}` means 1 h 18 min), so write `~{1h30}` for an hour and a half.
+
+### Space between braces and preparations
+
+```gram
+❌  @onion{1} (diced)          →   ✅  @onion{1}(diced)
+❌  #pan{} (20cm, non-stick)   →   ✅  #pan{}(20cm, non-stick)
+```
+A preparation note `(...)` must touch the closing `}` (or bare single-word name). Any space before `(` leaves it in ordinary step prose instead of attaching it to the ingredient or cookware.
 
 ### One amount given in several measures
 <Since v="1.5.0" />
@@ -77,25 +87,25 @@ Quantities and timers need a real number (or empty braces for "to taste"); fuzzy
 ```gram
 ❌  @flour{1 cup 5 tbsp}    →   ✅  @flour{1 cup + 5 tbsp}
 ```
-Write an amount the recipe gives in several measures as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities), exactly as the source says it: "1 cup plus 1 tablespoon" is `{1 cup + 1 tbsp}`, "1 cup minus 2 tablespoons" is `{1 cup - 2 tbsp}`, and a volume next to a weight is fine (`{1 cup + 20 g}`). Don't work it out into one number either (`{1.0625 cup}`, `{17 tbsp}`): Gram adds the terms itself and shows them as the cook measures them. Every term needs its unit, and a term is only an amount: no percentage (`{100g + 10%}`), no multiplication (`{2 x 100g}`), no range after `-` (a range may be a term that is added: `{1 cup + 1-2 tbsp}`).
+Write multi-measure amounts as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities) (`{1 cup + 1 tbsp}`, `{1 cup - 2 tbsp}`, `{1 cup + 20 g}`) rather than collapsing them into decimals (`{1.0625 cup}`). Every term needs a unit, and only plain quantities are allowed (no `%`, no `×`, and no range after `-`).
 
 ### The oven mode left in the prose
 <Since v="1.5.0" />
 
 ```gram
-❌  Bake at ^{160°C} fan.         →   ✅  Bake at ^{160°C}(fan).
-❌  Bake at ^{180°C} (fan).       →   ✅  Bake at ^{180°C}(fan).
+❌  Bake at ^{320°F} fan.         →   ✅  Bake at ^{320°F}(fan).
+❌  Bake at ^{350°F} (fan).       →   ✅  Bake at ^{350°F}(fan).
 ```
-What goes with a temperature (the oven mode, "internal", "covered") belongs in a [note](/docs/reference/syntax/temperatures/#cooking-mode-and-notes) glued to the closing brace, in the recipe's language. With a space before it, the parenthesis is ordinary text and the note is lost.
+Attach oven modes and conditions ("fan", "internal", "covered") as a [parenthetical note](/docs/reference/syntax/temperatures/#cooking-mode-and-notes) directly touching `}`, in the recipe's language. Any space before `(` leaves it as plain text.
 
 ### The target state left in the prose
 <Since v="1.5.0" />
 
 ```gram
 ❌  Whisk until ribbon stage.                 →   ✅  Whisk until ={ribbon stage}.
-❌  Cook until ={82°C} or ={5 min}.           →   ✅  Cook at ^{82°C}(internal) for ~{5 min}, until ={it coats the spoon}.
+❌  Cook until ={180°F} or ={5 min}.           →   ✅  Cook at ^{180°F}(internal) for ~{5 min}, until ={it coats the spoon}.
 ```
-When the source says what state the cook should reach (a texture, a color, a smell), mark it as a [target state](/docs/reference/syntax/target-states/), wherever it sits in the step: only the state between the braces, the linking words ("until", "as soon as", "when") left in the sentence, a test in a glued note if the source gives one. Never a temperature, a time or a quantity inside, and never a cue the source does not give.
+Mark visual or sensory cues stated by the source as [target states](/docs/reference/syntax/target-states/) (`={...}`), keeping linking words ("until", "when") outside the braces and putting any verification test in a glued `(...)` note. Never put temperatures, durations, or quantities inside `={...}`, and never invent cues absent from the source.
 
 ### A proportional rule computed by hand
 <Since v="1.5.0" />
@@ -105,7 +115,7 @@ When the source says what state the cook should reach (a texture, a color, a sme
 ❌  Roast ~{36 min} (15 min per 500 g).             →   ✅  Roast ~{15 min / 500 g @&roast}.
 ❌  Add @eggs{1/100g @&flour}.                       →   ✅  Add @eggs{1 / 100 g @&flour}.
 ```
-When the source states a proportional rule ("per 100 g", "per liter", "per pound", "per piece"), write it as a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units): it follows the target when the recipe is scaled. Only then: an amount the source gives as such stays an amount. Always a space around the slash, the unit alone before the target (never `100 g of @&flour`), and no multiplier after a proportional time.
+When the source states a proportional rule ("per 100 g", "per liter", "per piece"), write it as a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units) so it scales with its target. Always leave a space around `/`, write the unit alone before the target (never `100 g of @&flour`), and omit multipliers on proportional times.
 
 ### Using `@&` on the first occurrence
 
@@ -157,16 +167,16 @@ Any step whose entire purpose is "take X and do Y to it before the real step" sh
 ### Attaching a composite's preparation to the wrong side
 
 ```gram
-❌  @lemon juice(cut in half, one half sliced for garnish)<@lemon{1}    // says the JUICE was cut in half
-✅  @lemon juice<@lemon{1}(cut in half, one half sliced for garnish)    // says the LEMON was cut in half
+❌  @lemon juice{}(cut in half, one half sliced for garnish)<@lemon{1}    // says the JUICE was cut in half
+✅  @lemon juice{}<@lemon{1}(cut in half, one half sliced for garnish)    // says the LEMON was cut in half
 ```
 Both the child and the parent of a composite can carry their own independent `()` preparation:
-- **Child's preparation** goes right after its own name (and quantity, if any).
+- **Child's preparation** goes right after its own `{}` / `{quantity}`.
 - **Parent's preparation** goes right after `<@parentName{parentCost}`.
 
 Attach it to whichever one it actually describes — "cut in half" happens to the whole lemon, not to the extracted juice. They can also combine when both genuinely need one: `@lemon juice{150ml}(strained)<@lemon{1}(cut in half)`.
 
-### A redundant `->&name` when the section title already declares one
+### A redundant or duplicate `->&name`
 
 ```gram
 ❌ ## Seasoning Mix ->&seasoning
@@ -177,7 +187,7 @@ Attach it to whichever one it actually describes — "cut in half" happens to th
 
    [Mix] @paprika{2 tsp} with @salt{1 tsp}.            // no local declaration needed
 ```
-A section-level `->&name` already captures the output of every step inside it — see [Intermediate Variables](/docs/reference/syntax/intermediate-variables#section-level-declaration).
+A section-level `->&name` already captures the output of every step inside it, and every intermediate name must be unique across the whole recipe (declaring `->&dough` twice triggers a hard `SCOPE_CONFLICT` error) — see [Intermediate Variables](/docs/reference/syntax/intermediate-variables#section-level-declaration).
 
 ### An active timer for passive cooking
 

@@ -3,11 +3,8 @@ title: "@gram-lang/scheduler"
 description: "Moteur d'ordonnancement : calcule la chronologie d'un graphe de tâches, le projette sur le calendrier selon l'heure de service et les disponibilités, et génère une fiche de production."
 ---
 
-import Since from '../../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../../components/Term.astro';
-
-<Since v="1.4.0" />
 
 Le moteur d'ordonnancement de Gram prend en entrée un **graphe de tâches** agnostique (le champ `tasks` d'une recette compilée) et répond à deux questions fondamentales : comment ces tâches s'articulent-elles chronologiquement (`layout`), et à quel moment précis démarrer chaque tâche compte tenu de l'heure de service visée et des disponibilités de l'utilisateur (`project`).
 
@@ -333,7 +330,7 @@ Donne à chaque passage d'un planning calendaire sa marge d'anticipation (`windo
 
 `runSheet()` l'appelle déjà quand vous lui passez `graph` et `context` : vous n'en avez besoin que pour ajouter des marges à un planning construit sans elles. Un planning relatif, ou sans heure de service, est renvoyé tel quel.
 
-## `findServeTimes` et `earliestServe` <Since v="1.4.0" />
+## `findServeTimes` et `earliestServe`
 
 Les deux reposent sur `project()` : elles essaient des heures de service et gardent celles qui peuvent être suivies. Une heure est rejetée quand le plan a un problème non résolu, un début déjà passé compris, et chaque rejet porte ses raisons.
 

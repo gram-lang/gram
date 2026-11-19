@@ -45,7 +45,7 @@ If you scale a recipe from 2 to 4 portions, an `@ingredient` with `{100g}` becom
 Some `@ingredient` items (like salt, yeast, or spices) should not scale linearly. You can lock their quantity using the `=` modifier.
 
 ```gram
-Season with @=salt{1 tsp} to taste.
+[Season] With @=salt{1 tsp} to taste.
 ```
 This keeps the salt at 1 tsp regardless of how many portions the user calculates.
 
@@ -132,9 +132,9 @@ Each preparation counts toward the mise en place of **its own section**, where i
 Only a parenthesis that touches the `}` (or the name when there are no braces) is read as a preparation, and it ends on the same line. With a space, the parenthesis stays part of the sentence:
 
 ```gram
-Add the @butter{100 g}(softened).
+[Add] The @butter{100 g}(softened).
 
-Add the @butter{100 g} (about 1 stick).
+[Add] The @butter{100 g} (about 1 stick).
 ```
 
 The first butter carries the preparation `softened`; the second has none, and `(about 1 stick)` stays ordinary text. The same rule applies to parentheses on cookware, temperatures, and target states.
@@ -147,10 +147,10 @@ You can rename an `@ingredient` for display purposes using a colon `:` immediate
 
 <CodeTabs>
 ```gram title="Code"
-Deglaze with @dry white wine:wine{100ml}.
+[Deglaze] With @dry white wine:wine{100ml}.
 ```
 ```markdown title="Rendered Recipe"
-1. Deglaze with **wine** (100ml).
+1. **[Deglaze]** With **wine** (100ml).
 ```
 ```markdown title="Shopping List"
 - **dry white wine**: 100ml
@@ -171,91 +171,90 @@ This `:` syntax only renames how the ingredient is *displayed* in the rendered s
 You can define acceptable alternatives for an `@ingredient` using the pipe `|` operator.
 
 ```gram
-Add @milk{100ml}|@water{95ml}.
+[Add] @milk{100ml}|@water{95ml}.
 ```
 This works with short-hand preparations as well:
 ```gram
-@onion{1}(peeled and chopped)|@shallots{2}(minced)
+[Add] @onion{1}(peeled and chopped)|@shallots{2}(minced)
 ```
 
 ### Ranges
 Recipes aren't always exact. You can specify a range using a hyphen `-`.
 
 ```gram
-Add @eggs{2-4}.
+[Add] @eggs{2-4}.
 
-Pour @water{1.5-2l}.
+[Pour] @water{1.5-2l}.
 ```
 
 ### Fractions
 Quantities accept fractions in three forms — a plain fraction, a mixed number, or a Unicode fraction glyph — all normalized to the same decimal value.
 
 ```gram
-Add @sugar{1/2 cup}.
+[Add] @sugar{1/2 cup}.
 
-Add @flour{1 1/2 cups}.
+[Add] @flour{1 1/2 cups}.
 
-Add @butter{1½ sticks}.
+[Add] @butter{1½ sticks}.
 ```
 
 ### Decimal numbers
 <Since v="1.5.0" />
 
-A decimal number takes a point or a comma, whichever you are used to: `{1.5 kg}` and `{1,5 kg}` are the same quantity. This holds for every number in braces: ingredients, ranges (`{0,5-0,75 l}`), relative quantities (`{12,5% &dough}`), cookware, temperatures (`^{37,5°C}`), timers and section anchors.
+Decimals accept either a period or a comma: `{1.5 kg}` and `{1,5 kg}` mean the same thing. This applies to every number inside braces—ingredients, ranges (`{0,5-0,75 l}`), relative quantities (`{12,5% &dough}`), cookware, temperatures (`^{37,5°C}`), timers, and section anchors.
 
 ```gram
-Add @flour{1,5 kg} and @salt{0.125 kg}.
+[Add] @flour{1,5 kg} and @salt{0.125 kg}.
 
-Pour @milk{0,5-0,75 l}.
+[Pour] @milk{0,5-0,75 l}.
 ```
 
-Gram has no thousands separator: write `{1500 g}`, never `{1,500 g}`. A comma followed by exactly three digits is read as a decimal like any other (`{1,000 g}` is 1 g), but since a reader could mean a thousand, the compiler warns `AMBIGUOUS_NUMBER` and says how it read the number. A point keeps the meaning it has always had: `{1.000 kg}` is 1 kg, with no warning.
+:::caution[No thousands separator]
+Gram has no thousands separator: write `{1500 g}`, never `{1,500 g}`. A comma followed by three digits like `{1,000 g}` is parsed as a decimal (`1 g`) and triggers an `AMBIGUOUS_NUMBER` warning; a period (`{1.000 kg}`) always means `1 kg` with no warning.
+:::
 
 ### Sums of quantities
 <Since v="1.5.0" />
 
-A measure that doesn't fit one unit is written the way a recipe says it: terms joined by `+`, or `-` for an amount taken away.
+When a measurement combines more than one unit, write it as a sum with `+`, or `-` for an amount subtracted:
 
 ```gram
-Add @flour{1 cup + 1 tbsp} and @sugar{1 cup - 2 tbsp}.
+[Add] @flour{1 cup + 1 tbsp} and @sugar{1 cup - 2 tbsp}.
 
-Pour @milk{1 cup + 1-2 tbsp}.
+[Pour] @milk{1 cup + 1-2 tbsp}.
 
-Mix in @butter{2 1/2 tbsp + ½ tsp} and @rice{1 cup + 20 g}.
+[Mix] In @butter{2 1/2 tbsp + ½ tsp} and @rice{1 cup + 20 g}.
 ```
 
-Each term is a number (or a range, or a fraction) with its unit. Gram keeps the terms as written and works out their total: `{1 cup + 1 tbsp}` is 17 tbsp, `{1 cup - 2 tbsp}` is 14 tbsp. The recipe shows the sum as you wrote it; once scaled, it is worked out again into amounts a cook can measure (`{1 cup + 1 tbsp}` doubled reads `2 cup + 2 tbsp`, never `2 1/8 cup`). The `=` modifier locks a sum like any other quantity (`@=salt{1,5 g + 1 pinch}`).
+Each term is a quantity (number, range, or fraction) with its unit. Gram preserves the sum as written in the unscaled recipe, and recomputes it into practical kitchen measures when scaling (for example, doubling `{1 cup + 1 tbsp}` gives `2 cup + 2 tbsp`). Adding `=` locks the entire sum (`@=salt{1,5 g + 1 pinch}`).
 
-A sum counts as **separate mentions** of the ingredient: `@rice{1 cup + 20 g}` goes into the shopping list exactly like `@rice{1 cup}` followed by `@&rice{20 g}`. Terms of the same kind of unit add up (cups and spoons, kilos and grams); a volume next to a weight, or two units Gram doesn't know (`{1 head + 2 cloves}`), stay side by side.
+In the shopping list, a sum behaves like separate mentions of the ingredient: compatible units add up (cups and spoons, grams and kilograms), while a volume and a weight (`{1 cup + 20 g}`) or unrecognized units stay side by side.
 
-A few rules keep a sum readable:
+A few rules keep sums unambiguous:
 
-- **Every term has its unit**: `{1 + 1 cup}` is refused.
-- **Only amounts**: no percentage (`{100 g + 10%}`, write `{110 g}`, or a [relative quantity](/docs/reference/syntax/relative-quantities/)), no multiplication (`{2 x 100 g + 50 g}`).
-- **Take away from the same kind**: `{1 cup - 2 tbsp}` works, `{1 cup - 20 g}` doesn't, and what is taken away must leave something (`{1 tbsp - 1 cup}` is refused).
-- **No range after `-`**: `{1 cup - 1-2 tbsp}` would swap its bounds; write the range on a term that is added.
+- **Every term needs a unit**: `{1 + 1 cup}` is rejected.
+- **Plain quantities only**: no percentages (`{100 g + 10%}`) or multiplications (`{2 x 100 g}`).
+- **Subtract within the same kind**: `{1 cup - 2 tbsp}` works, `{1 cup - 20 g}` does not, and the result must remain positive (`{1 tbsp - 1 cup}` is rejected).
+- **No range after `-`**: put ranges on added terms (`{1 cup + 1-2 tbsp}`), never subtracted ones.
 
-Each kind of amount adds up and takes away **on its own**, because a volume and a weight can't be compared without a density. In `{1 cup - 2 tbsp + 30 g}`, the 2 tbsp come off the cup and the 30 g are added beside them: the sum is 14 tbsp of volume plus 30 g of weight. In `{1 cup - 20 g}`, there is no weight to take the 20 g from, so Gram refuses it rather than guess. Hover a sum in the editor to see what each kind comes to.
+An invalid sum still compiles with an `INVALID_QUANTITY` warning explaining why, and is excluded from shopping list and nutrition totals. See [Scaling sums of quantities](/docs/explanation/scaling/#scaling-sums-of-quantities) for details.
 
-A refused sum compiles with an `INVALID_QUANTITY` warning that says why, and counts for nothing in the shopping list and the nutrition. Two quantities written side by side without an operator (`{1 cup 5 tbsp}`) raise `INVALID_UNIT`; the editor offers to insert the ` + `.
-
-:::caution[oz is a weight]
-In `{1 cup + 2 oz}`, `oz` is an ounce of weight, not of volume: Gram reads it as written and adds a note (`OZ_AFTER_VOLUME`). Write `fl oz` for a fluid ounce.
+:::caution[`oz` means weight]
+In `{1 cup + 2 oz}`, `oz` is parsed as weight (ounces), not fluid volume (`OZ_AFTER_VOLUME`). Write `fl oz` for fluid ounces.
 :::
 
 ## Error handling
 
-Some syntax errors stop the recipe from being read before it is even compiled: an unreadable quantity in braces (`@salt{1 g/l}`), a brace that is never closed. The message points at the exact spot to fix, and the editor underlines it.
+Some syntax errors stop parsing before compilation: an unreadable quantity in braces (such as `@salt{1/2/3}`) or an unclosed brace. The error points to the exact spot to fix.
 
-The compiler checks for semantic errors in your `@ingredient` declarations and will output specific warnings:
+The compiler checks for semantic errors in your `@ingredient` declarations and emits structured warnings:
 
-- **Invalid Modifier**: If you combine incompatible modifiers (like `?*`), the compiler warns `INVALID_MODIFIER_COMBINATION` and ignores them.
-- **Undefined Reference**: If you use a reference (`@&ingredient`) but that item hasn't been declared previously in the recipe, the compiler warns `UNDEFINED_REFERENCE`.
-- **Database Missing**: If you compile with a database and the `@ingredient` is not found, it warns `MISSING_INGREDIENT`.
-- **Missing Macros**: If the database lacks nutritional information for the `@ingredient`, it warns `MISSING_MACROS`.
-- **Unknown Mass**: If it cannot convert a volume or count into grams to estimate nutrition, it warns `UNKNOWN_MASS`.
-- **Invalid Quantity**: If a sum of quantities can't be read (a term without a unit, a percentage, an amount taken away from another kind…), it warns `INVALID_QUANTITY` and gives the reason.
-- **Ambiguous Number**: If a comma is followed by exactly three digits (`{1,000 g}`), it reads a decimal and warns `AMBIGUOUS_NUMBER`, in case a thousand was meant.
+- **Invalid Modifier**: Combining incompatible modifiers (like `?*`) triggers `INVALID_MODIFIER_COMBINATION`.
+- **Undefined Reference**: Using a reference (`@&ingredient`) before it has been declared triggers `UNDEFINED_REFERENCE`.
+- **Database Missing**: An `@ingredient` missing from the supplied database triggers `MISSING_INGREDIENT`.
+- **Missing Macros**: An entry without nutritional information triggers `MISSING_MACROS`.
+- **Unknown Mass**: A volume or count that cannot be converted into grams triggers `UNKNOWN_MASS`.
+- **Invalid Quantity / Ambiguous Number**: Malformed sums trigger `INVALID_QUANTITY`, and a comma followed by three digits (`{1,000 g}`) triggers `AMBIGUOUS_NUMBER`.
 
 ## Related resources
 

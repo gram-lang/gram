@@ -3,11 +3,8 @@ title: "@gram-lang/scheduler"
 description: "The scheduling engine: lays out a task graph on a timeline, projects it onto the calendar given a target serving time and availability, and groups it into the days, visits to the kitchen and threads of a run sheet."
 ---
 
-import Since from '../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../components/Term.astro';
-
-<Since v="1.4.0" />
 
 Gram's scheduling engine takes an agnostic **task graph** (the `tasks` field of a compiled recipe) and answers two fundamental questions: how do these tasks lay out chronologically (`layout`), and precisely when should each task begin, given a target serving time and cooking availability (`project`).
 
@@ -333,7 +330,7 @@ Gives each visit of a calendar run sheet its anticipation margin (`window`), or 
 
 `runSheet()` already calls it when you pass `graph` and `context`, so you only need it to add margins to a sheet you built without them. A relative sheet, or one with no serving time, is returned as it is.
 
-## `findServeTimes` and `earliestServe` <Since v="1.4.0" />
+## `findServeTimes` and `earliestServe`
 
 Both are built on `project()`: they try serving times and keep those that can be followed. A time is rejected when the plan has an unresolved problem, a start already in the past included, and each rejection carries its reasons.
 

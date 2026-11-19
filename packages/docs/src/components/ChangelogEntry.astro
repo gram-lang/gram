@@ -1,0 +1,187 @@
+---
+import type { ChangelogEntry } from "../lib/changelog";
+import type { ReleasePostInfo } from "../lib/releases";
+
+export interface RenderedChangelogRelease extends ChangelogEntry {
+	formattedDate: string;
+	blogPost?: ReleasePostInfo;
+	summary?: string;
+	html: string;
+}
+
+interface Props {
+	release: RenderedChangelogRelease;
+	readPostLabel: string;
+	compareLabel: string;
+}
+
+const { release, readPostLabel, compareLabel } = Astro.props;
+---
+
+<article id={release.anchor} class="changelog-entry">
+	<header class="entry-header">
+		<h2 class="entry-version">
+			<a href={`#${release.anchor}`}>v{release.version}</a>
+		</h2>
+		<p class="entry-meta">
+			<time datetime={release.date}>{release.formattedDate}</time>
+			{
+				release.blogPost && (
+					<>
+						<span aria-hidden="true">·</span>
+						<a href={release.blogPost.href} class="entry-link">
+							{readPostLabel} &rarr;
+						</a>
+					</>
+				)
+			}
+			{
+				release.compareUrl && (
+					<>
+						<span aria-hidden="true">·</span>
+						<a
+							href={release.compareUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="entry-compare-link"
+						>
+							{compareLabel} ↗
+						</a>
+					</>
+				)
+			}
+		</p>
+	</header>
+
+	{release.summary && <p class="entry-summary">{release.summary}</p>}
+
+	<div class="entry-body" set:html={release.html} />
+</article>
+
+<style>
+	.changelog-entry {
+		padding-top: 2rem;
+		border-top: 1px solid var(--sl-color-hairline);
+		scroll-margin-top: calc(var(--sl-nav-height, 60px) + 1.25rem);
+	}
+
+	.changelog-entry:target .entry-version a {
+		color: var(--sl-color-accent);
+	}
+
+	.entry-header {
+		margin-bottom: 1rem;
+	}
+
+	.entry-version {
+		margin: 0 0 0.35rem;
+		font-size: 1.75rem;
+		font-weight: 700;
+		font-family: var(--sl-font-mono);
+		line-height: 1.2;
+	}
+
+	.entry-version a {
+		color: var(--sl-color-white);
+		text-decoration: none;
+	}
+
+	.entry-version a:hover {
+		text-decoration: underline;
+	}
+
+	.entry-meta {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 0;
+		font-size: 0.95rem;
+		color: var(--sl-color-gray-3);
+	}
+
+	.entry-link {
+		color: var(--sl-color-text);
+		font-weight: 600;
+		text-decoration: underline;
+		text-decoration-color: var(--gram-orange);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 3px;
+	}
+
+	.entry-link:hover {
+		color: var(--sl-color-accent);
+	}
+
+	.entry-compare-link {
+		color: var(--sl-color-gray-3);
+		text-decoration: none;
+	}
+
+	.entry-compare-link:hover {
+		color: var(--sl-color-white);
+		text-decoration: underline;
+	}
+
+	.entry-summary {
+		margin: 0 0 1.1rem;
+		font-size: 1.02rem;
+		line-height: 1.6;
+		color: var(--sl-color-gray-2);
+	}
+
+	.entry-body {
+		font-size: 0.98rem;
+		line-height: 1.65;
+		color: var(--sl-color-text);
+	}
+
+	.entry-body :global(h3) {
+		margin: 1.35rem 0 0.55rem;
+		font-size: 1.05rem;
+		font-weight: 700;
+		color: var(--sl-color-white);
+	}
+
+	.entry-body :global(h3:first-child) {
+		margin-top: 0;
+	}
+
+	.entry-body :global(ul) {
+		margin: 0.35rem 0 0.85rem;
+		padding-left: 1.3rem;
+	}
+
+	.entry-body :global(li) {
+		margin: 0.35rem 0;
+	}
+
+	.entry-body :global(li > ul) {
+		margin-top: 0.25rem;
+		margin-bottom: 0.35rem;
+	}
+
+	.entry-body :global(strong) {
+		color: var(--sl-color-white);
+	}
+
+	.entry-body :global(code) {
+		font-family: var(--sl-font-mono);
+		font-size: 0.88em;
+		padding: 0.1em 0.32em;
+		background-color: var(--sl-color-bg-inline-code);
+		border-radius: 0;
+	}
+
+	.entry-body :global(a) {
+		color: var(--sl-color-text);
+		text-decoration: underline;
+		text-decoration-color: var(--gram-orange);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 3px;
+	}
+
+	.entry-body :global(a:hover) {
+		color: var(--sl-color-accent);
+	}
+</style>

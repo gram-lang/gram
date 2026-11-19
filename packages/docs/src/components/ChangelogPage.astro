@@ -1,0 +1,388 @@
+---
+import { getCollection } from "astro:content";
+import { createMarkdownProcessor } from "@astrojs/markdown-remark";
+import { getChangelogReleases } from "../lib/changelog";
+import { resolveReleasePostsByVersion } from "../lib/releases";
+import ChangelogEntryCard, {
+	type RenderedChangelogRelease,
+} from "./ChangelogEntry.astro";
+
+interface Props {
+	lang: "en" | "fr";
+}
+
+const { lang } = Astro.props;
+const isFr = lang === "fr";
+
+const copy = isFr
+	? {
+			title: "Changelog",
+			subtitle: "Pour découvrir les nouveautés en détail, consultez plutôt ",
+			blogCta: "les articles de release sur le blog",
+			blogHref: "/fr/blog/topic/releases",
+			tocTitle: "Sur cette page",
+			readPost: "Article de release",
+			compareLabel: "Diff",
+			archiveTitle: "Versions pré-1.0.0",
+			langNote: "Note : les entrées ci-dessous sont rédigées en anglais.",
+		}
+	: {
+			title: "Changelog",
+			subtitle: "For a closer look at what changed in each release, read ",
+			blogCta: "the release articles on the blog",
+			blogHref: "/blog/topic/releases",
+			tocTitle: "On this page",
+			readPost: "Release notes",
+			compareLabel: "Compare",
+			archiveTitle: "Pre-1.0.0 releases",
+			langNote: undefined,
+		};
+
+const [allPosts, processor] = await Promise.all([
+	getCollection("blog"),
+	createMarkdownProcessor(),
+]);
+
+const postsByVersion = resolveReleasePostsByVersion(allPosts, lang);
+const enPostsByVersion = isFr
+	? resolveReleasePostsByVersion(allPosts, "en")
+	: postsByVersion;
+const dateFormatter = new Intl.DateTimeFormat(isFr ? "fr-FR" : "en-US", {
+	year: "numeric",
+	month: "short",
+	day: "numeric",
+	timeZone: "UTC",
+});
+
+const rawEntries = getChangelogReleases();
+const releases: RenderedChangelogRelease[] = await Promise.all(
+	rawEntries.map(async (entry) => {
+		const rendered = await processor.render(entry.bodyMarkdown);
+		const parsedDate = new Date(`${entry.date}T00:00:00Z`);
+		return {
+			...entry,
+			formattedDate: Number.isNaN(parsedDate.valueOf())
+				? entry.date
+				: dateFormatter.format(parsedDate),
+			blogPost: postsByVersion.get(entry.version),
+			summary: enPostsByVersion.get(entry.version)?.description,
+			html: rendered.code,
+		};
+	}),
+);
+
+const isPreReleaseHistory = (version: string) => /^0\.|^1\.0\.0-/.test(version);
+const recentReleases = releases.filter((r) => !isPreReleaseHistory(r.version));
+const pre10Releases = releases.filter((r) => isPreReleaseHistory(r.version));
+const archiveRange =
+	pre10Releases.length > 0
+		? `${pre10Releases[0]?.version} – ${pre10Releases.at(-1)?.version}`
+		: "";
+---
+
+<div class="changelog-container">
+	<header class="changelog-header">
+		<h1>{copy.title}</h1>
+		<p class="changelog-subtitle">
+			{copy.subtitle}<a href={copy.blogHref}>{copy.blogCta}</a>.
+		</p>
+		{copy.langNote && <p class="changelog-lang-note">{copy.langNote}</p>}
+	</header>
+
+	<details class="changelog-mobile-toc">
+		<summary>{copy.tocTitle}</summary>
+		<ul class="toc-list">
+			{
+				releases.map((release) => (
+					<li>
+						<a href={`#${release.anchor}`} class="toc-link">
+							{release.version} - {release.date}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</details>
+
+	<div class="changelog-layout">
+		<div class="changelog-list">
+			{
+				recentReleases.map((release) => (
+					<ChangelogEntryCard
+						release={release}
+						readPostLabel={copy.readPost}
+						compareLabel={copy.compareLabel}
+					/>
+				))
+			}
+
+			{
+				pre10Releases.length > 0 && (
+					<details class="changelog-archive" id="pre-1-0">
+						<summary class="changelog-archive-summary">
+							<span>{copy.archiveTitle}</span>
+							<span class="changelog-archive-range">({archiveRange})</span>
+						</summary>
+						<div class="changelog-archive-list">
+							{pre10Releases.map((release) => (
+								<ChangelogEntryCard
+									release={release}
+									readPostLabel={copy.readPost}
+									compareLabel={copy.compareLabel}
+								/>
+							))}
+						</div>
+					</details>
+				)
+			}
+		</div>
+
+		<aside class="changelog-toc" aria-label={copy.tocTitle}>
+			<h2 class="toc-heading">{copy.tocTitle}</h2>
+			<ul class="toc-list">
+				{
+					recentReleases.map((release) => (
+						<li>
+							<a href={`#${release.anchor}`} class="toc-link">
+								{release.version} - {release.date}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+			{
+				pre10Releases.length > 0 && (
+					<details class="toc-archive">
+						<summary>{copy.archiveTitle}</summary>
+						<ul class="toc-list">
+							{pre10Releases.map((release) => (
+								<li>
+									<a href={`#${release.anchor}`} class="toc-link">
+										{release.version} - {release.date}
+									</a>
+								</li>
+							))}
+						</ul>
+					</details>
+				)
+			}
+		</aside>
+	</div>
+</div>
+
+<script>
+	const openArchiveForHash = () => {
+		const id = window.location.hash.slice(1);
+		if (!id) return;
+		const target = document.getElementById(id);
+		if (!target) return;
+		const archive = target.closest("details.changelog-archive");
+		if (archive instanceof HTMLDetailsElement && !archive.open) {
+			archive.open = true;
+			requestAnimationFrame(() => {
+				target.scrollIntoView({ block: "start" });
+			});
+		}
+	};
+
+	openArchiveForHash();
+	window.addEventListener("hashchange", openArchiveForHash);
+</script>
+
+<style>
+	.changelog-container {
+		max-width: 1000px;
+		margin: 0 auto;
+		padding: 3rem 1.5rem;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.changelog-header {
+		margin-bottom: 3rem;
+	}
+
+	.changelog-header h1 {
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin-bottom: 1rem;
+		color: var(--sl-color-white);
+	}
+
+	.changelog-subtitle {
+		font-size: 1.125rem;
+		line-height: 1.6;
+		color: var(--sl-color-gray-3);
+		max-width: 600px;
+	}
+
+	.changelog-subtitle a {
+		color: var(--sl-color-text);
+		text-decoration: underline;
+		text-decoration-color: var(--gram-orange);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 3px;
+	}
+
+	.changelog-subtitle a:hover {
+		color: var(--sl-color-accent);
+	}
+
+	.changelog-lang-note {
+		margin: 0.75rem 0 0;
+		font-size: 0.9rem;
+		color: var(--sl-color-gray-3);
+		max-width: 600px;
+	}
+
+	.changelog-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 14rem;
+		gap: 3rem;
+		align-items: start;
+	}
+
+	.changelog-mobile-toc {
+		display: none;
+		margin-bottom: 1.75rem;
+		border-top: 1px solid var(--sl-color-hairline);
+		border-bottom: 1px solid var(--sl-color-hairline);
+		padding: 0.65rem 0;
+	}
+
+	.changelog-mobile-toc summary {
+		cursor: pointer;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--sl-color-white);
+	}
+
+	.changelog-mobile-toc .toc-list {
+		margin-top: 0.65rem;
+	}
+
+	.changelog-toc {
+		position: sticky;
+		top: calc(var(--sl-nav-height, 60px) + 2rem);
+		max-height: calc(100vh - var(--sl-nav-height, 60px) - 3rem);
+		overflow-y: auto;
+	}
+
+	.toc-heading {
+		margin: 0 0 0.7rem;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--sl-color-white);
+	}
+
+	.toc-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	.toc-link {
+		display: block;
+		font-size: 0.85rem;
+		line-height: 1.45;
+		color: var(--sl-color-gray-3);
+		text-decoration: none;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.toc-link:hover {
+		color: var(--sl-color-white);
+		text-decoration: underline;
+	}
+
+	.toc-archive {
+		margin-top: 0.75rem;
+		padding-top: 0.65rem;
+		border-top: 1px solid var(--sl-color-hairline);
+	}
+
+	.toc-archive summary {
+		cursor: pointer;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--sl-color-gray-2);
+	}
+
+	.toc-archive summary:hover {
+		color: var(--sl-color-white);
+	}
+
+	.toc-archive .toc-list {
+		margin-top: 0.5rem;
+	}
+
+	.changelog-list {
+		display: flex;
+		flex-direction: column;
+		gap: 2.75rem;
+		min-width: 0;
+	}
+
+	.changelog-archive {
+		padding-top: 1.75rem;
+		border-top: 1px solid var(--sl-color-hairline);
+	}
+
+	.changelog-archive-summary {
+		cursor: pointer;
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: var(--sl-color-gray-2);
+		list-style-position: outside;
+	}
+
+	.changelog-archive-summary:hover {
+		color: var(--sl-color-white);
+	}
+
+	.changelog-archive-range {
+		margin-left: 0.35rem;
+		font-family: var(--sl-font-mono);
+		font-size: 0.88rem;
+		font-weight: 400;
+		color: var(--sl-color-gray-3);
+	}
+
+	.changelog-archive-list {
+		display: flex;
+		flex-direction: column;
+		gap: 2.75rem;
+		margin-top: 2rem;
+	}
+
+	@media (max-width: 960px) {
+		.changelog-layout {
+			grid-template-columns: 1fr;
+		}
+
+		.changelog-toc {
+			display: none;
+		}
+
+		.changelog-mobile-toc {
+			display: block;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.changelog-container {
+			padding: 2rem 1rem;
+		}
+
+		.changelog-header h1 {
+			font-size: 2rem;
+		}
+
+		.changelog-subtitle {
+			font-size: 1rem;
+		}
+	}
+</style>

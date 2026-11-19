@@ -15,9 +15,9 @@ Les marqueurs essentiels utilisés directement au fil des étapes :
 | :--- | :--- | :--- | :--- | :--- |
 | **Ingrédient** | `@` | `@nom[{quantité}]` | `@farine{200g}` | Déclare un ingrédient. Omettre `{}` indique une absence de quantité explicite (ex. `@sel`). |
 | **Matériel** | `#` | `#nom[{quantité}]` | `#poêle{2}`, `#fouet` | Indique un ustensile ou équipement requis. Omettre `{}` équivaut à `1`. |
-| **Minuteur** | `~` | `~{temps}` | `~{30min}`, `~{1h30}` | Définit la durée d'une action active en cuisine, écrite comme dans une recette (`1 heure 30`, `1:30 h`, `5'30"`). |
+| **Minuteur** | `~` | `~{temps}` | `~{30min}`, `~{1h30}` | Durée d'une action active en cuisine (`1 heure 30`, `1:30 h`, `5'30"`). |
 | **Température** | `^` | `^{température}` | `^{180°C}`, `^{350°F}` | Indique une consigne thermique précise (`C` ou `F`, insensible à la casse). |
-| **État attendu** | `=` | `={état}` | `={ruban}`, `={doré}` | L'état à atteindre, avec les mots du cuisinier, n'importe où dans l'étape. Depuis la 1.5.0. |
+| **État attendu** | `=` | `={état}` | `={ruban}`, `={doré}` | Repère sensoriel à atteindre, n'importe où dans l'étape. |
 
 ## Modificateurs
 
@@ -42,18 +42,18 @@ Formulations complémentaires pour enrichir la description des étapes :
 | **Préparation courte** | `(...)` | `@beurre{10g}(pommade)` | Précise l'état ou la découpe sans surcharger l'identifiant. |
 | **Alias de composant** | `:identifiant` | `@vin blanc sec:vin{10ml}` | Affiche un libellé clair tout en reliant l'ingrédient à un identifiant canonique. |
 | **Quantité relative** | `% @&cible` | `@eau{70% @&farine}` | Calcule la quantité par rapport à la masse d'un ingrédient pivot. |
-| **Proportion avec unités** | `a / b @&cible` | `@oeufs{1 / 100 g @&farine}`, `@sel{15 g / L @&eau}` | Une quantité par quantité d'un autre ingrédient, dans n'importe quelles unités ; une espace autour de la barre. Depuis la 1.5.0. |
+| **Proportion avec unités** | `a / b @&cible` | `@œufs{1 / 100 g @&farine}`, `@sel{15 g / L @&eau}` | Quantité par référence d'un autre ingrédient, dans n'importe quelles unités compatibles (espace autour de `/`). |
 | **Ingrédient composite** | `<@parent` | `@zeste de citron{1}<@citron` | Rapproche des éléments (zeste, jus) sous un même article d'achat parent. |
 | **Minuteur passif** | `~_` | `~_{1h}` | Modélise un repos ou une pousse sans monopoliser le cuisinier. |
-| **Temps proportionnel** | `~{temps / b @&cible}` | `~{15 min / 500 g @&roti}`, `~{4 min / @&cotelette}` | Un temps qui suit un poids ou un nombre de pièces, recalculé à la mise à l'échelle. Depuis la 1.5.0. |
+| **Temps proportionnel** | `~{temps / b @&cible}` | `~{15 min / 500 g @&rôti}`, `~{4 min / @&côtelette}` | Durée recalculée selon le poids ou le nombre d'un ingrédient. |
 | **Minuteur nommé** | `~nom{...}` | `~œufs{3min}`, `~_four{45min}` | Linéarise l'accès à un équipement partagé (piste dédiée). |
 | **Température sémantique** | `^{texte}` | `^{feu moyen}`, `^{frémissement}` | Exprime une intensité de chauffe qualitative. |
-| **Précision de température** | `^{...}(précision)` | `^{160°C}(chaleur tournante)`, `^{63°C}(à cœur)` | Mode du four ou condition, toujours affichée. Depuis la 1.5.0. |
-| **Précision d'un état attendu** | `={...}(précision)` | `={la nappe}(un doigt laisse une trace nette)` | Comment vérifier l'état, toujours affichée. Depuis la 1.5.0. |
+| **Précision de température** | `^{...}(précision)` | `^{160°C}(chaleur tournante)`, `^{63°C}(à cœur)` | Mode du four ou condition de cuisson, toujours affichée. |
+| **Précision d'état attendu** | `={...}(précision)` | `={la nappe}(un doigt laisse une trace nette)` | Comment vérifier l'état attendu, toujours affichée. |
 | **Fractions** | `n/d` ou Unicode | `@farine{1 1/2 tasse}`, `@sucre{½ tasse}` | Prises en charge complètes en système métrique comme impérial. |
-| **Somme de quantités** | `a + b`, `a - b` | `@farine{1 kg + 200 g}`, `@lait{1 l - 10 cl}`, `@riz{1 tasse + 20 g}` | Gardée telle qu'écrite et additionnée ; un volume et une masse restent côte à côte. Depuis la 1.5.0. |
+| **Somme de quantités** | `a + b`, `a - b` | `@farine{1 kg + 200 g}`, `@sucre{1 tasse - 2 càs}`, `@riz{1 tasse + 20 g}` | Conservée telle qu'écrite et additionnée ; un volume et une masse restent côte à côte. |
 
-Toute précision entre parenthèses `(...)` — sur un ingrédient, un ustensile, une température ou un état attendu — doit être collée à l'élément qui la précède, sur la même ligne : avec un espace, elle reste du texte ordinaire.
+Toute précision entre parenthèses `(...)` — sur un ingrédient, un ustensile, une température ou un état attendu — doit être collée à l'élément qui la précède, sur la même ligne ; avec un espace, elle reste du texte ordinaire.
 
 ## Variables intermédiaires
 

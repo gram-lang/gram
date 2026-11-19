@@ -125,6 +125,14 @@ Take @?optional herb{1}, @-omitted{1}, @tomatoes:toms{2}(diced) and @zest{1}<@un
 			),
 		).toEqual(["salt"]);
 	});
+
+	it("stops a bare ingredient before a target state", () => {
+		expect(
+			findWrittenIngredients(
+				`${FRONT}Sweat with @oil until ={translucent}.\n`,
+			).map((w) => ({ name: w.name, quantified: w.quantified })),
+		).toEqual([{ name: "oil", quantified: false }]);
+	});
 });
 
 describe("collectAnalysisGaps", () => {

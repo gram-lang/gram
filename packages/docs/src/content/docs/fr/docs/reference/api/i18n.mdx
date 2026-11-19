@@ -48,11 +48,11 @@ resolveTimeUnit('minutes'); // "m"
 resolveTimeUnit('heures', 'fr'); // "h"
 ```
 
-### Lire une durée
+### Analyser une durée
 
 <Since v="1.5.0" />
 
-`parseDuration` lit une durée telle qu'on l'écrit dans un minuteur (`1h30`, `1 hr 30 mins`, `1:30 h`, `5'30"`, `45 min - 1 h`), dans n'importe quelle langue de `TIME_DICTIONARIES`, et la convertit en minutes. Elle ne devine jamais : un texte qu'elle ne sait pas lire revient avec sa raison, que kitchen transforme en `MISSING_UNIT`, `INVALID_UNIT` ou `INVALID_DURATION`. Chaque côté garde ses termes (`parts`, dans l'unité écrite) et sa forme (`units`, `clock` ou `prime`). Elle n'impose ni plafond ni signe : c'est à l'appelant de les vérifier.
+`parseDuration` convertit en minutes les durées de minuteurs (`1h30`, `1 hr 30 mins`, `1:30 h`, `5'30"`, `45 min - 1 h`) dans toutes les langues de `TIME_DICTIONARIES`. Toute saisie invalide retourne un motif d'échec — traduit par `@gram-lang/kitchen` en `MISSING_UNIT`, `INVALID_UNIT` ou `INVALID_DURATION` — sans jamais deviner. Chaque borne conserve ses termes (`parts`) et sa forme (`units`, `clock` ou `prime`), les contrôles de signe et de plafond revenant à l'appelant.
 
 ```typescript
 function parseDuration(text: string): DurationResult
@@ -108,8 +108,6 @@ TIME_TO_MINUTES.h; // 60 (minutes)
 ```
 
 ### Les nombres dans la langue du lecteur
-
-<Since v="1.4.1" />
 
 `formatNumber` écrit un nombre comme un lecteur de la langue l'écrit (`1.5` en anglais, `1,5` en français), arrondi par défaut à deux décimales et sans séparateur de milliers, comme une recette écrit `1500 g`. `localizeDecimals` fait de même pour une quantité déjà écrite en texte (une fourchette, un minuteur), et `decimalSeparator` donne le séparateur lui-même. Toutes les vues et le CLI écrivent les nombres qu'ils affichent avec ces fonctions ; un nombre relu par un script ou un fichier (un attribut `data-*`, du JSON, la source `.gram`) garde son point.
 

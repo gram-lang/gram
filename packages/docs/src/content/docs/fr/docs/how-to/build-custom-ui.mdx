@@ -4,7 +4,6 @@ description: "Consommez le JSON compilé par Gram directement dans React, Vue ou
 ---
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
-import Since from '../../../../../components/Since.astro';
 
 Si vous développez une application web moderne (avec React, Vue, Svelte ou Next.js, par exemple), vous avez tout intérêt à consommer directement les données **JSON** compilées par Gram et à les relier à vos propres composants d'interface utilisateur (UI).
 
@@ -176,8 +175,6 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
 
    #### Option A : La chronologie relative (en minutes depuis le début)
 
-   <Since v="1.4.0" />
-
    Pour afficher une frise chronologique continue, exploitez les blocs de `recipe.schedule.blocks`. Si vous souhaitez recalculer cette chronologie selon différentes stratégies sans recompiler la recette, passez directement le graphe `recipe.tasks` à la fonction `layout()` :
 
    ```typescript
@@ -209,8 +206,6 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
 
    <span id="construire-sa-propre-vue-planning"></span>
    #### Option B : Le planning calendaire (dates et heures réelles)
-
-   <Since v="1.4.0" />
 
    Lorsque vous disposez d'une heure de service cible et de contraintes de disponibilité (par exemple : cuisiner uniquement entre 8 h et 22 h), le moteur projette la recette sur un calendrier réel via `project()`, puis structure les interventions par passage via `runSheet()` :
 

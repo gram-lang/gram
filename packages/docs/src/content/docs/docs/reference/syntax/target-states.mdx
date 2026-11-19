@@ -9,76 +9,66 @@ import Term from '../../../../../components/Term.astro';
 
 <Since v="1.5.0" />
 
-A time says how long a step should take; it is rarely what tells the cook it is done. Custard is ready when it coats the spoon, egg yolks and sugar when they fall back in a ribbon, butter when it smells of hazelnut. A <Term id="targetState" link={false} /> marks that cue with `={...}`: the state to reach, the one the cook has to recognize.
+A timer tells you how long a step should take, not when it is truly done. Custard is ready when it coats the spoon, yolks when they fall in a ribbon, brown butter when it smells nutty. A <Term id="targetState" link={false} /> marks that visual or sensory cue with `={...}`:
 
 ```gram
-Whisk @egg yolks{4} with @sugar{80 g} until ={ribbon stage}.
+[Whisk] @egg yolks{4} with @sugar{80 g} until ={ribbon stage}.
 
-As soon as the butter turns ={nutty brown}, take the #pan off the heat.
+[Brown] As soon as the butter turns ={nutty brown}, take the #pan off the heat.
 
-The egg whites should be ={stiff} before you add the @sugar{50 g}.
+[Whip] The egg whites should be ={stiff} before you add the @sugar{50 g}.
 ```
 
-A target state goes wherever the sentence needs it. It is most often at the end of the step, since it usually marks what ends it, but it can also open the step or sit in the middle, and no phrase is required: "until", "as soon as", "when", or nothing at all. Write only the state between the braces and leave the other words in the sentence: the step still reads naturally, and the state stands out on its own in every view.
+Place a target state wherever the sentence flows best—at the end, start, or middle of a step—with no required connecting word ("until", "when", or none at all). Put only the state itself inside the braces and keep surrounding words in the prose so the step reads naturally while the cue stands out in every view.
 
 ## How to check it
 
-A note in parentheses, right after the closing brace, says how to tell that the state is reached: the test, the cue a beginner can trust.
+Add a parenthetical note directly after the closing brace to explain how to verify the state—the practical test a cook can rely on:
 
 ```gram
-Cook on ^{low heat}, stirring, until ={it coats the spoon}(a finger drawn across the back of the spoon leaves a clean line) ->&custard{}
+[Cook] On ^{low heat}, stirring, until ={it coats the spoon}(a finger drawn across the back of the spoon leaves a clean line) ->&custard{}
 ```
 
-The state and its note are always shown, on screen and on paper, and `gram cook` repeats them under the step. They are words for the cook, in the recipe's language: Gram keeps them as written and never reads them.
+Both the state and its note are always displayed, on screen and in print, and `gram cook` highlights them beneath the step. Gram preserves them as written in your recipe's language without interpreting them.
 
-As with ingredients, cookware, and temperatures, keep the opening `(` glued to the `}` on the same line: with a space (`={stiff peaks} (about 5 min)`), the parenthesis stays ordinary text in the sentence.
+Just like ingredients, cookware, and temperatures, keep the opening `(` attached to `}` on the same line: with a space (`={stiff peaks} (about 5 min)`), the parentheses remain ordinary step text.
 
 ## With a time and a temperature
 
-A step can carry a target state next to a timer and a temperature. The timer is the estimate, for the schedule; the state is what ends the step at the stove.
+A step can combine a target state with a timer and a temperature. The timer estimates duration for the schedule; the state tells the cook when to stop at the stove.
 
 ```gram
-Cook at ^{82°C}(internal) for ~{8 min}, until ={it coats the spoon}.
+[Cook] At ^{180°F}(internal) for ~{8 min}, until ={it coats the spoon}.
 ```
 
 :::tip[What does not go inside]
-A target state is a state, never a measure:
-- a temperature to reach is a [temperature](/docs/reference/syntax/temperatures/) with its note: `^{63°C}(internal)`;
-- a time is a [timer](/docs/reference/syntax/times/): `~{5 min}`;
-- a target state is never scaled: `={doubled in volume}` stays as written, whatever the number of servings.
+A target state describes a sensory cue, never a measurement:
+- use a [temperature](/docs/reference/syntax/temperatures/) with a note for target temperatures (`^{145°F}(internal)`);
+- use a [timer](/docs/reference/syntax/times/) for durations (`~{5 min}`);
+- target states never scale (`={doubled in volume}` stays unchanged regardless of servings).
 :::
 
 ## Several in one step
 
-A step can hold more than one. Each shows where it was written, `gram cook` lists them one under the other and, when a timer of the step rings, asks to check them all.
+A step can contain multiple target states. Each renders inline in the prose, and `gram cook` lists them together—reminding you to check them when a step's timer finishes.
 
 ```gram
-Knead until the dough is ={smooth} and ={elastic}(it springs back slowly when stretched).
+[Knead] Until the dough is ={smooth} and ={elastic}(it springs back slowly when stretched).
 ```
 
-As with timers and temperatures, a short step is easier to follow. When each state ends a different action, make two steps, each with its own state. Rather than:
+As with timers and temperatures, shorter steps are easier to follow. If two states mark distinct actions, split them into separate steps rather than chaining them:
 
 ```gram
-Melt the @butter{50 g} until ={nutty brown}, then let it cool until ={lukewarm} and stir in the @eggs{2}.
-```
+[Melt] The @butter{50 g} until ={nutty brown}.
 
-write:
-
-```gram
-Melt the @butter{50 g} until ={nutty brown}.
-
-Let it cool until ={lukewarm}, then stir in the @eggs{2}.
+[Cool] Until ={lukewarm}, then stir in the @eggs{2}.
 ```
 
 ## Errors
 
-A target state needs words between its braces, closed on the same line. `={}` and `={ribbon stage` (with no `}`) are syntax errors, shown in the editor where they start.
+A target state must be non-empty and closed on the same line. `={}` or an unclosed `={ribbon stage` raises a syntax error pointing to the opening marker.
 
-An `=` that does not touch a brace is ordinary text, and the fixed-quantity modifier `@=salt{1 tsp}` is unchanged.
-
-## In the compiled recipe
-
-Each target state is a `checkpoint` token in the step's `content`, where it was written: `{ "type": "checkpoint", "state": "ribbon stage", "note": "…" }`, `note` only when there is one. See [Data formats](/docs/reference/api/data-formats/).
+A standalone `=` not followed by `{` stays ordinary text, and fixed ingredient modifiers (`@=salt{1 tsp}`) are unaffected.
 
 ## Related resources
 
@@ -97,5 +87,10 @@ Each target state is a `checkpoint` token in the step's `content`, where it was 
     title="Gram syntax cheatsheet"
     description="Quick visual reference for every marker."
     href="/docs/reference/syntax/cheatsheet/"
+  />
+  <LinkCard
+    title="Data formats"
+    description="How target states are represented as checkpoint tokens in compiled JSON."
+    href="/docs/reference/api/data-formats/"
   />
 </CardGrid>

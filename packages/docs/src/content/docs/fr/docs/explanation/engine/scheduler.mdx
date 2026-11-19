@@ -3,13 +3,10 @@ title: "Le moteur d'ordonnancement (@gram-lang/scheduler)"
 description: "Comment @gram-lang/scheduler ordonnance un graphe de tâches sur une chronologie, puis le projette sur le calendrier : entrée neutre, architecture à deux niveaux et fonctions pures."
 ---
 
-import Since from '../../../../../../components/Since.astro';
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../../components/Term.astro';
 
-<Since v="1.4.0" />
-
-`@gram-lang/scheduler` est le composant de Gram qui gère la dimension temporelle : il détermine **à quel moment précis** chaque tâche doit s'exécuter. Jusqu'à la version 1.4.0, cette logique était intégrée au compilateur Kitchen. Elle est désormais isolée dans un paquet dédié, permettant au même moteur de servir le compilateur, le moteur de rendu, le CLI, le serveur de langage (LSP) et vos propres intégrations.
+`@gram-lang/scheduler` est le composant de Gram qui gère la dimension temporelle : il détermine **à quel moment précis** chaque tâche doit s'exécuter. Isolé dans son propre paquet, il permet au même moteur de servir le compilateur, le moteur de rendu, le CLI, le serveur de langage (LSP) et vos propres intégrations.
 
 Le scheduler se situe **en dessous** de Kitchen : `@gram-lang/kitchen` dépend de lui, jamais l'inverse. Il n'a aucune connaissance de l'AST, de la syntaxe `.gram` ou de la recette compilée. Son unique point d'entrée est un **graphe de tâches** agnostique ; des tests d'architecture garantissent l'absence absolue de dépendance envers les autres paquets du monorepo.
 

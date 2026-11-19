@@ -17,16 +17,16 @@ Les températures exactes précisent une valeur numérique suivie d'une unité r
 <Tabs>
   <TabItem label="Température exacte standard">
 ```gram
-Préchauffer le #four à ^{180°C}.
+[Préchauffer] Le #four à ^{180°C}.
 
-Cuire à ^{350°F} jusqu'à coloration bien dorée.
+[Cuire] À ^{350°F} jusqu'à coloration bien dorée.
 ```
   </TabItem>
   <TabItem label="Température associée à un appareil">
 À l'instar des `~minuteurs`, vous pouvez qualifier une température en lui associant un nom d'appareil ou d'usage, permettant aux interfaces de mettre en valeur les réglages nécessaires :
 
 ```gram
-Préchauffer le #four à ^four{180°C}.
+[Préchauffer] Le #four à ^four{180°C}.
 ```
   </TabItem>
 </Tabs>
@@ -36,9 +36,9 @@ Préchauffer le #four à ^four{180°C}.
 Pour les cuissons sur le feu ou les indications qualitatives où une mesure précise en degrés n'est pas adaptée, vous pouvez saisir un texte descriptif libre :
 
 ```gram
-Saisir sur la ^plaque{feu vif} pendant ~{2min}.
+[Saisir] Sur la ^plaque{feu vif} pendant ~{2min}.
 
-Baisser à ^{feu doux} et laisser mijoter.
+[Mijoter] Baisser à ^{feu doux} et laisser mijoter.
 ```
 
 :::note[Distinction lors de l'analyse]
@@ -50,19 +50,19 @@ Lorsque le compilateur Gram traite un élément `^température` :
 ## Mode de cuisson et précisions
 <Since v="1.5.0" />
 
-Une précision entre parenthèses, collée à l'accolade fermante, accompagne la température : le mode du four, l'endroit où on la mesure, la façon de cuire. Elle s'écrit sur les températures exactes comme sémantiques, nommées ou non, comme la préparation d'un ingrédient.
+Ajoutez une précision entre parenthèses juste après l'accolade fermante pour indiquer le mode du four, le point de mesure ou une condition de cuisson. Cela fonctionne sur les températures exactes comme sémantiques, nommées ou non, à la manière d'une préparation d'ingrédient :
 
 ```gram
-Préchauffer le #four à ^{160°C}(chaleur tournante).
+[Préchauffer] Le #four à ^{160°C}(chaleur tournante).
 
-Rôtir jusqu'à ^{63°C}(à cœur).
+[Rôtir] Jusqu'à ^{63°C}(à cœur).
 
-Faire revenir sur ^plaque{feu vif}(à découvert) pendant ~{5min}.
+[Cuire] Sur ^plaque{feu vif}(à découvert) pendant ~{5min}.
 ```
 
-La précision s'affiche toujours à côté de la température, à l'écran comme sur papier : cuire à 160 °C en chaleur tournante ou en statique, ce n'est pas la même chose. C'est un mot pour le cuisinier, dans la langue de la recette : Gram la garde telle quelle et ne l'interprète jamais.
+La précision s'affiche toujours à côté de la température, à l'écran comme sur papier, et reste telle qu'écrite dans la langue de la recette, sans être interprétée par Gram.
 
-Comme pour les ingrédients et le matériel, la parenthèse ouvrante reste collée à la `}` sur la même ligne : avec un espace (`^{180°C} (four bien chaud)`), elle reste du texte ordinaire dans la phrase.
+Comme pour les ingrédients et le matériel, gardez la parenthèse ouvrante collée à `}` sur la même ligne : avec un espace (`^{180°C} (four bien chaud)`), elle redevient du texte ordinaire.
 
 ## Gestion des erreurs
 

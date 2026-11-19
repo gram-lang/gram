@@ -23,7 +23,7 @@ const t = {
 		discord: "Discord",
 		reddit: "Reddit",
 		copyright:
-			"© 2026 Gram Language. Proudly crafted in <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Licensed under <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
+			"© 2026 Gram Language. Proudly crafted in <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Licensed under <a href='https://git.gram-lang.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
 	},
 	fr: {
 		tagline:
@@ -44,7 +44,7 @@ const t = {
 		discord: "Discord",
 		reddit: "Reddit",
 		copyright:
-			"© 2026 Gram Language. Fièrement conçu à <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Sous licence <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
+			"© 2026 Gram Language. Fièrement conçu à <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Sous licence <a href='https://git.gram-lang.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
 	},
 };
 
@@ -72,14 +72,12 @@ const prefix = currentLang === "fr" ? "/fr" : "";
         <h3>{langText.resources}</h3>
         <ul>
           <li>
-            <a href={`${prefix}/docs/explanation/philosophy`}
-              >{langText.documentation}</a
-            >
+            <a href={`${prefix}/docs/`}>{langText.documentation}</a>
           </li>
           <li><a href={`${prefix}/play`}>{langText.playground}</a></li>
           <li><a href={`${prefix}/blog`}>{langText.blog}</a></li>
           <li>
-            <a href={`${prefix}/docs/changelog`}>{langText.changelog}</a>
+            <a href={`${prefix}/changelog`}>{langText.changelog}</a>
           </li>
         </ul>
       </div>

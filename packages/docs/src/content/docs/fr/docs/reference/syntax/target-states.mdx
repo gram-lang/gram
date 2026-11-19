@@ -9,76 +9,66 @@ import Term from '../../../../../../components/Term.astro';
 
 <Since v="1.5.0" />
 
-Une durée donne un ordre d'idée ; c'est rarement elle qui dit au cuisinier que c'est prêt. Une crème anglaise est cuite quand elle nappe la cuillère, des jaunes blanchis quand ils retombent en ruban, un beurre quand il sent la noisette. Un <Term id="targetState" link={false} /> note ce repère avec `={...}` : l'état à atteindre, celui que le cuisinier doit savoir reconnaître.
+Un minuteur donne un ordre d'idée ; c'est rarement lui qui dit au cuisinier que la préparation est prête. Une crème anglaise est cuite quand elle nappe la cuillère, des jaunes blanchis quand ils retombent en ruban, un beurre quand il sent la noisette. Un <Term id="targetState" link={false} /> note ce repère visuel ou sensoriel avec `={...}` :
 
 ```gram
-Fouetter @jaunes{4} avec @sucre{80 g} jusqu'au ={ruban}.
+[Fouetter] Les @jaunes{4} avec le @sucre{80 g} jusqu'au ={ruban}.
 
-Dès que le beurre est ={noisette}, retirer la #poêle du feu.
+[Cuire] Dès que le beurre est ={noisette}, retirer la #poêle du feu.
 
-Les blancs doivent être ={fermes} avant d'y verser le @sucre{50 g}.
+[Monter] Les blancs doivent être ={fermes} avant d'y verser le @sucre{50 g}.
 ```
 
-Un état attendu se place là où la phrase le demande. On le trouve le plus souvent en fin d'étape, puisqu'il marque en général ce qui la termine, mais il peut aussi ouvrir l'étape ou se glisser au milieu, et aucune formule n'est imposée : « jusqu'à », « dès que », « quand », ou rien du tout. On n'écrit entre les accolades que l'état lui-même et on laisse les autres mots dans la phrase : l'étape se lit toujours aussi naturellement, et l'état ressort tout seul dans chaque vue.
+Placez l'état attendu là où la phrase le demande — en fin, début ou milieu d'étape — sans formule imposée (« jusqu'à », « dès que », « quand », ou rien du tout). Ne placez entre les accolades que l'état lui-même, en laissant les mots de liaison dans la phrase : l'étape reste fluide tout en mettant le repère en valeur dans chaque vue.
 
 ## Comment le vérifier
 
-Une précision entre parenthèses, collée à l'accolade fermante, dit comment reconnaître que l'état est atteint : le test, l'indice auquel un débutant peut se fier.
+Une précision entre parenthèses, collée à l'accolade fermante, indique comment contrôler que l'état est atteint — le test concret auquel se fier :
 
 ```gram
-Cuire sur ^{feu doux} en remuant jusqu'à ={la nappe}(un doigt passé sur le dos de la cuillère laisse une trace nette) ->&crème anglaise{}
+[Cuire] Sur ^{feu doux} en remuant jusqu'à ={la nappe}(un doigt passé sur le dos de la cuillère laisse une trace nette) ->&crème anglaise{}
 ```
 
-L'état et sa précision s'affichent toujours, à l'écran comme sur papier, et `gram cook` les rappelle sous l'étape. Ce sont des mots pour le cuisinier, dans la langue de la recette : Gram les garde tels quels et ne les interprète jamais.
+L'état et sa précision sont toujours affichés, à l'écran comme sur papier, et `gram cook` les met en avant sous l'étape. Gram les conserve tels quels dans la langue de la recette, sans chercher à les interpréter.
 
-Comme pour les ingrédients, le matériel et les températures, la parenthèse ouvrante reste collée à la `}` sur la même ligne : avec un espace (`={bec d'oiseau} (environ 5 min)`), elle reste du texte ordinaire dans la phrase.
+Comme pour les ingrédients, le matériel et les températures, la parenthèse ouvrante reste collée à `}` sur la même ligne : avec un espace (`={bec d'oiseau} (environ 5 min)`), elle redevient du texte ordinaire.
 
 ## Avec une durée et une température
 
-Une étape peut porter un état attendu à côté d'un minuteur et d'une température. Le minuteur donne l'estimation qui sert au planning ; l'état, lui, dit quand s'arrêter devant le fourneau.
+Une étape peut associer un état attendu à un minuteur et une température. Le minuteur donne l'estimation pour le planning ; l'état dit quand arrêter la cuisson.
 
 ```gram
-Cuire à ^{82°C}(à cœur) pendant ~{8 min}, jusqu'à ={la nappe}.
+[Cuire] À ^{82°C}(à cœur) pendant ~{8 min}, jusqu'à ={la nappe}.
 ```
 
 :::tip[Ce qui n'a pas sa place entre les accolades]
-Un état attendu décrit un état, jamais une mesure :
-- une température à atteindre est une [température](/fr/docs/reference/syntax/temperatures/) avec sa précision : `^{63°C}(à cœur)` ;
-- une durée est un [minuteur](/fr/docs/reference/syntax/times/) : `~{5 min}` ;
-- un état attendu ne change jamais d'échelle : `={doublé de volume}` reste tel quel, quel que soit le nombre de portions.
+Un état attendu décrit un état sensoriel, jamais une mesure :
+- une température cible est une [température](/fr/docs/reference/syntax/temperatures/) avec sa précision (`^{63°C}(à cœur)`) ;
+- une durée est un [minuteur](/fr/docs/reference/syntax/times/) (`~{5 min}`) ;
+- un état attendu ne change jamais d'échelle (`={doublé de volume}` reste tel quel quel que soit le nombre de portions).
 :::
 
 ## Plusieurs états dans une étape
 
-Une étape peut en contenir plusieurs. Chacun s'affiche à sa place dans la phrase, `gram cook` les rappelle l'un sous l'autre et, quand un minuteur de l'étape sonne, invite à les vérifier tous.
+Une étape peut contenir plusieurs états attendus. Chacun s'affiche à sa place dans le texte, et `gram cook` les regroupe pour vous rappeler de les vérifier quand le minuteur de l'étape sonne.
 
 ```gram
-Pétrir jusqu'à ce que la pâte soit ={lisse} et ={élastique}(elle se rétracte doucement quand on l'étire).
+[Pétrir] Jusqu'à ce que la pâte soit ={lisse} et ={élastique}(elle se rétracte doucement quand on l'étire).
 ```
 
-Comme pour les minuteurs et les températures, une étape courte se suit plus facilement. Si chaque état conclut un geste différent, mieux vaut en faire deux étapes, chacune avec son état. Plutôt que :
+Comme pour les minuteurs et les températures, les étapes courtes sont plus faciles à suivre. Si deux états concluent des actions distinctes, séparez-les en deux étapes plutôt que de les enchaîner :
 
 ```gram
-Faire fondre le @beurre{50 g} jusqu'à ={noisette}, puis le laisser refroidir jusqu'à ce qu'il soit ={tiède} et y incorporer les @œufs{2}.
-```
+[Faire fondre] Le @beurre{50 g} jusqu'à ={noisette}.
 
-écrivez :
-
-```gram
-Faire fondre le @beurre{50 g} jusqu'à ={noisette}.
-
-Le laisser refroidir jusqu'à ce qu'il soit ={tiède}, puis y incorporer les @œufs{2}.
+[Refroidir] Laisser refroidir jusqu'à ce qu'il soit ={tiède}, puis y incorporer les @œufs{2}.
 ```
 
 ## Erreurs
 
-Un état attendu doit contenir des mots entre ses accolades, fermées sur la même ligne. `={}` et `={ruban` (sans `}`) sont des erreurs de syntaxe, signalées dans l'éditeur à l'endroit où elles commencent.
+Un état attendu ne peut pas être vide et doit se refermer sur la même ligne. `={}` ou `={ruban` (sans `}`) provoquent une erreur de syntaxe pointant sur l'ouverture.
 
-Un `=` qui ne touche pas une accolade reste du texte, et le modificateur de quantité fixe `@=sel{1 c.à.c}` ne change pas.
-
-## Dans la recette compilée
-
-Chaque état attendu devient un jeton `checkpoint` dans le `content` de l'étape, à l'endroit où il est écrit : `{ "type": "checkpoint", "state": "ruban", "note": "…" }`, avec `note` seulement s'il y en a une. Voir [Formats de données](/fr/docs/reference/api/data-formats/).
+Un `=` qui ne précède pas `{` reste du texte ordinaire, et le modificateur de quantité fixe `@=sel{1 c.à.c}` reste inchangé.
 
 ## Pour aller plus loin
 
@@ -97,5 +87,10 @@ Chaque état attendu devient un jeton `checkpoint` dans le `content` de l'étape
     title="Antisèche de la syntaxe"
     description="Un aide-mémoire visuel de tous les marqueurs."
     href="/fr/docs/reference/syntax/cheatsheet/"
+  />
+  <LinkCard
+    title="Formats de données"
+    description="Représentation des états attendus (jetons checkpoint) dans le JSON compilé."
+    href="/fr/docs/reference/api/data-formats/"
   />
 </CardGrid>

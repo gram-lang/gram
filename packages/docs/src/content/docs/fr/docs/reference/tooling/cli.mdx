@@ -24,7 +24,7 @@ import Term from '../../../../../../components/Term.astro';
 
 Le CLI fonctionne aussi bien sous Node.js (>=22, chargeant nativement les fichiers `.env` via `process.loadEnvFile`) que sous [Bun](https://bun.sh/). Aucune API spécifique à un environnement d'exécution n'est requise, les deux options étant strictement équivalentes.
 
-<Since v="1.2.0" /> Quand une nouvelle version est publiée sur npm, `gram` affiche une courte notification une fois la commande terminée (ignorée en environnement d'intégration continue et hors terminal interactif). Exécutez `gram upgrade` pour vérifier et installer les mises à jour à la demande, ou désactivez cette notification avec `gram config set updateCheck false` — ou, pour une seule exécution, via la variable d'environnement `GRAM_NO_UPDATE_CHECK`.
+Quand une nouvelle version est publiée sur npm, `gram` affiche une courte notification une fois la commande terminée (ignorée en environnement d'intégration continue et hors terminal interactif). Exécutez `gram upgrade` pour vérifier et installer les mises à jour à la demande, ou désactivez cette notification avec `gram config set updateCheck false` — ou, pour une seule exécution, via la variable d'environnement `GRAM_NO_UPDATE_CHECK`.
 
 ## Options globales
 
@@ -33,7 +33,7 @@ Le CLI fonctionne aussi bien sous Node.js (>=22, chargeant nativement les fichie
 
 ## Les réglages en ligne de commande
 
-<Since v="1.4.0" /> Les réglages d'une recette sont identiques sur toutes les interfaces : un drapeau en ligne de commande, une clé `gram.*` dans l'[extension VS Code](/fr/docs/reference/tooling/vscode-extension/) ou une option dans le playground partagent le même nom, les mêmes valeurs et la même valeur par défaut. Chaque drapeau correspond à son réglage sous-jacent et n'est accepté que par les commandes sur lesquelles il a un effet.
+Les réglages d'une recette sont identiques sur toutes les interfaces : un drapeau en ligne de commande, une clé `gram.*` dans l'[extension VS Code](/fr/docs/reference/tooling/vscode-extension/) ou une option dans le playground partagent le même nom, les mêmes valeurs et la même valeur par défaut. Chaque drapeau correspond à son réglage sous-jacent et n'est accepté que par les commandes sur lesquelles il a un effet.
 
 Réglages d'affichage (pilotant la présentation visuelle) :
 
@@ -41,10 +41,10 @@ Réglages d'affichage (pilotant la présentation visuelle) :
 | --- | --- | --- | --- |
 | `--mise-en-place` | `per-section`, `upfront`, `per-day` | `per-section` | `view`, `print`, `export`, `plan`, `cook` |
 | `--rests` | `shortest`, `balanced`, `longest` | `shortest` | `view`, `print`, `export`, `plan`, `cook` |
-| `--comments` | `show`, `hide` | `show` | `print`, `export`, `plan` |
+| `--comments` | `show`, `hide` | `show` | `view`, `print`, `export`, `plan` |
 | `--nutrition-basis` | `auto`, `total`, `per-portion`, `per-100g` | `auto` | `view`, `print`, `export` |
 | `--bakers-math-only` | activé ou non | non | `view`, `print`, `export` |
-| `--step-quantities` | `show`, `hide` | `show` | `print`, `export` |
+| `--step-quantities` | `show`, `hide` | `show` | `view`, `print`, `export` |
 
 Réglages de l'analyseur (pilotant les calculs, tous activés par défaut ; utilisez `--no-<flag>` pour en désactiver un) :
 
@@ -55,9 +55,12 @@ Réglages de l'analyseur (pilotant les calculs, tous activés par défaut ; util
 | `--yield-calculation` | Tient compte des pertes à la préparation (épluchures, noyaux) : la masse brute à acheter diffère alors de la masse nette mise en œuvre. | idem |
 | `--nutrition-estimation` | Estime les valeurs nutritionnelles de la recette. | idem |
 
-- Les anciens noms d'options `--nutrition` et `--no-step-qty` restent acceptés par souci de compatibilité descendante.
+- **`--mise-en-place`** définit quand la mise en place est planifiée (`per-section`, `upfront` ou `per-day`), mettant à jour les durées totale et passive dans l'en-tête (et ajoutant un libellé « Mise en place » en HTML). Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+- **`--rests`** résout les plages passives élastiques (`~_{12-24h}`) sur `shortest`, `balanced` (médiane) ou `longest` ; les durées exactes et les minuteurs actifs ne sont pas affectés.
+- **`--comments`** affiche ou masque les commentaires de la recette (`// comme ceci`) : notes numérotées en pied de recette dans la vue recette, texte discret en petits caractères dans le <Term id="runSheet" />.
+- **`--nutrition-basis`** (alias `--nutrition`) choisit la base nutritionnelle affichée (`auto` affiche pour 100 g de mélange brut assemblé et par portion côte à côte ; voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition)).
+- **`--step-quantities`** (alias `--no-step-qty` pour `hide`) contrôle le rappel des quantités et de leur masse standardisée dans le texte des étapes (`farine (250 ml, ~148 g)`). Les listes d'ingrédients de chaque section les affichent toujours.
 - Toute valeur non reconnue interrompt la commande et liste les valeurs admises.
-- Avec `--step-quantities show`, la quantité est insérée directement après chaque ingrédient dans le texte des étapes, accompagnée de sa masse en grammes lorsque celle-ci est connue : `farine (250 ml, ~148 g)`.
 
 ## Commandes principales
 
@@ -73,7 +76,7 @@ Initialise un nouvel environnement Gram dans le dossier courant.
 - Génère une base de données d'ingrédients de départ documentée à l'emplacement `.gram/ingredients.yaml`.
 - Génère un fichier `.gitignore` pour éviter de versionner des clés sensibles.
 
-#### `gram upgrade` <Since v="1.2.0" />
+#### `gram upgrade`
 Vérifie sur le registre npm si une nouvelle version de `@gram-lang/cli` est disponible et propose de l'installer.
 ```bash
 gram upgrade
@@ -104,24 +107,17 @@ gram build brioche.gram --scale 2 --output ./dist-double
 - Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`, `--include-modules`, ainsi que les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur.
 
 #### `gram view <fichier>`
-Affiche une recette directement dans le terminal : un cadre avec le titre, les portions et les durées, puis la liste de courses, le matériel, chaque section (ses ingrédients, puis ses étapes numérotées), les notes et la nutrition. C'est le [format `text`](/fr/docs/reference/api/renderer/#tomarkdown--tohtml--toprinthtml--totext) de la vue recette, le même texte que `gram export --format text`, en couleurs et dans la langue de votre projet <Since v="1.4.0" />.
+Affiche une recette directement dans le terminal : un cadre avec le titre, les portions et les durées, puis la liste de courses, le matériel, chaque section (ses ingrédients, puis ses étapes numérotées), les notes et la nutrition. C'est le [format `text`](/fr/docs/reference/api/renderer/#tomarkdown--tohtml--toprinthtml--totext) de la vue recette, le même texte que `gram export --format text`, en couleurs et dans la langue de votre projet.
 ```bash
 gram view brioche.gram                      # Vue par défaut
 gram view brioche.gram --scale 2            # Proportions doublées
 gram view brioche.gram --scale farine=300g  # Proportions ajustées pour farine = 300g
 ```
-- Prend en charge la pagination automatique pour les recettes longues.
-- Affiche la synthèse nutritionnelle, les durées et la liste d'ingrédients à cocher.
-- Les minuteurs et les durées de l'en-tête s'écrivent comme dans toutes les vues (`~{1h5}` s'affiche `1 h 5 min`, `~{25min 5s}` s'affiche `25 min 5 s`) ; un minuteur que Gram ne lit pas reste tel qu'écrit.
-- Les étapes sont numérotées dans chaque section, comme dans toutes les vues de la recette. Les quantités sont reprises dans le texte des étapes, à côté de chaque ingrédient (`farine (200 g)`) ; `--step-quantities hide` les retire.
-- Le temps d'attente passif apparaît dans l'en-tête de la recette, et les fractions courantes telles que `1/4 tsp` restent sous forme fractionnaire dans la liste de courses.
+- Prend en charge la pagination automatique pour les recettes longues (`--no-pager` la désactive).
+- Affiche la synthèse nutritionnelle, les durées et la liste d'ingrédients à cocher ; les fractions courantes telles que `1/4 c.à.c` restent sous forme fractionnaire dans la liste de courses.
 - Le drapeau `--scale` ajuste l'intégralité des quantités d'ingrédients (liste de courses et rappels au sein des étapes).
-- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande) : `--mise-en-place`, `--rests`, `--nutrition-basis`, `--bakers-math-only`, `--comments` et `--step-quantities` (ou `--no-step-qty`) <Since v="1.4.0" />, et ceux de l'analyseur.
-- `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (d'abord nommé `--nutrition`, toujours accepté) choisit la base nutritionnelle affichée (par défaut `auto` : pour 100 g et par portion côte à côte, par portion seulement si `portions:` est déclaré, la recette entière en dessous). `per-100g` calcule les valeurs pour 100 g de préparation brute assemblée — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
-- `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> définit l'ordonnancement de la mise en place : immédiatement avant chaque section (`per-section`, par défaut), au tout début de la recette (`upfront`) ou à l'ouverture de chaque journée de travail (`per-day`). Les durées totale et passive de l'en-tête reflètent cet ordonnancement, tandis que les temps actif et de préparation restent constants. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
-- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> définit la résolution des durées variables pour les minuteurs passifs (`~_{12-24h}`) : durée minimale (`shortest`, par défaut), médiane (`balanced`) ou maximale (`longest`). Les durées exactes et les minuteurs actifs ne sont pas affectés. Ajuste les mêmes durées d'en-tête que `--mise-en-place`.
-- `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette (`// comme ceci`) : les notes isolées sur leur ligne, et celles en fin de ligne, regroupées sous la recette en notes numérotées.
 - La vue Recette ne montre aucun ordonnancement : elle se lit pareil à toute heure. Pour savoir quand venir et quoi sortir, voir `gram plan` plus bas.
+- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
 
 #### `gram import <source>`
 Importe une recette depuis une page web, un fichier JSON-LD local ou une vidéo / Short YouTube, et la convertit en syntaxe `.gram` à l'aide de l'IA.
@@ -137,7 +133,7 @@ gram import recette.json -o brioche.gram -y        # Écriture directe sans conf
 **Sources prises en charge :**
 - **URL de pages web** : extrait automatiquement les métadonnées de recette structurées `application/ld+json` (Schema.org `Recipe`) présentes sur la page.
 - **Fichiers JSON / JSON-LD locaux** : analyse directement les schémas JSON-LD enregistrés sur votre machine.
-- **Vidéos et Shorts YouTube** <Since v="1.1.0" /> : analyse directement le contenu vidéo grâce aux capacités multimodales natives de Gemini (sans dépendre de services tiers de transcription de sous-titres).
+- **Vidéos et Shorts YouTube** : analyse directement le contenu vidéo grâce aux capacités multimodales natives de Gemini (sans dépendre de services tiers de transcription de sous-titres).
 
 **Fonctionnement & garde-fous :**
 - Traduit et met en forme la recette selon la syntaxe Gram canonique, en respectant le paramètre de configuration `language`.
@@ -152,13 +148,13 @@ gram import recette.json -o brioche.gram -y        # Écriture directe sans conf
 - **Les ingrédients déclarés sans quantité sont comptabilisés et répertoriés par numéro de ligne.** Il ne s'agit pas d'une erreur de syntaxe — la syntaxe `@sel{}` est idiomatique pour indiquer "au goût" —, mais d'un indicateur objectif du niveau d'exhaustivité de la recette, guidant précisément vos ajustements manuels. Un ingrédient quantifié lors de sa première occurrence puis simplement rappelé ultérieurement n'est pas comptabilisé comme non dosé.
 - Lorsqu'une base de données d'ingrédients est active, l'analyseur signale également les éléments non résolus (ingrédients inconnus, unités dépourvues de masse volumique). Ces éléments indiquent des lacunes dans votre base locale et ne constituent pas un échec d'importation : ils ne bloquent donc jamais l'opération.
 
-**Spécificités de l'import vidéo YouTube :** <Since v="1.1.0" />
+**Spécificités de l'import vidéo YouTube :**
 - **Fournisseur Google / Gemini requis** : Gemini est le seul modèle traitant nativement les vidéos YouTube à partir de leur URL. Avec tout autre fournisseur, l'importation est interrompue.
 - **Consommation proportionnelle à la durée**, à raison d'environ 100 jetons d'entrée par seconde de vidéo : un Short consomme quelques milliers de jetons, 10 minutes environ 60 000 jetons, et 26 minutes environ 158 000 jetons. Les vidéos de plus de 20 minutes sont rejetées par défaut ; vous pouvez relever ce plafond via `--max-duration <minutes>`.
 - **L'estimation du coût préalable requiert la variable `YOUTUBE_API_KEY`** : une clé standard de la YouTube Data API, lue exclusivement depuis les variables d'environnement (jamais stockée dans `config.yaml`). En son absence, l'importation s'exécute néanmoins, mais sans pouvoir pré-estimer la durée ni appliquer la limite de manière anticipée.
 - **Attentes concernant les quantités en vidéo** : une démonstration vidéo comporte souvent moins de mesures explicites qu'un texte formel. La consigne fournie au modèle impose de laisser les accolades `{}` vides plutôt que de deviner des valeurs arbitraires. Attendez-vous donc à devoir compléter certaines proportions manuellement.
 - Les champs `title:`, `author:` (nom de la chaîne) et `source:` (URL) proviennent directement des métadonnées de la plateforme et sont repris tels quels.
-- Options : `--output/-o <fichier>`, `--yes/-y`, `--force`, `--max-duration <minutes>` <Since v="1.1.0" />, ainsi que les [options IA communes](#choisir-le-modèle-ia).
+- Options : `--output/-o <fichier>`, `--yes/-y`, `--force`, `--max-duration <minutes>`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
 
 #### `gram shop [motif]`
 Compile une liste de courses consolidée en agrégeant plusieurs recettes.
@@ -176,12 +172,12 @@ gram shop "menus/*.gram" --scale 4    # Préparation par lots × 4
 - Lorsqu'un motif de recherche ou plusieurs fichiers sont fournis, les recettes importées (via `@use`) par d'autres fichiers du lot sont exclues par défaut pour éviter les doublons sur la liste de courses consolidée. Spécifiez `--include-modules` pour les inclure malgré tout.
 - Options : `--format terminal|md|json`, `--output/-o <fichier>`, `--scale <facteur>`, `--db`, `--skip-db`, `--include-modules`, ainsi que les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur.
 
-Avec `--format json`, chaque article garde `qty`, la quantité telle qu'on la lit (`2 cup + 3 tbsp`, `3,9 kg`), et la donne aussi en nombres, pour qu'un script s'en serve directement <Since v="1.5.0" /> :
-- `amount` est un nombre brut, dans l'unité qu'affiche `qty` (`3.9` avec `"unit": "kg"`), jamais écrit avec une virgule. Il vaut `null` si l'ingrédient n'a pas de quantité chiffrée, ou si ses unités ne s'additionnent pas.
-- `unit` est l'unité canonique (`tbsp` pour `tablespoons` comme pour `c. à s.`), `null` pour un nombre de pièces (`@oeufs{4}`). Tasses et cuillères s'additionnent dans la plus petite unité écrite : `2 cup + 3 tbsp` donne `"amount": 35, "unit": "tbsp"`.
-- `range` donne les bornes d'une fourchette (`{ "min": 13, "max": 14 }`) ; `amount` en est alors le milieu.
-- `parts` liste les quantités dont les unités ne s'additionnent pas, comme `qty` les écrit (`1 1/2 cups + 70 g` donne `[{ "amount": 1.5, "unit": "cup" }, { "amount": 70, "unit": "g" }]`).
-- `unresolved` liste ce qui n'a pas pu être chiffré (`(2% of pâte ❓)`) : ce n'est jamais compté dans `amount`.
+Avec `--format json`, chaque article conserve le texte lisible `qty` (`2 cup + 3 tbsp`, `3,9 kg`) ainsi que des champs numériques structurés pour les scripts <Since v="1.5.0" /> :
+- `amount` : nombre brut dans l'unité de `qty` (`3.9` avec `"unit": "kg"`), toujours avec un point décimal ; vaut `null` si l'ingrédient n'a pas de quantité ou mêle des unités incompatibles.
+- `unit` : unité canonique (`tbsp` pour `tablespoons` comme pour `c. à s.`), ou `null` pour un comptage (`@œufs{4}`). Les échelles compatibles s'additionnent dans la plus petite unité écrite (`2 cup + 3 tbsp` donne `"amount": 35, "unit": "tbsp"`).
+- `range` : bornes `{ min, max }` pour une fourchette (`amount` porte alors le milieu).
+- `parts` : tableau `{ amount, unit }` lorsque des unités incompatibles ne peuvent pas s'additionner (`1 1/2 cups + 70 g` donne `[{ "amount": 1.5, "unit": "cup" }, { "amount": 70, "unit": "g" }]`).
+- `unresolved` : fragments non chiffrables (`(2% de pâte ❓)`), exclus de `amount`.
 
 ```json
 { "id": "sel", "name": "sel", "qty": "3 g + (2% of pâte ❓)", "amount": 3, "unit": "g", "unresolved": ["(2% of pâte ❓)"], "isEstimate": false, "category": "Épices", "recipes": ["brioche"] }
@@ -193,7 +189,7 @@ Lance un guide de cuisine interactif pas à pas, directement au sein du terminal
 gram cook brioche.gram
 gram cook carbonara.gram --skip-db
 ```
-La durée totale affichée à l'écran de synthèse, comme la durée de chaque minuteur, respecte les réglages `--mise-en-place` et `--rests`, à l'identique de `gram view` <Since v="1.4.0" />. Les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur s'appliquent aux masses affichées.
+La durée totale affichée à l'écran de synthèse, comme la durée de chaque minuteur, respecte `--mise-en-place` et `--rests` à l'identique de `gram view`, et les [réglages](#les-réglages-en-ligne-de-commande) de l'analyseur s'appliquent aux masses affichées.
 
 **Déroulement :**
 <Steps>
@@ -297,13 +293,8 @@ gram print brioche.gram --no-open         # Génération seule et affichage du c
 ```
 - Le document HTML est généré dans un fichier temporaire (`gram_print_<horodatage>.html` au sein du répertoire temporaire du système d'exploitation) et ouvert via la commande native appropriée (`open` sous macOS, `xdg-open` sous Linux, `cmd /c start` sous Windows).
 - Le rendu est strictement identique à `gram export --format html` — idéal pour déclencher la boîte de dialogue d'impression du navigateur (`Ctrl+P` / `Cmd+P`) et obtenir un PDF au format A4.
-- `--step-quantities hide` <Since v="1.4.0" /> (ou `--no-step-qty`) omet les quantités d'ingrédients dans le texte des étapes, pour une lecture plus concise lors de la préparation ; les quantités sont incluses par défaut.
-- Options : `--no-open`, `--scale <facteur|réf>`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
-- `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (d'abord nommé `--nutrition`, toujours accepté) sélectionne la base nutritionnelle du document (par défaut `auto` : pour 100 g et par portion côte à côte, par portion seulement si `portions:` est déclaré, la recette entière en dessous). `per-100g` calcule les valeurs pour 100 g de préparation brute assemblée — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
-- `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> définit l'ordonnancement de la mise en place (par défaut `per-section`), ajustant en conséquence la durée totale et le temps d'attente passif dans l'en-tête imprimé. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
-- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> définit la résolution des durées variables pour les minuteurs passifs (`~_{12-24h}`) : durée minimale (`shortest`, par défaut), médiane (`balanced`) ou maximale (`longest`). Les durées exactes et les minuteurs actifs ne sont pas affectés.
-- `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette (`// comme ceci`), dans la recette comme dans le <Term id="runSheet" />.
-- `--view <recipe|run-sheet>` <Since v="1.4.0" /> sélectionne la vue à imprimer : la recette (par défaut) ou son [plan de marche](/fr/docs/how-to/plan-a-meal/) (mis en page à raison d'une journée par page avec des cases à cocher). Pour le plan de marche, les options de planification (`--serve`, `--tz`, `--available` et `--now`) s'utilisent comme avec `gram plan` ; en l'absence de `--serve`, le déroulement est exprimé en jours relatifs avant le service (`J-2`, `J-1`, `Jour J`). Ces options sont réservées à `--view run-sheet`.
+- `--view <recipe|run-sheet>` sélectionne la vue à imprimer : la recette (par défaut) ou son [plan de marche](/fr/docs/how-to/plan-a-meal/) (mis en page à raison d'une journée par page avec des cases à cocher). Pour le plan de marche, les options de planification (`--serve`, `--tz`, `--available` et `--now`) s'utilisent comme avec `gram plan` ; en l'absence de `--serve`, le déroulement est exprimé en jours relatifs (`J-2`, `J-1`, `Jour J`).
+- Options : `--no-open`, `--view <recipe|run-sheet>`, `--scale <facteur|réf>`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
 
 #### `gram export <fichier>`
 Exporte une recette vers Markdown, vers un document HTML prêt pour l'impression ou en texte brut.
@@ -314,18 +305,12 @@ gram export brioche.gram --format html --scale 2       # Export avec proportions
 gram export brioche.gram --format text                 # Génère brioche.txt
 ```
 - `--format md` — Markdown standard structuré avec liste de courses, inventaire du matériel et étapes numérotées.
-- `--format html` — Document HTML autonome formaté pour l'impression A4 avec styles CSS intégrés et icônes vectorielles SVG Lucide (sans dépendances externes d'icônes). Les polices typographiques Courier Prime et Inter sont appelées depuis Google Fonts via une directive `@import` CSS, nécessitant un accès réseau lors de l'ouverture initiale.
-- Chemin de destination par défaut : même répertoire que le fichier source, l'extension `.gram` étant remplacée par `.md`, `.html` ou `.txt`.
-- `--step-quantities hide` <Since v="1.4.0" /> (ou `--no-step-qty`) omet les quantités d'ingrédients dans le texte des étapes, quel que soit le format. Les listes d'ingrédients de chaque section les affichent systématiquement.
-- `--format text` <Since v="1.4.0" /> — texte brut : la recette (cadre de titre avec portions et durées, liste de courses, matériel, ingrédients et étapes numérotées de chaque section, notes, nutrition) ou le plan de marche, tel que `gram plan` l'affiche. Chaque vue ne propose que les formats qu'elle sait produire ; si vous en demandez un autre, la commande vous indique ceux qui sont disponibles.
-- Options : `--format md|html|text`, `--output <chemin>`, `--scale <facteur|réf>`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
-- `--nutrition-basis <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> (d'abord nommé `--nutrition`, toujours accepté) sélectionne la base nutritionnelle (par défaut `auto` : pour 100 g et par portion côte à côte, par portion seulement si `portions:` est déclaré, la recette entière en dessous).
-- `--mise-en-place <per-section|upfront|per-day>` <Since v="1.4.0" /> ajuste l'ordonnancement de la mise en place (par défaut `per-section`), recalculant la durée totale et le temps d'attente passif dans l'en-tête exporté. En HTML, le mode `per-section` insère également un libellé « Mise en place » au-dessus des ingrédients de chaque section. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
-- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> définit la résolution des durées variables pour les minuteurs passifs (`~_{12-24h}`).
-- `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette (`// comme ceci`), dans la recette comme dans le plan de marche.
-- `--view <recipe|run-sheet>` <Since v="1.4.0" /> sélectionne la vue à exporter : la recette (par défaut) ou son [plan de marche](/fr/docs/how-to/plan-a-meal/), en Markdown, en document HTML prêt pour l'impression ou en texte brut. Pour le plan de marche, les options de planification (`--serve`, `--tz`, `--available`, `--now`) fonctionnent comme avec `gram plan` ; sans heure de service, le plan de marche est structuré en jours relatifs. Le fichier généré prend alors par défaut le nom `<recette>.run-sheet.md` (ou `.html`, `.txt`).
+- `--format html` — Document HTML autonome formaté pour l'impression A4 avec styles CSS intégrés et icônes vectorielles SVG Lucide (les polices Courier Prime et Inter sont appelées depuis Google Fonts via `@import`).
+- `--format text` — texte brut identique à `gram view` (ou à `gram plan` pour le plan de marche). Chaque vue ne propose que les formats qu'elle sait produire ; en demander un autre liste ceux qui sont disponibles.
+- `--view <recipe|run-sheet>` sélectionne la vue à exporter : la recette (par défaut, écrite à côté de la source avec `.md`, `.html` ou `.txt`) ou son [plan de marche](/fr/docs/how-to/plan-a-meal/) (fichier nommé `<recette>.run-sheet.md` / `.html` / `.txt` par défaut, acceptant les mêmes options `--serve`, `--tz`, `--available` et `--now` que `gram plan`).
+- Options : `--format md|html|text`, `--view <recipe|run-sheet>`, `--output <chemin>`, `--scale <facteur|réf>`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
 
-#### `gram plan <fichier>` <Since v="1.4.0" />
+#### `gram plan <fichier>`
 Génère le planning opérationnel d'une recette : organisation des journées, passages en cuisine, matériel et ingrédients à sortir, et tâches à réaliser. Avec `--serve`, le rétroplanning est calculé à rebours depuis l'heure du repas en fonction de vos disponibilités. En l'absence d'heure de service, le planning est exprimé en jours relatifs (`J-2`, `J-1`, `Jour J`) et indique l'heure de dégustation la plus précoce possible en démarrant immédiatement.
 ```bash
 gram plan pain.gram --serve "2026-10-11 13:00" --tz Europe/Paris --available 08:00-22:00
@@ -337,14 +322,14 @@ gram plan pain.gram --find 2026-10-10/2026-10-14 --available 08:00-22:00   # Rec
 ```
 - `--serve "<date> <heure>"` : date et heure cibles du service dans le fuseau horaire configuré. Option facultative : en son absence, le plan de marche est présenté en jours relatifs (`J-2`, `J-1`, `Jour J`) sans ajustement calendaire, et conclut par l'heure de dégustation la plus précoce calculée sur un horizon de 14 jours à partir de `--now`.
 - `--tz <fuseau>` : identifiant de fuseau horaire IANA (ex. `Europe/Paris`). Par défaut : valeur du paramètre `timezone` de votre projet (ou de la configuration globale), à défaut le fuseau local du système. Sert à interpréter l'heure de service, évaluer les disponibilités et gérer les changements d'heure d'été/d'hiver.
-- `--available <plage>`, répétable : définit vos plages de disponibilité pour les passages en cuisine. `08:00-22:00` s'applique à tous les jours ; un préfixe de jour de la semaine (`fri=18:00-22:00`, de `mon` à `sun`) restreint la règle à ce jour ; un préfixe de date (`2026-10-09=none`) surcharge une date précise (`none` signifiant une indisponibilité totale). Plusieurs plages peuvent être associées à une même clé, séparées par des virgules (`sat=08:00-09:00,18:00-22:00`), et une plage dont l'heure de fin précède le début traverse minuit. Sans l'option, c'est le réglage `availability` de votre projet (ou de la configuration globale) qui s'applique <Since v="1.4.0" />, dans la même syntaxe ; à défaut des deux, la disponibilité est considérée comme continue (24 h/24). L'option remplace le réglage, elle ne s'y ajoute pas.
+- `--available <plage>`, répétable : définit vos plages de disponibilité pour les passages en cuisine. `08:00-22:00` s'applique à tous les jours ; un préfixe de jour de la semaine (`fri=18:00-22:00`, de `mon` à `sun`) restreint la règle à ce jour ; un préfixe de date (`2026-10-09=none`) surcharge une date précise (`none` signifiant une indisponibilité totale). Plusieurs plages peuvent être associées à une même clé, séparées par des virgules (`sat=08:00-09:00,18:00-22:00`), et une plage dont l'heure de fin précède le début traverse minuit. Sans l'option, c'est le réglage `availability` de votre projet (ou de la configuration globale) qui s'applique dans la même syntaxe ; à défaut des deux, la disponibilité est considérée comme continue (24 h/24). L'option remplace le réglage, elle ne s'y ajoute pas.
 - `--find <début>/<fin>` : explore une plage temporelle (ex. `2026-10-12/2026-10-15`, dates ou horodatages complets) pour identifier les heures de service viables lors de vos repas habituels, classées par ordre de pertinence (la solution optimale en tête), en explicitant les contraintes bloquantes pour chaque créneau rejeté. Formats acceptés : `text`, `md`, `json`. Option incompatible avec `--serve`.
 - `--meal-times <HH:MM,HH:MM>` : créneaux de repas testés par la recherche `--find` (par défaut : valeur configurée via `mealTimes`, ou `12:30,20:00`).
 - Les temps de repos définis par une fourchette (`~_{8-16h}`) sont automatiquement adaptés (allongés ou raccourcis) par l'ordonnanceur afin que les passages coïncident avec vos plages de disponibilité. Le planning détaille chaque ajustement opéré ainsi que les éventuelles contraintes non résolues. Consultez le guide [Planification et plan de marche](/fr/docs/explanation/planning/).
 - `--format text|md|html|json` : format de restitution (par défaut `text`). Le mode `json` renvoie l'objet structuré `{ plan, runSheet }` (ou `runSheet` seul accompagné du champ `earliest` sans heure de service, ou la liste des candidats et rejets en mode `--find`). Consultez [Formats de données](/fr/docs/reference/api/data-formats/#5-le-plan-de-marche).
 - `--ics <fichier>` : génère un fichier de calendrier iCalendar standardisé (`.ics`) comportant un événement par passage en cuisine (horodaté en UTC, automatiquement converti par votre agenda à votre heure locale), un rappel 10 minutes en amont, ainsi que les listes « À sortir » et « Au programme » dans la description. Nécessite l'option `--serve`. Le message de confirmation étant émis sur `stderr`, la commande reste parfaitement composable avec une redirection ou un tube (`--format json --ics ...`).
-- `--comments <show|hide>` <Since v="1.4.0" /> affiche (par défaut) ou masque les commentaires de la recette dans le plan de marche. Lorsqu'ils sont activés, ils restent discrets : une note isolée sur une ligne se place sous son étape en petits caractères grisés, tandis qu'une note en fin de ligne reste intégrée entre parenthèses au sein de la phrase.
-- `--mise-en-place`, `--rests`, `--scale` et `--stock` fonctionnent de manière identique à `gram view`. `--now <instant>` définit l'instant de référence (par défaut, l'heure courante) servant à émettre un avertissement si le premier passage aurait déjà dû débuter dans le passé.
+- `--now <instant>` définit l'instant de référence (par défaut, l'heure courante) servant à émettre un avertissement si le premier passage aurait déjà dû débuter dans le passé.
+- Accepte également `--scale`, `--stock` et les [réglages](#les-réglages-en-ligne-de-commande) applicables (`--mise-en-place`, `--rests`, `--comments`).
 
 #### `gram format [motif]`
 Formate automatiquement les fichiers `.gram` en place en appliquant 13 règles canoniques issues de `@gram-lang/format`.
@@ -437,7 +422,6 @@ Utilisez `gram db search` à tout moment pour auditer l'exhaustivité de vos fic
    - Options : `--report/-r` (inventaire des anomalies sans application des modifications), `--db <chemin>`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
 
 3. #### `gram db enrich`
-   <Since v="1.1.0" type="changed" />
    Interroge l'IA pour suggérer les données manquantes dans votre référentiel, puis vous soumet chaque proposition à validation interactive avant toute écriture sur le disque.
    - Propose des valeurs par lots pour les champs `density`, `unit_weight`, `nutrition`, `category` et `tags` (`unit_weight` étant complété conjointement avec `density`). `category` représente la famille culinaire (ex. Légumes, Produits laitiers, Céréales) — à distinguer des `tags` taxonomiques libres.
    - `category` et `tags` sont appliqués automatiquement ; les valeurs de `density`, `unit_weight` et `nutrition` font l'objet d'une validation unitaire interactive (accepter, corriger ou ignorer), car elles sont tributaires des spécificités précises de vos approvisionnements réels.
@@ -447,7 +431,6 @@ Utilisez `gram db search` à tout moment pour auditer l'exhaustivité de vos fic
 </Steps>
 
 #### `gram db validate`
-<Since v="1.1.0" />
 
 Vérifie l'intégrité globale de votre fichier `ingredients.yaml`.
 - Détecte les infractions de schéma, les alias redondants et les valeurs aberrantes (ex. densité > 2.5).
@@ -480,8 +463,6 @@ La fusion s'appuie sur la **résolution des alias** : si votre base contient `bu
 Le CLI consolide la configuration en fusionnant les paramètres issus de `~/.config/gram/config.yaml` (niveau global) et de `.gram/config.yaml` (niveau projet).
 
 ### Choisir le modèle IA
-
-<Since v="1.1.0" />
 
 Toutes les commandes sollicitant des capacités d'IA — `gram import`, `gram db lint` et `gram db enrich` — acceptent les mêmes options et mentionnent explicitement le modèle ciblé avant l'exécution, prévenant toute dépense imprévue de jetons :
 
@@ -528,7 +509,7 @@ updateCheck: true             # Désactivez (false) pour masquer la notification
 
 # Alias d'importation pour les modules `@use` — `@use "@bases/pate.gram"` résout vers
 # "<racine du projet>/partage/bases/pate.gram". Voir la référence des imports de modules.
-paths:                         # Introduit en v1.2.0 pour les alias de modules
+paths:
   bases: "./partage/bases"
 
 # Paramètres d'IA pour `gram import`, `gram db enrich` et `gram db lint`

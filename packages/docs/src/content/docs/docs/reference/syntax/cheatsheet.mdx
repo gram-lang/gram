@@ -15,9 +15,9 @@ Essential markup tokens used directly inside recipe steps:
 | :--- | :--- | :--- | :--- | :--- |
 | **Ingredient** | `@` | `@name[{quantity}]` | `@flour{200g}` | Declares an ingredient. Omitting `{}` indicates no specific quantity (e.g. `@salt`). |
 | **Cookware** | `#` | `#name[{quantity}]` | `#pan{2}`, `#whisk` | Specifies kitchen equipment. Omitting `{}` defaults to a single item (`1`). |
-| **Timer** | `~` | `~{time}` | `~{30min}`, `~{1h30}` | Defines an active cooking or preparation duration, written as in a recipe (`1 hr 30 mins`, `1:30 h`, `5'30"`). |
-| **Temperature** | `^` | `^{temperature}` | `^{180°C}`, `^{350°F}` | Declares an exact heat setting (`C` or `F`, case-insensitive). |
-| **Target state** | `=` | `={state}` | `={ribbon stage}`, `={golden}` | The state to reach, in the cook's words, anywhere in the step. Since 1.5.0. |
+| **Timer** | `~` | `~{time}` | `~{30min}`, `~{1h30}` | Active cooking or preparation duration (`1 hr 30 mins`, `1:30 h`, `5'30"`). |
+| **Temperature** | `^` | `^{temperature}` | `^{180°C}`, `^{350°F}` | Exact heat setting (`C` or `F`, case-insensitive). |
+| **Target state** | `=` | `={state}` | `={ribbon stage}`, `={golden}` | Sensory cue to reach, placed anywhere in the step. |
 
 ## Modifiers
 
@@ -42,18 +42,18 @@ Specialized patterns for flexible culinary instructions:
 | **Short-hand prep** | `(...)` | `@butter{10g}(room temp)` | Notes prep techniques without cluttering names. |
 | **Component alias** | `:slug` | `@dry white wine:wine{10ml}` | Displays user-friendly text while mapping to a canonical ID. |
 | **Relative quantity** | `% @&target` | `@water{70% @&flour}` | Computes amount relative to a reference ingredient mass. |
-| **Ratio with units** | `a / b @&target` | `@eggs{1 / 100 g @&flour}`, `@salt{15 g / L @&water}` | An amount per amount of another ingredient, in any units; a space around the slash. Since 1.5.0. |
+| **Ratio with units** | `a / b @&target` | `@eggs{1 / 100 g @&flour}`, `@salt{15 g / L @&water}` | Amount per reference amount of another ingredient, in any compatible units (space around `/`). |
 | **Composite child** | `<@parent` | `@lemon zest{1}<@lemon` | Bundles parts (zest, juice) into a single shopping item. |
 | **Passive timer** | `~_` | `~_{1h}` | Represents resting/rising time without blocking the cook. |
-| **Proportional time** | `~{time / b @&target}` | `~{15 min / 500 g @&roast}`, `~{4 min / @&cutlet}` | A time that follows a weight or a count, computed again when scaled. Since 1.5.0. |
+| **Proportional time** | `~{time / b @&target}` | `~{15 min / 500 g @&roast}`, `~{4 min / @&cutlet}` | Duration scaled dynamically by an ingredient's weight or count. |
 | **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
 | **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
-| **Temperature note** | `^{...}(note)` | `^{160°C}(fan)`, `^{63°C}(internal)` | Oven mode or condition, always shown. Since 1.5.0. |
-| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to check the state, always shown. Since 1.5.0. |
+| **Temperature note** | `^{...}(note)` | `^{320°F}(fan)`, `^{145°F}(internal)` | Oven mode or measurement condition, always displayed. |
+| **Target state note** | `={...}(note)` | `={it coats the spoon}(a finger leaves a clean line)` | How to verify the target state, always displayed. |
 | **Fractions** | `n/d` or Unicode | `@flour{1 1/2 cups}`, `@sugar{½ cup}` | Fully supported across imperial and metric systems. |
-| **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Kept as written and added up; a volume and a weight stay side by side. Since 1.5.0. |
+| **Sum of quantities** | `a + b`, `a - b` | `@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@rice{1 cup + 20 g}` | Preserved as written and summed; incompatible kinds stay side by side. |
 
-Every parenthetical note `(...)` — on an ingredient, cookware, a temperature, or a target state — must touch the element before it on the same line; with a space, it stays ordinary text.
+Every parenthetical note `(...)`—on an ingredient, cookware, temperature, or target state—must touch the preceding token on the same line; with a space, it remains ordinary text.
 
 ## Intermediate variables
 

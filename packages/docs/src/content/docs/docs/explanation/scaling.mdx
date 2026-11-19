@@ -20,7 +20,7 @@ Reverse scaling looks simple — divide the target quantity by the ingredient's 
 - Scaling against a relative quantity (`@water{70% @&flour}`) is circular: its value is *derived* from another ingredient, so it can't also be the reference.
 - An ingredient split across two incompatible units in the same recipe only has a "primary" quantity in the aggregated shopping list — deriving a factor from it silently ignores the rest.
 
-`resolveScaleFactor()` (exported from `@gram-lang/kitchen`) validates all of this up front and throws a specific, typed error instead of returning a wrong number. Every consumer — the CLI's `--scale` flag today, the Playground tomorrow — calls the same function and gets the same guarantees for free.
+`resolveScaleFactor()` (exported from `@gram-lang/kitchen`) validates all of this up front and throws a specific, typed error instead of returning a wrong number. Every consumer — the CLI's `--scale` flag, the VS Code preview, and the Playground — calls the same function and gets the same guarantees for free.
 
 ## The request/resolution contract
 
@@ -55,10 +55,18 @@ function resolveScaleFactor(
 | `UNIT_MISMATCH` | Units belong to different physical families (mass vs. volume) and no density could be resolved | Add a density via `gram db enrich`, declare one in the recipe's `densities:` frontmatter, or match units |
 | `INVALID_FACTOR` | Non-positive, non-finite, zero-quantity reference, etc. | — |
 
-## Scaling sums of quantities
-<Since v="1.5.0" />
+## Immutability
 
-A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) scales term by term: `applyScale` multiplies each of its `parts`, then works out the total again. Showing it is the renderer's job, and it follows one rule: an unscaled recipe shows each sum as written; once scaled, an amount is written the way a cook measures it.
+`applyScale(result, factor)` — the function that actually multiplies every quantity — is a pure function: it `structuredClone`s the input before mutating anything, and returns a new `CompilationResult`. Two things fall out of that for free:
+
+- **No compounding.** Re-applying a different factor always starts from the same untouched original, so there's no risk of a factor being applied twice onto an already-scaled `portions` value.
+- **No shared-reference corruption.** `compile()` itself defensively clones the AST's `meta` object before handing it to the result, so scaling a compiled recipe never mutates the parser's AST — safe even when a caller (such as the Playground) caches the parsed AST and recompiles on slider ticks.
+
+The resulting `CompilationResult` carries an honest `scaleFactor` field (default `1`) recording how it relates to the unscaled original — this is what interactive UIs (like the Playground or a custom portions slider) read to compute a baseline, instead of a hidden/underscored field.
+
+## Scaling sums of quantities
+
+A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) scales term by term: `applyScale` multiplies each entry in `parts` and recomputes the total. The renderer preserves sums as written when unscaled, and recomposes scaled amounts into practical kitchen measures:
 
 | Written | Scaled | Shown |
 | :--- | :--- | :--- |
@@ -70,28 +78,18 @@ A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) sc
 | `{1 kg + 200 g}` | × 2 | `2.4 kg` |
 | `{1 cup + 50 ml}` | × 2 | `2 cup + 100 ml` |
 
-- **US and imperial units are recomposed** only when needed, into fractions a measuring cup or spoon actually has (¼, ⅓, ½, ⅔, ¾ of a cup; ½ tbsp; ⅛, ¼, ½ tsp…), never above the largest unit written, with spoons (`cup → tbsp → tsp`) and liquid measures (`gal → qt → pt → fl oz`) kept apart. Terms that can already be measured as they are stay.
-- **Metric units stay in the largest unit written**, in decimals: you weigh in grams, so `{800 g + 200 g}` reads `1000 g`, not `1 kg`. Only the shopping list moves up to the unit you buy in (`1500 g` → `1.5 kg`).
-- **A range** keeps the part both bounds share, and the spread goes on the last term.
-- **Two systems** (`cup` and `ml`) stay term by term.
+- **US and imperial units** are recomposed only when needed into standard measuring fractions (`¼`, `⅓`, `½`, `⅔`, `¾` cup; `½` tbsp; `⅛`, `¼`, `½` tsp…), staying within the largest unit written and keeping spoons (`cup → tbsp → tsp`) separate from liquid measures (`gal → qt → pt → fl oz`).
+- **Metric units** keep the largest unit written using decimals (`{800 g + 200 g}` renders as `1000 g`, not `1 kg`); only the shopping list promotes totals to buying units (`1500 g` → `1.5 kg`).
+- **Ranges** factor out the shared base and keep the spread on the final term.
+- **Mixed systems** (`cup` and `ml`) scale term by term.
 
-**Reverse scaling against a sum** (`--scale flour=500g`) uses its total when every term is of one kind; a volume next to a weight leaves two shopping-list entries, which raises `AMBIGUOUS_MULTI_UNIT`, as two separate mentions would.
+**Reverse scaling against a sum** (`--scale flour=500g`) uses the combined total when all terms belong to the same family; mixing a volume and a weight produces two shopping-list entries and raises `AMBIGUOUS_MULTI_UNIT`.
 
 ## Scaling ratios and proportional times
-<Since v="1.5.0" />
 
-A [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units) is never multiplied by the factor: `applyScale` scales the targets, then resolves every ratio again from what was written (`resolveRatios`, the same pass `compile` runs), so `@eggs{1 / 100 g @&flour}` follows the flour, and a ratio of a fixed target (`@=pepper{2 g}`) does not move. The shopping list is then built again from the scaled sections, so a fixed and a ratio use of one ingredient merge as they do at compile time.
+A [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units) is never multiplied directly by the scale factor: `applyScale` scales the targets first, then re-runs `resolveRatios` from the original formula so `@eggs{1 / 100 g @&flour}` follows the scaled flour while a ratio pointing to a fixed target (`@=pepper{2 g}`) stays unchanged. The shopping list is rebuilt from the scaled sections so fixed and ratio-based uses merge just as they do at compile time.
 
-When a [proportional time](/docs/reference/syntax/times/#proportional-times) changes (`~{15 min / 500 g @&roast}` for twice the roast), the schedule is laid out again by the same functions as `compile`: the `schedule`, the task graph, `metrics` and the deprecated `timings` describe the scaled recipe exactly as the rewritten source would compile. A recipe with no ratio scales as before. The warnings still describe the recipe as written.
-
-## Immutability
-
-`applyScale(result, factor)` — the function that actually multiplies every quantity — is a pure function: it `structuredClone`s the input before mutating anything, and returns a new `CompilationResult`. Two things fall out of that for free:
-
-- **No compounding.** Re-applying a different factor always starts from the same untouched original, so there's no risk of a factor being applied twice onto an already-scaled `portions` value.
-- **No shared-reference corruption.** `compile()` itself defensively clones the AST's `meta` object before handing it to the result, so scaling a compiled recipe never mutates the parser's AST — safe even if a future caller (e.g. a Playground that caches the parsed AST and only recompiles on a scale-slider tick, instead of reparsing on every tick) reuses the same AST across multiple calls.
-
-The resulting `CompilationResult` carries an honest `scaleFactor` field (default `1`) recording how it relates to the unscaled original — this is what interactive UIs (like the renderer's HTML portions widget) read to compute a baseline, instead of a hidden/underscored field.
+When a [proportional time](/docs/reference/syntax/times/#proportional-times) changes (`~{15 min / 500 g @&roast}` for twice the roast), the schedule, task graph, `metrics`, and deprecated `timings` are recomputed by the same scheduling functions used by `compile()`, matching what the rescaled source would produce. Compiler warnings still reflect the unscaled source as written.
 
 ## Baker's percentage validation
 
@@ -114,7 +112,6 @@ When a recipe imports an external base via `@use` (such as `@use "./bases/crust.
 ## Consuming this from a new frontend
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
-import Since from '../../../../components/Since.astro';
 
 <Steps>
 

@@ -25,9 +25,9 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 1. **Structure** — Identifier les phases distinctes (pâte, garniture, sauce, montage…). Chaque phase avec sa propre liste d'ingrédients est une candidate pour une `## Section`. Tout ce qui doit être préparé à l'avance reçoit un délai de rétroplanning (voir [Structure du Document](/fr/docs/reference/syntax/document-structure#rétroplanning-ordonnancement)).
-2. **Frontmatter** — Extraire `title`, `author`, `source`, `category`, `portions` et les dates depuis les métadonnées disponibles dans la source. Ne jamais inventer une valeur absente de la source.
-3. **Ingrédients** : Listez chaque `@ingrédient` unique avec son nom complet et ses espaces (`"huile d'olive"`, jamais `"huile-d-olive"`). Traquez ceux qui apparaissent plusieurs fois : la seconde mention (et les suivantes) doit impérativement utiliser la référence `@&`. Privilégiez les unités du système international pour la rigueur, mais tolérez `c.à.s`/`c.à.c`/`tasse` pour les petites quantités si la source l'exige. Pour désigner la fraction d'un ingrédient (jus, zeste, jaune d'œuf…), anticipez l'usage de la [syntaxe composite](/fr/docs/reference/syntax/composite-ingredients) plutôt qu'une étape de préparation isolée.
-4. **Étapes** : Rédigez chaque étape sous forme de paragraphe, précédé d'un préfixe d'action `[Verbe]`, en injectant vos tags `@ingrédient`, `#matériel`, `~minuteur` et `^température` au fil de l'eau. Dégainez les minuteurs passifs (`~_`) pour les phases d'attente libérant le cuisinier (four, repos, réfrigération, pousse) et les minuteurs actifs (`~`) pour les tâches chronophages. Si plusieurs minuteurs passifs doivent s'enchaîner (ex: cuisson séquentielle), attribuez-leur le MÊME NOM (`~_cuisson{10m}` suivi de `~_cuisson{30m}`) pour les séquencer automatiquement, sans pénaliser le temps actif.
+2. **Frontmatter** — Extraire `title`, `author`, `source`, `category`, `portions` (pas `servings`), `makes` (pas l'ancien champ `size`) et les dates depuis les métadonnées disponibles dans la source. Garder une structure plate (`clé: valeur` uniquement, tableaux en ligne comme `source: [...]` ou `densities: [flour:0.55]` — jamais de YAML imbriqué ou indenté), omettre les champs de durée calculés par le compilateur (`prep`, `total`), et ne jamais inventer une valeur absente de la source.
+3. **Ingrédients** : Listez chaque `@ingrédient` unique avec son nom complet et ses espaces (`"huile d'olive"`, jamais `"huile-d-olive"`), en gardant le nom principal court et en plaçant les qualificatifs d'état dans `()` (`@blanc de poulet{500g}(désossé, sans peau)` plutôt que `@blanc de poulet désossé sans peau{500g}`). Traquez ceux qui apparaissent plusieurs fois : la seconde mention (et les suivantes) doit impérativement utiliser la référence `@&`. Privilégiez les unités du système international pour la rigueur, mais tolérez `c.à.s`/`c.à.c`/`tasse` pour les petites quantités si la source l'exige. Pour désigner la fraction d'un ingrédient (jus, zeste, jaune d'œuf…), anticipez l'usage de la [syntaxe composite](/fr/docs/reference/syntax/composite-ingredients) plutôt qu'une étape de préparation isolée.
+4. **Étapes** : Rédigez chaque étape sous forme de paragraphe séparé par une **ligne vide** (y compris juste après un titre `## Section` : deux lignes consécutives sans ligne vide fusionnent en une seule étape). Commencez par un préfixe d'action `[Verbe]`, en injectant vos tags `@ingrédient`, `#matériel`, `~minuteur` et `^température` au fil de l'eau. Dégainez les minuteurs passifs (`~_`) pour les phases d'attente libérant le cuisinier (four, repos, réfrigération, pousse) et les minuteurs actifs (`~`) pour les tâches chronophages. Si plusieurs minuteurs passifs doivent s'enchaîner (ex. : cuisson séquentielle), attribuez-leur le MÊME NOM (`~_cuisson{10min}` suivi de `~_cuisson{30min}`) pour les séquencer automatiquement, sans pénaliser le temps actif.
 5. **Relecture** : Avant de valider, passez au crible les écueils détaillés ci-dessous : noms en *kebab-case*, unités planquées dans les accolades du matériel, `@&` manquant sur un ingrédient répété, déclarations `->&nom` redondantes, et étapes orphelines ne servant qu'à préparer un ingrédient pour la suite.
 </Steps>
 
@@ -67,9 +67,19 @@ Les accolades du `#matériel` n'acceptent que des nombres entiers. Dimensions, m
 ```gram
 ❌  @sel{au goût}          →   ✅  @sel{}   ou   @sel
 ❌  @farine{environ 200g}  →   ✅  @farine{200g}
+❌  @farine{1,000 g}       →   ✅  @farine{1000 g}
 ❌  ~{environ 10 minutes}  →   ✅  ~{10min}
+❌  ~{1,30 h}              →   ✅  ~{1h30}
 ```
-Les quantités et les minuteurs ont besoin d'un vrai nombre (ou d'accolades vides pour « au goût ») ; un texte flou ne se parse pas.
+Les quantités et les minuteurs ont besoin d'un vrai nombre (ou d'accolades vides quand aucune quantité n'est donnée) ; les préfixes flous comme « environ » déclenchent des avertissements du compilateur (`INVALID_UNIT` / `INVALID_DURATION`), et le texte libre dans un minuteur fait perdre la durée calculée pour l'ordonnancement. Gram n'a pas de séparateur des milliers : `{1,000 g}` est lu comme `1 g` et lève `AMBIGUOUS_NUMBER`. De même, une décimale dans un minuteur reste une fraction de l'unité (`~{1,30 h}` vaut 1 h 18 min) : écrivez `~{1h30}` pour une heure et demie.
+
+### Un espace entre les accolades et la préparation
+
+```gram
+❌  @oignon{1} (émincé)              →   ✅  @oignon{1}(émincé)
+❌  #poêle{} (20 cm, antiadhésive)   →   ✅  #poêle{}(20 cm, antiadhésive)
+```
+La précision `(...)` doit être collée à l'accolade fermante `}` (ou au nom d'un seul mot). Tout espace avant `(` la laisse dans la prose de l'étape au lieu de la rattacher à l'ingrédient ou à l'ustensile.
 
 ### Une quantité donnée en plusieurs mesures
 <Since v="1.5.0" />
@@ -77,7 +87,7 @@ Les quantités et les minuteurs ont besoin d'un vrai nombre (ou d'accolades vide
 ```gram
 ❌  @farine{1 kg 200 g}    →   ✅  @farine{1 kg + 200 g}
 ```
-Une quantité que la recette donne en plusieurs mesures s'écrit en [somme](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités), telle que la source la formule : « 1 tasse plus 1 cuillère à soupe » donne `{1 cup + 1 tbsp}`, « 1 tasse moins 2 cuillères à soupe » donne `{1 cup - 2 tbsp}`, et un volume peut côtoyer une masse (`{1 cup + 20 g}`). Ne la convertissez pas non plus en un seul nombre (`{1.0625 cup}`, `{17 tbsp}`) : Gram additionne les termes lui-même et les affiche comme on les mesure. Chaque terme a son unité, et un terme n'est qu'une quantité : pas de pourcentage (`{100g + 10%}`), pas de multiplication (`{2 x 100g}`), pas de fourchette après un `-` (une fourchette peut être un terme ajouté : `{1 cup + 1-2 tbsp}`).
+Écrivez les mesures composées en [somme](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) (`{1 cup + 1 tbsp}`, `{1 tasse - 2 càs}`, `{1 tasse + 20 g}`) plutôt que de les convertir en un seul nombre décimal (`{1.0625 cup}`). Chaque terme doit porter son unité, et seules les quantités simples sont autorisées (pas de `%`, pas de `×`, et pas de fourchette après `-`).
 
 ### Le mode du four laissé dans la phrase
 <Since v="1.5.0" />
@@ -86,7 +96,7 @@ Une quantité que la recette donne en plusieurs mesures s'écrit en [somme](/fr/
 ❌  Cuire à ^{160°C} chaleur tournante.     →   ✅  Cuire à ^{160°C}(chaleur tournante).
 ❌  Cuire à ^{180°C} (chaleur tournante).   →   ✅  Cuire à ^{180°C}(chaleur tournante).
 ```
-Ce qui accompagne une température (le mode du four, « à cœur », « à couvert ») va dans une [précision](/fr/docs/reference/syntax/temperatures/#mode-de-cuisson-et-précisions) collée à l'accolade fermante, dans la langue de la recette. Avec un espace devant, la parenthèse reste du texte et la précision est perdue.
+Placez le mode du four ou la condition de cuisson (« chaleur tournante », « à cœur », « à couvert ») dans une [précision entre parenthèses](/fr/docs/reference/syntax/temperatures/#mode-de-cuisson-et-précisions) collée à `}`, dans la langue de la recette. Un espace devant `(` la laisse en texte ordinaire.
 
 ### L'état attendu laissé dans la phrase
 <Since v="1.5.0" />
@@ -95,17 +105,17 @@ Ce qui accompagne une température (le mode du four, « à cœur », « à couve
 ❌  Fouetter jusqu'au ruban.                  →   ✅  Fouetter jusqu'au ={ruban}.
 ❌  Cuire jusqu'à ={82°C} ou ={5 min}.        →   ✅  Cuire à ^{82°C}(à cœur) pendant ~{5 min}, jusqu'à ={la nappe}.
 ```
-Quand la source dit quel état atteindre (une texture, une couleur, une odeur), notez-le en [état attendu](/fr/docs/reference/syntax/target-states/), où qu'il se trouve dans l'étape : l'état seul entre les accolades, les mots de liaison (« jusqu'à », « dès que », « quand ») laissés dans la phrase, et un test en précision collée si la source en donne un. Jamais de température, de durée ni de quantité à l'intérieur, et jamais de repère que la source ne donne pas.
+Balisez les repères visuels ou sensoriels donnés par la source en [états attendus](/fr/docs/reference/syntax/target-states/) (`={...}`), en laissant les mots de liaison (« jusqu'à », « dès que », « quand ») hors des accolades et en plaçant tout test de contrôle dans une précision collée `(...)`. N'y mettez jamais de température, de durée ni de quantité, et n'inventez aucun repère absent de la source.
 
 ### Une règle proportionnelle calculée à la main
 <Since v="1.5.0" />
 
 ```gram
-❌  Ajouter @oeufs{5} (1 œuf pour 100 g de farine).   →   ✅  Ajouter @oeufs{1 / 100 g @&farine}.
-❌  Rôtir ~{36 min} (15 min par 500 g).                →   ✅  Rôtir ~{15 min / 500 g @&roti}.
-❌  Ajouter @oeufs{1/100g @&farine}.                   →   ✅  Ajouter @oeufs{1 / 100 g @&farine}.
+❌  Ajouter @œufs{5} (1 œuf pour 100 g de farine).   →   ✅  Ajouter @œufs{1 / 100 g @&farine}.
+❌  Rôtir ~{36 min} (15 min par 500 g).                →   ✅  Rôtir ~{15 min / 500 g @&rôti}.
+❌  Ajouter @œufs{1/100g @&farine}.                   →   ✅  Ajouter @œufs{1 / 100 g @&farine}.
 ```
-Quand la source énonce une règle proportionnelle (« pour 100 g », « par litre », « par pièce »), écrivez-la en [proportion avec unités](/fr/docs/reference/syntax/relative-quantities/#proportions-avec-unités) : elle suit sa cible quand la recette change d'échelle. Seulement dans ce cas : une quantité que la source donne telle quelle reste une quantité. Toujours une espace autour de la barre, l'unité seule avant la cible (jamais `100 g de @&farine`), et aucun multiplicateur après un temps proportionnel.
+Lorsque la source formule une règle proportionnelle (« pour 100 g », « par litre », « par pièce »), écrivez-la en [proportion avec unités](/fr/docs/reference/syntax/relative-quantities/#proportions-avec-unités) pour qu'elle suive la mise à l'échelle. Espacez toujours `/`, écrivez l'unité seule devant la cible (jamais `100 g de @&farine`), et n'ajoutez pas de multiplicateur après un temps proportionnel.
 
 ### Utiliser `@&` dès la première occurrence
 
@@ -157,16 +167,16 @@ Les [ingrédients composites](/fr/docs/reference/syntax/composite-ingredients) g
 ### Rattacher la préparation d'un composite au mauvais côté
 
 ```gram
-❌  @jus de citron(coupé en deux, une moitié émincée pour la décoration)<@citron{1}    // dit que le JUS a été coupé en deux
-✅  @jus de citron<@citron{1}(coupé en deux, une moitié émincée pour la décoration)    // dit que le CITRON a été coupé en deux
+❌  @jus de citron{}(coupé en deux, une moitié émincée pour la décoration)<@citron{1}    // dit que le JUS a été coupé en deux
+✅  @jus de citron{}<@citron{1}(coupé en deux, une moitié émincée pour la décoration)    // dit que le CITRON a été coupé en deux
 ```
 L'enfant et le parent d'un composite peuvent chacun porter leur propre préparation `()`, de manière indépendante :
-- **La préparation de l'enfant** se place juste après son propre nom (et sa quantité, le cas échéant).
+- **La préparation de l'enfant** se place juste après ses accolades `{}` / `{quantité}`.
 - **La préparation du parent** se place juste après `<@nomParent{coûtParent}`.
 
 Rattachez-la à l'élément que la préparation décrit réellement — « coupé en deux » s'applique au citron entier, pas au jus extrait. Les deux peuvent se combiner quand c'est réellement nécessaire : `@jus de citron{150 ml}(filtré)<@citron{1}(coupé en deux)`.
 
-### Un `->&nom` redondant quand le titre de section en déclare déjà un
+### Un `->&nom` redondant ou dupliqué
 
 ```gram
 ❌ ## Mélange d'Épices ->&assaisonnement
@@ -177,7 +187,7 @@ Rattachez-la à l'élément que la préparation décrit réellement — « coup�
 
    [Mélanger] Le @paprika{2 c.à.c} et le @sel{1 c.à.c}.           // aucune déclaration locale nécessaire
 ```
-Un `->&nom` au niveau d'une section capture déjà la sortie de toutes les étapes qu'elle contient — voir [Variables Intermédiaires](/fr/docs/reference/syntax/intermediate-variables#déclaration-au-niveau-de-la-section).
+Un `->&nom` au niveau d'une section capture déjà la sortie de toutes les étapes qu'elle contient, et chaque nom d'intermédiaire doit être unique sur toute la recette (déclarer `->&pâte` deux fois provoque une erreur `SCOPE_CONFLICT`) — voir [Variables Intermédiaires](/fr/docs/reference/syntax/intermediate-variables#déclaration-au-niveau-de-la-section).
 
 ### Un minuteur actif pour une cuisson passive
 
