@@ -36,10 +36,11 @@ Gram turns plain-text recipes into structured, queryable data while keeping them
 
 * **Plain Text**: Recipes are saved as simple `.gram` text files, so you can track changes with Git and use any text editor.
 * **Modular Recipes (`@use`)**: Import and compose external base recipes (`@use "./bases/shortcrust.gram" as &crust`) with automatic yield scaling, timeline interleaving, and unified shopping lists.
-* **Dynamic Calculations**: Declare Baker's percentages, relative quantities (`@water{75% @&flour}`), and automatic unit conversions directly in your recipe.
+* **Dynamic Calculations**: Declare Baker's percentages, relative quantities (`@water{75% @&flour}`), unit ratios (`@garlic{1 clove / 100g @&beef}`, `~{15min / 500g @&roast}`), compound quantities (`@flour{1 cup + 2 tbsp}`), and automatic unit conversions directly in your recipe.
 * **Step References & Variables**: Reuse intermediate preparations (`->&dough`) and sub-ingredients (`<@lemons{2}`) without messing up shopping list totals.
-* **Timers & Run Sheet**: Separate active steps (`~{10min}`) from background waiting times (`~_{2h}`): Gram computes your schedule, working backward from the service, and tells you when to be in the kitchen and what to take out. Give it a serving time and the hours you can cook, and a wait written as a range (`~_{8-16h}`) stretches or shortens to keep your work out of the night.
-* **Developer Tooling**: Includes a Language Server (LSP), a VS Code extension with real-time diagnostics, a CLI tool, and a TypeScript API.
+* **Timers & Run Sheet**: Separate active steps (`~{1h 30min}`, `5'30"`) from background waiting times (`~_{2h}`). Gram computes your schedule backward from service, tells you when to be in the kitchen and what to take out, and stretches range waits (`~_{8-16h}`) to keep your work out of the night.
+* **Cooking Cues**: Specify temperatures with mode or equipment notes (`^{450°F}(convection)`) and mark sensory target states (`={golden brown}`), surfaced in views and live cooking reminders.
+* **Developer Tooling**: Includes a Language Server (LSP), a VS Code extension with real-time diagnostics and live preview, a CLI tool, and a TypeScript API.
 
 ---
 
@@ -50,7 +51,7 @@ Gram reads like natural language but compiles like code.
 ```gram
 ---
 title: Artisanal Bread
-size: 2 loaves
+makes: '2 loaves'
 description: A simple, highly hydrated dough.
 ---
 
@@ -58,13 +59,13 @@ description: A simple, highly hydrated dough.
 
 [Mix] @flour{500g}, @water{70% @&flour}, and @salt{10g} in a #bowl(large). ->&dough
 
-[Rest] Let the &dough rest for ~_{2h} at ^{room temperature} until doubled in size.
+[Rest] Let the &dough rest for ~_{1h 30min} at ^{room temperature} until ={doubled in size}.
 
 ## Baking
 
-[Preheat] The #oven to ^{450F}.
+[Preheat] The #oven to ^{450°F}(convection).
 
-[Bake] The &dough for ~{35min} until the crust is deeply golden.
+[Bake] The &dough for ~{35min} until ={deeply golden}.
 ```
 
 ---
@@ -74,23 +75,23 @@ description: A simple, highly hydrated dough.
 Gram comes with tools to help write, inspect, and compile recipes.
 
 ### VS Code Extension & Language Server
-[**Available on the VS Code Marketplace**](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)
-- **Live Preview & Run Sheet**: Side-by-side recipe rendering and the run sheet of the recipe (days, visits to the kitchen, what to take out), with the serving time, the scale and the settings (mise en place, rests, comments...) one click away.
-- **Autocomplete**: Contextual suggestions for ingredients from your database, units, and step references.
-- **Diagnostics**: Real-time error checking for missing ingredients, unused references, or circular dependencies.
+[**`Gram - Recipe Language` on the VS Code Marketplace**](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)
+- **Live Preview & Run Sheet**: Side-by-side recipe rendering and the run sheet of the recipe (days, visits to the kitchen, what to take out), with the serving time, scale, and view settings (mise en place, rests, comments...) one click away.
+- **Autocomplete & Refactoring**: Contextual suggestions for ingredients from your database, units, and `@use` imports, plus cross-reference rename (`F2`) and hover info for nutrition, scaled quantities, and ratios.
+- **Diagnostics & Formatting**: Real-time error checking for missing ingredients, unused references, or circular dependencies, and canonical formatting on save.
 
 ### CLI (`@gram-lang/cli`)
 [**View on npmjs**](https://www.npmjs.com/package/@gram-lang/cli)
-- **`gram check` & `gram build`**: Validate syntax and compile `.gram` files to JSON.
-- **`gram cook`**: Step-by-step cooking assistant in your terminal with live timers.
+- **`gram check`, `gram format` & `gram build`**: Validate syntax, format `.gram` files canonically, and compile recipes to JSON.
+- **`gram cook`**: Step-by-step cooking assistant in your terminal with live timers and target-state reminders.
 - **`gram view`**: Read a recipe in the terminal, in your language, with the same settings as the editor and the playground (`--mise-en-place`, `--rests`, `--comments`...).
 - **`gram plan`**: Plan a recipe: the days of work, the visits to the kitchen and what to take out, backward from a serving time (`--serve`) within your hours (`--available`), or find the serving times that work (`--find`).
 - **`gram export` & `gram print`**: Write the recipe or its run sheet (`--view run-sheet`) as HTML, Markdown or text, or in a print layout.
 - **`gram scale`**: Resize recipes (e.g., `--scale=2` or `--scale flour=300g`) with before/after comparison tables.
-- **`gram diff`**: Semantic diff to compare quantities, timings, or temperatures between recipe versions.
-- **`gram shop`**: Generate aggregated shopping lists across multiple recipes.
+- **`gram diff`**: Semantic diff to compare quantities, timings, temperatures, or target states between recipe versions.
+- **`gram shop`**: Generate aggregated shopping lists across multiple recipes (including structured `--format json` output).
 - **`gram suggest`**: Find recipes based on available ingredients (e.g., `--with "butter, eggs"`).
-- **`gram import`**: Convert recipes from external URLs into `.gram` files.
+- **`gram import`**: Convert recipes from web URLs, local JSON-LD files, or YouTube videos into `.gram` files via AI.
 
 ### Database Tooling (`gram db`)
 Commands to maintain your `ingredients.yaml` file:
@@ -126,7 +127,7 @@ This monorepo is divided into specialized packages under `packages/`:
 | [**`@gram-lang/i18n`**](./packages/i18n/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/i18n?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/i18n) | Localization layer for units, categories, and AI prompts. |
 | [**`vscode-extension`**](./packages/vscode-extension/README.md) | [![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/gram-lang.gram-lang.svg?style=flat-square&color=007acc)](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang) | The Visual Studio Code extension. |
 | [**`@gram-lang/language-server`**](./packages/language-server/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/language-server?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/language-server) | The LSP providing autocomplete and diagnostics. |
-| **`docs`** | - | The documentation website, which includes the web-based Playground IDE. |
+| [**`docs`**](./packages/docs/README.md) | - | The documentation website, which includes the web-based Playground IDE. |
 
 ---
 
@@ -171,7 +172,7 @@ bun run dev
 import { getAST } from '@gram-lang/parser';
 import { compile } from '@gram-lang/kitchen';
 
-const ast = getAST("[Mix] @flour{200g} and @water{100g}.");
+const ast = getAST("## My Recipe\n\n[Mix] @flour{200g} and @water{100g}.");
 const result = compile(ast);
 
 console.log(result.shopping_list);

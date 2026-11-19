@@ -1,11 +1,11 @@
-# Gram Language Support
+# Gram - Recipe Language
 
 [![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/gram-lang.gram-lang.svg?style=flat-square&color=007acc)](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 *Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
 
-The official Visual Studio Code extension for the Gram recipe language. It provides a full language server with real-time diagnostics, advanced editing assistance, semantic highlighting, and a dynamic Live Preview.
+The official Visual Studio Code extension for the Gram recipe language. It provides a full language server with real-time diagnostics, advanced editing assistance, semantic highlighting (including compound quantities, unit ratios, temperature notes, and target states), and a dynamic Live Preview.
 
 ---
 
