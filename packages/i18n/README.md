@@ -1,6 +1,6 @@
 # @gram-lang/i18n
 
-[![npm version](https://badge.fury.io/js/@gram-lang%2Fi18n.svg)](https://www.npmjs.com/package/@gram-lang/i18n)
+[![npm](https://img.shields.io/npm/v/@gram-lang/i18n?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/i18n)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 *Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
@@ -47,11 +47,13 @@ console.log(resolveTimeUnit('minutes'));            // 'm'
 `getDictionary(lang)` returns the dictionary of a language (`en` or `fr`): the labels of the renderer's views (`renderer.*`, including the names of the outputs and of the formats), the units of durations (`renderer.durationUnits`, `1h 30min` or `1j 1h`) and the strings of the playground. `fillTemplate(template, values)` fills the `{name}` placeholders of a dictionary string (`"Serve at {time}"` becomes `"Serve at 20:00"`) and leaves a name with no value as written, so a missing value shows up instead of vanishing.
 
 ```javascript
-import { getDictionary, fillTemplate } from '@gram-lang/i18n';
+import { getDictionary, fillTemplate, formatNumber, parseDuration } from '@gram-lang/i18n';
 
 const t = getDictionary('fr');
 console.log(t.renderer.durationUnits);                       // { day: 'j', hour: 'h', minute: 'min', second: 's' }
 console.log(fillTemplate('Serve at {time}', { time: '20:00' })); // 'Serve at 20:00'
+console.log(formatNumber(1.5, 'fr'));                            // '1,5'
+console.log(parseDuration('1h 30min'));                          // { ok: true, kind: 'single', ... }
 ```
 
 A key is added in both languages together: a surface never carries a word of its own.
@@ -70,6 +72,9 @@ If a language-specific code (e.g., `'fr'`) is provided, the function checks the 
 *   `src/dictionary.ts`: Dictionary compiler helper that transforms structured translations into flat `O(1)` maps.
 *   `src/units.ts`: Mass and volume unit dictionary (French & English) and normalizer.
 *   `src/time.ts`: Time unit dictionary (French & English) and normalizer.
+*   `src/duration.ts`: Compound, clock, prime, and range duration parser (`parseDuration()`).
+*   `src/numbers.ts`: Locale-aware number formatting (`formatNumber()`, `localizeDecimals()`, `toKitchenFraction()`).
+*   `src/quantity.ts`: Quantity term arithmetic and formatting (`termsTotal()`, `mergeTerms()`, `scaleTerms()`, `formatTerms()`).
 *   `src/locales/`: The `en` and `fr` dictionaries (renderer views, nutrients, playground) and `getDictionary()`.
 *   `src/template.ts`: `fillTemplate()`.
 *   `src/categories.ts`: Shopping list category keys and their labels per language.

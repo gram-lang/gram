@@ -1,11 +1,11 @@
 # @gram-lang/renderer
 
-[![npm version](https://badge.fury.io/js/@gram-lang%2Frenderer.svg)](https://www.npmjs.com/package/@gram-lang/renderer)
+[![npm](https://img.shields.io/npm/v/@gram-lang/renderer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/renderer)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 *Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
 
-The renderer of the Gram recipe language. It turns a compiled (or analyzed) recipe into **views**, the recipe and its run sheet, each written in every format it offers: semantic HTML, Markdown, plain text and a print layout. The views follow a list of settings (comments, mise en place, rests, quantities in the steps, nutrition basis...) that the CLI, the editor and the playground read from the same place. The engine computes, the views only show.
+The renderer of the Gram recipe language. It turns a compiled (or analyzed) recipe into **views**, the recipe and its run sheet, each written in every format it offers: semantic HTML, Markdown, plain text and a print layout — including compound quantities, unit ratios, temperature notes, and target states (`={...}`). The views follow a list of settings (comments, mise en place, rests, quantities in the steps, nutrition basis...) that the CLI, the editor and the playground read from the same place. The engine computes, the views only show.
 
 ---
 
