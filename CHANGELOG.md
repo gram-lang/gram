@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.5.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.4.2...v.1.5.0) - 2026-11-19
+## [1.5.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.4.2...v.1.5.0) - 2026-11-20
 
 ### New features
 - **Scheduler, Renderer & CLI**: Clock times can now be entered and displayed in 12-hour (`1:00 PM`) as well as 24-hour (`13:00`) format:
