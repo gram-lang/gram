@@ -1,5 +1,53 @@
 # @gram-lang/vscode-extension
 
+## 1.5.0
+
+### Minor Changes
+
+- 9c86b70: **Scheduler, Renderer & CLI**: Clock times can now be entered and displayed in 12-hour (`1:00 PM`) as well as 24-hour (`13:00`) format:
+  - `--available`, `--meal-times`, `--serve`, `--find`, their `availability` and `mealTimes` settings, and the editor's serving time accept 12-hour times in any case or spacing (`8am-10pm`, `fri=6pm-12am`, `12:30pm,8pm`, `"2026-10-11 1:00 pm"`), rejecting invalid forms like `13pm`, `0am`, or bare hours.
+  - Adds a `clock` view setting (`auto`, `12h`, `24h`) controlling time formatting in the run sheet, serving-time suggestions, and iCalendar descriptions; `auto` (default) follows the reader's locale region rather than the recipe language.
+  - Configurable via `--clock` (`gram plan`, `gram export`, `gram print`), `clock` in `.gram/config.yaml` (or global config), `gram.clock` in VS Code, and the playground's Display menu.
+  - Adds `locale` support to `prepareViews()`, an `hourCycle` option to run sheets, clock helpers (`formatClock`, `chooseClock`, `resolveHourCycle`, `systemLocale`) in `@gram-lang/renderer`, and `parseTimeOfDay` / `parseLocalDateTime` in `@gram-lang/scheduler` (JSON and ISO data remain unchanged).
+- a17ebc8: **Language Server, VS Code & Format**: Editors and the formatter now support sums of quantities (`@flour{1 cup + 1 tbsp}`):
+  - Quick fixes convert adjacent quantities into a sum (`{1 cup 5 tbsp}` → `{1 cup + 5 tbsp}`), apply suggested percentage resolutions (`{100 g + 10%}` → `{110 g}`), and clarify `oz` after a volume as `fl oz`.
+  - Hover previews show the combined total (`= 17 tbsp`) or distinct unit kinds, along with estimated weight from the ingredient database.
+  - Unit completion works inside each term of a sum once its number is typed (`{1 cup + 2`).
+  - `gram format` spaces `+` and `-` in ingredient sums (leaving ranges, timers, and temperatures untouched) and trims trailing zeros across quantities (`{1.50 kg}` → `{1.5 kg}`, `~{1.50 h}` → `~{1.5 h}`), reporting operator spacing fixes in `quantityOperatorSpacing`.
+- f91ec4e: **Parser & Kitchen**: Steps can now mark inline target states with an optional glued verification note (`Whisk until ={ribbon stage}(the batter falls back in a continuous ribbon).`):
+  - Only the state sits inside `={…}`, with an optional single-line note attached to `}`; unclosed or empty `={` raises a syntax error, and braceless `@ingredient` names end before a target state (`@salt until ={taste}`).
+  - Compiled steps emit a `checkpoint` token (`state`, plus optional `note`) without affecting scaling, scheduling, or the shopping list.
+  - Rendered across HTML, Markdown, plain text, and print views; `gram cook` shows checkpoints below each step and reminds you when a step timer rings.
+  - `gram diff` tracks added, removed, and changed target states, `gram import` preserves them from sources, and editors highlight them.
+- 55188fc: **Language Server & VS Code**: Editors now understand natural timer and anchor syntax:
+  - Hovering a timer shows its normalized duration (`~{1:30 h}` → `1 h 30 min`), and hovering a section anchor shows its lead time and whether it starts a separate working day.
+  - Unit completion inside `~{…}` suggests only time units (and no longer offers time units for ingredients).
+  - Syntax highlighting distinguishes numbers and units in `~{1h30}`, `~{1:30 h}`, `~{5'30"}`, and duration ranges.
+- d5fe9c3: **Parser, Kitchen & Analyzer**: Ingredients, intermediates, and timers can now be written as unit ratios:
+  - Supports ratios across units or counts on ingredients (`@eggs{1 / 100 g @&flour}`, `@salt{15 g / 1 L @&water}`), homemade preparations (`&stock{250 ml / 100 g @&rice}`, plus percentages like `&stock{250% @&rice}`), and proportional timers (`~{15 min / 500 g @&roast}`, `~{4 min / @&cutlet}`).
+  - Resolves compatible units at compile time and cross-family ratios via the ingredient database; incompatible or zero-denominator ratios raise `RELATIVE_QUANTITY_UNKNOWN_MASS` (with `reason`) or `INVALID_QUANTITY` (`reason: "zeroRatioDenominator"`) instead of guessing.
+  - Whole-use references to a section preparation (`Roll out the &dough`) now estimate mass from the producing section, while step-produced intermediates (`Mix … ->&dough`) require an explicit amount (`reason: "stepProducer"`); warnings and formulas in imported bases display original author names rather than internal aliases.
+  - Scaling a recipe re-resolves all ratios and recomputes the schedule, total times, and shopping list.
+  - Views display resolved ratios in tooltips, and the language server provides syntax highlighting, target completion, intermediate renaming, hover previews, and inlay hints.
+
+### Patch Changes
+
+- 07ede89: **Language Server & VS Code**: Fixed the live-preview CodeLens above `.gram` files to display `▶ Preview` in English instead of `▶ Aperçu`.
+- Updated dependencies [9c86b70]
+- Updated dependencies [073d4f1]
+- Updated dependencies [a17ebc8]
+- Updated dependencies [80fbc22]
+- Updated dependencies [07ede89]
+- Updated dependencies [a9e6231]
+- Updated dependencies [f91ec4e]
+- Updated dependencies [238e012]
+- Updated dependencies [4d4b12e]
+- Updated dependencies [0fa8c95]
+- Updated dependencies [55188fc]
+- Updated dependencies [d5fe9c3]
+  - @gram-lang/renderer@1.5.0
+  - @gram-lang/language-server@1.5.0
+
 ## 1.4.2
 
 ### Patch Changes

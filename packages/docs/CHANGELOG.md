@@ -1,5 +1,45 @@
 # @gram-lang/docs
 
+## 1.5.0
+
+### Minor Changes
+
+- 9c86b70: **Scheduler, Renderer & CLI**: Clock times can now be entered and displayed in 12-hour (`1:00 PM`) as well as 24-hour (`13:00`) format:
+  - `--available`, `--meal-times`, `--serve`, `--find`, their `availability` and `mealTimes` settings, and the editor's serving time accept 12-hour times in any case or spacing (`8am-10pm`, `fri=6pm-12am`, `12:30pm,8pm`, `"2026-10-11 1:00 pm"`), rejecting invalid forms like `13pm`, `0am`, or bare hours.
+  - Adds a `clock` view setting (`auto`, `12h`, `24h`) controlling time formatting in the run sheet, serving-time suggestions, and iCalendar descriptions; `auto` (default) follows the reader's locale region rather than the recipe language.
+  - Configurable via `--clock` (`gram plan`, `gram export`, `gram print`), `clock` in `.gram/config.yaml` (or global config), `gram.clock` in VS Code, and the playground's Display menu.
+  - Adds `locale` support to `prepareViews()`, an `hourCycle` option to run sheets, clock helpers (`formatClock`, `chooseClock`, `resolveHourCycle`, `systemLocale`) in `@gram-lang/renderer`, and `parseTimeOfDay` / `parseLocalDateTime` in `@gram-lang/scheduler` (JSON and ISO data remain unchanged).
+- fc13489: **Playground**: The playground now exposes the example ingredient database behind its weight and nutrition calculations:
+  - Adds a read-only `ingredients.yaml` tab alongside recipe files, using the same format as a project database and linking to the database guide.
+  - Missing-ingredient and missing-data warnings link directly to open the database tab.
+
+### Patch Changes
+
+- Updated dependencies [aa78c53]
+- Updated dependencies [9c86b70]
+- Updated dependencies [073d4f1]
+- Updated dependencies [e0f8fbf]
+- Updated dependencies [80fbc22]
+- Updated dependencies [8d1b62e]
+- Updated dependencies [7d15360]
+- Updated dependencies [f4c6943]
+- Updated dependencies [a9e6231]
+- Updated dependencies [92bec33]
+- Updated dependencies [f91ec4e]
+- Updated dependencies [238e012]
+- Updated dependencies [4d4b12e]
+- Updated dependencies [0fa8c95]
+- Updated dependencies [55188fc]
+- Updated dependencies [d5fe9c3]
+- Updated dependencies [4d5f79f]
+  - @gram-lang/analyzer@1.5.0
+  - @gram-lang/scheduler@1.5.0
+  - @gram-lang/renderer@1.5.0
+  - @gram-lang/parser@1.5.0
+  - @gram-lang/kitchen@1.5.0
+  - @gram-lang/i18n@1.5.0
+  - @gram-lang/modules@1.5.0
+
 ## 1.4.2
 
 ### Patch Changes

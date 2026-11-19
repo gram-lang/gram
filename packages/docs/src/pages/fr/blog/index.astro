@@ -4,6 +4,7 @@ import Layout from "../../../layouts/Layout.astro";
 import { resolveLocalizedPosts } from "../../../lib/resolveLocalizedPosts";
 import BlogListLayout from "../../../components/BlogListLayout.astro";
 import ArticleCard from "../../../components/ArticleCard.astro";
+import { getBlogIndexOgSlug, ogPathFromSlug } from "../../../lib/og/catalog";
 
 const allPosts = await getCollection("blog");
 const postsToDisplay = resolveLocalizedPosts(allPosts, "fr");
@@ -18,7 +19,7 @@ postsToDisplay.sort((a, b) => {
 const topics = [...new Set(postsToDisplay.map((post) => post.data.topic))];
 ---
 
-<Layout title="Blog" description="Dernières nouveautés et articles autour du projet Gram." currentLang="fr">
+<Layout title="Blog" description="Dernières nouveautés et articles autour du projet Gram." currentLang="fr" ogImage={ogPathFromSlug(getBlogIndexOgSlug("fr"))}>
   <BlogListLayout
     title="Blog"
     description="Dernières mises à jour, tutoriels et réflexions autour du projet Gram."

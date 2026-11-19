@@ -1,5 +1,35 @@
 # @gram-lang/i18n
 
+## 1.5.0
+
+### Minor Changes
+
+- 073d4f1: **Parser & Kitchen**: An ingredient or intermediate quantity can now be written as a sum or difference of terms (`@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@butter{1 cup + 20 g}`, `&dough{1 kg + 200 g}`):
+  - Supports any number of `+`/`-` terms (including fractions and ranges) on ingredients, composite parents (`<@oranges{1 lb + 4 oz}`), and intermediates (including `@use` base yields); scaling multiplies each term, and `gram import` now preserves multi-measure sums instead of folding them into decimals.
+  - Steps and section ingredient lists keep sums as written (`100 g + 100 g`), while scaled amounts format cleanly for cooking (`2 cup + 2 tbsp`, `2.4 kg`); compiled JSON stores terms in `parts` (with `minus: true` for subtraction) and totals in `qty`/`unit` (or full text in `unit` for mixed unit kinds).
+  - Invalid sums (missing unit, percentage, multiplication, subtracting a range or across unit kinds, zero total) raise `INVALID_QUANTITY` with a suggestion in `data`; `OZ_AFTER_VOLUME` flags `oz` after a volume (`{1 cup + 2 oz}`), and `INVALID_UNIT` suggests a sum for adjacent quantities (`{1 kg 200 g}`).
+  - Masses and nutrition weigh each term individually (returning no mass if any term cannot be weighed), `gram diff` shows formatted quantities via `fromText`/`toText`, `@gram-lang/renderer` exports `formatUsageQuantity`, and `@gram-lang/i18n` exports `termsTotal`, `mergeTerms`, `formatTerms`, and `Term`.
+- e0f8fbf: **Parser & Kitchen**: Decimal numbers can now be written with a comma as well as a point (`{1,5 kg}` and `{1.5 kg}`):
+  - Supported in all braced numbers (ingredients, ranges, relative quantities, cookware, temperatures, timers, and section anchors) and displayed in the reader's locale.
+  - Commas followed by exactly three digits (`{1,000 g}`) are still read as decimals (`1 g`), with a new `AMBIGUOUS_NUMBER` warning in case a thousand was intended (while `{1.000 kg}` remains `1 kg` without warning).
+  - `gram format` trims trailing zeros after a comma (`{1,50}` → `{1,5}`) while keeping `{1,000}` as written.
+- 8d1b62e: **Parser & Kitchen**: Timers and section anchors now support natural duration syntax in English and French, with or without spaces:
+  - Accepts compound durations (`~{1h30}`, `~{1 hr 30 mins}`, `~{1 heure 30}`, `~{1h + 30min}`, `~{2min30}`), clock notation (`~{1:30 h}`, `~{0:04:30}`), primes (`~{5'30"}`, `~{10'}`), ranges (`~{1h30-2h}`, `~{45 min - 1 h}`), section anchors (`~{-1h30}`, `~{-1j 12h}`), and aliases like `hr`, `hrs`, and `mn`. `gram import` now outputs these natural forms and avoids ambiguous notations like `~{1:30}`.
+  - Ambiguous or invalid durations (`~{1:30}`, `~{1h75}`, reversed ranges) raise `INVALID_DURATION` with a suggested fix and are excluded from total time; anchor warnings now point directly to the anchor.
+  - Compiled timers store the source text in `raw` and total minutes in `minutes` (normalizing `quantity`/`unit` to the smallest written unit for new forms) and are scheduled like any other timer.
+  - Exposes `parseDuration` (`@gram-lang/i18n`) and `readAnchor` (`@gram-lang/kitchen`), and adds `loc` to AST section anchors.
+- 0fa8c95: **Rendering**: Timers in steps now format durations consistently with the rest of the page using non-breaking spaces (`~{90min}` and `~{1h30}` display as `1 h 30 min`, ranges as `45 min – 1 h` or `1–2 h`), across views, `gram cook`, and the run sheet, via the new `formatDurationRange` and `formatTimerDuration` helpers and the `formatDuration` option.
+
+  **Deprecated**
+  - `@gram-lang/i18n`: `runSheetRange` in the renderer dictionary (`"{min} to {max}"`), no longer used by the run sheet, will be removed in 2.0.0. Use `formatDurationRange()` from `@gram-lang/renderer` instead.
+
+- d5fe9c3: **Parser, Kitchen & Analyzer**: Ingredients, intermediates, and timers can now be written as unit ratios:
+  - Supports ratios across units or counts on ingredients (`@eggs{1 / 100 g @&flour}`, `@salt{15 g / 1 L @&water}`), homemade preparations (`&stock{250 ml / 100 g @&rice}`, plus percentages like `&stock{250% @&rice}`), and proportional timers (`~{15 min / 500 g @&roast}`, `~{4 min / @&cutlet}`).
+  - Resolves compatible units at compile time and cross-family ratios via the ingredient database; incompatible or zero-denominator ratios raise `RELATIVE_QUANTITY_UNKNOWN_MASS` (with `reason`) or `INVALID_QUANTITY` (`reason: "zeroRatioDenominator"`) instead of guessing.
+  - Whole-use references to a section preparation (`Roll out the &dough`) now estimate mass from the producing section, while step-produced intermediates (`Mix … ->&dough`) require an explicit amount (`reason: "stepProducer"`); warnings and formulas in imported bases display original author names rather than internal aliases.
+  - Scaling a recipe re-resolves all ratios and recomputes the schedule, total times, and shopping list.
+  - Views display resolved ratios in tooltips, and the language server provides syntax highlighting, target completion, intermediate renaming, hover previews, and inlay hints.
+
 ## 1.4.2
 
 No changes in this release.

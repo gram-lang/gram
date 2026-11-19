@@ -1,12 +1,14 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ChangelogPage from "../../components/ChangelogPage.astro";
+import { getChangelogOgSlug, ogPathFromSlug } from "../../lib/og/catalog";
 ---
 
 <Layout
 	title="Changelog"
 	description="Historique complet des versions de Gram : articles de release, nouveautés, correctifs et changements majeurs."
 	currentLang="fr"
+	ogImage={ogPathFromSlug(getChangelogOgSlug("fr"))}
 >
 	<ChangelogPage lang="fr" />
 </Layout>

@@ -6,6 +6,7 @@ import Icon from "./Icon.astro";
 import gramGrammar from "@gram-lang/parser/textmate";
 import FeaturePanel from "./FeaturePanel.astro";
 import { GRAM_VERSION } from "../lib/gram-version";
+import { getHomeOgSlug, ogPathFromSlug } from "../lib/og/catalog";
 import { getHomepageAnnouncement } from "../lib/releases";
 import type { NutrientKey } from "@gram-lang/analyzer";
 import { nutritionRows } from "@gram-lang/renderer";
@@ -69,7 +70,7 @@ const mockNutrientRows = portionRows
 	}));
 ---
 
-<Layout title="Gram" description={t.metaDescription} currentLang={lang}>
+<Layout title="Gram" description={t.metaDescription} currentLang={lang} ogImage={ogPathFromSlug(getHomeOgSlug(lang))}>
   <!-- Hero Section -->
   <section class="section hero" aria-labelledby="hero-heading">
     <div class="homepage-container">

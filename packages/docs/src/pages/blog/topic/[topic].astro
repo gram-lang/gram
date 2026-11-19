@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import Layout from "../../../layouts/Layout.astro";
 import { getTopicSlug, getTopicInfo } from "../../../data/blog-topics";
+import { getBlogTopicOgSlug, ogPathFromSlug } from "../../../lib/og/catalog";
 import BlogListLayout from "../../../components/BlogListLayout.astro";
 import ArticleCard from "../../../components/ArticleCard.astro";
 
@@ -50,7 +51,7 @@ export async function getStaticPaths() {
 const { topicInfo, topicPosts, allTopics } = Astro.props;
 ---
 
-<Layout title={`Topic: ${topicInfo.name.en}`} description={topicInfo.description.en} currentLang="en">
+<Layout title={`Topic: ${topicInfo.name.en}`} description={topicInfo.description.en} currentLang="en" ogImage={ogPathFromSlug(getBlogTopicOgSlug("en", Astro.params.topic ?? ""))}>
   <BlogListLayout
     title={topicInfo.name.en}
     description={topicInfo.description.en}
