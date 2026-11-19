@@ -45,6 +45,9 @@ export const COMMON_CASES: DurationCases = {
 		["5-7'", [5, 7]],
 		["5'-7'30\"", [5, 7.5]],
 		["1h 30'", 90],
+		// A unit written out is read as written, even past 60 (primes are not).
+		["1 h 75 min", 135],
+		["2min90s", 3.5],
 		// Symbols.
 		["1h30", 90],
 		["1h30min15", 90.25],
@@ -73,6 +76,9 @@ export const COMMON_CASES: DurationCases = {
 		["30min 1h", "unitOrder"],
 		["1h 2h", "duplicateUnit"],
 		["1h75", "overflow60"],
+		["5'90\"", "overflow60"],
+		["5' 60\"", "overflow60"],
+		["1h 75'", "overflow60"],
 		["30s5", "bareNumber"],
 		["5'30\"15", "bareNumber"],
 		["1 30 min", "bareNumber"],

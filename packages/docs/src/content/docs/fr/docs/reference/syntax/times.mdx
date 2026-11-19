@@ -42,9 +42,9 @@ Ces unités s'appuient sur le dictionnaire temporel multilingue de Gram : les al
 [Affiner] Le @jambon{1} à la cave ~_{2 j 4 h}.
 ```
 
-- **Plusieurs unités** (`~{1h30min}`, `~{2 j 4 h}`, `~{1h + 30min}`) : rangez les unités de la plus grande à la plus petite, chacune une seule fois. Un dernier nombre sans unité est accepté juste après les heures (minutes) ou les minutes (secondes), s'il est entier et inférieur à 60 (`~{1h30}`, `~{2min30}`, mais pas `~{1h75}`). Décimales et fractions ne s'emploient que sur une durée d'une seule unité (`~{1,5 h}`, `~{1½ h}`, pas `~{1,5h30}`).
+- **Plusieurs unités** (`~{1h30min}`, `~{2 j 4 h}`, `~{1h + 30min}`) : rangez les unités de la plus grande à la plus petite, chacune une seule fois. Un dernier nombre sans unité est accepté juste après les heures (minutes) ou les minutes (secondes), s'il est entier et inférieur à 60 (`~{1h30}`, `~{2min30}`, mais pas `~{1h75}`). Avec son unité écrite en toutes lettres, un nombre se lit tel quel, même au-delà de 60 : `~{1 h 75 min}` fait 2 h 15 min. Décimales et fractions ne s'emploient que sur une durée d'une seule unité (`~{1,5 h}`, `~{1½ h}`, pas `~{1,5h30}`).
 - **Notation horaire** (`~{1:30:00}`, `~{1:30 h}`, `~{4:30 min}`) : trois parties sont toujours comprises (`hh:mm:ss`) ; deux parties exigent une unité pour lever l'ambiguïté entre heures et minutes.
-- **Notation en primes** (`~{5'}`, `~{5'30"}`, `~{45"}`) : `'` compte des minutes entières et `"` des secondes entières (les variantes typographiques `’`, `′`, `″` et `''` sont aussi acceptées).
+- **Notation en primes** (`~{5'}`, `~{5'30"}`, `~{45"}`) : `'` compte des minutes entières et `"` des secondes entières (les variantes typographiques `’`, `′`, `″` et `''` sont aussi acceptées). Les primes se lisent comme une horloge : après les minutes, les secondes restent sous 60 (`~{6'30"}`, pas `~{5'90"}`).
 - **Nombres décimaux** (`~{1,5 h}`, `~{1.5 h}`) : virgule et point sont acceptés (voir les [nombres décimaux](/fr/docs/reference/syntax/ingredients/#nombres-décimaux)).
 
 :::caution

@@ -42,9 +42,9 @@ Write durations the way recipes naturally do. Spaces don't matter (`~{1h30}`, `~
 [Age] The @ham{1} in the cellar ~_{2d 4h}.
 ```
 
-- **Compound units** (`~{1h30min}`, `~{2 d 4 h}`, `~{1h + 30min}`): list units from largest to smallest, each once. A trailing number without a unit is allowed right after hours (minutes) or minutes (seconds) if it is a whole number under 60 (`~{1h30}`, `~{2min30}`, not `~{1h75}`). Decimals and fractions only apply to single-unit durations (`~{1.5 h}`, `~{1½ h}`, not `~{1.5h30}`).
+- **Compound units** (`~{1h30min}`, `~{2 d 4 h}`, `~{1h + 30min}`): list units from largest to smallest, each once. A trailing number without a unit is allowed right after hours (minutes) or minutes (seconds) if it is a whole number under 60 (`~{1h30}`, `~{2min30}`, not `~{1h75}`). With its unit written out, a number is read as written, even past 60: `~{1 h 75 min}` is 2 h 15 min. Decimals and fractions only apply to single-unit durations (`~{1.5 h}`, `~{1½ h}`, not `~{1.5h30}`).
 - **Clock notation** (`~{1:30:00}`, `~{1:30 h}`, `~{4:30 min}`): three parts always work (`hh:mm:ss`); two parts require a leading unit so `1:30` isn't ambiguous between hours and minutes.
-- **Prime notation** (`~{5'}`, `~{5'30"}`, `~{45"}`): `'` counts whole minutes and `"` counts whole seconds (typographic quotes `’`, `′`, `″`, and `''` also work).
+- **Prime notation** (`~{5'}`, `~{5'30"}`, `~{45"}`): `'` counts whole minutes and `"` counts whole seconds (typographic quotes `’`, `′`, `″`, and `''` also work). Primes read like a clock: after minutes, seconds stay under 60 (`~{6'30"}`, not `~{5'90"}`).
 - **Decimals** (`~{1.5 h}`, `~{1,5 h}`): periods and commas both work (see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
 
 :::caution

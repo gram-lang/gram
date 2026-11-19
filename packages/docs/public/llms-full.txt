@@ -1016,9 +1016,9 @@ Write durations the way recipes naturally do. Spaces don't matter (`~{1h30}`, `~
 [Age] The @ham{1} in the cellar ~_{2d 4h}.
 ```
 
-- **Compound units** (`~{1h30min}`, `~{2 d 4 h}`, `~{1h + 30min}`): list units from largest to smallest, each once. A trailing number without a unit is allowed right after hours (minutes) or minutes (seconds) if it is a whole number under 60 (`~{1h30}`, `~{2min30}`, not `~{1h75}`). Decimals and fractions only apply to single-unit durations (`~{1.5 h}`, `~{1½ h}`, not `~{1.5h30}`).
+- **Compound units** (`~{1h30min}`, `~{2 d 4 h}`, `~{1h + 30min}`): list units from largest to smallest, each once. A trailing number without a unit is allowed right after hours (minutes) or minutes (seconds) if it is a whole number under 60 (`~{1h30}`, `~{2min30}`, not `~{1h75}`). With its unit written out, a number is read as written, even past 60: `~{1 h 75 min}` is 2 h 15 min. Decimals and fractions only apply to single-unit durations (`~{1.5 h}`, `~{1½ h}`, not `~{1.5h30}`).
 - **Clock notation** (`~{1:30:00}`, `~{1:30 h}`, `~{4:30 min}`): three parts always work (`hh:mm:ss`); two parts require a leading unit so `1:30` isn't ambiguous between hours and minutes.
-- **Prime notation** (`~{5'}`, `~{5'30"}`, `~{45"}`): `'` counts whole minutes and `"` counts whole seconds (typographic quotes `’`, `′`, `″`, and `''` also work).
+- **Prime notation** (`~{5'}`, `~{5'30"}`, `~{45"}`): `'` counts whole minutes and `"` counts whole seconds (typographic quotes `’`, `′`, `″`, and `''` also work). Primes read like a clock: after minutes, seconds stay under 60 (`~{6'30"}`, not `~{5'90"}`).
 - **Decimals** (`~{1.5 h}`, `~{1,5 h}`): periods and commas both work (see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
 
 :::caution
@@ -1645,7 +1645,7 @@ If a ratio cannot be resolved, it remains as written in views and shopping lists
 ### Scope, intermediates & scaling
 
 - **Same scope as percentages**: target an `@&ingredient` declared earlier in the section (repeated uses sum up), an earlier option in an alternative group, or an `&intermediate`.
-- **Whole intermediates**: if a section consumes an intermediate without a quantity (`Roll out the &dough`), ratios and percentages (`@salt{2 g / 100 g &dough}`, `@sugar{5% &dough}`) resolve against the total mass of the section that produces it—provided only that section consumes it.
+- **Whole intermediates**: if a section consumes an intermediate without a quantity (`Roll out the &dough`), ratios and percentages (`@salt{2 g / 100 g &dough}`, `@sugar{5% &dough}`) resolve against the total mass of the section that produces it—provided only that section consumes it. An intermediate made by a step (`Mix … ->&dough`) has no mass of its own: write the amount used (`&dough{800 g}`), or make it in its own section.
 - **References & composites**: ratios and percentages work on homemade intermediate references (`&stock{250 ml / 100 g @&rice}`), but are not yet supported on composite parents (`@eggs{1}<@box{1 / 100 g @&flour}>`).
 - **Scaling**: scaling a recipe recalculates ratios from the scaled targets (unless the target is fixed with `@=`). Marking a ratio itself with `=` is not allowed.
 
@@ -2745,6 +2745,7 @@ For a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with
 - `incompatibleUnits`: mismatched counts (`2 slices` against cloves), a weight against a named piece, or trailing words (`100 g of`).
 - `missingDensity` / `missingUnitWeight`: converting between weight and volume or pieces requires `density` or `unit_weight` in the database.
 - `wholeUseAmbiguous` / `producerMassUnknown`: for an intermediate used whole (`&dough`), either another section also consumes it or the producing section's mass is incomplete.
+- `stepProducer`: the intermediate used whole is made by a step (`Mix … ->&dough`), not by a whole section, and only a section's mass is weighed. Write the amount used (`&dough{500 g}`), or make it in its own section.
 
 **Fix**: match the target's unit, add `density` or `unit_weight` to the database, or specify the intermediate's used quantity (`&dough{500 g}`).
 
@@ -2778,6 +2779,7 @@ Emitted when a [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-q
 | `rangeAfterMinus` | `{1 cup - 1-2 tbsp}` | Put ranges on added terms, or write the total as a range. |
 | `minusAcrossFamilies` | `{1 cup - 20 g}` | Subtract only from the same unit family (volume from volume, weight from weight). |
 | `zeroDenominator` | `{1/0 cup}`, `{1/0% &dough}`, `#pan{1/0}`, `^{1/0 °C}` | Division by zero is ignored; write a valid fraction (`1/2`). |
+| `zeroRatioDenominator` | `{2 g / 0 g @&flour}`, `~{15 min / 0 g @&roast}` | A ratio per nothing is ignored; write the amount it is per (`/ 100 g`). |
 | `relativeNotSupported` | `@eggs{3}<@box{50% @&flour}`, `@eggs{1}<@box{1 / 100 g @&flour}` | Percentages and ratios are not supported on composite parents yet; specify the parent's quantity (`@eggs{3}<@box{1}`). |
 
 Subtraction is checked per unit family: `{1 cup - 2 tbsp + 30 g}` is valid (2 tbsp are subtracted from 1 cup), while `{1 cup - 20 g}` has no weight to subtract from.
