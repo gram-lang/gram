@@ -240,7 +240,24 @@ export function termsTotal(terms: readonly Term[]): TermsTotal | null {
 	};
 }
 
-export type MergeMode = "unit" | "ladder";
+/**
+ * How terms are grouped (`mergeKey`): by unit, by ladder of units (`cup` and
+ * `tbsp`), or by family, the kind of amount a unit measures (`familyOf`:
+ * every mass together, every volume together).
+ */
+export type MergeMode = "unit" | "ladder" | "family";
+
+/**
+ * The kind of amount a unit measures, for telling the families of a sum
+ * apart: a mass, a volume, or (a unit Gram cannot convert, `gousse`) that
+ * unit itself.
+ */
+export function familyOf(unit: string | null): string {
+	const key = normalizeUnit(unit);
+	if (UNIT_CONVERSIONS.mass.map[key] !== undefined) return "mass";
+	if (UNIT_CONVERSIONS.volume.map[key] !== undefined) return "volume";
+	return `unit:${key}`;
+}
 
 /** A total read back as one term: a negative total becomes a term taken away. */
 function totalAsTerm(total: TermsTotal): Term {
@@ -265,12 +282,14 @@ function totalAsTerm(total: TermsTotal): Term {
 }
 
 /**
- * The key `mergeTerms` groups a term's unit under: its ladder in `"ladder"`
- * mode (`cup` and `tbsp`, `g` and `kg`), otherwise the unit itself, its
- * spellings counted as one (`cup` / `cups`). A unit Gram does not know
- * (`gousse`) is only lowercased: `gousse` and `gousses` stay two units.
+ * The key `mergeTerms` groups a term's unit under: its family in `"family"`
+ * mode (`familyOf`), its ladder in `"ladder"` mode (`cup` and `tbsp`, `g`
+ * and `kg`), otherwise the unit itself, its spellings counted as one (`cup`
+ * / `cups`). A unit Gram does not know (`gousse`) is only lowercased:
+ * `gousse` and `gousses` stay two units.
  */
 export function mergeKey(unit: string | null, mode: MergeMode): string {
+	if (mode === "family") return familyOf(unit);
 	const step = mode === "ladder" ? ladderOf(unit) : null;
 	return step ? `ladder:${step.ladder.id}` : `unit:${normalizeUnit(unit)}`;
 }

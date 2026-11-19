@@ -12,9 +12,10 @@ import {
 	type TextQuantityAST,
 } from "@gram-lang/parser";
 import {
+	familyOf,
 	formatTerms,
+	groupTerms,
 	isTermValue,
-	normalizeUnit,
 	QuantityOverflowError,
 	scaleTerms,
 	type Term,
@@ -23,11 +24,13 @@ import {
 	type TermsTotal,
 	termsTotal,
 	termValueNumber,
-	UNIT_CONVERSIONS,
 } from "@gram-lang/i18n";
 // Imported from "./scale/types" (not the "./scale" barrel) to avoid a cycle.
 import { InvalidFactorError } from "./scale/types";
 import type { Usage } from "./types";
+
+/** Re-exported for kitchen's callers (the analyzer, the language server). */
+export { familyOf };
 
 /**
  * One term of a sum as the compiled recipe stores it (`Usage.parts`): its
@@ -249,32 +252,13 @@ export function numericTotal(terms: readonly Term[]): number | null {
 }
 
 /**
- * The kind of amount a unit measures, for telling the families of a sum
- * apart: a mass, a volume, or (a unit Gram cannot convert, `gousse`) that
- * unit itself.
- */
-export function familyOf(unit: string | null): string {
-	const key = normalizeUnit(unit);
-	if (UNIT_CONVERSIONS.mass.map[key] !== undefined) return "mass";
-	if (UNIT_CONVERSIONS.volume.map[key] !== undefined) return "volume";
-	return `unit:${key}`;
-}
-
-/**
  * The terms grouped by family (`familyOf`), groups in the order their first
  * term is written. Each group adds up to one amount (`termsTotal`): a sum of
  * several families counts as one occurrence per family, as if they had been
  * written apart.
  */
 export function termsByFamily(terms: readonly Term[]): Term[][] {
-	const groups = new Map<string, Term[]>();
-	for (const term of terms) {
-		const key = familyOf(term.unit);
-		const group = groups.get(key);
-		if (group) group.push(term);
-		else groups.set(key, [term]);
-	}
-	return [...groups.values()];
+	return groupTerms(terms, "family");
 }
 
 /**
