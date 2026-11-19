@@ -86,7 +86,7 @@ Si une proportion ne peut pas être résolue, elle conserve son écriture dans l
 ### Portée, préparations intermédiaires et mise à l'échelle
 
 - **Même portée que les pourcentages** : ciblez un `@&ingrédient` déclaré plus tôt dans la section (les mentions s'additionnent), une option précédente d'une alternative ou une `&préparation`.
-- **Préparations utilisées en entier** : si une section utilise une préparation intermédiaire sans quantité (`Étaler la &pâte`), proportions et pourcentages (`@sel{2 g / 100 g &pâte}`, `@sucre{5% &pâte}`) se calculent sur la masse totale de la section qui la produit, à condition qu'elle seule la consomme.
+- **Préparations utilisées en entier** : si une section utilise une préparation intermédiaire sans quantité (`Étaler la &pâte`), proportions et pourcentages (`@sel{2 g / 100 g &pâte}`, `@sucre{5% &pâte}`) se calculent sur la masse totale de la section qui la produit, à condition qu'elle seule la consomme. Une préparation qui sort d'une étape (`Mélanger … ->&pâte`) n'a pas de masse propre : indiquez la quantité utilisée (`&pâte{800 g}`), ou préparez-la dans sa propre section.
 - **Références et composites** : proportions et pourcentages fonctionnent sur les références à une préparation maison (`&bouillon{250 ml / 100 g @&riz}`), mais pas encore sur un parent composite (`@œufs{1}<@boîte{1 / 100 g @&farine}`).
 - **Mise à l'échelle** : changer l'échelle d'une recette recalcule les proportions à partir des cibles mises à l'échelle (sauf si la cible est figée avec `@=`). Le modificateur `=` sur la proportion elle-même est refusé.
 

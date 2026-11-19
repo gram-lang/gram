@@ -181,6 +181,12 @@ export interface RelativeQuantityAST extends NodeAST {
 	/** The percentage as written, e.g. `12,5` (so a comma can be told from a point). */
 	text?: string;
 	target: string;
+	/**
+	 * The target as its author wrote it (`pate`), when module composition
+	 * renamed `target` to an internal name (`dough$pate`): for what a reader
+	 * sees, never for finding the target. Omitted otherwise. Since 1.5.0.
+	 */
+	targetDisplayName?: string;
 	referenceType: "variable" | "ingredient";
 	/**
 	 * A number Gram refused, as written: a fraction over zero (`1/0`,
@@ -220,6 +226,12 @@ export interface RatioQuantityAST extends NodeAST {
 	/** A timer's numerator as written (`15 min`, `1:30 h`), read by `parseDuration`. Timers only. */
 	durationRaw?: string;
 	target: string;
+	/**
+	 * The target as its author wrote it (`pate`), when module composition
+	 * renamed `target` to an internal name (`dough$pate`): for what a reader
+	 * sees, never for finding the target. Omitted otherwise. Since 1.5.0.
+	 */
+	targetDisplayName?: string;
 	referenceType: "variable" | "ingredient";
 	/** The ratio as written between the braces, trimmed (`1 / 100 g @&flour`). */
 	raw: string;

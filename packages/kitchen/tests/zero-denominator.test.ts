@@ -47,3 +47,32 @@ describe("a fraction over zero (INVALID_QUANTITY, zeroDenominator)", () => {
 		expect(codes).toEqual(["INVALID_DURATION"]);
 	});
 });
+
+describe("a ratio per zero of its target (INVALID_QUANTITY, zeroRatioDenominator)", () => {
+	it("quotes the denominator, not the whole ratio as a number", () => {
+		const [warning, ...rest] = warningsOf(
+			"Add @flour{100 g} and @eggs{1 / 0 g @&flour}.",
+		);
+		expect(rest).toHaveLength(0);
+		expect(warning?.data).toEqual({ reason: "zeroRatioDenominator" });
+		expect(warning?.message).toBe(
+			'"eggs" is per "0 g": a ratio cannot be per nothing of its target: write the amount it is per (e.g. / 100 g). It is left out, as if no amount had been written.',
+		);
+	});
+
+	it("speaks of a timer, never of a type name, and of the total time", () => {
+		const [warning] = warningsOf("Roast @roast{1 kg} ~{15 min / 0 g @&roast}.");
+		expect(warning?.data).toEqual({ reason: "zeroRatioDenominator" });
+		expect(warning?.message).toStartWith('A timer is per "0 g": ');
+		expect(warning?.message).toEndWith("It is not counted in the total time.");
+		expect(warning?.message).not.toContain("fraction");
+	});
+
+	it("names a named timer", () => {
+		const [warning] = warningsOf(
+			"Roast @roast{1 kg} ~roast{15 min / 0 kg @&roast}.",
+		);
+		expect(warning?.message).toStartWith('Timer "roast" is per "0 kg": ');
+		expect(warning?.message).toEndWith("It is not counted in the total time.");
+	});
+});

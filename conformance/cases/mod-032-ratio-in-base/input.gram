@@ -1,0 +1,13 @@
+---
+title: Mod Ratio In Base
+---
+
+@use "./bases/pate.gram" as &dough
+
+## Garniture
+
+Mix @ricotta{250 g} and @spinach{200 g}. ->&pate
+
+## Montage
+
+Fill the &dough{} with the &pate{}.

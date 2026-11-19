@@ -106,14 +106,29 @@ export function formatClock(
 		.join("");
 }
 
+/**
+ * The 12-hour formatter of each language, built once: a run sheet writes
+ * dozens of times, and building an `Intl.DateTimeFormat` is the costly part.
+ */
+const twelveHourFormats = new Map<string, Intl.DateTimeFormat>();
+
+function twelveHourFormat(lang: string): Intl.DateTimeFormat {
+	let format = twelveHourFormats.get(lang);
+	if (!format) {
+		format = new Intl.DateTimeFormat(lang, {
+			timeZone: "UTC",
+			...clockFormatOptions("h12"),
+		});
+		twelveHourFormats.set(lang, format);
+	}
+	return format;
+}
+
 /** "13:05" in 12 hours, as `Intl` cuts it up: the hour, the minutes, the day period. */
 function clockParts(hhmm: string, lang?: string): Intl.DateTimeFormatPart[] {
 	const minutes =
 		(Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5))) % 1440;
-	return new Intl.DateTimeFormat(lang || "en", {
-		timeZone: "UTC",
-		...clockFormatOptions("h12"),
-	}).formatToParts(minutes * 60_000);
+	return twelveHourFormat(lang || "en").formatToParts(minutes * 60_000);
 }
 
 /**

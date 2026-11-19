@@ -178,6 +178,21 @@ Mix @flour{500 g} and @water{60% @&flour}.
 			"mass of the section that makes it is unknown",
 		);
 	});
+
+	it("says a step makes it, for a ratio, a share and a timer", () => {
+		const result = run(
+			"## Dough\n\nMix @flour{500 g} and @water{300 g}. ->&dough\n\n## Bake\n\nRoll out the &dough, add @salt{2 g / 100 g &dough} and @sugar{1% &dough}, bake ~{30 min / 1 kg &dough}.\n",
+		);
+		const said = result.warnings.filter(
+			(w) => w.code === WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS,
+		);
+		expect(said.map((w) => w.item).sort()).toEqual(["Timer", "salt", "sugar"]);
+		for (const warning of said) {
+			expect(warning.message).toContain(
+				"'&dough' is made by a step, not by a whole section",
+			);
+		}
+	});
 });
 
 describe("the schedule of a proportional time resolved here", () => {

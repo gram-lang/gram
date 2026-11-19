@@ -25,7 +25,7 @@ describe("audit configuration", () => {
 	});
 
 	it("finds every trusted syntax page, in both languages", () => {
-		expect(TRUSTED_SYNTAX_FILES).toHaveLength(18);
+		expect(TRUSTED_SYNTAX_FILES).toHaveLength(20);
 		expect(AI_GENERATION_NOTES_FILES).toHaveLength(2);
 		for (const file of TRUSTED_SYNTAX_FILES) {
 			expect(file).toMatch(/\.mdx?$/);

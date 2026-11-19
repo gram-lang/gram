@@ -453,6 +453,17 @@ function checkRelativeParent(ctx: ProcessorContext, item: IngredientAST) {
 }
 
 /**
+ * A share's or a ratio's target as its author wrote it (`pate`), for what a
+ * reader sees: the compiled `target`, its formula, its warnings. Module
+ * composition renames a base's private intermediate (`dough$pate`); the
+ * target is still found by `targetId`.
+ */
+const shownTarget = (quantity: {
+	target: string;
+	targetDisplayName?: string;
+}): string => quantity.targetDisplayName ?? quantity.target;
+
+/**
  * The target of a share or a ratio (`@&flour`, `&dough`): its id, and
  * whether it is where it should be. An intermediate must be defined; an
  * ingredient must appear earlier in the section (`secIngredients`, an
@@ -464,7 +475,11 @@ function checkRelativeTarget(
 	ctx: ProcessorContext,
 	registry: RecipeRegistry,
 	secIngredients: Usage[],
-	target: { target: string; referenceType: "variable" | "ingredient" },
+	target: {
+		target: string;
+		targetDisplayName?: string;
+		referenceType: "variable" | "ingredient";
+	},
 	item: { name: string; loc?: Location },
 	selfId?: string,
 ): { targetId: string; isGhost: boolean; isCircular: boolean } {
@@ -476,7 +491,7 @@ function checkRelativeTarget(
 		if (!ctx.definedIntermediates.has(targetName)) {
 			isGhost = true;
 			pushWarning(ctx, WarningCode.VARIABLE_NOT_FOUND, {
-				targetName,
+				targetName: shownTarget(target),
 				item: item.name,
 				loc: item.loc,
 			});
@@ -510,20 +525,24 @@ const ratioRefusedNumbers = (quantity: RatioQuantityAST) =>
 /**
  * True when a ratio can be read: none of its numbers was refused (already
  * said, `zeroDenominator`), and its denominator is not zero (`/ 0 g`, said
- * here). One that cannot reads as if no amount had been written.
+ * here, `zeroRatioDenominator`). One that cannot reads as if no amount had
+ * been written.
  */
 function isReadableRatio(
 	ctx: ProcessorContext,
 	quantity: RatioQuantityAST,
 	item: string,
 	loc?: Location,
+	type?: "Timer",
 ): boolean {
 	if (ratioRefusedNumbers(quantity).length > 0) return false;
 	if (quantity.denominator.value?.value === 0) {
+		const { unit } = quantity.denominator;
 		pushWarning(ctx, WarningCode.INVALID_QUANTITY, {
-			value: quantity.raw,
-			reason: "zeroDenominator",
+			value: unit ? `0 ${unit}` : "0",
+			reason: "zeroRatioDenominator",
 			item,
+			...(type && { type }),
 			loc: quantity.loc ?? loc,
 		});
 		return false;
@@ -544,7 +563,7 @@ function ratioSpecOf(
 			value: quantity.denominator.value?.value ?? 1,
 			unit: quantity.denominator.unit,
 		},
-		target: quantity.target,
+		target: shownTarget(quantity),
 		targetId,
 		referenceType: quantity.referenceType,
 		raw: quantity.raw,
@@ -576,7 +595,7 @@ function writeRatioUsage(
 	usage.dependencies = [target.targetId];
 	usage.formula = {
 		raw: quantity.raw,
-		target: quantity.target,
+		target: shownTarget(quantity),
 		ratio: spec,
 		isGhost: target.isGhost,
 	};
@@ -686,15 +705,16 @@ function processIngredient(
 		const usage = createCleanUsage(item, id, ctx.usageCounter, ctx.options);
 		// Defer evaluation to analyzer. The percentage's `text` stays in the
 		// AST: the compiled JSON keeps the shape 1.3.0 published.
-		const { text: _text, ...qty } = rel;
+		const { text: _text, targetDisplayName: _shown, ...qty } = rel;
+		qty.target = shownTarget(rel);
 		usage.qty = qty;
 		usage.unit = null;
 		if (target.isCircular) usage.isCircular = true;
 
 		usage.dependencies = [target.targetId];
 		usage.formula = {
-			raw: `${rel.percent}% of ${rel.target}`,
-			target: rel.target,
+			raw: `${rel.percent}% of ${shownTarget(rel)}`,
+			target: shownTarget(rel),
 			percent: rel.percent,
 			isGhost: target.isGhost,
 		};
@@ -901,14 +921,15 @@ function processReference(
 				{ name: item.displayName ?? cleanName, loc: item.loc },
 				id,
 			);
-			const { text: _text, ...qty } = rel;
+			const { text: _text, targetDisplayName: _shown, ...qty } = rel;
+			qty.target = shownTarget(rel);
 			obj.qty = qty;
 			obj.unit = null;
 			if (target.isCircular) obj.isCircular = true;
 			obj.dependencies = [target.targetId];
 			obj.formula = {
-				raw: `${rel.percent}% of ${rel.target}`,
-				target: rel.target,
+				raw: `${rel.percent}% of ${shownTarget(rel)}`,
+				target: shownTarget(rel),
 				percent: rel.percent,
 				isGhost: target.isGhost,
 			};
@@ -989,7 +1010,7 @@ function processTimer(
 			);
 			return obj;
 		}
-		if (!isReadableRatio(ctx, ratio, name, item.loc)) return obj;
+		if (!isReadableRatio(ctx, ratio, name, item.loc, "Timer")) return obj;
 		const target = checkRelativeTarget(ctx, registry, secIngredients, ratio, {
 			name,
 			loc: item.loc,

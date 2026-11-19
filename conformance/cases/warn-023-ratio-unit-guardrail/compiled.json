@@ -604,14 +604,14 @@
   "warnings": [
     {
       "code": "INVALID_QUANTITY",
-      "message": "Number \"1 / 0 g @&flour\" of \"a\" is not read: a fraction cannot have 0 below the bar (write e.g. 1/2). It is left out, as if no number had been written.",
+      "message": "\"a\" is per \"0 g\": a ratio cannot be per nothing of its target: write the amount it is per (e.g. / 100 g). It is left out, as if no amount had been written.",
       "item": "a",
       "loc": {
         "start": 79,
         "end": 94
       },
       "data": {
-        "reason": "zeroDenominator"
+        "reason": "zeroRatioDenominator"
       }
     },
     {

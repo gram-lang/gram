@@ -48,7 +48,9 @@ export interface DurationSide {
  * - `clockFormat`: a malformed clock (`1:5 h`, `1:30 d`, more than three parts);
  * - `unitOrder`: units not from the largest to the smallest (`30min 1h`);
  * - `duplicateUnit`: the same unit twice (`1h 2h`);
- * - `overflow60`: 60 or more after an hour or a minute (`1h75`, `1:75 h`);
+ * - `overflow60`: 60 or more after an hour or a minute, where the unit is
+ *   implied, in a clock or with a prime (`1h75`, `1:75 h`, `5'90"`); with its
+ *   unit written out it is read as written (`1 h 75 min` is 2 h 15 min);
  * - `decimalInCompound`: a decimal or a fraction in a duration of several terms (`1.5h30`);
  * - `decimalPrime`: a decimal or a fraction with a prime (`1.5'`);
  * - `bareNumber`: a number with no unit where none can be implied (`1j3`, `1 30 min`);
@@ -406,11 +408,13 @@ function analyzeTerms(tokens: Token[]): Analysis {
 		}
 
 		const unit = next.unit as DurationUnit;
+		const last = parts[parts.length - 1];
 		if (next.kind === "prime") {
 			if (num.num !== "int") return fail("decimalPrime");
+			// Primes read as a clock (`5'30"` is 5:30): its rule, not a unit's.
+			if (last && num.value >= 60) return fail("overflow60");
 			primes++;
 		}
-		const last = parts[parts.length - 1];
 		if (last) {
 			if (last.unit === unit) return fail("duplicateUnit");
 			if (RANK[last.unit] > RANK[unit]) return fail("unitOrder");

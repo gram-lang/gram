@@ -35,7 +35,10 @@ import {
  * - `missingDensity`: across mass and volume, with no density;
  * - `missingUnitWeight`: between pieces and a weight, with no unit weight;
  * - `wholeUseAmbiguous`, `producerMassUnknown`: an intermediate used whole,
- *   when its mass cannot be told (analyzer).
+ *   when its mass cannot be told (analyzer);
+ * - `stepProducer`: an intermediate used whole that a step makes
+ *   (`Mix … ->&dough`), not a section: only a section's mass is weighed
+ *   (analyzer). Since 1.5.0.
  */
 export type RatioFailure =
 	| "deferred"
@@ -44,7 +47,8 @@ export type RatioFailure =
 	| "missingDensity"
 	| "missingUnitWeight"
 	| "wholeUseAmbiguous"
-	| "producerMassUnknown";
+	| "producerMassUnknown"
+	| "stepProducer";
 
 export type RatioResolution =
 	| { ok: true; amount: Term }
