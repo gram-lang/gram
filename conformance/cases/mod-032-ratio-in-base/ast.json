@@ -1,0 +1,217 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Ratio In Base"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "dough",
+          "loc": {
+            "start": 62,
+            "end": 68
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 34,
+        "end": 69
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Garniture",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 84,
+                "end": 88
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "ricotta",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 250,
+                  "text": "250"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 97,
+                  "end": 102
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 88,
+                "end": 103
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 104,
+                "end": 108
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "spinach",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 117,
+                  "end": 122
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 108,
+                "end": 123
+              }
+            },
+            {
+              "type": "Text",
+              "value": ". ",
+              "loc": {
+                "start": 123,
+                "end": 125
+              }
+            },
+            {
+              "type": "IntermediateDecl",
+              "name": "pate",
+              "loc": {
+                "start": 125,
+                "end": 132
+              }
+            }
+          ],
+          "loc": {
+            "start": 84,
+            "end": 134
+          }
+        }
+      ],
+      "loc": {
+        "start": 70,
+        "end": 134
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Montage",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Fill the ",
+              "loc": {
+                "start": 146,
+                "end": 155
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough",
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 162,
+                  "end": 162
+                }
+              },
+              "loc": {
+                "start": 155,
+                "end": 163
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with the ",
+              "loc": {
+                "start": 164,
+                "end": 173
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 179,
+                  "end": 179
+                }
+              },
+              "loc": {
+                "start": 173,
+                "end": 180
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 180,
+                "end": 181
+              }
+            }
+          ],
+          "loc": {
+            "start": 146,
+            "end": 182
+          }
+        }
+      ],
+      "loc": {
+        "start": 134,
+        "end": 182
+      }
+    }
+  ]
+}
