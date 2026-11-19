@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import Layout from "../../../layouts/Layout.astro";
 import { resolveLocalizedPosts } from "../../../lib/resolveLocalizedPosts";
 import BlogPostLayout from "../../../components/BlogPostLayout.astro";
+import { getBlogPostOgSlug, ogPathFromSlug } from "../../../lib/og/catalog";
 
 export async function getStaticPaths() {
 	const allPosts = await getCollection("blog");
@@ -12,14 +13,14 @@ export async function getStaticPaths() {
 		const slug = post.id.replace(/^(en|fr)\//, "").replace(/\.md$/, "");
 		return {
 			params: { slug },
-			props: { post },
+			props: { post, slug },
 		};
 	});
 }
 
-const { post } = Astro.props;
+const { post, slug } = Astro.props;
 ---
 
-<Layout title={post.data.title} description={post.data.description} currentLang="fr">
+<Layout title={post.data.title} description={post.data.description} currentLang="fr" ogImage={ogPathFromSlug(getBlogPostOgSlug("fr", slug))}>
   <BlogPostLayout post={post} locale="fr" basePath="/fr/blog" />
 </Layout>

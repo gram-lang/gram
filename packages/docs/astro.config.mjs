@@ -30,8 +30,6 @@ function yamlData() {
     }
   };
 }
-const SITE_URL = 'https://gram-lang.org';
-
 // https://astro.build/config
 export default defineConfig({
   site: 'https://gram-lang.org',
@@ -73,6 +71,7 @@ export default defineConfig({
       ],
       components: {
         Footer: './src/components/Footer.astro',
+        Head: './src/components/Head.astro',
         Sidebar: './src/components/Sidebar.astro',
         SiteTitle: './src/components/SiteTitle.astro',
         ThemeSelect: './src/components/ThemeSelect.astro'
@@ -221,34 +220,6 @@ export default defineConfig({
         }
       ],
       head: [
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'og:image',
-            content: `${SITE_URL}/gram-social-wide.png`
-          }
-        },
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'og:image:width',
-            content: '1200'
-          }
-        },
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'og:image:height',
-            content: '630'
-          }
-        },
-        {
-          tag: 'meta',
-          attrs: {
-            name: 'twitter:image',
-            content: `${SITE_URL}/gram-social-wide.png`
-          }
-        },
         ...(isProd ? [{
           tag: /** @type {'script'} */ ('script'),
           attrs: {

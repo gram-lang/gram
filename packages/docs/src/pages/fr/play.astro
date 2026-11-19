@@ -1,12 +1,14 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import GramPlayground from "../../components/playground/GramPlayground.vue";
+import { getPlaygroundOgSlug, ogPathFromSlug } from "../../lib/og/catalog";
 ---
 
 <Layout
   title="Playground Gram"
   description="Écrivez des recettes Gram dans votre navigateur et visualisez en direct l'AST, le JSON compilé et le rendu final."
   currentLang="fr"
+  ogImage={ogPathFromSlug(getPlaygroundOgSlug("fr"))}
 >
   <div class="playground-wrapper">
     <GramPlayground client:only="vue" lang="fr" />

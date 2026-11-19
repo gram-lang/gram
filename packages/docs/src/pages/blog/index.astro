@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import BlogListLayout from "../../components/BlogListLayout.astro";
 import ArticleCard from "../../components/ArticleCard.astro";
+import { getBlogIndexOgSlug, ogPathFromSlug } from "../../lib/og/catalog";
 
 const allPosts = await getCollection("blog");
 const englishPosts = allPosts.filter((post) => post.data.locale === "en");
@@ -17,7 +18,7 @@ englishPosts.sort((a, b) => {
 const topics = [...new Set(englishPosts.map((post) => post.data.topic))];
 ---
 
-<Layout title="Blog" description="Latest updates and articles about the Gram project." currentLang="en">
+<Layout title="Blog" description="Latest updates and articles about the Gram project." currentLang="en" ogImage={ogPathFromSlug(getBlogIndexOgSlug("en"))}>
   <BlogListLayout
     title="Blog"
     description="Latest updates, tutorials, and thoughts about the Gram project."
