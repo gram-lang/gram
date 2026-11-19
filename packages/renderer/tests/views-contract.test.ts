@@ -98,6 +98,15 @@ const PROBES: { [K in SettingKey]: ViewSettings[K] } = {
 	nutritionBasis: "per100g",
 	bakersMathOnly: true,
 	stepQuantities: "hide",
+	clock: "12h",
+};
+
+/**
+ * Where a setting shows, when it is not in the default serving: a time of
+ * day is only written on the calendar, with a serving time.
+ */
+const PROBE_SERVING: Partial<Record<SettingKey, PrepareViewsOptions>> = {
+	clock: SERVINGS["on the calendar"]!,
 };
 
 const ALL_CHANGED: Partial<ViewSettings> = PROBES;
@@ -155,9 +164,10 @@ for (const view of views) {
 
 			for (const key of view.honors) {
 				it(`follows ${key} in ${format}`, () => {
-					expect(out(view.id, format, { [key]: PROBES[key] })).not.toBe(
-						out(view.id, format),
-					);
+					const serving = PROBE_SERVING[key] ?? {};
+					expect(
+						out(view.id, format, { [key]: PROBES[key] }, serving),
+					).not.toBe(out(view.id, format, {}, serving));
 				});
 			}
 
@@ -166,8 +176,9 @@ for (const view of views) {
 			);
 			for (const key of ignored) {
 				it(`ignores ${key} in ${format}, which it does not honor`, () => {
-					expect(out(view.id, format, { [key]: PROBES[key] })).toBe(
-						out(view.id, format),
+					const serving = PROBE_SERVING[key] ?? {};
+					expect(out(view.id, format, { [key]: PROBES[key] }, serving)).toBe(
+						out(view.id, format, {}, serving),
 					);
 				});
 			}

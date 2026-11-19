@@ -1,5 +1,10 @@
 import { fillTemplate, getDictionary } from "@gram-lang/i18n";
 import type { RunSheetDay, RunSheetThread } from "@gram-lang/scheduler";
+import {
+	type HourCycle,
+	formatClock,
+	formatClockRange,
+} from "../../shared/clock";
 import { workingDayLabel } from "../../shared/mise-en-place";
 import {
 	durationFormatter,
@@ -18,6 +23,39 @@ export function roundedClock(local: string, step: number): string {
 	const rounded = (Math.round(minutes / step) * step) % 1440;
 	return `${pad(Math.floor(rounded / 60))}:${pad(rounded % 60)}`;
 }
+
+/** What writes a time of day: the reader's clock, in the words' language. */
+type ClockOptions = {
+	hourCycle?: HourCycle | undefined;
+	lang?: string | undefined;
+};
+
+/** The time of day of a local date-time, to the minute, on the reader's clock. */
+export const clockOf = (local: string, options: ClockOptions) =>
+	formatClock(local.slice(11, 16), options.hourCycle, options.lang);
+
+/** The time of day of a local date-time, rounded to `step` minutes, on the reader's clock. */
+export const roundedClockOf = (
+	local: string,
+	step: number,
+	options: ClockOptions,
+) => formatClock(roundedClock(local, step), options.hourCycle, options.lang);
+
+/** Two local date-times, rounded to `step` minutes, as a range on the reader's clock: "1:05 – 2:00 PM". */
+export const roundedClockRangeOf = (
+	from: string,
+	to: string,
+	separator: string,
+	step: number,
+	options: ClockOptions,
+) =>
+	formatClockRange(
+		roundedClock(from, step),
+		roundedClock(to, step),
+		separator,
+		options.hourCycle,
+		options.lang,
+	);
 
 /** What a rest is called: its track, else the action of its step, else "Rest". */
 export const restName = (
@@ -47,6 +85,8 @@ export interface RunSheetWords {
 	/** The `renderer` words of the dictionary, in the language asked for. */
 	t: ReturnType<typeof getDictionary>["renderer"];
 	lang: string | undefined;
+	/** The clock of the times of day, as the options give it. */
+	hourCycle: HourCycle | undefined;
 	/** True for a plan on the calendar (a serving time), false for days before the service. */
 	calendar: boolean;
 	fmt: (minutes: number) => string;
@@ -61,6 +101,8 @@ export interface RunSheetWords {
 	waitName: (w: { section: number; step?: number; track?: string }) => string;
 	/** A local date-time as a clock, to the nearest minutes of the rounding. */
 	clock: (local: string) => string;
+	/** Two times as a range, a shared AM or PM written once: "1:05 – 2:00 PM". */
+	clockRange: (from: string, to: string, separator: string) => string;
 	/** A length rounded for display, never below the rounding step. */
 	rounded: (minutes: number) => number;
 	dayLabel: (day: RunSheetDay) => string;
@@ -131,13 +173,16 @@ export function runSheetWords(
 	return {
 		t,
 		lang: options.lang,
+		hourCycle: options.hourCycle,
 		calendar,
 		fmt,
 		tasks,
 		sectionTitle,
 		stepAction,
 		waitName,
-		clock: (local) => roundedClock(local, step),
+		clock: (local) => roundedClockOf(local, step, options),
+		clockRange: (from, to, separator) =>
+			roundedClockRangeOf(from, to, separator, step, options),
 		rounded: (minutes) => Math.max(step, Math.round(minutes / step) * step),
 		dayLabel: (day) => workingDayLabel(day.daysBefore, t),
 		rangeOf,

@@ -1,4 +1,5 @@
 import {
+	type ClockMode,
 	type CommentsMode,
 	describeEarliestServe,
 	describeRunSheet,
@@ -57,6 +58,9 @@ export interface PlanOptions {
 	miseEnPlace?: MiseEnPlaceMode;
 	rests?: RestChoice;
 	comments?: CommentsMode;
+	/** The clock of the run sheet, and the machine's locale for `auto`. */
+	clock?: ClockMode;
+	locale?: string;
 	scaleFactor?: number;
 	lang?: string;
 	paths?: Record<string, string>;
@@ -100,9 +104,11 @@ export async function planRecipe(
 			miseEnPlace: options.miseEnPlace,
 			rests: options.rests,
 			comments: options.comments,
+			clock: options.clock,
 		},
 		{
 			...(options.lang !== undefined && { lang: options.lang }),
+			...(options.locale !== undefined && { locale: options.locale }),
 			kitchen: {
 				timeZone: options.timeZone,
 				availability: options.availability,
@@ -132,7 +138,10 @@ export function formatPlan(
 ): string {
 	const { plan, sheet, earliest } = result;
 	const sentence = earliest
-		? describeEarliestServe(earliest, { lang })
+		? describeEarliestServe(earliest, {
+				lang,
+				hourCycle: result.views.hourCycle,
+			})
 		: undefined;
 	if (format !== "json") {
 		const written =
@@ -187,6 +196,7 @@ export function findPlan(
 	const lines = describeServeTimes(search, result.compiled, {
 		...range,
 		timeZone: result.context.timeZone,
+		hourCycle: result.views.hourCycle,
 		lang: options.lang,
 	});
 	return `${lines.map((l) => (format === "md" ? `- ${l}` : l)).join("\n")}\n`;
@@ -198,7 +208,11 @@ export function planToICS(
 	stamp: string,
 	lang?: string,
 ): string {
-	return buildICS(describeRunSheet(result.sheet, result.compiled, { lang }), {
-		stamp,
-	});
+	return buildICS(
+		describeRunSheet(result.sheet, result.compiled, {
+			lang,
+			hourCycle: result.views.hourCycle,
+		}),
+		{ stamp },
+	);
 }

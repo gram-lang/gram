@@ -100,6 +100,7 @@ describe("studio options", () => {
 			nutritionBasis: "auto",
 			bakersMathOnly: false,
 			stepQuantities: "show",
+			clock: "auto",
 			bakersReference: undefined,
 		});
 	});

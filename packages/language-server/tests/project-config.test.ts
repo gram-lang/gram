@@ -101,6 +101,19 @@ describe("readProjectConfigSync", () => {
 		});
 	});
 
+	describe("clock", () => {
+		it("reads 12h, 24h or auto", async () => {
+			expect((await read("clock: 12h\n")).clock).toBe("12h");
+			expect((await read("clock: 24h\n")).clock).toBe("24h");
+		});
+
+		it("is absent without it, or with a value it does not know", async () => {
+			expect((await read("timezone: Europe/Paris\n")).clock).toBeUndefined();
+			expect((await read("clock: 12\n")).clock).toBeUndefined();
+			expect((await read("clock: AM/PM\n")).clock).toBeUndefined();
+		});
+	});
+
 	describe("mealTimes", () => {
 		it("reads them as the CLI does, padding the hour", async () => {
 			expect((await read('mealTimes: ["9:30", "19:30"]\n')).mealTimes).toEqual([

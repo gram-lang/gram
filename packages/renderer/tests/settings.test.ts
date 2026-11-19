@@ -73,6 +73,7 @@ describe("parseViewSettings", () => {
 			nutritionBasis: "auto",
 			bakersMathOnly: false,
 			stepQuantities: "show",
+			clock: "auto",
 		});
 	});
 
@@ -86,6 +87,7 @@ describe("parseViewSettings", () => {
 				// Values are case-sensitive, as the editor and the CLI write them.
 				bakersMathOnly: "true",
 				stepQuantities: "hide",
+				clock: "12H",
 				unrelated: 1,
 			}),
 		).toEqual({
@@ -95,7 +97,9 @@ describe("parseViewSettings", () => {
 			nutritionBasis: "auto",
 			bakersMathOnly: false,
 			stepQuantities: "hide",
+			clock: "auto",
 		});
+		expect(parseViewSettings({ clock: "12h" }).clock).toBe("12h");
 	});
 
 	it("matches values exactly: no other case, no empty value", () => {

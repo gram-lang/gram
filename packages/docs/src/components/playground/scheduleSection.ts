@@ -1,6 +1,6 @@
 import type { GramLocale } from "@gram-lang/i18n";
 import type { MiseEnPlaceMode, RestChoice } from "@gram-lang/kitchen";
-import { VIEW_SETTINGS } from "@gram-lang/renderer";
+import { type HourCycle, VIEW_SETTINGS } from "@gram-lang/renderer";
 import { type PlanSettings, serveAtLabel } from "./planSettings";
 import { settingValueLabel } from "./settingLabels";
 
@@ -36,13 +36,17 @@ export function scheduleBadgeTitle(
 	state: ScheduleState,
 	t: GramLocale,
 	lang: string,
+	hourCycle?: HourCycle,
 ): string {
 	const badges = t.playground.badges;
 	const renderer = t.renderer;
 	const parts: string[] = [];
 	if (state.plan?.serveAt) {
 		parts.push(
-			badges.serveAt.replace("{time}", serveAtLabel(state.plan.serveAt, lang)),
+			badges.serveAt.replace(
+				"{time}",
+				serveAtLabel(state.plan.serveAt, lang, hourCycle),
+			),
 		);
 	}
 	if (state.plan?.customWeekdays) parts.push(badges.customHours);

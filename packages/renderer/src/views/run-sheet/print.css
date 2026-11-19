@@ -90,6 +90,10 @@
 .gram-run-sheet .schedule-row:last-child {
 	border-bottom: 0;
 }
+/* A range of 12-hour times, its AM and PM, is wider than in 24 hours. */
+.gram-run-sheet[data-clock="12h"] .schedule-row {
+	grid-template-columns: 10.5em 1fr;
+}
 .gram-run-sheet .schedule-time {
 	font-family: var(--gram-font-mono);
 	font-size: 8.5pt;

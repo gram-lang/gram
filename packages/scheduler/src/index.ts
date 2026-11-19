@@ -89,6 +89,12 @@ export type {
 	ServeSearch,
 } from "./serve";
 export {
+	type LocalDateTimeParse,
+	parseLocalDateTime,
+	parseTimeOfDay,
+	type TimeOfDayOptions,
+} from "./parse-time";
+export {
 	ALL_DAY,
 	type AvailabilityParse,
 	type AvailabilityProblem,

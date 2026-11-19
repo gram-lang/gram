@@ -30,7 +30,7 @@ import {
 	sectionProgram,
 	sectionSteps,
 } from "./parts";
-import { type RunSheetWords, restName } from "./words";
+import { type RunSheetWords, clockOf, restName } from "./words";
 
 /**
  * What the pass over the days and the visits of a run sheet reads and keeps:
@@ -316,7 +316,7 @@ function describeLeaving(
 		if (when) leaving.push(fillTemplate(t.runSheetNextVisit, { when }));
 	} else if (calendar && sheet.serveAt) {
 		leaving.push(
-			fillTemplate(t.runSheetServeAt, { time: sheet.serveAt.slice(11, 16) }),
+			fillTemplate(t.runSheetServeAt, { time: clockOf(sheet.serveAt, w) }),
 		);
 	} else {
 		leaving.push(t.runSheetServe);
@@ -448,12 +448,12 @@ function describeVisit(
 /** One day: its rows of the schedule, its visits, the rests the plan moved, and its events. */
 export function describeDay(pass: VisitPass, day: RunSheetDay, d: number) {
 	const { sheet, w } = pass;
-	const { t, lang, calendar, clock, rounded, fmt, dayLabel } = w;
+	const { t, lang, calendar, clockRange, rounded, fmt, dayLabel } = w;
 	const heading =
 		calendar && day.date ? longDate(day.date, lang) : dayLabel(day);
 	const slotOf = (p: RunSheetVisit) =>
 		calendar && p.startLocal && p.endLocal
-			? `${clock(p.startLocal)} → ${clock(p.endLocal)}`
+			? clockRange(p.startLocal, p.endLocal, " → ")
 			: fillTemplate(t.runSheetAbout, {
 					duration: fmt(rounded(p.end - p.start)),
 				});

@@ -63,6 +63,13 @@ describe("the schedule section's dot", () => {
 		);
 	});
 
+	it("writes the serving time on the reader's clock", () => {
+		const state = { plan: { ...plan, serveAt: "2026-10-11T13:00" } };
+		const title = scheduleBadgeTitle(state, en, "en", "h12");
+		expect(title.replace(/\u202f/g, " ")).toContain("1:00 PM");
+		expect(title).not.toContain("13:00");
+	});
+
 	it("says the section is active when only the defaults are in use", () => {
 		expect(scheduleBadgeTitle({ plan }, en, "en")).toBe(
 			en.playground.badges.active,

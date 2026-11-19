@@ -7,7 +7,12 @@ import {
 	settingValueLabel,
 } from "./settingLabels";
 
-const KEYS: ChoiceSettingKey[] = ["miseEnPlace", "rests", "nutritionBasis"];
+const KEYS: ChoiceSettingKey[] = [
+	"miseEnPlace",
+	"rests",
+	"nutritionBasis",
+	"clock",
+];
 
 describe("the words of the setting values", () => {
 	it("offers every value of the descriptor, in its order", () => {

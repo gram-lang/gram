@@ -1,5 +1,5 @@
 import type { ScaleRequest } from "@gram-lang/kitchen";
-import { isCalendarDate } from "@gram-lang/scheduler";
+import { parseLocalDateTime } from "@gram-lang/scheduler";
 
 /**
  * What the cook chose for this sitting with one recipe, sent by the client in
@@ -18,17 +18,11 @@ export interface Session {
 	bakersReference?: string;
 }
 
-const SERVE_AT = /^(\d{4}-\d{2}-\d{2})[T ](\d{1,2}):(\d{2})$/;
-
-/** "2026-10-11 9:30" or "2026-10-11T09:30" as "2026-10-11T09:30"; anything else, `undefined`. */
+/** "2026-10-11 9:30", "2026-10-11T09:30" or "2026-10-11 9:30 am" as "2026-10-11T09:30"; anything else, `undefined`. */
 function parseServeAt(raw: unknown): string | undefined {
 	if (typeof raw !== "string") return undefined;
-	const m = SERVE_AT.exec(raw.trim());
-	if (!m || !isCalendarDate(m[1]!)) return undefined;
-	const hour = Number(m[2]);
-	const minute = Number(m[3]);
-	if (hour > 23 || minute > 59) return undefined;
-	return `${m[1]}T${m[2]?.padStart(2, "0")}:${m[3]}`;
+	const parsed = parseLocalDateTime(raw);
+	return parsed.ok ? parsed.local : undefined;
 }
 
 const isPositive = (value: unknown): value is number =>

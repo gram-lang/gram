@@ -1,4 +1,5 @@
 import { layout } from "./layout";
+import { parseTimeOfDay } from "./parse-time";
 import type {
 	ProjectedPlan,
 	ProjectionContext,
@@ -12,24 +13,23 @@ import { addDays, parseClock, parseInstant, toLocalIso } from "./time";
 /** The meals a service time is looked for at, when none is given. */
 export const DEFAULT_MEAL_TIMES = ["12:30", "20:00"];
 
-const MEAL_TIME = /^([01]?\d|2[0-3]):([0-5]\d)$/;
-
 export type MealTimesParse =
 	| { ok: true; times: string[] }
 	/** `part`: the first time that is not like "20:00". */
 	| { ok: false; part: string };
 
 /**
- * Meal times written "HH:MM" ("9:30" is read as "09:30"): the syntax of
+ * Meal times written in 24 hours ("20:00", "9:30" read as "09:30") or in 12
+ * hours ("8pm", "12:30 PM"), as "HH:MM": the syntax of
  * `gram plan --meal-times` and of the `mealTimes` setting of a project. Data,
  * never words: each surface says what went wrong its own way.
  */
 export function parseMealTimes(values: readonly string[]): MealTimesParse {
 	const times: string[] = [];
 	for (const value of values) {
-		const m = MEAL_TIME.exec(value.trim());
-		if (!m) return { ok: false, part: value };
-		times.push(`${m[1]!.padStart(2, "0")}:${m[2]}`);
+		const time = parseTimeOfDay(value);
+		if (time === null) return { ok: false, part: value };
+		times.push(time);
 	}
 	return { ok: true, times };
 }

@@ -26,7 +26,7 @@ export const runSheetView = {
 	id: "runSheet",
 	kind: "renderer",
 	formats: ["html", "markdown", "text", "print"],
-	honors: ["miseEnPlace", "rests", "comments"],
+	honors: ["miseEnPlace", "rests", "comments", "clock"],
 	needs: ["runSheet"],
 	render(input: ViewInput, format: Format, surface: SurfaceOptions = {}) {
 		const write = WRITERS[format];
@@ -38,6 +38,7 @@ export const runSheetView = {
 		const lang = surface.lang ?? input.lang;
 		return write(sheet, input.recipe, {
 			comments: input.settings.comments,
+			hourCycle: input.hourCycle,
 			...(lang !== undefined && { lang }),
 			...(surface.formatDuration && { formatDuration: surface.formatDuration }),
 		});

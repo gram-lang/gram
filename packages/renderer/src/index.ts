@@ -52,6 +52,7 @@ export type {
 	ViewSchedule,
 } from "./prepare-views";
 export {
+	CLOCK_MODES,
 	COMMENTS_MODES,
 	DEFAULT_RECIPE_SETTINGS,
 	DEFAULT_VIEW_SETTINGS,
@@ -68,6 +69,7 @@ export {
 export type {
 	AnySetting,
 	ChoiceSetting,
+	ClockMode,
 	FlagSetting,
 	RecipeSettings,
 	SettingDescriptor,
@@ -81,6 +83,16 @@ export type {
 	ResolvedBasis,
 } from "./shared/nutrition";
 export { type ElementFormat, formatElement } from "./shared/element";
+export {
+	chooseClock,
+	clockFormatOptions,
+	formatClock,
+	formatClockRange,
+	type HourCycle,
+	hourCycleOf,
+	resolveHourCycle,
+	systemLocale,
+} from "./shared/clock";
 export {
 	formatUsageQuantity,
 	type QuantityContext,

@@ -88,7 +88,7 @@ const html = toHTML(analyzed.result, viewSettingsToRendererOptions(view));
 
 | Export | Description |
 |---|---|
-| `VIEW_SETTINGS` | Réglages d'affichage : `miseEnPlace`, `rests`, `comments`, `nutritionBasis`, `bakersMathOnly`, `stepQuantities`. |
+| `VIEW_SETTINGS` | Réglages d'affichage : `miseEnPlace`, `rests`, `comments`, `nutritionBasis`, `bakersMathOnly`, `stepQuantities`, `clock` <Since v="1.5.0" />. |
 | `RECIPE_SETTINGS` | Calculs de l'analyseur (tous activés par défaut) : `bakersMath`, `massStandardization`, `yieldCalculation`, `nutritionEstimation`. |
 | `SETTINGS` | Combinaison des réglages de vue et de recette dans une seule liste. |
 | `parseViewSettings(raw)`, `parseRecipeSettings(raw)` | Analysent les réglages depuis un objet de configuration quelconque ; chaque valeur absente ou inconnue prend sa valeur par défaut. |
@@ -170,6 +170,7 @@ Le plan de marche d'une recette sans heure de service cible s'obtient via `runSh
 | `lang` | `string` | Code de langue (`'en'`, `'fr'`) pour les libellés et le format des dates. |
 | `roundTo` | `number` | Affichage uniquement : arrondi des heures à N minutes (par défaut : `5`). Les calculs internes restent exacts. |
 | `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé. |
+| `hourCycle` <Since v="1.5.0" /> | `'h23' \| 'h12'` | La façon d'écrire l'heure : `'h23'` (par défaut, `13:00`) ou `'h12'` (`1:00 PM`, avec les marques de la langue de `lang`). Lue aussi par `describeServeTimes()` et `describeEarliestServe()`. `prepareViews()` la déduit du réglage `clock`. |
 | `comments` | `'show' \| 'hide'` | Affiche (par défaut) ou masque les commentaires de la recette dans les étapes. Lorsqu'ils sont affichés, une note isolée sur une ligne se place sous son étape et une note en fin de ligne reste intégrée à la phrase, entre parenthèses ; le rendu HTML les distingue discrètement en petits caractères grisés. |
 
 ### `RunSheetModel`
@@ -198,6 +199,28 @@ sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): Sec
 sectionSteps(compiled, section: number, stepIndexes: number[], { lang?, comments?, formatDuration? }): ProgramStep[]
 // { number?, action?, comment?, html, md, text } : une étape numérotée comme dans la vue Recette, ou une note isolée
 ```
+
+### L'horloge du lecteur <Since v="1.5.0" />
+
+Le réglage d'affichage `clock` (`'auto'`, `'12h'`, `'24h'`, `'auto'` par défaut) détermine comment le plan de marche et les horaires suggérés écrivent l'heure. C'est l'horloge de la personne qui lit, pas celle de la recette : `'auto'` suit la région de sa locale, que `prepareViews()` reçoit dans son option `locale` (`'en-US'`, `'fr-FR'`), distincte de `lang`, la langue des textes. Une locale dont la région écrit en 12 heures (`en-US`, `en-CA`, `en-AU`, `en-IN`) donne `1:00 PM` ; toutes les autres, une locale sans région (`'en'`) et l'absence de locale donnent `13:00`. Le moteur de rendu ne devine jamais : c'est la surface qui transmet la locale (le playground `navigator.language`, le CLI et le serveur de langage `systemLocale(process.env, process.platform)`). Quelle que soit l'horloge, les données restent en ISO local (`serveAt: "2026-10-11T13:00"`).
+
+```typescript
+import { prepareViews, resolveHourCycle, systemLocale } from '@gram-lang/renderer';
+
+const views = prepareViews(compiled, { clock: 'auto' }, { lang: 'fr', locale: 'en-US', kitchen, serveAt });
+views.hourCycle;                              // "h12" : le plan de marche écrit « 1:00 PM »
+resolveHourCycle('auto', 'fr-FR');            // "h23"
+systemLocale({ LANG: 'en_US.UTF-8' });        // "en_US.UTF-8"
+```
+
+| Export | Description |
+|---|---|
+| `resolveHourCycle(clock, locale)` | `'h12'` ou `'h23'` : l'horloge que nomme le réglage, sinon (`'auto'`) celle de `locale`. |
+| `hourCycleOf(locale)` | L'horloge d'une locale, `'h23'` si elle ne précise pas de région ou ne se lit pas ; une locale POSIX (`en_US.UTF-8`) est lue comme sa balise BCP 47. |
+| `systemLocale(env, platform?)` | La locale d'une machine : la première définie parmi `LC_ALL`, `LC_TIME` et `LANG` (`C` et `POSIX` n'en désignent aucune) ; sous Windows (`platform: 'win32'`), celle de l'environnement d'exécution. |
+| `chooseClock(...choices)` | La première horloge réellement choisie, `'auto'` valant absence de choix : `chooseClock(option, reglageDuProjet)`. |
+| `formatClock(hhmm, hourCycle, lang?)` | `"13:05"` écrit sur une horloge : tel quel en 24 heures, `"1:05 PM"` en 12. |
+| `clockFormatOptions(hourCycle)` | Les options `Intl.DateTimeFormat` d'une heure sur cette horloge, pour un format qui écrit aussi la date. |
 
 Rien n'est inventé : noms et quantités sont ceux du fichier `.gram`, et le plan de marche restitue fidèlement les étapes telles qu'elles figurent dans la recette. Le mode du kit (`perSection`, `perDay`, `upfront`) se lit dans `RunSheet.recipes[].miseEnPlace` (repris par `RunSheetModel.miseEnPlace`) : le moteur de rendu ne propose pas d'option dédiée pour ce réglage. `describeServeTimes()` et `describeEarliestServe()` formulent de la même façon en clair le résultat de `findServeTimes()` et `earliestServe()`.
 

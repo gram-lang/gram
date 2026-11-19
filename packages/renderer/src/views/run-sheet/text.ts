@@ -31,6 +31,11 @@ export function runSheetToText(
 		for (const p of model.problems) out.push(`  ! ${p}`);
 		out.push("");
 	}
+	// "21:40 – 22:00" fits in 14 columns; "9:40 PM – 10:00 PM" needs more.
+	const timeWidth = Math.max(
+		14,
+		...model.schedule.map((row) => (row.time ?? "").length + 1),
+	);
 	for (const row of model.schedule) {
 		const lead = (row.day ?? "").padEnd(9);
 		if (row.kind === "thread") {
@@ -38,7 +43,7 @@ export function runSheetToText(
 		} else {
 			const mark = row.kind === "serve" ? "★" : "▮";
 			out.push(
-				`${lead}${mark} ${(row.time ?? "").padEnd(14)}${row.text}`.trimEnd(),
+				`${lead}${mark} ${(row.time ?? "").padEnd(timeWidth)}${row.text}`.trimEnd(),
 			);
 		}
 	}

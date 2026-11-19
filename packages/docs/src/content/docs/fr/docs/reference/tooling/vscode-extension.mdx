@@ -5,6 +5,7 @@ description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau n
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../../components/Term.astro';
+import Since from '../../../../../../components/Since.astro';
 
 L'extension officielle Gram pour VS Code transforme votre éditeur en un véritable environnement de développement dédié aux recettes. Propulsée par `@gram-lang/language-server`, elle offre des diagnostics en temps réel, une assistance à la saisie avancée et un rendu dynamique en direct.
 
@@ -62,6 +63,7 @@ Ce paramètre s'applique instantanément à tous les fichiers ouverts (toute val
 | Réglage | Valeurs | Effet |
 |---|---|---|
 | `gram.stepQuantities` | `show` (par défaut), `hide` | Détermine si la quantité de chaque ingrédient est rappelée dans le texte des étapes, immédiatement après son nom, avec sa masse en grammes lorsque celle-ci est standardisée : `farine (250 ml, ~148 g)`. Les listes d'ingrédients de chaque section l'affichent systématiquement. |
+| `gram.clock` <Since v="1.5.0" /> | `auto` (par défaut), `12h`, `24h` | La façon dont le plan de marche et les horaires suggérés écrivent l'heure : `1:00 PM` ou `13:00`. `auto` reprend le réglage `clock` du fichier `.gram/config.yaml` du projet s'il en définit un, sinon la région de la locale du système. |
 | `gram.nutritionBasis` | `auto` (par défaut), `total`, `perPortion`, `per100g` | Référentiel de calcul du panneau nutritionnel. En mode `auto`, l'aperçu montre toutes les bases côte à côte (pour 100 g, par portion) ; toute autre valeur limite le tableau à la base choisie. |
 | `gram.bakersMathOnly` | `false` (par défaut), `true` | Affiche uniquement les pourcentages du boulanger, en masquant les masses absolues. |
 

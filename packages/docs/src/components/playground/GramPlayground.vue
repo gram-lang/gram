@@ -17,7 +17,7 @@ import GramEditor from "./GramEditor.vue";
 import GramFileTabs from "./GramFileTabs.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import GramOptions from "./GramOptions.vue";
-import type { PlanSettings } from "./planSettings";
+import { type PlanSettings, browserLocale } from "./planSettings";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import GramDrawer from "./GramDrawer.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
@@ -369,7 +369,7 @@ const activeModifiersCount = computed(() => {
 	) {
 		count++;
 	}
-	if (modified("comments", "stepQuantities")) {
+	if (modified("comments", "stepQuantities", "clock")) {
 		count++;
 	}
 	if (
@@ -695,7 +695,7 @@ async function updateGram() {
 
 /** The view settings of the studio: the same for every view. */
 function viewSettings(): ViewSettings {
-	const { comments, nutritionBasis, bakersMathOnly, stepQuantities } =
+	const { comments, nutritionBasis, bakersMathOnly, stepQuantities, clock } =
 		options.value;
 	return {
 		miseEnPlace: schedule.value,
@@ -704,6 +704,7 @@ function viewSettings(): ViewSettings {
 		nutritionBasis,
 		bakersMathOnly,
 		stepQuantities,
+		clock,
 	};
 }
 
@@ -776,8 +777,10 @@ const SURFACE = () => ({
 /** The views' input for `result`: the settings of the studio and its plan. */
 function prepareInput(result: any) {
 	const { serveAt, timeZone } = plan.value;
+	const locale = browserLocale();
 	return prepareViews(result, viewSettings(), {
 		lang: currentLang.value,
+		...(locale && { locale }),
 		kitchen: {
 			timeZone,
 			availability: buildAvailability(plan.value),
@@ -842,10 +845,16 @@ function computeServeSuggestions() {
 	}
 	try {
 		const { timeZone } = plan.value;
+		const locale = browserLocale();
 		const views = prepareViews(
 			result,
-			{ miseEnPlace: schedule.value, rests: rests.value },
 			{
+				miseEnPlace: schedule.value,
+				rests: rests.value,
+				clock: options.value.clock,
+			},
+			{
+				...(locale && { locale }),
 				kitchen: {
 					timeZone,
 					availability: buildAvailability(plan.value),
@@ -867,6 +876,7 @@ watch(
 		jsonData,
 		schedule,
 		rests,
+		() => options.value.clock,
 		() => plan.value.timeZone,
 		() => plan.value.from,
 		() => plan.value.to,

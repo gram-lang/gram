@@ -88,7 +88,7 @@ const html = toHTML(analyzed.result, viewSettingsToRendererOptions(view));
 
 | Export | Description |
 |---|---|
-| `VIEW_SETTINGS` | View presentation settings: `miseEnPlace`, `rests`, `comments`, `nutritionBasis`, `bakersMathOnly`, `stepQuantities`. |
+| `VIEW_SETTINGS` | View presentation settings: `miseEnPlace`, `rests`, `comments`, `nutritionBasis`, `bakersMathOnly`, `stepQuantities`, `clock` <Since v="1.5.0" />. |
 | `RECIPE_SETTINGS` | Analyzer computation settings (all enabled by default): `bakersMath`, `massStandardization`, `yieldCalculation`, `nutritionEstimation`. |
 | `SETTINGS` | Both view and recipe settings combined in a single list. |
 | `parseViewSettings(raw)`, `parseRecipeSettings(raw)` | Parse settings from an arbitrary object, falling back to defaults for any missing or unknown key. |
@@ -170,6 +170,7 @@ The run sheet for a recipe without an explicit target serving time is obtained v
 | `lang` | `string` | Language code (`'en'`, `'fr'`) for labels and date formatting. |
 | `roundTo` | `number` | Display only: rounding of times to minute intervals (default: `5`). Internal computations remain exact. |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter. |
+| `hourCycle` <Since v="1.5.0" /> | `'h23' \| 'h12'` | How times of day are written: `'h23'` (default, `13:00`) or `'h12'` (`1:00 PM`, its marks in the language of `lang`). Also read by `describeServeTimes()` and `describeEarliestServe()`. `prepareViews()` resolves it from the `clock` setting. |
 | `comments` | `'show' \| 'hide'` | Shows (default) or leaves out the comments of the recipe in the steps. When enabled, a standalone note sits beneath its step and an end-of-line note remains within the sentence in parentheses; HTML formatting styles both in small, muted text. |
 
 ### `RunSheetModel`
@@ -198,6 +199,28 @@ sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): Sec
 sectionSteps(compiled, section: number, stepIndexes: number[], { lang?, comments?, formatDuration? }): ProgramStep[]
 // { number?, action?, comment?, html, md, text }: a step as the recipe view numbers it, or a standalone note
 ```
+
+### The reader's clock <Since v="1.5.0" />
+
+The `clock` view setting (`'auto'`, `'12h'`, `'24h'`, default `'auto'`) says how the run sheet and the serving time suggestions write the time of day. It is the reader's clock, not the recipe's: `'auto'` follows the region of the reader's locale, which `prepareViews()` takes as its `locale` option (`'en-US'`, `'fr-FR'`), separate from `lang`, the language of the words. A locale whose region writes 12 hours (`en-US`, `en-CA`, `en-AU`, `en-IN`) reads `1:00 PM`; any other, a locale without a region (`'en'`) and no locale at all read `13:00`. The renderer never guesses the reader: a surface passes their locale (the playground `navigator.language`, the CLI and the language server `systemLocale(process.env, process.platform)`). The data stays local ISO (`serveAt: "2026-10-11T13:00"`) whatever the clock.
+
+```typescript
+import { prepareViews, resolveHourCycle, systemLocale } from '@gram-lang/renderer';
+
+const views = prepareViews(compiled, { clock: 'auto' }, { lang: 'en', locale: 'en-US', kitchen, serveAt });
+views.hourCycle;                              // "h12": the run sheet writes "1:00 PM"
+resolveHourCycle('auto', 'en-GB');            // "h23"
+systemLocale({ LANG: 'en_US.UTF-8' });        // "en_US.UTF-8"
+```
+
+| Export | Description |
+|---|---|
+| `resolveHourCycle(clock, locale)` | `'h12'` or `'h23'`: the clock the setting names, else (`'auto'`) the one of `locale`. |
+| `hourCycleOf(locale)` | The clock of a locale, `'h23'` when it names no region or cannot be read; a POSIX locale (`en_US.UTF-8`) is read as its BCP 47 tag. |
+| `systemLocale(env, platform?)` | The locale of a machine: the first of `LC_ALL`, `LC_TIME`, `LANG` that is set (`C` and `POSIX` name none); on Windows (`platform: 'win32'`), the runtime's. |
+| `chooseClock(...choices)` | The first clock actually chosen, `'auto'` meaning not chosen: `chooseClock(flag, projectSetting)`. |
+| `formatClock(hhmm, hourCycle, lang?)` | `"13:05"` written on a clock: as it is in 24 hours, `"1:05 PM"` in 12. |
+| `clockFormatOptions(hourCycle)` | The `Intl.DateTimeFormat` options of a time of day on that clock, for a format that also writes a date. |
 
 Nothing is invented: names and quantities are those of the `.gram` file, and the run sheet writes the steps out as the recipe has them. The mode of the kit (`perSection`, `perDay`, `upfront`) is read from `RunSheet.recipes[].miseEnPlace` (also carried by `RunSheetModel.miseEnPlace`): the renderer has no option for it. `describeServeTimes()` and `describeEarliestServe()` put the result of `findServeTimes()` and `earliestServe()` in words the same way.
 
