@@ -6,7 +6,7 @@ topic: "Devlog"
 description: "How a 7-minute discrepancy led to eliminating hidden compiler timings, replacing the Gantt chart, and designing the visit-based run sheet."
 ---
 
-*"My recipe only has 54 minutes of timers, yet Gram shows 1 h 01. Where are those extra 7 minutes coming from?"*
+*"My recipe only has 54 minutes of timers, yet Gram shows 1 h 01 min. Where are those extra 7 minutes coming from?"*
 
 That question on Reddit (alongside a remark about mise en place being lumped together at the very start) looked like a minor rounding quirk at first glance. Inspecting the compiler revealed a deeper issue: Gram's timing model was out of touch with real cooking.
 
@@ -82,7 +82,7 @@ All time computation was therefore extracted out of `kitchen` into a dedicated p
 - **`kitchen`** compiles the recipe into a neutral graph of tasks, equipment tracks, and culinary constraints (*"knead, proof between 8 h and 16 h, bake 30 min"*), without assuming anything about your schedule.
 - **`scheduler`** projects that graph onto real calendar time once you provide a serving time and availability windows (`gram plan recipe.gram --serve "2026-11-22 13:00" --available "08:00-22:00"`).
 
-That decoupling unlocks flexibility that used to be impossible. Take a dough whose proof tolerates between 8 and 16 hours (`~_{8-16h}`) for a Sunday meal at 1:00 PM, while you sleep between 10:00 PM and 8:00 AM. With the minimum 8-hour proof, you would have to knead at 4:10 AM. Instead of waking you in the middle of the night, the scheduler **automatically stretches the wait to 14 h 30** (within the exact bounds allowed by the recipe) to place kneading on Saturday evening at 9:40 PM, right before bedtime.
+That decoupling unlocks flexibility that used to be impossible. Take a dough whose proof tolerates between 8 and 16 hours (`~_{8-16h}`) for a Sunday meal at 1:00 PM, while you sleep between 10:00 PM and 8:00 AM. With the minimum 8-hour proof, you would have to knead at 4:10 AM. Instead of waking you in the middle of the night, the scheduler **automatically stretches the wait to 14 h 30 min** (within the exact bounds allowed by the recipe) to place kneading on Saturday evening at 9:40 PM, right before bedtime.
 
 Similarly, because the recipe graph is independent of its calendar projection, you can freely pick your mise en place strategy (`per-section` by default, `upfront`, or `per-day`) without ever editing the `.gram` file. If you want to explore these options in detail, they are covered in the [Planning and run sheets](/docs/explanation/planning/) guide and the [`gram plan`](/docs/how-to/plan-a-meal/) how-to.
 
