@@ -39,6 +39,12 @@ export type InvalidQuantityReason =
 	 */
 	| "zeroDenominator"
 	/**
+	 * `@salt{2 g / 0 g @&flour}`, `~{15 min / 0 g @&roast}`: a ratio per
+	 * zero of its target has no value. `value` is the denominator as written
+	 * (`0 g`). Since 1.5.0.
+	 */
+	| "zeroRatioDenominator"
+	/**
 	 * `@eggs{3}<@box{50% @&flour}>`: a share of another ingredient on a
 	 * composite parent. Refused until composites are reworked (1.6): the
 	 * parent reads with no quantity. Since 1.5.0.

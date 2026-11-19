@@ -340,7 +340,9 @@ function producersFirst(sections: AnalyzedSection[]): AnalyzedSection[] {
  * What an intermediate used whole in `sec` weighs (`Roll out the &dough`,
  * no amount written for it in the section): the mass of the section that
  * makes it, when that section declares it in its title and its mass is
- * complete. Refused when another section uses it too (who takes what?).
+ * complete. Refused when another section uses it too (who takes what?), and
+ * when a step makes it (`stepProducer`): what a step makes has no mass of its
+ * own yet.
  * `null` when the section does write an amount for it.
  */
 function wholeUseMass(
@@ -362,6 +364,17 @@ function wholeUseMass(
 			s.intermediate_preparation &&
 			slugify(s.intermediate_preparation) === targetId,
 	);
+	if (
+		!producer &&
+		sections.some((s) =>
+			s.steps.some(
+				(step) =>
+					step.type === "step" && step.intermediate_preparation === targetId,
+			),
+		)
+	) {
+		return { reason: "stepProducer" };
+	}
 	const metrics = producer?.metrics;
 	if (!metrics || metrics.massStatus === "incomplete" || !metrics.totalMass) {
 		return { reason: "producerMassUnknown" };

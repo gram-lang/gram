@@ -55,6 +55,7 @@ Pour une [proportion avec unités](/fr/docs/reference/syntax/relative-quantities
 - `incompatibleUnits` : pièces incompatibles (`2 tranches` face à des gousses), poids face à une pièce nommée, ou mot après l'unité (`100 g de`).
 - `missingDensity` / `missingUnitWeight` : la conversion entre poids et volume ou pièces requiert `density` ou `unit_weight` dans la base d'ingrédients.
 - `wholeUseAmbiguous` / `producerMassUnknown` : pour une préparation utilisée en entier (`&pâte`), une autre section la consomme aussi ou la masse de sa section productrice est incomplète.
+- `stepProducer` : la préparation utilisée en entier sort d'une étape (`Mélanger … ->&pâte`) et non d'une section entière, or Gram ne pèse que ce qu'une section produit. Indiquez la quantité utilisée (`&pâte{500 g}`), ou préparez-la dans sa propre section.
 
 **Correction** : écrivez la proportion dans l'unité de la cible, renseignez `density` ou `unit_weight` dans la base, ou indiquez la quantité utilisée (`&pâte{500 g}`).
 
@@ -88,6 +89,7 @@ Un `Timer` (minuteur) ou une `Temperature` a été écrit sans unité explicite 
 | `rangeAfterMinus` | `{1 tasse - 1-2 càs}` | Placez les fourchettes sur un terme ajouté, ou écrivez le total en fourchette. |
 | `minusAcrossFamilies` | `{1 tasse - 20 g}` | Soustrayez uniquement au sein d'une même famille d'unités (volume d'un volume, masse d'une masse). |
 | `zeroDenominator` | `{1/0 tasse}`, `{1/0% &pâte}`, `#poêle{1/0}`, `^{1/0 °C}` | Une division par zéro est ignorée ; écrivez une fraction valide (`1/2`). |
+| `zeroRatioDenominator` | `{2 g / 0 g @&farine}`, `~{15 min / 0 g @&rôti}` | Une proportion rapportée à rien est ignorée ; indiquez la quantité de référence (`/ 100 g`). |
 | `relativeNotSupported` | `@œufs{3}<@boîte{50% @&farine}`, `@œufs{1}<@boîte{1 / 100 g @&farine}` | Pourcentages et proportions ne sont pas encore pris en charge sur un parent composite ; indiquez sa quantité (`@œufs{3}<@boîte{1}`). |
 
 La soustraction est vérifiée par famille d'unités : `{1 tasse - 2 càs + 30 g}` est valide (2 càs retirées de 1 tasse), tandis que `{1 tasse - 20 g}` n'a aucune masse dont soustraire les 20 g.

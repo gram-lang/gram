@@ -111,6 +111,8 @@ export interface WarningPayloads {
 		/** What to write instead, when Gram can tell (`110 g`). */
 		suggestion?: string;
 		item: string;
+		/** `"Timer"` when the quantity is a timer's (`~{15 min / 0 g @&roast}`). */
+		type?: "Timer";
 		loc?: Location;
 	};
 	[WarningCode.OZ_AFTER_VOLUME]: {
@@ -248,6 +250,8 @@ function ratioHint(
 			return `'&${target}' is used whole in several sections: write the amount used here (e.g. &${target}{500 g}).`;
 		case "producerMassUnknown":
 			return `'&${target}' is used whole and the mass of the section that makes it is unknown: write the amount used here (e.g. &${target}{500 g}).`;
+		case "stepProducer":
+			return `'&${target}' is made by a step, not by a whole section, and Gram only weighs what a section makes (## Dough ->&dough): write the amount used here (e.g. &${target}{500 g}), or make it in a section of its own.`;
 	}
 }
 
@@ -266,6 +270,8 @@ const QUANTITY_HINTS: Record<InvalidQuantityReason, string> = {
 	rangeAfterMinus:
 		"a range cannot be taken away (its bounds would swap): write the range on a term that is added, or the total as a range.",
 	zeroDenominator: "a fraction cannot have 0 below the bar (write e.g. 1/2).",
+	zeroRatioDenominator:
+		"a ratio cannot be per nothing of its target: write the amount it is per (e.g. / 100 g).",
 	relativeNotSupported:
 		"a share of another ingredient is not supported on a composite parent yet: write the parent's amount.",
 	minusAcrossFamilies:
@@ -306,11 +312,13 @@ export const warningTemplates: {
 			? `Retro-planning offset "${p.value}" on "${p.item}" is not read: ${DURATION_HINTS[p.reason] ?? p.reason} The section is not anchored.`
 			: `Timer duration "${p.value}"${p.item === "Timer" ? "" : ` on "${p.item}"`} is not read: ${DURATION_HINTS[p.reason] ?? p.reason} It is not counted in the total time.`,
 	[WarningCode.INVALID_QUANTITY]: (p) =>
-		p.reason === "zeroDenominator"
-			? `Number "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS.zeroDenominator} It is left out, as if no number had been written.`
-			: p.reason === "relativeNotSupported"
-				? `Quantity "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS.relativeNotSupported} The parent is read with no quantity.`
-				: `Quantity "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS[p.reason] ?? p.reason}${p.suggestion ? ` Did you mean {${p.suggestion}}?` : ""} It is not counted in the shopping list or the nutrition.`,
+		p.reason === "zeroRatioDenominator"
+			? `${p.type === "Timer" ? (p.item === "Timer" ? "A timer" : `Timer "${p.item}"`) : `"${p.item}"`} is per "${p.value}": ${QUANTITY_HINTS.zeroRatioDenominator} ${p.type === "Timer" ? "It is not counted in the total time." : "It is left out, as if no amount had been written."}`
+			: p.reason === "zeroDenominator"
+				? `Number "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS.zeroDenominator} It is left out, as if no number had been written.`
+				: p.reason === "relativeNotSupported"
+					? `Quantity "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS.relativeNotSupported} The parent is read with no quantity.`
+					: `Quantity "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS[p.reason] ?? p.reason}${p.suggestion ? ` Did you mean {${p.suggestion}}?` : ""} It is not counted in the shopping list or the nutrition.`,
 	[WarningCode.OZ_AFTER_VOLUME]: (p) =>
 		`"${p.value}" of "${p.item}" is a weight: oz weighs, ${p.suggestion} measures a volume. Write ${p.suggestion} if a volume is meant.`,
 	[WarningCode.AMBIGUOUS_NUMBER]: (p) =>

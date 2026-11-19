@@ -86,7 +86,7 @@ If a ratio cannot be resolved, it remains as written in views and shopping lists
 ### Scope, intermediates & scaling
 
 - **Same scope as percentages**: target an `@&ingredient` declared earlier in the section (repeated uses sum up), an earlier option in an alternative group, or an `&intermediate`.
-- **Whole intermediates**: if a section consumes an intermediate without a quantity (`Roll out the &dough`), ratios and percentages (`@salt{2 g / 100 g &dough}`, `@sugar{5% &dough}`) resolve against the total mass of the section that produces it—provided only that section consumes it.
+- **Whole intermediates**: if a section consumes an intermediate without a quantity (`Roll out the &dough`), ratios and percentages (`@salt{2 g / 100 g &dough}`, `@sugar{5% &dough}`) resolve against the total mass of the section that produces it—provided only that section consumes it. An intermediate made by a step (`Mix … ->&dough`) has no mass of its own: write the amount used (`&dough{800 g}`), or make it in its own section.
 - **References & composites**: ratios and percentages work on homemade intermediate references (`&stock{250 ml / 100 g @&rice}`), but are not yet supported on composite parents (`@eggs{1}<@box{1 / 100 g @&flour}>`).
 - **Scaling**: scaling a recipe recalculates ratios from the scaled targets (unless the target is fixed with `@=`). Marking a ratio itself with `=` is not allowed.
 
