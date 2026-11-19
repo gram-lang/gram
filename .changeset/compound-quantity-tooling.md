@@ -4,8 +4,8 @@
 "@gram-lang/format": minor
 ---
 
-**Language Server, VS Code & Format**: Editors and the formatter understand sums of quantities (`@flour{1 cup + 1 tbsp}`):
-  - Quick Fixes for the quantity warnings: two quantities written side by side (`{1 cup 5 tbsp}`) become a sum (`{1 cup + 5 tbsp}`), a sum with a percentage takes the result Gram suggests (`{100 g + 10%}` → `{110 g}`), and `oz` after a volume becomes `fl oz`.
-  - Hovering an ingredient written as a sum shows what it adds up to (`= 17 tbsp`), or the kinds of amount it keeps apart (a volume and a weight), and its weight when the ingredient database can tell.
-  - Unit completion works in each term of a sum, once its number is typed (`{1 cup + 2`).
-  - `gram format` and format on save put one space around the `+` and `-` of a sum in an ingredient's braces (`{1 cup-2 tbsp}` → `{1 cup - 2 tbsp}`), never in a range (`{1-2 cups}`), a timer or a temperature, and remove trailing zeros from every number of a quantity, with its unit glued or spaced, in a range, a sum, a ratio or a timer (`{1.50-2.50 cup + 2.0 tbsp}` → `{1.5-2.5 cup + 2 tbsp}`, `{1.50 kg}` → `{1.5 kg}`, `~{1.50 h}` → `~{1.5 h}`). The count of these fixes is reported in the new `quantityOperatorSpacing` field.
+**Language Server, VS Code & Format**: Editors and the formatter now support sums of quantities (`@flour{1 cup + 1 tbsp}`):
+  - Quick fixes convert adjacent quantities into a sum (`{1 cup 5 tbsp}` → `{1 cup + 5 tbsp}`), apply suggested percentage resolutions (`{100 g + 10%}` → `{110 g}`), and clarify `oz` after a volume as `fl oz`.
+  - Hover previews show the combined total (`= 17 tbsp`) or distinct unit kinds, along with estimated weight from the ingredient database.
+  - Unit completion works inside each term of a sum once its number is typed (`{1 cup + 2`).
+  - `gram format` spaces `+` and `-` in ingredient sums (leaving ranges, timers, and temperatures untouched) and trims trailing zeros across quantities (`{1.50 kg}` → `{1.5 kg}`, `~{1.50 h}` → `~{1.5 h}`), reporting operator spacing fixes in `quantityOperatorSpacing`.

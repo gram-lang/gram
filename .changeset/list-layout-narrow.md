@@ -2,4 +2,4 @@
 "@gram-lang/renderer": patch
 ---
 
-**Rendering**: Ingredient lists with long names or amounts stay readable in narrow views: a list switches to one column before putting each amount under its name.
+**Rendering**: Narrow ingredient lists now switch to a single column before stacking amounts below ingredient names.

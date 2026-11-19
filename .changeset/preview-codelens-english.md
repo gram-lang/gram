@@ -3,4 +3,4 @@
 "gram-lang": patch
 ---
 
-**Language Server & VS Code**: The live-preview CodeLens above `.gram` files now displays `▶ Preview` in English instead of `▶ Aperçu`.
+**Language Server & VS Code**: Fixed the live-preview CodeLens above `.gram` files to display `▶ Preview` in English instead of `▶ Aperçu`.

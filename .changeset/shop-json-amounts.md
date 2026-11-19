@@ -2,7 +2,7 @@
 "@gram-lang/cli": minor
 ---
 
-**CLI / Shop**: `gram shop --format json` gives each ingredient's amount as numbers, next to the `qty` text that stays unchanged:
-  - `amount` is a plain number, in the unit `qty` shows (`3.9` for `3,9 kg`), and `unit` the canonical unit (`tbsp` for `tablespoons` or `c. à s.`), `null` for a count.
-  - `range` gives the bounds of a range, whose middle is in `amount`.
-  - `parts` lists the amounts whose units do not add up (`1 1/2 cups + 70 g`), and `unresolved` what could not be turned into a number, never counted in `amount`.
+**CLI / Shop**: `gram shop --format json` now exposes numeric ingredient amounts alongside the formatted `qty` string:
+  - Adds `amount` (numeric value in the displayed unit) and canonical `unit` (`null` for counts).
+  - Adds `range` bounds when an entry is a range (with the midpoint in `amount`).
+  - Lists unmerged unit groups in `parts` and non-numeric quantities in `unresolved` (excluded from `amount`).

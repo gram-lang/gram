@@ -7,8 +7,8 @@
 "@gram-lang/docs": minor
 ---
 
-**Scheduler, Renderer & CLI**: Times can be written and shown in 12 hours (1:00 PM) as well as in 24 hours (13:00), following the reader's region:
-  - `--available`, `--meal-times`, `--serve`, the bounds of `--find`, their `availability` and `mealTimes` settings and the editor's serving time take 12-hour times, in any case and with or without spaces: `8am-10pm`, `fri=6pm-12am` (until midnight), `12:30pm,8pm`, `"2026-10-11 1:00 pm"`. `13pm`, `0am` or a bare hour (`8`) are refused with a message showing both forms.
-  - A new `clock` view setting (`auto`, `12h`, `24h`) says how the run sheet, the serving time suggestions and the iCalendar descriptions write the time of day. With `auto`, the default, it follows the region of the reader's locale, not the language of the recipe.
-  - Set it with `--clock` on `gram plan`, `gram export` and `gram print`, with `clock` in `.gram/config.yaml` (or the global config), with `gram.clock` in VS Code, or with the new "Time format" menu of the playground's Display section. The CLI and the language server read the machine's locale (`LC_ALL`, `LC_TIME`, `LANG`), the playground the browser's.
-  - The renderer exports `resolveHourCycle`, `hourCycleOf`, `systemLocale`, `chooseClock`, `formatClock` and `clockFormatOptions`, `prepareViews()` takes the reader's `locale`, and the run sheet's options take an `hourCycle`; the scheduler exports `parseTimeOfDay` and `parseLocalDateTime`. The data (JSON, ISO times) is the same whatever the clock.
+**Scheduler, Renderer & CLI**: Clock times can now be entered and displayed in 12-hour (`1:00 PM`) as well as 24-hour (`13:00`) format:
+  - `--available`, `--meal-times`, `--serve`, `--find`, their `availability` and `mealTimes` settings, and the editor's serving time accept 12-hour times in any case or spacing (`8am-10pm`, `fri=6pm-12am`, `12:30pm,8pm`, `"2026-10-11 1:00 pm"`), rejecting invalid forms like `13pm`, `0am`, or bare hours.
+  - Adds a `clock` view setting (`auto`, `12h`, `24h`) controlling time formatting in the run sheet, serving-time suggestions, and iCalendar descriptions; `auto` (default) follows the reader's locale region rather than the recipe language.
+  - Configurable via `--clock` (`gram plan`, `gram export`, `gram print`), `clock` in `.gram/config.yaml` (or global config), `gram.clock` in VS Code, and the playground's Display menu.
+  - Adds `locale` support to `prepareViews()`, an `hourCycle` option to run sheets, clock helpers (`formatClock`, `chooseClock`, `resolveHourCycle`, `systemLocale`) in `@gram-lang/renderer`, and `parseTimeOfDay` / `parseLocalDateTime` in `@gram-lang/scheduler` (JSON and ISO data remain unchanged).
