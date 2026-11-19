@@ -1,2 +1,2 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
-export const KITCHEN_VERSION = "1.4.2";
+export const KITCHEN_VERSION = "1.5.0";
