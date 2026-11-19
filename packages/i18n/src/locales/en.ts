@@ -408,6 +408,10 @@ export const en = {
 				"Writes the quantity of each ingredient in the text of the steps, after its name.",
 			nutritionBasis: "Nutrition basis",
 			nutritionBasisAuto: "Automatic (every basis, side by side)",
+			clock: "Time format",
+			clockAuto: "Automatic (as your region writes it)",
+			clock12h: "12 hours (1:00 PM)",
+			clock24h: "24 hours (13:00)",
 			rejectedSlots: "Unavailable slots:",
 			forceReference: "Force Reference:",
 			autoDetect: "Auto (detect @*)",
@@ -443,6 +447,8 @@ export const en = {
 				"Expresses each ingredient as a percentage of a base ingredient set at 100% (typically flour, or any chosen ingredient), making ratios and formulation easy to evaluate.",
 			comments:
 				"Shows or leaves out the comments written in the recipe with //: the notes alone on a line and the ones at the end of a line. They are set apart discreetly in the run sheet.",
+			clock:
+				"How the run sheet and the suggested serving times write the time. Automatic follows your browser's region.",
 			stepQuantities:
 				"Writes each quantity in the step that uses it, with its weight in grams when the masses are standardized. Leave it off for shorter steps: the quantities stay in the ingredient lists.",
 			nutritionBasis:

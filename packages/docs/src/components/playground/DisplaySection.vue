@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useId } from "vue";
+import type { ClockMode } from "@gram-lang/renderer";
+// biome-ignore lint/correctness/noUnusedImports: GramSelect is used as a component in the <template> block below
+import GramSelect from "./GramSelect.vue";
 // biome-ignore lint/correctness/noUnusedImports: OptionsSection is used as a component in the <template> block below
 import OptionsSection from "./OptionsSection.vue";
 // biome-ignore lint/correctness/noUnusedImports: PlaygroundTooltip is used in the <template> block below
@@ -9,10 +12,11 @@ import {
 	// biome-ignore lint/correctness/noUnusedImports: used in the <template> block below, which Biome's Vue support doesn't see.
 	resetDisplay,
 } from "./optionSections";
+import { settingChoices } from "./settingLabels";
 import type { PlaygroundOptions } from "./settingsStorage";
 import { useI18n } from "./useI18n";
 
-/** "Display": the comments of the recipe and the quantities in its steps. */
+/** "Display": the comments of the recipe, the quantities in its steps, the clock. */
 const props = defineProps<{
 	open: boolean;
 	options: PlaygroundOptions;
@@ -28,6 +32,11 @@ const { t } = useI18n();
 
 // biome-ignore lint/correctness/noUnusedVariables: modified is used in the <template> block below, which Biome's Vue support doesn't see.
 const modified = computed(() => isDisplayModified(props.options));
+
+// biome-ignore lint/correctness/noUnusedVariables: clockId is used in the <template> block below, which Biome's Vue support doesn't see.
+const clockId = useId();
+// biome-ignore lint/correctness/noUnusedVariables: clockOptions is used in the <template> block below, which Biome's Vue support doesn't see.
+const clockOptions = computed(() => settingChoices("clock", t.value));
 
 // The comments of the recipe: shown unless this is switched off.
 // biome-ignore lint/correctness/noUnusedVariables: showComments is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -81,6 +90,20 @@ const showStepQuantities = computed({
         <span class="option-desc">{{ t.playground.options.stepQuantitiesDesc }}</span>
       </div>
     </label>
+
+    <div class="studio-field">
+      <div class="studio-label-row">
+        <label class="studio-label" :for="clockId">{{ t.playground.options.clock }}</label>
+        <PlaygroundTooltip :text="t.playground.help.clock" />
+      </div>
+      <GramSelect
+        block
+        :id="clockId"
+        :model-value="props.options.clock"
+        :options="clockOptions"
+        @update:model-value="(value: string) => emit('update:options', { ...props.options, clock: value as ClockMode })"
+      />
+    </div>
   </OptionsSection>
 </template>
 

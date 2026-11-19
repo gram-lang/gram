@@ -279,6 +279,12 @@ export const GramConfigFileSchema = z.object({
 	 * checked by the command that uses it, so a typo never stops the others.
 	 */
 	availability: z.unknown().optional(),
+	/**
+	 * How the run sheet writes the times of day: `12h`, `24h`, or `auto` (the
+	 * region of this machine's locale), the default of `--clock`. Like
+	 * `timezone`, only checked by the commands that write a run sheet.
+	 */
+	clock: z.unknown().optional(),
 	/** Set to `false` to disable the passive "update available" notice printed after a command finishes. */
 	updateCheck: z.boolean().optional(),
 	/** Named `@use` specifier aliases (module-imports RFC §B.1/§F.1): `paths: { bases: "./shared/bases" }` lets `@use "@bases/pate.gram"` resolve to `<projectRoot>/shared/bases/pate.gram`. The bare `@/` prefix (project root itself) needs no entry here. */

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { cliEnv } from "./helpers";
 
 /*
  * `--comments show|hide` end to end: the real CLI is started as a process,
@@ -36,7 +37,10 @@ afterAll(async () => {
 });
 
 function gram(...args: string[]) {
-	const run = Bun.spawnSync([process.execPath, ENTRY, ...args], { cwd: dir });
+	const run = Bun.spawnSync([process.execPath, ENTRY, ...args], {
+		cwd: dir,
+		env: cliEnv(),
+	});
 	const strip = (b: Uint8Array) =>
 		new TextDecoder().decode(b).replace(/\x1b\[[0-9;]*m/g, "");
 	return { code: run.exitCode, out: strip(run.stdout), err: strip(run.stderr) };

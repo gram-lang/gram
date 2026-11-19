@@ -373,6 +373,10 @@ export const fr: GramLocale = {
 				"Écrit la quantité de chaque ingrédient dans le texte des étapes, juste après son nom.",
 			nutritionBasis: "Base nutritionnelle",
 			nutritionBasisAuto: "Automatique (toutes les bases côte à côte)",
+			clock: "Format de l'heure",
+			clockAuto: "Automatique (selon votre région)",
+			clock12h: "12 heures (1:00 PM)",
+			clock24h: "24 heures (13:00)",
 			rejectedSlots: "Créneaux non retenus :",
 			forceReference: "Forcer la référence :",
 			autoDetect: "Auto (détecte @*)",
@@ -408,6 +412,8 @@ export const fr: GramLocale = {
 				"Exprime chaque ingrédient en pourcentage d'un ingrédient de base fixé à 100 % (par défaut la farine, ou l'ingrédient de votre choix), facilitant l'évaluation des équilibres et des ratios.",
 			comments:
 				"Affiche ou masque les commentaires écrits dans la recette avec // : les notes seules sur une ligne et celles en fin de ligne. Dans le plan de marche, ils sont mis à part, discrètement.",
+			clock:
+				"La façon d'écrire l'heure dans le plan de marche et les horaires suggérés. En automatique, elle suit la région de votre navigateur.",
 			stepQuantities:
 				"Rappelle chaque quantité dans l'étape qui l'utilise, avec son poids en grammes si les masses sont standardisées. Décochez pour des étapes plus courtes : les quantités restent dans les listes d'ingrédients.",
 			nutritionBasis:

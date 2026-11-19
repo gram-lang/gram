@@ -86,6 +86,8 @@ export interface RenderOutputsOptions {
 	serveAt?: string;
 	/** The language of the editor, for the paused banner. */
 	locale?: string;
+	/** The locale of the machine, with its region: the clock of `clock: auto`. */
+	readerLocale?: string;
 	/** Told when one output throws: the others are still sent. */
 	onError?: (outputId: string, error: unknown) => void;
 }
@@ -125,6 +127,7 @@ export function renderOutputs(
 			const lang = compilation.meta?.language;
 			input = prepareViews(compilation, options.settings, {
 				...(typeof lang === "string" && { lang }),
+				...(options.readerLocale && { locale: options.readerLocale }),
 				kitchen: options.kitchen,
 				...(options.serveAt && { serveAt: options.serveAt }),
 			});
@@ -179,6 +182,8 @@ export interface ServeTimesOptions {
 	kitchen: KitchenContext;
 	/** The language of the editor: the suggestions are words of its panel. */
 	locale?: string;
+	/** The locale of the machine, with its region: the clock of `clock: auto`. */
+	readerLocale?: string;
 	/** The times of day to try, from the project's `mealTimes`. */
 	mealTimes?: string[];
 }
@@ -198,6 +203,7 @@ export function serveTimesOf(
 	const lang = compilation.meta?.language;
 	const input = prepareViews(compilation, options.settings, {
 		...(typeof lang === "string" && { lang }),
+		...(options.readerLocale && { locale: options.readerLocale }),
 		kitchen: options.kitchen,
 	});
 	const words = options.locale ?? (typeof lang === "string" ? lang : undefined);

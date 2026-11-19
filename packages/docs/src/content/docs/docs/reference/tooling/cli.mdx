@@ -45,6 +45,7 @@ View presentation settings:
 | `--nutrition-basis` | `auto`, `total`, `per-portion`, `per-100g` | `auto` | `view`, `print`, `export` |
 | `--bakers-math-only` | on or off | off | `view`, `print`, `export` |
 | `--step-quantities` | `show`, `hide` | `show` | `view`, `print`, `export` |
+| `--clock` <Since v="1.5.0" /> | `auto`, `12h`, `24h` | `auto` | `print`, `export`, `plan` |
 
 Analyzer computation settings (all enabled by default; use `--no-<flag>` to disable):
 
@@ -60,6 +61,7 @@ Analyzer computation settings (all enabled by default; use `--no-<flag>` to disa
 - **`--comments`** shows or hides recipe comments (`// like this`): numbered footnotes in recipe views, discreet muted text in the <Term id="runSheet" />.
 - **`--nutrition-basis`** (alias `--nutrition`) chooses the displayed nutrition basis (`auto` shows per 100 g of raw assembled mixture and per portion side by side; see [Nutritional Estimation](/docs/explanation/nutrition)).
 - **`--step-quantities`** (alias `--no-step-qty` for `hide`) controls whether quantities and standardized masses (`flour (250 ml, ~148 g)`) are repeated inside step prose. Section ingredient lists always show them.
+- **`--clock`** chooses how the run sheet and the serving time suggestions write the time of day: `12h` (`1:00 PM`), `24h` (`13:00`), or `auto`, which follows the region of your system's locale (`LC_ALL`, then `LC_TIME`, then `LANG`), not the language of the recipe; a locale that names no region (`C`, `en`) reads 24 hours. Without the flag, the `clock` setting of the project (or global config) applies. The JSON output and the times of the iCalendar events, written in UTC, are unaffected.
 - Supplying an unsupported value halts execution with an error listing accepted options.
 
 ## Core commands
@@ -320,11 +322,11 @@ gram plan bread.gram --serve "2026-10-11 13:00" --ics bread.ics    # Also genera
 gram plan bread.gram                                                # Relative schedule and earliest serving time
 gram plan bread.gram --find 2026-10-10/2026-10-14 --available 08:00-22:00   # Find viable serving times
 ```
-- `--serve "<date> <time>"`: target serving time in the configured time zone. Optional: without it, the schedule is displayed in relative days (`D-2`, `D-1`, `Day D`) without calendar dates, concluding with the earliest serving time calculated across a 14-day window from `--now`.
+- `--serve "<date> <time>"`: target serving time in the configured time zone, in 24 or 12 hours (`"2026-10-11 13:00"` or `"2026-10-11 1:00 pm"`) <Since v="1.5.0" />. Optional: without it, the schedule is displayed in relative days (`D-2`, `D-1`, `Day D`) without calendar dates, concluding with the earliest serving time calculated across a 14-day window from `--now`.
 - `--tz <zone>`: an IANA time zone identifier (e.g. `Europe/Paris`). Default: the `timezone` setting of your project (or global config), falling back to the system time zone. Used to interpret serving times, evaluate availability intervals, and handle daylight saving shifts.
-- `--available <range>`, repeatable: defines working availability windows for active kitchen tasks. `08:00-22:00` applies to all days; a day-of-week prefix (`fri=18:00-22:00`, from `mon` to `sun`) restricts the rule to that day; a specific date prefix (`2026-10-09=none`) overrides a calendar date (`none` indicating complete unavailability). Multiple intervals can follow a single key separated by commas (`sat=08:00-09:00,18:00-22:00`), and an interval whose end time precedes its start time spans across midnight. Without the flag, the `availability` setting of your project (or global config) applies in the same syntax; without either, availability is treated as continuous (24/7). A flag replaces the setting rather than adding to it.
-- `--find <from>/<to>`: scans a time range (e.g. `2026-10-12/2026-10-15`, dates or full timestamps) to identify viable meal times, ranked by preference (best options first), explaining the blocking constraints for each rejected slot. Formats: `text`, `md`, `json`. Incompatible with `--serve`.
-- `--meal-times <HH:MM,HH:MM>`: candidate meal times evaluated by `--find` (default: value from `mealTimes` config, otherwise `12:30,20:00`).
+- `--available <range>`, repeatable: defines working availability windows for active kitchen tasks. `08:00-22:00` (or `8am-10pm` <Since v="1.5.0" />) applies to all days; a day-of-week prefix (`fri=18:00-22:00`, from `mon` to `sun`) restricts the rule to that day; a specific date prefix (`2026-10-09=none`) overrides a calendar date (`none` indicating complete unavailability). Multiple intervals can follow a single key separated by commas (`sat=08:00-09:00,18:00-22:00`), and an interval whose end time precedes its start time spans across midnight. Times can be written in 24 hours or in 12 hours with `am`/`pm`, in any case and with or without spaces (`8:30 am - 10:00 pm`, `fri=6PM-11PM`); `12am` is midnight and `12pm` noon, and `12am` at the end of an interval is the end of the day (`6pm-12am` is `18:00-24:00`). A bare hour (`8`) is refused. Without the flag, the `availability` setting of your project (or global config) applies in the same syntax; without either, availability is treated as continuous (24/7). A flag replaces the setting rather than adding to it.
+- `--find <from>/<to>`: scans a time range (e.g. `2026-10-12/2026-10-15`, dates or full timestamps, a time in 24 or 12 hours: `2026-10-12 6pm/2026-10-15`) to identify viable meal times, ranked by preference (best options first), explaining the blocking constraints for each rejected slot. Formats: `text`, `md`, `json`. Incompatible with `--serve`.
+- `--meal-times <HH:MM,HH:MM>`: candidate meal times evaluated by `--find`, in 24 or 12 hours (`12:30,20:00` or `12:30pm,8pm`) (default: value from `mealTimes` config, otherwise `12:30,20:00`).
 - Range-based passive timers (`~_{8-16h}`) are automatically adjusted (extended or shortened) by the scheduler to align active tasks within your availability windows; the schedule documents all adjustments made and lists any unresolved constraints. See [Planning and run sheets](/docs/explanation/planning/).
 - `--format text|md|html|json`: output format (default `text`). `json` outputs the structured `{ plan, runSheet }` object (or `runSheet` only alongside the `earliest` field when no serving time is given, or candidate and rejection lists with `--find`). See [the run sheet](/docs/reference/api/data-formats/#5-the-run-sheet).
 - `--ics <file>`: generates an iCalendar (`.ics`) file with one event per kitchen visit (timestamped in UTC and automatically displayed in your local time zone by your calendar client), a 10-minute reminder alarm, and the checklists in its description. Requires `--serve`. The confirmation message is printed to `stderr`, keeping piping via `--format json --ics …` fully usable.
@@ -507,6 +509,9 @@ timezone: "Europe/Paris"       # IANA time zone of your kitchen: default for `gr
 availability: ["08:00-22:00", "sat=09:00-23:00"] # When you can cook, in the syntax of `--available`: default for `gram plan --available` (default: all day)
                                # One entry or a list. Read by `gram plan`, `export` and `print` with --view run-sheet, and the language server. Update via: `gram config set availability 08:00-22:00`
 mealTimes: ["12:30", "20:00"]  # Candidate meal times evaluated by `gram plan --find` (default: 12:30 and 20:00)
+                               # Times in 24 or 12 hours, here and in availability: ["12:30pm", "8pm"], "8am-10pm"
+clock: "auto"                  # How the run sheet writes the time: auto (your system's region), 12h (1:00 PM) or 24h (13:00)
+                               # Default for `--clock`; also used by the language server when `gram.clock` is auto. Update via: `gram config set clock 12h`
 updateCheck: true             # Set to false to silence the update notice printed after each command
 
 # Named `@use` specifier aliases — `@use "@bases/shortcrust.gram"` resolves to

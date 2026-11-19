@@ -6,6 +6,7 @@ import {
 	dayFrom,
 	dayTo,
 	serveAtLabel,
+	browserLocale,
 	timeZoneChoices,
 	weekdayNames,
 	withCustomWeekdays,
@@ -169,6 +170,31 @@ describe("words for days and times", () => {
 		expect(serveAtLabel("2026-10-11T13:00", "fr")).not.toBe(
 			serveAtLabel("2026-10-11T13:00", "en"),
 		);
+	});
+
+	it("writes a serving time on the reader's clock", () => {
+		const h12 = serveAtLabel("2026-10-11T13:00", "en", "h12");
+		expect(h12.replace(/\u202f/g, " ")).toContain("1:00 PM");
+		expect(h12).not.toContain("13:00");
+		expect(serveAtLabel("2026-10-11T13:00", "fr", "h23")).toContain("13:00");
+	});
+
+	it("reads the reader's locale from the browser, not the page's language", () => {
+		const saved = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+		try {
+			Object.defineProperty(globalThis, "navigator", {
+				value: { language: "en-US" },
+				configurable: true,
+			});
+			expect(browserLocale()).toBe("en-US");
+			Object.defineProperty(globalThis, "navigator", {
+				value: {},
+				configurable: true,
+			});
+			expect(browserLocale()).toBeUndefined();
+		} finally {
+			if (saved) Object.defineProperty(globalThis, "navigator", saved);
+		}
 	});
 
 	it("gives back what it cannot read", () => {

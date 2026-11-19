@@ -28,6 +28,7 @@ import {
 	parseFindRange,
 	parseMealTimes,
 	parseServe,
+	resolveClock,
 } from "../services/plan-flags";
 
 export default defineCommand({
@@ -105,7 +106,7 @@ export default defineCommand({
 					ExitCode.Error,
 				);
 			}
-			const { miseEnPlace, rests, comments } = readViewSettingArgs(
+			const { miseEnPlace, rests, comments, clock } = readViewSettingArgs(
 				args,
 				RUN_SHEET_SETTINGS,
 			);
@@ -127,6 +128,7 @@ export default defineCommand({
 				miseEnPlace,
 				rests,
 				comments,
+				...resolveClock(clock, config.clock),
 				scaleFactor,
 				lang: config.language,
 				paths: config.paths,

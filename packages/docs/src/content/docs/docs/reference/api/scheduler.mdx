@@ -401,7 +401,17 @@ function parseInstant(value: string, timeZone: string): number;  // ISO instant 
 function toLocalIso(utcMinutes: number, timeZone: string): string; // → "2026-10-11T13:00"
 function toUtcIso(utcMinutes: number): string;                    // → "2026-10-11T11:00:00Z"
 function isCalendarDate(value: string): boolean;                 // "2028-02-29" → true, "2026-02-30" → false
+
+// Times as people write them, in 24 or 12 hours (since 1.5.0): the syntax of
+// `--available`, `--meal-times`, `--serve` and their settings
+function parseTimeOfDay(text: string, options?: { end?: boolean }): string | null;
+// "13:00", "9:30" → "09:30", "1pm", "1:00 PM", "8:30 a.m." → "08:30"; "12am" → "00:00", "12pm" → "12:00";
+// with `end` (the end of a range), "12am" and "24:00" → "24:00"; "8", "13pm", "0am" → null
+function parseLocalDateTime(text: string): { ok: true; local: string } | { ok: false; reason: "date" | "format"; date?: string };
+// "2026-10-11 1:00 pm" → { ok: true, local: "2026-10-11T13:00" }; "2026-02-30 20:00" → { ok: false, reason: "date", date: "2026-02-30" }
 ```
+
+`parseAvailability()` and `parseMealTimes()` read each time with `parseTimeOfDay()`: `8am-10pm`, `fri=6pm-12am` (until midnight) and `["12:30pm", "8pm"]` give the same values as their 24-hour form. A time is always given back as `"HH:MM"`: the plan never depends on how it was written.
 
 During daylight saving time transitions, an invalid local time (e.g. 02:30 when clocks spring forward) shifts to the next valid time; an ambiguous local time (occurring twice when clocks fall back) resolves to its first occurrence.
 

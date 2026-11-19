@@ -124,6 +124,11 @@
 		border-bottom: 0;
 	}
 
+	/* A range of 12-hour times, its AM and PM, is wider than in 24 hours. */
+	:scope[data-clock="12h"] .schedule-row {
+		grid-template-columns: 11rem minmax(0, 1fr);
+	}
+
 	.schedule-time {
 		font-family: var(--gram-font-mono);
 		font-size: 0.82rem;
@@ -812,6 +817,10 @@
 
 		.schedule-row {
 			grid-template-columns: 6.5rem minmax(0, 1fr);
+		}
+
+		:scope[data-clock="12h"] .schedule-row {
+			grid-template-columns: 8.5rem minmax(0, 1fr);
 		}
 	}
 }

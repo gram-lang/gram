@@ -122,6 +122,7 @@ The recipe says **how** to do things. The <Term id="runSheet" link={false} /> sa
    - `--serve`: the target date and time of the meal.
    - `--available`: when you can cook (repeatable, e.g. `sat=09:00-23:00`, `2026-10-09=none`). Your usual hours can be saved once for the project via `gram config set availability 08:00-22:00`; the flag then only overrides them.
    - `--tz`: your IANA time zone (can be saved permanently via `gram config set timezone Europe/Paris`).
+   - Times can also be written in 12 hours: `--serve "2026-10-17 8:00 pm"`, `--available 8am-10pm`. The run sheet writes them the way your system's region does; `--clock 12h` or `--clock 24h` picks one, and `gram config set clock 12h` keeps it for the project.
    - `--stock`: indicates that a preparation (here the glaze) is already made in your freezer. Gram does not schedule it and flags it as "in stock". The value is the `@use` path exactly as written in the recipe, **relative to the folder you run the command from** (not to the recipe's folder): run `gram plan` from the folder that holds `entremets.gram`.
 
    ```text
@@ -221,6 +222,7 @@ In the online studio, open the settings and their "Schedule" section, then enter
 - The **"Ready as early as"** button calculates the fastest serving time starting right now.
 - The format menu above the view shows the run sheet as HTML, Markdown or plain text, ready to copy into notes or a message.
 - The **Print** button opens the run sheet in its print layout, to print it or save it as a PDF.
+- The **Time format** menu, in the "Display" section, writes the times in 12 hours (`8:00 PM`) or 24 hours (`20:00`); on automatic, it follows your browser's region.
 
 ## From code
 

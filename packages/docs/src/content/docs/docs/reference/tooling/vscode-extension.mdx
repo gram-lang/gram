@@ -5,6 +5,7 @@ description: "Overview of the Gram VS Code extension: live preview, nutrition pa
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../components/Term.astro';
+import Since from '../../../../../components/Since.astro';
 
 The official Gram VS Code extension turns your editor into a dedicated recipe development environment. Powered by `@gram-lang/language-server`, it provides real-time diagnostics, advanced editing assistance, and dynamic live rendering.
 
@@ -62,6 +63,7 @@ This setting applies immediately to all open files (any unrecognized value defau
 | Setting | Values | Effect |
 |---|---|---|
 | `gram.stepQuantities` | `show` (default), `hide` | Controls whether ingredient quantities appear directly within step instructions, after each ingredient name, alongside standardized mass in grams: `flour (250 ml, ~148 g)`. Section ingredient lists always display them. |
+| `gram.clock` <Since v="1.5.0" /> | `auto` (default), `12h`, `24h` | How the run sheet and the serving time suggestions write the time of day: `1:00 PM` or `13:00`. `auto` uses the `clock` setting of the project's `.gram/config.yaml` when it sets one, else the region of your system's locale. |
 | `gram.nutritionBasis` | `auto` (default), `total`, `perPortion`, `per100g` | Calculation basis for the nutrition panel. In `auto` mode, the preview shows every basis side by side (per 100 g, per portion); any other value narrows the table to that basis. |
 | `gram.bakersMathOnly` | `false` (default), `true` | Displays only baker's percentages, omitting absolute weights. |
 

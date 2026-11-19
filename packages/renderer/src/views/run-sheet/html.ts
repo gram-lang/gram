@@ -64,7 +64,9 @@ export function runSheetToHTML(
 	const t = getDictionary(options.lang).renderer;
 	const model = describeRunSheet(sheet, data, options);
 	const e = escapeHtml;
-	let html = `<section class="gram-run-sheet">\n  <header class="run-sheet-header">\n    <h2>${e(model.title)}</h2>\n`;
+	// "11:30 AM – 12:10 PM" is wider than "11:30 – 12:10": the styles widen the time column.
+	const clock = options.hourCycle === "h12" ? ' data-clock="12h"' : "";
+	let html = `<section class="gram-run-sheet"${clock}>\n  <header class="run-sheet-header">\n    <h2>${e(model.title)}</h2>\n`;
 	if (model.subtitle) {
 		html += `    <p class="run-sheet-subtitle">${e(model.subtitle)}</p>\n`;
 	}

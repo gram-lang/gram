@@ -1,3 +1,9 @@
+import {
+	type ClockMode,
+	VIEW_SETTINGS,
+	chooseClock,
+	systemLocale,
+} from "@gram-lang/renderer";
 import type { Availability } from "@gram-lang/scheduler";
 import {
 	WEEKDAYS,
@@ -186,4 +192,36 @@ export function parseFindRange(value: unknown): { from: string; to: string } {
 		);
 	}
 	return { from, to };
+}
+
+/** How a run sheet is written: its clock, and the machine's locale for `auto`. */
+export interface ClockChoice {
+	clock: ClockMode;
+	/** This machine's locale (`LC_ALL`, `LC_TIME`, `LANG`), when it names one. */
+	locale?: string;
+}
+
+/**
+ * The clock of a run sheet, from the first of: `--clock 12h|24h`, the `clock`
+ * setting of the project (or global) config, the region of this machine's
+ * locale (`auto`). Like `timezone`, the setting is only checked here.
+ */
+export function resolveClock(
+	flag: ClockMode | undefined,
+	configured?: unknown,
+): ClockChoice {
+	if (
+		configured !== undefined &&
+		configured !== null &&
+		!VIEW_SETTINGS.clock.accepts(configured)
+	) {
+		return fail(
+			`Unknown \`clock\` setting "${String(configured)}" in .gram/config.yaml: use ${VIEW_SETTINGS.clock.values.join(", ")}, or fix it with \`gram config set clock <value>\`.`,
+		);
+	}
+	const locale = systemLocale(process.env, process.platform);
+	return {
+		clock: chooseClock(flag, configured as ClockMode | undefined),
+		...(locale !== undefined && { locale }),
+	};
 }

@@ -13,6 +13,7 @@ import {
 const DISPLAY_KEYS = [
 	"comments",
 	"stepQuantities",
+	"clock",
 ] as const satisfies readonly (typeof OPTION_SETTING_KEYS)[number][];
 
 /** Baker's math: on, only the percentages, or a chosen reference. */
@@ -43,7 +44,7 @@ export function resetBakers(options: PlaygroundOptions): PlaygroundOptions {
 	};
 }
 
-/** Display: the comments and the quantities in the steps. */
+/** Display: the comments, the quantities in the steps and the clock. */
 export function isDisplayModified(options: PlaygroundOptions): boolean {
 	return DISPLAY_KEYS.some((key) => isOptionModified(options, key));
 }
@@ -54,6 +55,7 @@ export function resetDisplay(options: PlaygroundOptions): PlaygroundOptions {
 		...options,
 		comments: defaults.comments,
 		stepQuantities: defaults.stepQuantities,
+		clock: defaults.clock,
 	};
 }
 

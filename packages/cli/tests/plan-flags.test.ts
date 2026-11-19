@@ -9,6 +9,7 @@ import {
 	parseNow,
 	parseServe,
 	parseTimeZone,
+	resolveClock,
 } from "../src/services/plan-flags";
 
 const messageOf = (fn: () => unknown) => {
@@ -314,7 +315,19 @@ describe("resolveExportView", () => {
 				availability: { daily: [{ start: "08:00", end: "22:00" }] },
 				now: "2026-10-01T09:00:00Z",
 			},
+			clock: expect.objectContaining({ clock: "auto" }),
 		});
+	});
+
+	it("reads the clock of the run sheet from --clock, else the setting", () => {
+		expect(view({ view: "run-sheet", clock: "12h" }, []).clock?.clock).toBe(
+			"12h",
+		);
+		expect(
+			resolveExportView({ view: "run-sheet" }, [], { clock: "24h" }).clock
+				?.clock,
+		).toBe("24h");
+		expect(view({ view: "recipe" }, []).clock).toBeUndefined();
 	});
 
 	it("reads the configured availability for the run sheet", () => {
@@ -352,5 +365,46 @@ describe("resolveExportView", () => {
 
 	it("refuses an unknown view", () => {
 		expect(messageOf(() => view({ view: "gantt" }))).toContain("gantt");
+	});
+});
+
+describe("resolveClock", () => {
+	const withEnv = <T>(env: Record<string, string | undefined>, fn: () => T) => {
+		const saved = { ...process.env };
+		for (const name of ["LC_ALL", "LC_TIME", "LANG"]) delete process.env[name];
+		Object.assign(process.env, env);
+		try {
+			return fn();
+		} finally {
+			process.env = saved;
+		}
+	};
+
+	it("takes --clock, else the setting, else auto", () => {
+		expect(resolveClock("12h", "24h").clock).toBe("12h");
+		expect(resolveClock(undefined, "24h").clock).toBe("24h");
+		expect(resolveClock("auto", "12h").clock).toBe("12h");
+		expect(resolveClock(undefined, undefined).clock).toBe("auto");
+	});
+
+	it("gives the machine's locale for auto", () => {
+		expect(
+			withEnv({ LANG: "en_US.UTF-8" }, () => resolveClock(undefined)),
+		).toEqual({ clock: "auto", locale: "en_US.UTF-8" });
+		expect(
+			withEnv({ LANG: "en_US.UTF-8", LC_TIME: "en_GB.UTF-8" }, () =>
+				resolveClock(undefined),
+			).locale,
+		).toBe("en_GB.UTF-8");
+		expect(withEnv({ LANG: "C" }, () => resolveClock(undefined))).toEqual({
+			clock: "auto",
+		});
+	});
+
+	it("says a bad setting comes from the config, and how to fix it", () => {
+		const message = messageOf(() => resolveClock(undefined, "AM/PM"));
+		expect(message).toContain('"AM/PM"');
+		expect(message).toContain("auto, 12h, 24h");
+		expect(message).toContain("gram config set clock");
 	});
 });

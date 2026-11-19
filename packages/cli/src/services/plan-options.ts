@@ -8,12 +8,15 @@ import {
 } from "../core/cli-views";
 import { ExitCode, GramCLIError } from "../errors";
 import {
+	type ClockChoice,
 	collectFlag,
 	parseAvailability,
 	parseNow,
 	parseServe,
 	parseTimeZone,
+	resolveClock,
 } from "./plan-flags";
+import { readViewSettingArgs } from "./setting-args";
 
 /**
  * The flags that put a recipe on the calendar, shared by `gram plan` and by the
@@ -85,6 +88,8 @@ export interface ExportView {
 	/** For a view laid out in time (the run sheet). */
 	kitchen?: KitchenContext;
 	serveAt?: string;
+	/** For a view laid out in time: `--clock`, else the `clock` setting, else the machine's. */
+	clock?: ClockChoice;
 }
 
 /**
@@ -95,7 +100,7 @@ export interface ExportView {
 export function resolveExportView(
 	args: Record<string, unknown>,
 	rawArgs: string[] | undefined,
-	config: { timezone?: string; availability?: unknown },
+	config: { timezone?: string; availability?: unknown; clock?: unknown },
 ): ExportView {
 	const view = viewByCliName((args.view as string | undefined) ?? "recipe");
 	const hasServe = args.serve !== undefined && args.serve !== "";
@@ -116,5 +121,9 @@ export function resolveExportView(
 		view,
 		kitchen: resolveKitchenContext(args, rawArgs, config),
 		...(hasServe && { serveAt: parseServe(args.serve) }),
+		clock: resolveClock(
+			readViewSettingArgs(args, ["clock"]).clock,
+			config.clock,
+		),
 	};
 }

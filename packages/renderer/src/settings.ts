@@ -112,6 +112,15 @@ export const STEP_QUANTITIES_MODES: readonly StepQuantitiesMode[] = [
 	"hide",
 ];
 
+/**
+ * How the run sheet writes a time of day: in 12 hours ("1:00 PM"), in 24
+ * ("13:00"), or (`auto`) as the reader's locale does, 24 hours unless its
+ * region writes 12 (`en-US`).
+ */
+export type ClockMode = "auto" | "12h" | "24h";
+
+export const CLOCK_MODES: readonly ClockMode[] = ["auto", "12h", "24h"];
+
 /** What the views show of a recipe. */
 export interface ViewSettings {
 	miseEnPlace: MiseEnPlaceMode;
@@ -120,6 +129,7 @@ export interface ViewSettings {
 	nutritionBasis: NutritionBasis;
 	bakersMathOnly: boolean;
 	stepQuantities: StepQuantitiesMode;
+	clock: ClockMode;
 }
 
 /** What the analyzer computes of a recipe. */
@@ -173,6 +183,13 @@ export const VIEW_SETTINGS: Descriptors<ViewSettings> = {
 		STEP_QUANTITIES_MODES,
 		"show",
 		"Whether the quantities of the ingredients are repeated in the text of the steps.",
+	),
+	clock: choice(
+		"clock",
+		"view",
+		CLOCK_MODES,
+		"auto",
+		"How the times of day are written: in 12 hours (1:00 PM), in 24 hours (13:00), or as the reader's region writes them.",
 	),
 };
 

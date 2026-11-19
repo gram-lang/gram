@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { MiseEnPlaceMode, RestChoice } from "@gram-lang/kitchen";
-import { VIEW_SETTINGS } from "@gram-lang/renderer";
+import { type HourCycle, VIEW_SETTINGS } from "@gram-lang/renderer";
 import { WEEKDAYS, type Weekday } from "@gram-lang/scheduler";
 // biome-ignore lint/correctness/noUnusedImports: OptionsSection is used as a component in the <template> block below
 import OptionsSection from "./OptionsSection.vue";
@@ -43,6 +43,8 @@ const props = defineProps<{
 	rests?: RestChoice;
 	planError?: string;
 	serveSuggestions?: ServeSuggestions | null;
+	/** The reader's clock, for the serving time in the badge. */
+	hourCycle?: HourCycle;
 }>();
 
 const emit = defineEmits<{
@@ -77,7 +79,7 @@ const state = computed(() => ({
 const modified = computed(() => isScheduleModified(state.value));
 // biome-ignore lint/correctness/noUnusedVariables: badgeTitle is used in the <template> block below, which Biome's Vue support doesn't see.
 const badgeTitle = computed(() =>
-	scheduleBadgeTitle(state.value, t.value, lang.value),
+	scheduleBadgeTitle(state.value, t.value, lang.value, props.hourCycle),
 );
 
 const DEFAULT_SCHEDULE = VIEW_SETTINGS.miseEnPlace.default;

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { cliEnv } from "./helpers";
 import { compile, scheduleTimes } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
 
@@ -46,7 +47,10 @@ afterAll(async () => {
 });
 
 function gram(...args: string[]) {
-	const run = Bun.spawnSync([process.execPath, ENTRY, ...args], { cwd: dir });
+	const run = Bun.spawnSync([process.execPath, ENTRY, ...args], {
+		cwd: dir,
+		env: cliEnv(),
+	});
 	const strip = (b: Uint8Array) =>
 		new TextDecoder().decode(b).replace(/\x1b\[[0-9;]*m/g, "");
 	return {
