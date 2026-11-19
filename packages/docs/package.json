@@ -33,12 +33,12 @@
     "@gram-lang/renderer": "workspace:*",
     "@gram-lang/scheduler": "workspace:*",
     "astro": "^7.4.13",
-    "mermaid": "^12.0.0",
+    "mermaid": "^12.3.0",
     "shiki": "^4.3.1",
     "starlight-theme-nova": "^0.12.3",
     "unist-util-visit": "^5.1.0",
     "vite": "^8.0.13",
-    "vue": "^3.5.39"
+    "vue": "^3.5.45"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
