@@ -14,7 +14,7 @@ import {
 	type IngredientEntry,
 } from "../ingredient-loader";
 import { formatTerms, normalizeUnit, termsTotal } from "@gram-lang/i18n";
-import { massOf, NUTRIENTS, standardizeMass } from "@gram-lang/analyzer";
+import { NUTRIENTS, standardizeMass, weighAmount } from "@gram-lang/analyzer";
 import {
 	type CompoundQuantityAST,
 	isCompoundQuantity,
@@ -104,21 +104,18 @@ function buildSumSection(
 	}
 
 	if (entry) {
-		const { known, unknown } = massOf(sum.terms, db, entry.name);
-		if (unknown.length === 0 && known.length > 0) {
-			const mass = known.reduce(
-				(acc, part) => acc + (part.term.minus ? -part.mass : part.mass),
-				0,
+		// Weighed as the views weigh it (`weighAmount`), so the hover can never
+		// tell another mass, nor call exact what they call an estimate.
+		const weighed = weighAmount(sum.terms, db, entry.name);
+		if (weighed && weighed.normalizedMass > 0) {
+			const density =
+				weighed.isEstimate &&
+				sum.terms.some((term) => familyOf(term.unit) === "volume")
+					? entry.physical?.density
+					: undefined;
+			lines.push(
+				`**Conversion**: ${written} ${weighed.isEstimate ? "≈" : "="} **${Math.round(weighed.normalizedMass)} g**${density ? ` _(density: ${density} g/ml)_` : ""}`,
 			);
-			const exact = known.every((part) => part.method === "physical");
-			const density = known.some((part) => part.method === "density")
-				? entry.physical?.density
-				: undefined;
-			if (mass > 0) {
-				lines.push(
-					`**Conversion**: ${written} ${exact ? "=" : "≈"} **${Math.round(mass)} g**${density ? ` _(density: ${density} g/ml)_` : ""}`,
-				);
-			}
 		}
 	}
 

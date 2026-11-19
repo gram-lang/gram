@@ -4,6 +4,7 @@ import { parseDocument } from "../src/document-state";
 import { provideCodeActions } from "../src/features/code-actions";
 import { provideCompletions } from "../src/features/completions";
 import { provideDiagnostics } from "../src/features/diagnostics";
+import { weighAmount } from "@gram-lang/analyzer";
 import { provideHover } from "../src/features/hover";
 import type { IngredientDB } from "../src/ingredient-loader";
 import { positionToOffset } from "../src/utils/position";
@@ -116,6 +117,30 @@ describe("hover on a sum", () => {
 		);
 		// 1 cup ≈ 236.59 ml × 0.53 ≈ 125.4 g, plus 20 g.
 		expect(hover).toMatch(/1 cup \+ 20 g ≈ \*\*145 g\*\*/);
+	});
+
+	it("calls exact a sum of weights, and weighs what is taken away", () => {
+		const text = recipe("Add @flour{1 kg - 200 g + 50 g}.");
+		expect(hoverAt(text, "@flour", db)).toContain(
+			"**Conversion**: 1 kg − 200 g + 50 g = **850 g**",
+		);
+	});
+
+	it("tells the mass the views tell (weighAmount)", () => {
+		const text = recipe("Add @flour{1 cup - 2 tbsp + 30 g}.");
+		const weighed = weighAmount(
+			[
+				{ value: 1, unit: "cup" },
+				{ value: 2, unit: "tbsp", minus: true },
+				{ value: 30, unit: "g" },
+			],
+			db,
+			"Flour",
+		);
+		expect(weighed?.isEstimate).toBe(true);
+		expect(hoverAt(text, "@flour", db)).toContain(
+			`≈ **${Math.round(weighed!.normalizedMass)} g** _(density: 0.53 g/ml)_`,
+		);
 	});
 
 	it("shows what each kind comes to when a sum takes away within one kind", () => {
