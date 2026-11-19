@@ -86,14 +86,40 @@ export const SELF_TEST_CASES: SelfTestCase[] = [
 		bad: "## Bake\n\nBake for ~{45min}.\n",
 		good: "## Bake\n\nBake for ~_{45min}.\n",
 	},
+	{
+		label: "comma-as-thousands-separator",
+		bad: "## Prep\n\nAdd @flour{1,000 g} to the bowl.\n",
+		good: "## Prep\n\nAdd @flour{1000 g} to the bowl.\n",
+	},
+	{
+		label: "decimal-point-for-hours-and-minutes",
+		bad: "## Bake\n\nBake for ~{1.30 h}.\n",
+		good: "## Bake\n\nBake for ~{1h30}.\n",
+	},
+	{
+		label: "space-before-ingredient-preparation",
+		bad: "## Prep\n\nAdd @onion{1} (diced) to the pan.\n",
+		good: "## Prep\n\nAdd @onion{1}(diced) to the pan.\n",
+	},
+	{
+		label: "space-before-cookware-preparation",
+		bad: "## Prep\n\nHeat the #pan{} (20cm, non-stick).\n",
+		good: "## Prep\n\nHeat the #pan{}(20cm, non-stick).\n",
+	},
+	{
+		label: "ratio-without-spaces",
+		bad: "## Prep\n\nWeigh @flour{500 g}.\n\nAdd @eggs{1/100g @&flour}.\n",
+		good: "## Prep\n\nWeigh @flour{500 g}.\n\nAdd @eggs{1 / 100 g @&flour}.\n",
+	},
 ];
 
 // Raw ❌ glyph count observed in the EN doc as of this transcription. If the
 // live count drifts, the doc likely gained (or lost) a mistake example that
 // nobody transcribed here yet — print an informational note, don't fail.
-// The 4 added in 1.5 (temperature note, target state) are prose mistakes no
-// check can flag, so they are counted here rather than transcribed above.
-const EXPECTED_BAD_GLYPH_COUNT = 26;
+// The 6 prose mistakes added in 1.5 (temperature note, target state, a ratio
+// or a proportional time worked out by hand) are ones no check can flag, so
+// they are counted here rather than transcribed above.
+const EXPECTED_BAD_GLYPH_COUNT = 33;
 
 export function extractSelfTestSnippets(): {
 	bad: Snippet[];

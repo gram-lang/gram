@@ -41,6 +41,7 @@ export const TRUSTED_SYNTAX_FILES: string[] = [
 	"ingredients",
 	"intermediate-variables",
 	"relative-quantities",
+	"target-states",
 	"temperatures",
 	"times",
 ].flatMap((name) => [
