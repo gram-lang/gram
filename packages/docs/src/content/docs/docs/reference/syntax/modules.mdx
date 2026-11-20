@@ -4,10 +4,7 @@ description: "Import another .gram file as a reusable sub-component with @use, a
 ---
 
 import { Tabs, TabItem, CardGrid, LinkCard } from '@astrojs/starlight/components';
-import Since from '../../../../../components/Since.astro';
 import Term from '../../../../../components/Term.astro';
-
-<Since v="1.2.0" />
 
 A recipe can `@use` another `.gram` file as a reusable sub-component — a shortcrust pastry, a stock, a batch of egg whites — instead of copy-pasting its steps into every recipe that needs it.
 
@@ -63,7 +60,7 @@ The imported recipe's steps are seamlessly inlined into the timeline: a base's r
     `@/` always points to the project root (the directory containing `.gram/`), regardless of file depth:
 
     ```gram
-    @use "@/bases/shortcrust-pastry.gram" as &pate
+    @use "@/bases/shortcrust-pastry.gram" as &pastry
     ```
   </TabItem>
 
@@ -80,7 +77,7 @@ The imported recipe's steps are seamlessly inlined into the timeline: a base's r
     Then import directly using `@alias/`:
 
     ```gram
-    @use "@bases/pate-sablee.gram" as &pate
+    @use "@bases/shortcrust-pastry.gram" as &pastry
     @use "@sauces/bechamel.gram" as &sauce
     ```
   </TabItem>
@@ -96,11 +93,11 @@ title: 'Tart Elements'
 
 ## Sweet Pastry ->&crust
 
-[Mix] The @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
+[Mix] @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
 
 ## Frangipane Cream ->&frangipane
 
-[Cream] The @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
+[Cream] @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
 ```
 
 :::note[Default Exports & Re-exporting]
@@ -122,7 +119,7 @@ title: 'Shortcrust Pastry'
 [Mix] @flour{300g} with @butter{200g}.
 ```
 
-`shortcrust.gram` sums its own ingredients to 500g. When an importing recipe requests `&pate{250g}`, Gram scales every ingredient in it by `0.5` automatically — the ratio between what was asked for and what the module actually measures out to.
+`shortcrust.gram` sums its own ingredients to 500g. When an importing recipe requests `&pastry{250g}`, Gram scales every ingredient in it by `0.5` automatically — the ratio between what was asked for and what the module actually measures out to.
 
 :::note[When the measurement is only an estimate]
 If working out a module's mass depends on an estimated density or a default unit weight rather than an explicit mass, Gram emits an `ESTIMATED_MODULE_YIELD` diagnostic rather than treating the scale factor as exact.
@@ -137,11 +134,11 @@ title: 'Tart Elements'
 
 ## Sweet Pastry ->&crust
 
-[Mix] The @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
+[Mix] @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
 
 ## Frangipane Cream ->&frangipane
 
-[Cream] The @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
+[Cream] @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
 ```
 
 ```gram
@@ -183,7 +180,7 @@ recipe.gram ──▶ @use "./sauce.gram" ──▶ @use "./stock.gram"
 
 ### Diamond dependencies
 
-When a menu imports multiple dishes sharing a common base (e.g. an entrée and a dessert both importing `pate-sablee.gram`):
+When a menu imports multiple dishes sharing a common base (e.g. an entrée and a dessert both importing `shortcrust-pastry.gram`):
 * The shared base file is parsed **only once**.
 * The compiler creates independent instances scaled to each dish's requirements.
 * Raw ingredients (flour, butter) merge cleanly on the shopping list.
@@ -250,7 +247,7 @@ The Gram Language Server resolves `@use` directives in real time:
 
 * **Instant Diagnostics**: Cross-file validation updates live as you type.
 * **Run sheet & live preview**: Real-time update incorporating spliced steps and scaled quantities. An imported base integrates into kitchen visits, and a time anchor (e.g. `~{-2d}`) on its `@use` directive automatically opens a dedicated working day.
-* **Go to Definition**: Jumping to `&pate` opens the source module at the exact exported section.
+* **Go to Definition**: Jumping to `&pastry` opens the source module at the exact exported section.
 * **Auto-completion**: Typing `@use "` completes `./`, `../`, `@/`, and configured `paths:` aliases.
 
 

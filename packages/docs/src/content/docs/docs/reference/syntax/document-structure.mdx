@@ -5,7 +5,6 @@ description: "Reference for the .gram file structure: YAML frontmatter, function
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
-import Since from '../../../../../components/Since.astro';
 import Term from '../../../../../components/Term.astro';
 
 A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata, Sections, Steps, and Comments.
@@ -56,16 +55,14 @@ densities:
 
 ## 2. Module imports
 
-<Since v="1.2.0" />
-
 Right after the frontmatter, before any step, a recipe can `@use` other `.gram` files as reusable sub-components.
 
 ```gram
-@use "./bases/pate-sablee.gram" as &pate
+@use "./bases/shortcrust-pastry.gram" as &pastry
 
-## Montage
+## Assembly
 
-[Foncer] le moule avec &pate{250g}.
+[Line] The #pan{} with &pastry{250g}.
 ```
 
 *See [Module Imports](/docs/reference/syntax/modules) for the full syntax, scaling rules, and encapsulation guarantees.*
@@ -85,7 +82,7 @@ A different step.
 Steps can optionally start with an **Action** enclosed in brackets `[]`. This highlights the primary method used in that step, making it easy to parse visually or programmatically.
 
 ```gram
-[Mix] The @flour and @water.
+[Mix] @flour and @water.
 
 [Bake] In the #oven for ~{30min}.
 ```
@@ -101,11 +98,11 @@ Complex recipes often have multiple components (e.g., dough, filling, frosting) 
 ```gram
 ## Dough
 
-Mix @flour{200g} and @water{100ml} together until smooth.
+[Mix] @flour{200g} and @water{100ml} together until smooth.
 
 ## Filling
 
-Combine @cheese{100g} and @spinach{50g}, then season to taste.
+[Combine] @cheese{100g} and @spinach{50g}, then season to taste.
 ```
 
 ### Retro-planning (scheduling)
@@ -115,7 +112,7 @@ You can assign a preparation timeframe to a `## Section` by adding a `~timer`-li
 ## Puff Pastry ~{-2d}
 ```
 This tells the compiler that the "Puff Pastry" `## Section` should be prepared **2 days in advance**.
-Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes) — free text (e.g. `~{the day before}`) is not valid here and is flagged by the compiler.
+The offset is a negative duration in days, hours and minutes, written like a timer (`~{-2d}`, `~{-12h}`, `~{-1h30}`, `~{-1d 12h}`) — free text (e.g. `~{the day before}`) is not valid here and is flagged by the compiler.
 
 *See [Times & Scheduling](/docs/reference/syntax/times#section-retro-planning) for the full syntax rules and error handling.*
 
@@ -133,12 +130,12 @@ You can add comments to explain instructions without affecting the compiled outp
 
 **Inline Comments (`//`)**:
 ```gram
-Mash @potato{2kg} until smooth // alternatively, boil 'em first.
+[Mash] @potato{2kg} until smooth // alternatively, boil 'em first.
 ```
 
 **Block Comments (`/* ... */`)**:
 ```gram
-Slowly add @milk{4 cup} /* TODO change units to litres */, keep mixing.
+[Add] Slowly pour in @milk{4 cup} /* TODO change units to litres */, keep mixing.
 ```
 
 :::note[Comments vs YAML Notes]

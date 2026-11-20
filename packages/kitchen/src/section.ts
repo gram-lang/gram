@@ -1,3 +1,4 @@
+import type { QuantityPart } from "./terms";
 import type { StepToken, Usage } from "./types";
 import { round2 } from "./utils";
 
@@ -15,11 +16,15 @@ export interface AggregatedIngredient {
 	// Raw Usage.composite.preparation — a preparation on the PARENT itself (e.g.
 	// "cut in half"), distinct from this entry's own `preparation` above.
 	parentPreparation?: string | null;
-	// null = unmeasured (Rule 2: dedup); array = measured occurrences in order (Rule 1: addition)
+	// null = unmeasured (Rule 2: dedup); array = measured mentions in order, one
+	// per mention, never added up (Rule 1: listing)
 	// Rule 3 (segregation): a given id can have both an unmeasured entry AND a measured entry simultaneously
 	quantities: Array<{
-		qty: NonNullable<Usage["qty"]>;
+		/** Absent for a sum with no single total (`{1 cup + 20 g}`, or refused). */
+		qty?: NonNullable<Usage["qty"]>;
 		unit?: string | null;
+		/** The terms of a sum (`{1 cup + 1 tbsp}`), as on its `Usage`. Since 1.5.0. */
+		parts?: QuantityPart[];
 	}> | null;
 	normalizedMass?: number;
 	conversionMethod?: string;
@@ -50,10 +55,28 @@ function createBaseEntry(
 	};
 }
 
+type SectionQuantity = NonNullable<AggregatedIngredient["quantities"]>[number];
+
+/**
+ * One mention as a section lists it: its amount as the step wrote it (a sum
+ * keeps its `parts`), never added to the others. Two mentions of `100 g` are
+ * often two portions to weigh: the section shows both, the shopping list
+ * adds them up.
+ */
+function quantityOfMention(ing: Usage): SectionQuantity {
+	const quantity: SectionQuantity = {};
+	if (ing.qty != null) quantity.qty = ing.qty;
+	quantity.unit = ing.unit ?? null;
+	if (ing.parts?.length) quantity.parts = ing.parts;
+	return quantity;
+}
+
 /**
  * Aggregates a flat list of section Usage items into display-ready entries:
  *
- *   Rule 1 — Addition:    measured + measured → one entry, quantities joined with '+'
+ *   Rule 1 — Listing:     measured + measured → one entry listing every
+ *                         mention as written (`100 g` and `100 g`: two
+ *                         portions to weigh); the shopping list adds them up
  *   Rule 2 — Dedup:       unmeasured + unmeasured → one entry
  *   Rule 3 — Segregation: measured ≠ unmeasured → always two separate entries
  *
@@ -88,13 +111,15 @@ export function aggregateSectionIngredients(
 		}
 
 		const name = ing.name;
-		const hasMeasuredQty = ing.qty != null;
+		// A quantity in words (`{une pincée}`) has no number, only a unit: it
+		// is listed as written, like a measured one.
+		const hasMeasuredQty = ing.qty != null || !!ing.parts?.length || !!ing.unit;
 		const key = ing.preparation ? `${ing.id}::${ing.preparation}` : ing.id;
 
 		if (hasMeasuredQty) {
 			const existing = measuredByKey.get(key);
 			if (existing) {
-				existing.quantities!.push({ qty: ing.qty!, unit: ing.unit ?? null });
+				existing.quantities!.push(quantityOfMention(ing));
 				if (ing.normalizedMass) {
 					existing.normalizedMass =
 						(existing.normalizedMass || 0) + ing.normalizedMass;
@@ -111,7 +136,7 @@ export function aggregateSectionIngredients(
 			} else {
 				const entry: AggregatedIngredient = {
 					...createBaseEntry(ing, name),
-					quantities: [{ qty: ing.qty!, unit: ing.unit ?? null }],
+					quantities: [quantityOfMention(ing)],
 					normalizedMass: ing.normalizedMass,
 					conversionMethod: ing.conversionMethod,
 					isEstimate: ing.isEstimate,

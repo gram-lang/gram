@@ -1,0 +1,449 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Quantity Compound Mixed Family"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 57,
+                "end": 61
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "cup",
+                    "loc": {
+                      "start": 68,
+                      "end": 73
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 20,
+                      "text": "20"
+                    },
+                    "unit": "g",
+                    "loc": {
+                      "start": 76,
+                      "end": 80
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 cup + 20 g",
+                "loc": {
+                  "start": 68,
+                  "end": 80
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 61,
+                "end": 81
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 82,
+                "end": 87
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 50,
+                  "text": "50"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 94,
+                  "end": 98
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 87,
+                "end": 99
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 99,
+                "end": 100
+              }
+            }
+          ],
+          "loc": {
+            "start": 57,
+            "end": 102
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 102,
+                "end": 106
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "cup",
+                    "loc": {
+                      "start": 112,
+                      "end": 117
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 50,
+                      "text": "50"
+                    },
+                    "unit": "ml",
+                    "loc": {
+                      "start": 120,
+                      "end": 125
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 cup + 50 ml",
+                "loc": {
+                  "start": 112,
+                  "end": 125
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 106,
+                "end": 126
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 127,
+                "end": 131
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "garlic",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "head",
+                    "loc": {
+                      "start": 139,
+                      "end": 145
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 2,
+                      "text": "2"
+                    },
+                    "unit": "cloves",
+                    "loc": {
+                      "start": 148,
+                      "end": 156
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 head + 2 cloves",
+                "loc": {
+                  "start": 139,
+                  "end": 156
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 131,
+                "end": 157
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 157,
+                "end": 158
+              }
+            }
+          ],
+          "loc": {
+            "start": 102,
+            "end": 160
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Fold in ",
+              "loc": {
+                "start": 160,
+                "end": 168
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "CompoundQuantity",
+                "terms": [
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 1,
+                      "text": "1"
+                    },
+                    "unit": "cup",
+                    "loc": {
+                      "start": 176,
+                      "end": 181
+                    }
+                  },
+                  {
+                    "minus": true,
+                    "value": {
+                      "type": "single",
+                      "value": 2,
+                      "text": "2"
+                    },
+                    "unit": "tbsp",
+                    "loc": {
+                      "start": 184,
+                      "end": 190
+                    }
+                  },
+                  {
+                    "value": {
+                      "type": "single",
+                      "value": 30,
+                      "text": "30"
+                    },
+                    "unit": "g",
+                    "loc": {
+                      "start": 193,
+                      "end": 197
+                    }
+                  }
+                ],
+                "fixed": false,
+                "raw": "1 cup - 2 tbsp + 30 g",
+                "loc": {
+                  "start": 176,
+                  "end": 197
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 168,
+                "end": 198
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 198,
+                "end": 199
+              }
+            }
+          ],
+          "loc": {
+            "start": 160,
+            "end": 201
+          }
+        }
+      ],
+      "loc": {
+        "start": 47,
+        "end": 201
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Juice",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Squeeze ",
+              "loc": {
+                "start": 211,
+                "end": 219
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "juice",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 226,
+                  "end": 232
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "oranges",
+                "quantity": {
+                  "type": "CompoundQuantity",
+                  "terms": [
+                    {
+                      "value": {
+                        "type": "single",
+                        "value": 1,
+                        "text": "1"
+                      },
+                      "unit": "lb",
+                      "loc": {
+                        "start": 243,
+                        "end": 247
+                      }
+                    },
+                    {
+                      "value": {
+                        "type": "single",
+                        "value": 4,
+                        "text": "4"
+                      },
+                      "unit": "oz",
+                      "loc": {
+                        "start": 250,
+                        "end": 254
+                      }
+                    }
+                  ],
+                  "fixed": false,
+                  "raw": "1 lb + 4 oz",
+                  "loc": {
+                    "start": 243,
+                    "end": 254
+                  }
+                },
+                "preparation": null,
+                "loc": {
+                  "start": 233,
+                  "end": 255
+                }
+              },
+              "loc": {
+                "start": 219,
+                "end": 255
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 255,
+                "end": 256
+              }
+            }
+          ],
+          "loc": {
+            "start": 211,
+            "end": 257
+          }
+        }
+      ],
+      "loc": {
+        "start": 201,
+        "end": 257
+      }
+    }
+  ]
+}

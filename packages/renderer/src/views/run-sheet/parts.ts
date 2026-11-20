@@ -1,5 +1,15 @@
-import { getDictionary, isMetricMassUnit } from "@gram-lang/i18n";
-import type { StepToken } from "@gram-lang/kitchen";
+import {
+	getDictionary,
+	mergeTerms,
+	normalizeUnit,
+	type Term,
+} from "@gram-lang/i18n";
+import { isRefusedSum, type StepToken, termsOfUsage } from "@gram-lang/kitchen";
+import {
+	formatUsageQuantity,
+	isScaled,
+	type QuantityContext,
+} from "../../shared/quantity";
 import { formatElement } from "../../shared/element";
 import { stripTooltips } from "../../shared/tooltip-card";
 import { showsComments } from "../../shared/comments";
@@ -13,7 +23,7 @@ import {
 	escapeMarkdownHtml,
 	formatDecimalToFraction,
 	formatGrams,
-	getQty,
+	isWrittenInMetricMass,
 	joinStepTokens,
 	nobr,
 	round1,
@@ -82,10 +92,6 @@ export interface VisitKitOptions {
 	madeBefore?: (intermediate: string, maker: number) => string | undefined;
 }
 
-const SUM_EPS = 1e-9;
-
-const unitSuffix = (unit?: string | null) => (unit ? ` ${unit}` : "");
-
 const sortedSections = (sections: Iterable<number>) =>
 	[...new Set(sections)].sort((a, b) => a - b);
 
@@ -101,16 +107,17 @@ export function kitIngredients(
 ): KitItem[] {
 	const t = getDictionary(options.lang).renderer;
 	const registry = data.registry;
+	const ctx = { lang: options.lang, scaled: isScaled(data.scaleFactor) };
 	interface Line {
 		id: string;
-		unit: string;
-		numbers: number[];
-		/** The standardized weight of each of `numbers`, when it has one. */
+		/** Each occurrence that adds up: its terms, its weight when it has one. */
+		occurrences: { usage: Record<string, unknown>; terms: Term[] }[];
 		masses: number[];
+		/** An amount that does not add up (a text, a sum Gram refused). */
 		text?: string;
 	}
 	const lines: Line[] = [];
-	const byKey = new Map<string, Line>();
+	const byId = new Map<string, Line>();
 	for (const index of sortedSections(sections)) {
 		const section = data.sections?.[index];
 		if (!section) continue;
@@ -120,16 +127,15 @@ export function kitIngredients(
 		>[]) {
 			if (usage.type === "reference") continue;
 			const id = String(usage.id ?? "");
-			const unit = typeof usage.unit === "string" ? usage.unit : "";
-			if (typeof usage.qty === "number") {
-				const key = `${id}|${unit}`;
-				let line = byKey.get(key);
+			const terms = isRefusedSum(usage) ? [] : termsOfUsage(usage);
+			if (terms.length > 0) {
+				let line = byId.get(id);
 				if (!line) {
-					line = { id, unit, numbers: [], masses: [] };
-					byKey.set(key, line);
+					line = { id, occurrences: [], masses: [] };
+					byId.set(id, line);
 					lines.push(line);
 				}
-				line.numbers.push(usage.qty);
+				line.occurrences.push({ usage, terms });
 				if (
 					typeof usage.normalizedMass === "number" &&
 					usage.normalizedMass > 0
@@ -137,13 +143,12 @@ export function kitIngredients(
 					line.masses.push(usage.normalizedMass);
 				}
 			} else {
-				const qty = getQty(usage, { lang: options.lang });
+				const text = formatUsageQuantity(usage, ctx);
 				lines.push({
 					id,
-					unit,
-					numbers: [],
+					occurrences: [],
 					masses: [],
-					...(qty?.text !== undefined && { text: qty.text }),
+					...(text !== "" && { text }),
 				});
 			}
 		}
@@ -151,20 +156,19 @@ export function kitIngredients(
 	return lines.map((line) => {
 		const entry = registry?.ingredients?.[line.id];
 		const name = entry?.name ?? line.id;
-		const total = line.numbers.reduce((sum, n) => sum + n, 0);
-		const hasNumbers = line.numbers.length > 0;
-		const quantity = hasNumbers
-			? `${formatDecimalToFraction(total, line.unit, { lang: options.lang })}${unitSuffix(line.unit)}`
-			: line.text !== undefined
-				? `${line.text}${unitSuffix(line.unit)}`
-				: undefined;
-		const many = line.numbers.length > 1 && Math.abs(total) > SUM_EPS;
+		const { occurrences } = line;
+		const all = occurrences.flatMap((o) => o.terms);
+		const hasTerms = all.length > 0;
+		const quantity = hasTerms
+			? formatUsageQuantity({ terms: mergeTerms(all, "unit") }, ctx)
+			: line.text;
+		const many = occurrences.length > 1;
 		// A weight is told when every part of the line has one and the quantity
 		// is not already a weight: it is what the mise en place is weighed on.
 		const mass =
-			hasNumbers &&
-			line.masses.length === line.numbers.length &&
-			!isMetricMassUnit(line.unit, options.lang)
+			hasTerms &&
+			line.masses.length === occurrences.length &&
+			!occurrences.every((o) => isWrittenInMetricMass(o.usage, options.lang))
 				? round1(line.masses.reduce((sum, n) => sum + n, 0))
 				: undefined;
 		return {
@@ -173,16 +177,38 @@ export function kitIngredients(
 			...(quantity !== undefined && { quantity }),
 			...(mass !== undefined &&
 				mass > 0 && { mass: formatGrams(mass, options.lang) }),
-			...(many && {
-				detail: line.numbers
-					.map((n) =>
-						formatDecimalToFraction(n, line.unit, { lang: options.lang }),
-					)
-					.join(" + "),
-			}),
+			...(many && { detail: sumDetail(occurrences, ctx) }),
 			...(entry?.is_module_synthetic && { note: t.runSheetInStock }),
 		};
 	});
+}
+
+/**
+ * What a sum over several sections is made of: "60 + 30" when every part is
+ * one amount of one unit (the unit is said once, by the total), each amount
+ * in full otherwise ("1 cup + 2 tbsp").
+ */
+function sumDetail(
+	occurrences: { usage: Record<string, unknown>; terms: Term[] }[],
+	ctx: QuantityContext,
+): string {
+	const [first] = occurrences;
+	const unit = normalizeUnit(first?.terms[0]?.unit, ctx.lang);
+	const oneUnit = occurrences.every(
+		(o) =>
+			o.terms.length === 1 &&
+			!o.terms[0]?.minus &&
+			normalizeUnit(o.terms[0]?.unit, ctx.lang) === unit,
+	);
+	return occurrences
+		.map((o) => {
+			const text = formatUsageQuantity(o.usage, ctx);
+			const suffix = ` ${o.terms[0]?.unit ?? ""}`;
+			return oneUnit && suffix !== " " && text.endsWith(suffix)
+				? text.slice(0, -suffix.length)
+				: text;
+		})
+		.join(" + ");
 }
 
 /**
@@ -375,13 +401,16 @@ const entities: Record<string, string> = {
 	"&#039;": "'",
 };
 
-/** The text of an HTML fragment this renderer wrote: tags dropped, entities back, spaces folded. */
+/**
+ * The text of an HTML fragment this renderer wrote: tags dropped, entities
+ * back, spaces folded, but the non-breaking ones kept (`10 min`).
+ */
 const htmlToText = (html: string) =>
 	html
 		.replace(/<[^>]*>/g, "")
 		.replace(/&(?:amp|lt|gt|quot|#039);/g, (m) => entities[m] ?? m)
-		.replace(/\s+/g, " ")
-		.replace(/\s+([.,!?:;)])/g, "$1")
+		.replace(/[^\S\u00A0]+/g, " ")
+		.replace(/[^\S\u00A0]+([.,!?:;)])/g, "$1")
 		.trim();
 
 /**
@@ -400,7 +429,12 @@ export function sectionSteps(
 	data: RenderableCompilationResult,
 	section: number,
 	stepIndexes: number[],
-	options: { lang?: string; comments?: CommentsMode } = {},
+	options: {
+		lang?: string;
+		comments?: CommentsMode;
+		/** The caller's duration format, for the timers of the steps. */
+		formatDuration?: (minutes: number) => string;
+	} = {},
 ): ProgramStep[] {
 	const source = data.sections?.[section];
 	if (!source) return [];
@@ -409,6 +443,7 @@ export function sectionSteps(
 	const context: RenderContext = {
 		lang: options.lang,
 		registry: data.registry,
+		formatDuration: options.formatDuration,
 		hideIngredientQty: true,
 		icons: {
 			timer: "",

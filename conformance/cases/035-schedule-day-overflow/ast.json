@@ -12,7 +12,11 @@
         "raw": "-1d",
         "sign": -1,
         "value": 1,
-        "unit": "d"
+        "unit": "d",
+        "loc": {
+          "start": 57,
+          "end": 63
+        }
       },
       "intermediateDecl": {
         "type": "IntermediateDecl",
@@ -124,6 +128,7 @@
             {
               "type": "Timer",
               "name": null,
+              "raw": "50h",
               "quantity": {
                 "type": "Quantity",
                 "value": {
@@ -215,6 +220,7 @@
             {
               "type": "Timer",
               "name": null,
+              "raw": "30min",
               "quantity": {
                 "type": "Quantity",
                 "value": {

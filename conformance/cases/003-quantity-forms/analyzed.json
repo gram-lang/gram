@@ -64,7 +64,11 @@
         "4"
       ],
       "qty": 2,
-      "unit": "cups"
+      "unit": "cups",
+      "range": {
+        "min": 1.5,
+        "max": 2.5
+      }
     }
   ],
   "cookware": [],

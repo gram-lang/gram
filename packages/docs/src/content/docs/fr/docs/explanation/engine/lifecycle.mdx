@@ -3,7 +3,6 @@ title: "Le cycle de vie de Gram"
 description: "Vue d'ensemble du pipeline de compilation de Gram, du parseur au moteur de rendu, et articulation modulaire de ses paquets."
 ---
 
-import Since from '../../../../../../components/Since.astro';
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../../components/Term.astro';
 
@@ -50,7 +49,6 @@ La compilation d'une recette Gram s'effectue au travers d'un flux de traitement 
 </Steps>
 
 ### Le moteur d'ordonnancement (`@gram-lang/scheduler`)
-<Since v="1.4.0" />
 
 `@gram-lang/scheduler` se situe sous le compilateur Kitchen : Kitchen dépend de lui, jamais l'inverse. Le scheduler n'a aucune connaissance de l'AST ou de la syntaxe `.gram`, n'opérant que sur un graphe neutre de tâches. Il assure deux missions majeures :
 - **`layout()`** ordonnance le graphe de tâches sur une chronologie relative, selon les options de mise en place et la durée choisie pour les temps passifs élastiques.

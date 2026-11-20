@@ -127,6 +127,45 @@ describe("escaping sweep — every text field, every HTML backend", () => {
 	}
 });
 
+// The 1.5 elements whose words come straight from the recipe: a target state
+// and its note (`={…}(…)`), a temperature's note (`^{…}(…)`). A note ends at
+// its first `)`, so the payload holds no parenthesis.
+describe("escaping — target states and temperature notes (1.5)", () => {
+	const PAYLOAD = "<svg/onload=1>";
+	const ESCAPED = "&lt;svg/onload=1&gt;";
+
+	const fields: Record<string, string> = {
+		"target state": `## Section
+
+Whisk until ={${PAYLOAD}}.
+`,
+		"target state note": `## Section
+
+Whisk until ={ribbon stage}(${PAYLOAD}).
+`,
+		"temperature note": `## Section
+
+Bake at ^{180°C}(${PAYLOAD}).
+`,
+	};
+
+	const backends: Record<string, (data: unknown) => string> = {
+		toHTML: (data) => toHTML(data),
+		toPrintHTML: (data) => toPrintHTML(data),
+	};
+
+	for (const [field, source] of Object.entries(fields)) {
+		const compiled = compile(getAST(source));
+		for (const [backendName, render] of Object.entries(backends)) {
+			it(`shows a ${field} escaped via ${backendName}`, () => {
+				const html = render(compiled);
+				expect(html).not.toContain(PAYLOAD);
+				expect(html).toContain(ESCAPED);
+			});
+		}
+	}
+});
+
 describe("toMarkdown escaping", () => {
 	it("neutralizes a raw HTML payload in the recipe title (frontmatter)", () => {
 		const source =

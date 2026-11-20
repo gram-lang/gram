@@ -5,6 +5,7 @@ import {
 	isSection,
 	isStep,
 	isComment,
+	isCompoundQuantity,
 } from "../src/index";
 
 // Regression tests for the audit (2026-07-22, parser finding I3): the AST
@@ -67,5 +68,29 @@ describe("guards narrow the widened ASTNode union correctly", () => {
 		expect(comment && isComment(comment)).toBe(true);
 		expect(step && isStep(step)).toBe(true);
 		expect(comment && isSection(comment)).toBe(false);
+	});
+});
+
+describe("CompoundQuantityAST carries a loc per term", () => {
+	it("points each term at its own text, its sign left out", () => {
+		const source = "## Section\n\nMix @flour{1 cup - 2 tbsp}.\n";
+		const ast = getAST(source);
+		const section = ast.children[0];
+		if (!isSection(section)) throw new Error("expected a Section");
+		const step = section.children[0];
+		if (!isStep(step)) throw new Error("expected a Step");
+		const ingredient = step.children.find(
+			(c) => c.type === ASTNodeType.Ingredient,
+		);
+		if (ingredient?.type !== ASTNodeType.Ingredient)
+			throw new Error("expected an Ingredient");
+		const quantity = ingredient.quantity;
+		if (!isCompoundQuantity(quantity))
+			throw new Error("expected a CompoundQuantity");
+		const text = (loc?: { start: number; end: number }) =>
+			loc ? source.slice(loc.start, loc.end) : undefined;
+		expect(text(quantity.loc)).toBe("1 cup - 2 tbsp");
+		expect(quantity.terms.map((t) => text(t.loc))).toEqual(["1 cup", "2 tbsp"]);
+		expect(quantity.terms.map((t) => t.minus ?? false)).toEqual([false, true]);
 	});
 });

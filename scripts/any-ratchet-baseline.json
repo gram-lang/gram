@@ -1,13 +1,13 @@
 {
 	"analyzer": 0,
-	"cli": 79,
+	"cli": 78,
 	"format": 0,
 	"i18n": 0,
 	"kitchen": 0,
 	"language-server": 1,
 	"modules": 0,
 	"parser": 0,
-	"renderer": 28,
+	"renderer": 25,
 	"scheduler": 0,
 	"vscode-extension": 0
 }

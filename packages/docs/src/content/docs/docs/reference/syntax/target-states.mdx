@@ -1,0 +1,96 @@
+---
+title: "Target states"
+description: "Mark the state to reach with ={target states}: the texture, color or smell to recognize, and how to check it."
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
+import Term from '../../../../../components/Term.astro';
+
+<Since v="1.5.0" />
+
+A timer tells you how long a step should take, not when it is truly done. Custard is ready when it coats the spoon, yolks when they fall in a ribbon, brown butter when it smells nutty. A <Term id="targetState" link={false} /> marks that visual or sensory cue with `={...}`:
+
+```gram
+[Whisk] @egg yolks{4} with @sugar{80 g} until ={ribbon stage}.
+
+[Brown] As soon as the butter turns ={nutty brown}, take the #pan off the heat.
+
+[Whip] The egg whites should be ={stiff} before you add the @sugar{50 g}.
+```
+
+Place a target state wherever the sentence flows best—at the end, start, or middle of a step—with no required connecting word ("until", "when", or none at all). Put only the state itself inside the braces and keep surrounding words in the prose so the step reads naturally while the cue stands out in every view.
+
+## How to check it
+
+Add a parenthetical note directly after the closing brace to explain how to verify the state—the practical test a cook can rely on:
+
+```gram
+[Cook] On ^{low heat}, stirring, until ={it coats the spoon}(a finger drawn across the back of the spoon leaves a clean line) ->&custard{}
+```
+
+Both the state and its note are always displayed, on screen and in print, and `gram cook` highlights them beneath the step. Gram preserves them as written in your recipe's language without interpreting them.
+
+Just like ingredients, cookware, and temperatures, keep the opening `(` attached to `}` on the same line: with a space (`={stiff peaks} (about 5 min)`), the parentheses remain ordinary step text.
+
+## With a time and a temperature
+
+A step can combine a target state with a timer and a temperature. The timer estimates duration for the schedule; the state tells the cook when to stop at the stove.
+
+```gram
+[Cook] At ^{180°F}(internal) for ~{8 min}, until ={it coats the spoon}.
+```
+
+:::tip[What does not go inside]
+A target state describes a sensory cue, never a measurement:
+- use a [temperature](/docs/reference/syntax/temperatures/) with a note for target temperatures (`^{145°F}(internal)`);
+- use a [timer](/docs/reference/syntax/times/) for durations (`~{5 min}`);
+- target states never scale (`={doubled in volume}` stays unchanged regardless of servings).
+:::
+
+## Several in one step
+
+A step can contain multiple target states. Each renders inline in the prose, and `gram cook` lists them together—reminding you to check them when a step's timer finishes.
+
+```gram
+[Knead] Until the dough is ={smooth} and ={elastic}(it springs back slowly when stretched).
+```
+
+As with timers and temperatures, shorter steps are easier to follow. If two states mark distinct actions, split them into separate steps rather than chaining them:
+
+```gram
+[Melt] The @butter{50 g} until ={nutty brown}.
+
+[Cool] Until ={lukewarm}, then stir in the @eggs{2}.
+```
+
+## Errors
+
+A target state must be non-empty and closed on the same line. `={}` or an unclosed `={ribbon stage` raises a syntax error pointing to the opening marker.
+
+A standalone `=` not followed by `{` stays ordinary text, and fixed ingredient modifiers (`@=salt{1 tsp}`) are unaffected.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Temperatures"
+    description="Exact or semantic ^temperatures, and their notes."
+    href="/docs/reference/syntax/temperatures/"
+  />
+  <LinkCard
+    title="Times and scheduling"
+    description="Active work and passive timers with ~timer."
+    href="/docs/reference/syntax/times/"
+  />
+  <LinkCard
+    title="Gram syntax cheatsheet"
+    description="Quick visual reference for every marker."
+    href="/docs/reference/syntax/cheatsheet/"
+  />
+  <LinkCard
+    title="Data formats"
+    description="How target states are represented as checkpoint tokens in compiled JSON."
+    href="/docs/reference/api/data-formats/"
+  />
+</CardGrid>

@@ -3,12 +3,11 @@ title: "Gérer sa base de données d'ingrédients"
 description: "Synchronisez, nettoyez (*lint*) et enrichissez votre base ingredients.yaml avec le CLI Gram pour fluidifier vos calculs."
 ---
 
-Gram utilise un fichier local `ingredients.yaml` pour stocker les données physiques et nutritionnelles des ingrédients que vous utilisez dans vos recettes. Le maintien de cette base de données permet aux fonctionnalités telles que la Standardisation des Masses, le Calcul des Rendements et l'Estimation Nutritionnelle de fonctionner parfaitement.
+Gram utilise un fichier local `ingredients.yaml` (créé lors de `gram init`) pour stocker les données physiques et nutritionnelles des ingrédients utilisés dans vos recettes. Tenir cette base à jour permet à la standardisation des masses, au calcul des rendements et à l'estimation nutritionnelle de fonctionner avec précision.
 
 Ce guide détaille le *workflow* standard pour entretenir votre base de données à l'aide du CLI Gram.
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
-import Since from '../../../../../components/Since.astro';
 
 ## Le *workflow* recommandé
 
@@ -51,7 +50,6 @@ Le *workflow* recommandé se compose de trois étapes, à exécuter dans cet ord
    :::
 
 3. ### Enrichir les données
-   <Since v="1.1.0" type="changed" />
    
    Maintenant que votre base de données contient des entrées propres et dédupliquées, vous devez renseigner leurs données physiques (densité, poids unitaire, rendement) et nutritionnelles (calories, macros). 
    
@@ -72,8 +70,6 @@ Le *workflow* recommandé se compose de trois étapes, à exécuter dans cet ord
 
 ## Valider la base de données
 
-<Since v="1.1.0" />
-
 Avant de *commit* votre fichier `ingredients.yaml` dans votre gestionnaire de versions, il est recommandé de le valider (*validate*) par rapport au schéma Gram pour s'assurer de l'absence d'erreurs de formatage (comme des alias qui se chevauchent).
 
 ```bash
@@ -89,6 +85,10 @@ gram db merge ~/Downloads/community-db.yaml
 ```
 
 En cas de conflit (par exemple, la base communautaire indique que le beurre contient 717 kcal, contre 740 kcal dans la vôtre), le CLI vous demandera de manière interactive comment trancher.
+
+## Consulter un exemple de base dans le playground
+
+Pour voir à quoi ressemble un fichier `ingredients.yaml` complet sur de vraies recettes avant de créer votre propre projet, ouvrez le [playground](/fr/play) : il affiche la base utilisée par ses exemples dans un onglet en lecture seule aux côtés des recettes. Tout nouvel ingrédient que vous ajoutez dans cet éditeur reste donc sans masse ni calcul nutritionnel s'il ne figure pas déjà dans cette base.
 
 ## Ressources associées
 

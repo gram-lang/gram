@@ -63,6 +63,75 @@ describe("aggregateSectionIngredients", () => {
 	});
 });
 
+describe("listing the mentions of a section (since 1.5.0)", () => {
+	it("lists every mention as written, never added up: two portions to weigh", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({ qty: 100, unit: "g", normalizedMass: 100 }),
+			usage({ qty: 100, unit: "grams", normalizedMass: 100 }),
+		]);
+		expect(entry!.quantities).toEqual([
+			{ qty: 100, unit: "g" },
+			{ qty: 100, unit: "grams" },
+		]);
+		// What the section weighs still adds up.
+		expect(entry!.normalizedMass).toBe(200);
+	});
+
+	it("keeps a sum whole, with its parts, next to the other mentions", () => {
+		// `@sugar{2 tbsp}` then `@sugar{1 cup - 4 tbsp}`.
+		const parts = [
+			{ qty: 1, unit: "cup" },
+			{ qty: 4, unit: "tbsp", minus: true as const },
+		];
+		const [entry] = aggregateSectionIngredients([
+			usage({ qty: 2, unit: "tbsp" }),
+			usage({ qty: 12, unit: "tbsp", parts }),
+		]);
+		expect(entry!.quantities).toEqual([
+			{ qty: 2, unit: "tbsp" },
+			{ qty: 12, unit: "tbsp", parts },
+		]);
+	});
+
+	it("keeps a range as written", () => {
+		const range = {
+			type: "range" as const,
+			value: 2.5,
+			range: { min: 2, max: 3 },
+			text: "2-3",
+		};
+		const [entry] = aggregateSectionIngredients([
+			usage({ qty: range, unit: "g" }),
+			usage({ qty: 200, unit: "g" }),
+		]);
+		expect(entry!.quantities).toEqual([
+			{ qty: range, unit: "g" },
+			{ qty: 200, unit: "g" },
+		]);
+	});
+
+	it("lists a refused sum and a sum of several kinds in their place", () => {
+		const refused = [
+			{ qty: 1, unit: "cup" },
+			{ qty: 20, unit: "g", minus: true as const },
+		];
+		const mixed = [
+			{ qty: 1, unit: "cup" },
+			{ qty: 20, unit: "g" },
+		];
+		const [entry] = aggregateSectionIngredients([
+			usage({ qty: 100, unit: "g" }),
+			usage({ parts: refused }),
+			usage({ unit: "1 cup + 20 g", parts: mixed }),
+		]);
+		expect(entry!.quantities).toEqual([
+			{ qty: 100, unit: "g" },
+			{ unit: null, parts: refused },
+			{ unit: "1 cup + 20 g", parts: mixed },
+		]);
+	});
+});
+
 describe("composite parent tracking", () => {
 	it("attaches the raw parent name to a composite child entry", () => {
 		const [entry] = aggregateSectionIngredients([
@@ -98,7 +167,10 @@ describe("composite parent tracking", () => {
 			}),
 		]);
 		expect(entry!.parent).toBe("citron");
-		expect(entry!.quantities).toHaveLength(2);
+		expect(entry!.quantities).toEqual([
+			{ qty: 50, unit: "ml" },
+			{ qty: 30, unit: "ml" },
+		]);
 	});
 
 	it("attaches the parent's own preparation, distinct from this entry's preparation", () => {

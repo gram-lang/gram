@@ -194,7 +194,18 @@ describe("parseMealTimes", () => {
 		expect(parseMealTimes([])).toEqual({ ok: true, times: [] });
 	});
 
+	it("reads times in 12 hours", () => {
+		expect(parseMealTimes(["12:30pm", "8pm", "7:15 AM", "12am"])).toEqual({
+			ok: true,
+			times: ["12:30", "20:00", "07:15", "00:00"],
+		});
+	});
+
 	it("says which time it cannot read, as data", () => {
+		expect(parseMealTimes(["12pm", "13pm"])).toEqual({
+			ok: false,
+			part: "13pm",
+		});
 		expect(parseMealTimes(["12:30", "24:00", "8h"])).toEqual({
 			ok: false,
 			part: "24:00",

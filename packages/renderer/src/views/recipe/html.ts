@@ -19,11 +19,16 @@ import {
 	round1,
 	largerAmount,
 	getQty,
-	formatDecimalToFraction,
 	formatGrams,
+	isWrittenInMetricMass,
 	type NumberStyle,
 	trimBeforeComments,
 } from "../../shared/utils";
+import {
+	formatUsageQuantity,
+	isScaled,
+	quantityContext,
+} from "../../shared/quantity";
 import {
 	availableBases,
 	getMetrics,
@@ -49,15 +54,11 @@ import { moduleLabel } from "./module-label";
 import {
 	aggregateSectionIngredients,
 	intermediateLabel,
+	type QuantityHolder,
 	round2,
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
-import {
-	fillTemplate,
-	formatNumber,
-	getDictionary,
-	isMetricMassUnit,
-} from "@gram-lang/i18n";
+import { fillTemplate, formatNumber, getDictionary } from "@gram-lang/i18n";
 import {
 	resolveContributingUsage,
 	type AnalyzedUsage,
@@ -95,6 +96,23 @@ type KitItem = {
 };
 
 /**
+ * An amount in a list line: each term unbreakable (`1 1/2 cup`), a line break
+ * allowed only between terms, so a long amount (`1 1/2 cup + 1 1/2-3 tbsp`)
+ * wraps in a narrow column instead of running under the name.
+ */
+function amountHtml(text: string): string {
+	const parts = text.split(/ ([+−–]) /);
+	if (parts.length === 1) return escapeHtml(text);
+	return parts
+		.map((part, i) =>
+			i % 2 === 1
+				? ` ${escapeHtml(part)} `
+				: `<span class="kit-term">${escapeHtml(part)}</span>`,
+		)
+		.join("");
+}
+
+/**
  * The quantity column of a kit line: the written quantity when it differs
  * from the standardized mass, the mass itself (or the written quantity when
  * there is no mass), then the baker's percentage and the gross mass.
@@ -112,6 +130,7 @@ function kitQtyHtml(
 		withBadges = true,
 		large = false,
 		style = {},
+		scaleFactor,
 	}: {
 		isCookware?: boolean;
 		showBareCount?: boolean;
@@ -120,44 +139,39 @@ function kitQtyHtml(
 		large?: boolean;
 		/** The reader's language and the integrator's `formatFraction`. */
 		style?: NumberStyle;
+		/** The recipe's scale factor: a scaled amount is worked out. */
+		scaleFactor?: number;
 	} = {},
 ): string {
 	let html = "";
 	const { lang } = style;
-	const unit = item.unit ?? "";
-	// The quantities in other units (or not numeric), which the compiler
-	// could not add to the first one: shown after it, joined by " + ", like
-	// the other views do (`formatElement`).
+	// The amount as written or worked out, with the quantities in other units
+	// (or not numeric) the compiler could not add to it (`formatUsageQuantity`).
+	const shown = formatUsageQuantity(item, {
+		...style,
+		scaled: isScaled(scaleFactor),
+		buying: large,
+	});
 	const extra = Array.isArray(item.variable_entries)
 		? item.variable_entries.filter((e): e is string => typeof e === "string")
 		: [];
-	const written = () =>
-		[
-			...(qty
-				? [
-						(large &&
-							typeof qty === "number" &&
-							largerAmount(qty, unit, lang)) ||
-							`${formatDecimalToFraction(qty, unit, style)}${unit ? ` ${unit}` : ""}`,
-					]
-				: []),
-			...extra,
-		].join(" + ");
 	const grams = (mass: number) =>
 		(large && largerAmount(mass, "g", lang)) || formatGrams(mass, lang);
 	// A quantity already in g, kg or mg is its own weight: the standardized
 	// mass would only say it again (3 kg, 3000 g).
-	const mass = isMetricMassUnit(unit, lang) ? undefined : item.normalizedMass;
-	if (mass && ((qty && round1(mass) !== qty) || extra.length > 0)) {
-		html += `<span class="kit-orig">${escapeHtml(written())}</span>`;
+	const mass = isWrittenInMetricMass(item as QuantityHolder, lang)
+		? undefined
+		: item.normalizedMass;
+	if (mass && shown && (round1(mass) !== qty || extra.length > 0)) {
+		html += `<span class="kit-orig">${amountHtml(shown)}</span>`;
 	}
 	if (mass) {
 		const isEst = item.isEstimate ? "~" : "";
 		html += `<span class="kit-mass">${isEst}${escapeHtml(grams(mass))}</span>`;
 	} else if (extra.length > 0 && !isCookware) {
-		html += `<span class="kit-mass">${escapeHtml(written())}</span>`;
-	} else if (qty && !isCookware && (unit || showBareCount)) {
-		html += `<span class="kit-mass">${escapeHtml(written())}</span>`;
+		html += `<span class="kit-mass">${amountHtml(shown)}</span>`;
+	} else if (shown && !isCookware && (item.unit || showBareCount)) {
+		html += `<span class="kit-mass">${amountHtml(shown)}</span>`;
 	}
 	if (!withBadges) return html;
 	if (item.bakersPercentage !== undefined) {
@@ -226,6 +240,7 @@ function renderKitItem(
 			: ""
 		: kitQtyHtml(item, itemQty, t, {
 				large: context.formatMode === "shopping-list",
+				scaleFactor: context.scaleFactor,
 				style: {
 					lang: options.lang,
 					formatFraction: options.formatFraction,
@@ -256,6 +271,15 @@ function renderKitItem(
 	return html;
 }
 
+/** How many of a piece of cookware an option needs, as it was before: its number. */
+function kitCount(opt: KitItem): string {
+	const q = getQty(opt);
+	if (!q) return "";
+	if (q.text) return q.text;
+	if (typeof q.value === "number") return String(q.value);
+	return typeof opt.quantity === "number" ? String(opt.quantity) : "";
+}
+
 function renderKitAlternativeItem(
 	item: KitItem,
 	context: RenderContext,
@@ -283,18 +307,9 @@ function renderKitAlternativeItem(
 				"";
 			const optName = rawName.replace(/-/g, " ");
 			const optPrep = opt.preparation || opt.note;
-			const q = getQty(opt, {
-				lang: options.lang,
-				formatFraction: options.formatFraction,
-			});
-			const optQty = q
-				? q.text ||
-					(typeof q.value === "number"
-						? String(q.value)
-						: typeof opt.quantity === "number"
-							? String(opt.quantity)
-							: "")
-				: "";
+			const optQty = isCookware
+				? kitCount(opt)
+				: formatUsageQuantity(opt, quantityContext(context));
 			let s = `<span class="${optClass}" data-name="${escapeHtml(optName)}">${escapeHtml(optName)}`;
 			if (optQty) {
 				s += ` <span class="quantity">${escapeHtml(String(optQty))}</span>`;
@@ -316,6 +331,7 @@ function renderKitAlternativeItem(
 			isCookware,
 			withBadges: false,
 			large: context.formatMode === "shopping-list",
+			scaleFactor: context.scaleFactor,
 			style: { lang: options.lang, formatFraction: options.formatFraction },
 		});
 	}
@@ -360,6 +376,7 @@ function renderKitUsageItem(
 	const qtyContent = kitQtyHtml(child, childQty, t, {
 		showBareCount: true,
 		large: context.formatMode === "shopping-list",
+		scaleFactor: context.scaleFactor,
 		style: { lang: context.lang, formatFraction: context.formatFraction },
 	});
 
@@ -387,11 +404,13 @@ function renderKitCompositeItem(
 	options: RendererOptions,
 ): string {
 	const t = getDictionary(options.lang);
-	const unitStr = item.unit ? ` ${escapeHtml(item.unit)}` : "";
-	const qtyContent =
+	const amount =
 		typeof item.qty === "number" && item.qty
-			? `<span class="kit-mass">${escapeHtml(formatDecimalToFraction(item.qty, item.unit, { lang: options.lang, formatFraction: options.formatFraction }))}${unitStr}</span>`
+			? formatUsageQuantity(item, quantityContext(context))
 			: "";
+	const qtyContent = amount
+		? `<span class="kit-mass">${amountHtml(amount)}</span>`
+		: "";
 
 	// No `list-item-group` here: the parent row lays out like any other line
 	// (dot leader included), and the copy button copies it as one line.
@@ -540,7 +559,8 @@ function renderKitMixedUnitsItem(
 	if (!first) return "";
 	const name = first.name || first.id || "";
 	let html = `        <li class="kit-ingredient list-item-group"><label><input type="checkbox"><span>`;
-	html += `<span class="kit-name-col"><span class="kit-name">${escapeHtml(name)}</span> <span class="mixed-units-badge" data-tooltip="${escapeHtml(t.renderer.mixedUnitsTooltip)}">⚠️ ${escapeHtml(t.renderer.mixedUnits)}</span></span>`;
+	const warningIcon = options.icons?.warning ?? DEFAULT_ICONS.html.warning;
+	html += `<span class="kit-name-col"><span class="kit-name">${escapeHtml(name)}</span> <span class="mixed-units-badge" data-tooltip="${escapeHtml(t.renderer.mixedUnitsTooltip)}">${warningIcon}<span class="mixed-units-label">${escapeHtml(t.renderer.mixedUnits)}</span></span></span>`;
 	html += `</span></label>`;
 	html += `          <ul class="kit-list sub-kit-list">\n`;
 	group.forEach((entry) => {
@@ -598,13 +618,13 @@ function inlineBasisLabel(basis: ResolvedBasis, lang?: string): string {
 export const htmlBackend: RenderBackend = {
 	buildContext(data, options) {
 		const registry = data.registry || { ingredients: {}, cookware: {} };
-		const formatDuration = durationFormatter(options);
 		return {
 			registry,
 			icons: options.icons,
 			classes: options.classes,
-			formatDuration,
+			formatDuration: options.formatDuration,
 			formatFraction: options.formatFraction,
+			scaleFactor: data.scaleFactor,
 			bakersMathOnly: options.bakersMathOnly,
 			interactiveScaling: options.interactiveScaling,
 			lang: options.lang,

@@ -8,7 +8,7 @@ export function provideCodeLenses(_state: DocumentState): CodeLens[] {
 
 	lenses.push({
 		range: topRange,
-		command: Command.create("▶ Aperçu", "gram.showPreview"),
+		command: Command.create("▶ Preview", "gram.showPreview"),
 	});
 
 	return lenses;

@@ -1,0 +1,211 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Timer Compound"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Braise",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Sear for ",
+              "loc": {
+                "start": 42,
+                "end": 51
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1h30",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "h30",
+                "fixed": false,
+                "loc": {
+                  "start": 53,
+                  "end": 57
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 51,
+                "end": 58
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then ",
+              "loc": {
+                "start": 58,
+                "end": 65
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1 hr 30 mins",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "hr 30 mins",
+                "fixed": false,
+                "loc": {
+                  "start": 67,
+                  "end": 79
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 65,
+                "end": 80
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 81,
+                "end": 85
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1 heure 30",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "heure 30",
+                "fixed": false,
+                "loc": {
+                  "start": 87,
+                  "end": 97
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 85,
+                "end": 98
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 98,
+                "end": 99
+              }
+            }
+          ],
+          "loc": {
+            "start": 42,
+            "end": 101
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Simmer ",
+              "loc": {
+                "start": 101,
+                "end": 108
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "2min30",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": "min30",
+                "fixed": false,
+                "loc": {
+                  "start": 111,
+                  "end": 117
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 108,
+                "end": 118
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and reduce ",
+              "loc": {
+                "start": 119,
+                "end": 130
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1h + 30min",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "1h + 30min",
+                "loc": {
+                  "start": 131,
+                  "end": 143
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 130,
+                "end": 143
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 143,
+                "end": 144
+              }
+            }
+          ],
+          "loc": {
+            "start": 101,
+            "end": 145
+          }
+        }
+      ],
+      "loc": {
+        "start": 31,
+        "end": 145
+      }
+    }
+  ]
+}

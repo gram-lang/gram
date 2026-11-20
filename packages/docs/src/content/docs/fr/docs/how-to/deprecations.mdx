@@ -19,6 +19,7 @@ Cette page répertorie l'ensemble des éléments dépréciés dans Gram, organis
 | Développement d'un client d'éditeur pour le serveur de langage | Voir [Notification d'aperçu du serveur de langage](#notification-daperçu-du-serveur-de-langage). |
 | Intégration programmatique de `@gram-lang/kitchen` ou `@gram-lang/analyzer` | Consultez [Champs du JSON compilé](#champs-du-json-compilé), [`calculatePreparationTime`](#la-fonction-calculatepreparationtime) et [Compatibilité avec les versions antérieures](#compatibilité-avec-les-versions-antérieures). |
 | Rendu de la recette HTML avec les options de `toHTML()` (`@gram-lang/renderer`) | Consultez [L'option `interactiveNutrition`](#loption-interactivenutrition) et [L'option `interactiveScaling`](#loption-interactivescaling). |
+| Lecture des chaînes de `@gram-lang/i18n` pour construire une vue personnalisée | Consultez [La chaîne `runSheetRange`](#la-chaîne-runsheetrange) et [Libellés des vues du playground](#libellés-des-vues-du-playground). |
 
 Pour vérifier l'état de votre code applicatif, reportez-vous à la section [Identifier les usages dépréciés dans votre code](#identifier-les-usages-dépréciés-dans-votre-code).
 
@@ -201,6 +202,22 @@ Le playground présente désormais les vues du moteur de rendu sous forme d'ongl
 | `playground.views.markdown` | `renderer.formats.markdown` (le Markdown est un format de vue, pas une vue) |
 | `playground.viewLabel` | `playground.output.views` (les onglets) et `playground.output.inspect` (le menu des inspecteurs) |
 
+### La chaîne `runSheetRange`
+
+<Since v="1.5.0" type="deprecated" />
+
+**Déprécié :** la chaîne `renderer.runSheetRange` de `@gram-lang/i18n` (`"{min} à {max}"`, `"{min} to {max}"` en anglais). **Remplacement conseillé :** `formatDurationRange()` de `@gram-lang/renderer`.
+
+Le plan de marche s'en servait pour écrire la fourchette d'une attente avec un mot (`8 h à 16 h`), alors que les étapes écrivent la même fourchette avec un tiret demi-cadratin (`8–16 h`), une écriture que Gram sait relire. Depuis la 1.5.0, les deux passent par `formatDurationRange()` et la chaîne ne sert plus. Elle garde son texte jusqu'à la version 2.0.0.
+
+```typescript
+// Avant
+fillTemplate(t.renderer.runSheetRange, { min: formatDuration(480, 'fr'), max: formatDuration(960, 'fr') }); // "8 h à 16 h"
+
+// Après
+formatDurationRange(480, 960, 'fr'); // "8–16 h"
+```
+
 ### L'option `interactiveNutrition`
 
 <Since v="1.4.0" type="deprecated" />
@@ -261,7 +278,7 @@ Si vous développez en TypeScript, les champs et fonctions dépréciés de `@gra
   <LinkCard
     title="Journal des modifications"
     description="Historique complet des versions, notes de migration et évolutions."
-    href="/fr/docs/changelog/"
+    href="/fr/changelog/"
   />
   <LinkCard
     title="Formats de données"

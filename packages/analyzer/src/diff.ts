@@ -4,12 +4,18 @@ import type {
 	StepToken,
 	ProcessedTimer,
 	ProcessedTemperature,
+	ProcessedCheckpoint,
 	Usage,
 	ShoppingListItem,
 	CompositeItem,
 } from "@gram-lang/kitchen";
-import { normalizeUnit } from "@gram-lang/i18n";
-import { getNumericQty, scheduleFor, scheduleTimes } from "@gram-lang/kitchen";
+import { formatTerms, normalizeUnit } from "@gram-lang/i18n";
+import {
+	numericTotal,
+	scheduleFor,
+	scheduleTimes,
+	termsOfUsage,
+} from "@gram-lang/kitchen";
 
 // Structural, analyzer-local shapes for the module-composition metadata a
 // `CompilationResult` may carry when it actually came from
@@ -48,6 +54,12 @@ export interface IngredientDelta {
 	fromUnit?: string | null;
 	toQty?: number;
 	toUnit?: string | null;
+	/**
+	 * The amount as a reader sees it (`202-203 g`, `1 cup + 20 g`), where the
+	 * numbers above only give its middle or nothing. Since 1.5.0.
+	 */
+	fromText?: string;
+	toText?: string;
 	percentChange?: number;
 }
 
@@ -76,8 +88,16 @@ export interface TemperatureDelta {
 	section: string | null;
 	name?: string;
 	change: "added" | "removed" | "changed";
-	from?: { value: number; unit: string; range?: { min: number; max: number } };
-	to?: { value: number; unit: string; range?: { min: number; max: number } };
+	from?: TemperatureValue;
+	to?: TemperatureValue;
+}
+
+/** A temperature as `diffTemperatures` compares it. `note` since 1.5.0. */
+export interface TemperatureValue {
+	value: number;
+	unit: string;
+	range?: { min: number; max: number };
+	note?: string;
 }
 
 export interface TimerDelta {
@@ -86,6 +106,20 @@ export interface TimerDelta {
 	change: "added" | "removed" | "changed";
 	from?: string;
 	to?: string;
+}
+
+/** A target state (`={ribbon stage}`) added, removed or changed. Since 1.5.0. */
+export interface CheckpointDelta {
+	section: string | null;
+	change: "added" | "removed" | "changed";
+	from?: CheckpointValue;
+	to?: CheckpointValue;
+}
+
+/** A target state as `diffRecipes` compares it. Since 1.5.0. */
+export interface CheckpointValue {
+	state: string;
+	note?: string;
 }
 
 export interface ModuleDelta {
@@ -109,6 +143,8 @@ export interface DiffResult {
 	sections: SectionDelta[];
 	temperatures: TemperatureDelta[];
 	timers: TimerDelta[];
+	/** Since 1.5.0. */
+	checkpoints: CheckpointDelta[];
 	modules: ModuleDelta[];
 }
 
@@ -197,10 +233,46 @@ function flattenShoppingItems(items: ShoppingItem[]): SimpleShoppingItem[] {
 }
 
 const numericQty = (item: ShoppingItem): number | null =>
-	getNumericQty(item.qty);
+	numericTotal(termsOfUsage(item));
 
-function fmtTimerQty(qty: ProcessedTimer["quantity"], unit?: string): string {
+/**
+ * The amount of an entry as text, its unit included, written the way the
+ * shopping list writes it (`1 cup + 1 tbsp` for 17 tbsp, `2-3 g`, `1.5 kg`),
+ * or `undefined` when it has no terms (a text quantity, no quantity).
+ */
+const amountText = (item: ShoppingItem): string | undefined => {
+	const terms = termsOfUsage(item);
+	if (terms.length > 0)
+		return formatTerms(terms, { minus: " - ", mode: "computed", buying: true });
+	// A ratio still waiting for its target's amount, as written.
+	const qty = (item as { qty?: unknown }).qty as {
+		type?: string;
+		raw?: string;
+	};
+	return qty?.type === "RatioQuantity" ? qty.raw : undefined;
+};
+
+/** `fromText` / `toText` of a delta, each only when there is one. */
+function texts(
+	aItem: ShoppingItem | null,
+	bItem: ShoppingItem | null,
+): Pick<IngredientDelta, "fromText" | "toText"> {
+	const fromText = aItem ? amountText(aItem) : undefined;
+	const toText = bItem ? amountText(bItem) : undefined;
+	return {
+		...(fromText !== undefined && { fromText }),
+		...(toText !== undefined && { toText }),
+	};
+}
+
+function fmtTimerQty(
+	qty: ProcessedTimer["quantity"],
+	unit?: string,
+	raw?: string,
+): string {
 	const u = unit ? ` ${unit}` : "";
+	// A refused timer has no quantity, only what the author wrote.
+	if ((qty === undefined || qty === null) && raw) return raw.trim();
 	if (qty === undefined || qty === null) return `?${u}`;
 	if (typeof qty === "number") return `${qty}${u}`;
 	if (typeof qty === "string") return `${qty}${u}`;
@@ -215,11 +287,7 @@ function fmtTimerQty(qty: ProcessedTimer["quantity"], unit?: string): string {
 	return `?${u}`;
 }
 
-function getTempValue(token: ProcessedTemperature): {
-	value: number;
-	unit: string;
-	range?: { min: number; max: number };
-} | null {
+function getTempValue(token: ProcessedTemperature): TemperatureValue | null {
 	const q = token.quantity;
 	if (!q) return null;
 	const value =
@@ -235,7 +303,12 @@ function getTempValue(token: ProcessedTemperature): {
 		typeof q === "object" && "type" in q && q.type === "range" && q.range
 			? q.range
 			: undefined;
-	return { value, unit: token.unit ?? "°", range };
+	return {
+		value,
+		unit: token.unit ?? "°",
+		range,
+		...(token.note ? { note: token.note } : {}),
+	};
 }
 
 function isProcessedTimer(token: StepToken): token is ProcessedTimer {
@@ -255,6 +328,15 @@ function isProcessedTemperature(
 		token !== null &&
 		"type" in token &&
 		token.type === "temperature"
+	);
+}
+
+function isProcessedCheckpoint(token: StepToken): token is ProcessedCheckpoint {
+	return (
+		typeof token === "object" &&
+		token !== null &&
+		"type" in token &&
+		token.type === "checkpoint"
 	);
 }
 
@@ -432,6 +514,7 @@ function diffIngredient(
 			change: "removed",
 			fromQty: numericQty(aItem) ?? undefined,
 			fromUnit: aItem.unit ?? null,
+			...texts(aItem, null),
 		};
 	}
 	if (!aItem && bItem) {
@@ -441,6 +524,7 @@ function diffIngredient(
 			change: "added",
 			toQty: numericQty(bItem) ?? undefined,
 			toUnit: bItem.unit ?? null,
+			...texts(null, bItem),
 		};
 	}
 	if (!aItem || !bItem) return null;
@@ -452,7 +536,13 @@ function diffIngredient(
 
 	const sameUnit = normalizeUnit(aUnit) === normalizeUnit(bUnit);
 
-	if (aQty === bQty && sameUnit) return null;
+	// Same middle, other bounds (`2-4 g` → `1-5 g`) is a change too.
+	const sameRange =
+		(aItem as ShoppingListItem).range?.min ===
+			(bItem as ShoppingListItem).range?.min &&
+		(aItem as ShoppingListItem).range?.max ===
+			(bItem as ShoppingListItem).range?.max;
+	if (aQty === bQty && sameUnit && sameRange) return null;
 
 	const delta: IngredientDelta = {
 		id,
@@ -462,6 +552,7 @@ function diffIngredient(
 		fromUnit: aUnit,
 		toQty: bQty ?? undefined,
 		toUnit: bUnit,
+		...texts(aItem, bItem),
 	};
 
 	if (aQty !== null && bQty !== null && sameUnit && aQty !== 0) {
@@ -573,51 +664,52 @@ function diffSections(
 	return deltas;
 }
 
-function diffTemperatures(
+/** A delta of `diffStepTokens`, the shape the timer, temperature and target state deltas share. */
+type StepTokenDelta<V> = {
+	section: string | null;
+	name?: string;
+	change: "added" | "removed" | "changed";
+	from?: V;
+	to?: V;
+};
+
+/**
+ * The deltas of one kind of step token (timers, temperatures, target
+ * states), section by section: named tokens are paired by name, the others
+ * by position (`matchTokenPairs`), and a pair is a change when its name or
+ * its value differs. A token whose value is `null` (a temperature in words)
+ * is never reported as added or removed.
+ */
+function diffStepTokens<T extends StepToken & { name?: string }, V>(
 	aSections: ProcessedSection[],
 	bSections: ProcessedSection[],
-): TemperatureDelta[] {
-	const aMap = extractTokensByType(aSections, isProcessedTemperature);
-	const bMap = extractTokensByType(bSections, isProcessedTemperature);
+	isMatch: (token: StepToken) => token is T,
+	compared: (token: T) => V | null,
+): StepTokenDelta<V>[] {
+	const aMap = extractTokensByType(aSections, isMatch);
+	const bMap = extractTokensByType(bSections, isMatch);
 	const allKeys = new Set([...aMap.keys(), ...bMap.keys()]);
-	const deltas: TemperatureDelta[] = [];
+	const deltas: StepTokenDelta<V>[] = [];
 
 	for (const key of allKeys) {
-		const sectionTitle = key.startsWith("__pos_") ? null : key;
+		const section = key.startsWith("__pos_") ? null : key;
 		const pairs = matchTokenPairs(aMap.get(key) ?? [], bMap.get(key) ?? []);
 
 		for (const [a, b] of pairs) {
-			if (!a && b) {
-				const to = getTempValue(b);
-				if (to)
-					deltas.push({
-						section: sectionTitle,
-						name: b.name,
-						change: "added",
-						to,
-					});
-				continue;
-			}
-			if (a && !b) {
-				const from = getTempValue(a);
-				if (from)
-					deltas.push({
-						section: sectionTitle,
-						name: a.name,
-						change: "removed",
-						from,
-					});
-				continue;
-			}
-			if (a && b) {
-				const from = getTempValue(a);
-				const to = getTempValue(b);
+			const from = a ? compared(a) : null;
+			const to = b ? compared(b) : null;
+			const name = b?.name ?? a?.name;
+			const named = name !== undefined ? { name } : {};
+			if (!a && to !== null) {
+				deltas.push({ section, ...named, change: "added", to });
+			} else if (!b && from !== null) {
+				deltas.push({ section, ...named, change: "removed", from });
+			} else if (a && b) {
 				const nameChanged = (a.name ?? null) !== (b.name ?? null);
-				const valChanged = JSON.stringify(from) !== JSON.stringify(to);
-				if (nameChanged || valChanged) {
+				if (nameChanged || JSON.stringify(from) !== JSON.stringify(to)) {
 					deltas.push({
-						section: sectionTitle,
-						name: b.name ?? a.name,
+						section,
+						...named,
 						change: "changed",
 						from: from ?? undefined,
 						to: to ?? undefined,
@@ -630,62 +722,49 @@ function diffTemperatures(
 	return deltas;
 }
 
+function diffTemperatures(
+	aSections: ProcessedSection[],
+	bSections: ProcessedSection[],
+): TemperatureDelta[] {
+	return diffStepTokens(
+		aSections,
+		bSections,
+		isProcessedTemperature,
+		getTempValue,
+	);
+}
+
 function diffTimers(
 	aSections: ProcessedSection[],
 	bSections: ProcessedSection[],
 ): TimerDelta[] {
-	const aMap = extractTokensByType(aSections, isProcessedTimer);
-	const bMap = extractTokensByType(bSections, isProcessedTimer);
-	const allKeys = new Set([...aMap.keys(), ...bMap.keys()]);
-	const deltas: TimerDelta[] = [];
+	return diffStepTokens(aSections, bSections, isProcessedTimer, (t) =>
+		// A proportional time: its ratio as written, so changing the ratio
+		// shows, and the duration it comes to when it is known.
+		t.ratio
+			? t.quantity !== undefined
+				? `${t.ratio.raw} (${fmtTimerQty(t.quantity, t.unit)})`
+				: t.ratio.raw
+			: fmtTimerQty(t.quantity, t.unit, t.raw),
+	);
+}
 
-	for (const key of allKeys) {
-		const sectionTitle = key.startsWith("__pos_") ? null : key;
-		const pairs = matchTokenPairs(aMap.get(key) ?? [], bMap.get(key) ?? []);
-
-		for (const [a, b] of pairs) {
-			if (!a && b) {
-				deltas.push({
-					section: sectionTitle,
-					name: b.name,
-					change: "added",
-					to: fmtTimerQty(b.quantity, b.unit),
-				});
-				continue;
-			}
-			if (a && !b) {
-				deltas.push({
-					section: sectionTitle,
-					name: a.name,
-					change: "removed",
-					from: fmtTimerQty(a.quantity, a.unit),
-				});
-				continue;
-			}
-			if (a && b) {
-				const from = fmtTimerQty(a.quantity, a.unit);
-				const to = fmtTimerQty(b.quantity, b.unit);
-				const nameChanged = (a.name ?? null) !== (b.name ?? null);
-				if (nameChanged || from !== to) {
-					deltas.push({
-						section: sectionTitle,
-						name: b.name ?? a.name,
-						change: "changed",
-						from,
-						to,
-					});
-				}
-			}
-		}
-	}
-
-	return deltas;
+// Target states have no name: paired by position in their section.
+function diffCheckpoints(
+	aSections: ProcessedSection[],
+	bSections: ProcessedSection[],
+): CheckpointDelta[] {
+	return diffStepTokens(aSections, bSections, isProcessedCheckpoint, (t) => ({
+		state: t.state,
+		...(t.note ? { note: t.note } : {}),
+	}));
 }
 
 const SKIP_TOKEN_TYPES = new Set([
 	"declaration",
 	"timer",
 	"temperature",
+	"checkpoint",
 	"comment",
 	"alternative",
 	"composite",
@@ -842,6 +921,7 @@ export function diffRecipes(
 	);
 	const temperatures = diffTemperatures(aSections, bSections);
 	const timers = diffTimers(aSections, bSections);
+	const checkpoints = diffCheckpoints(aSections, bSections);
 	const modules = diffModules(a.modules ?? [], b.modules ?? []);
 	const titleChanged = a.title !== b.title;
 
@@ -855,6 +935,7 @@ export function diffRecipes(
 			meta.length > 0 ||
 			temperatures.length > 0 ||
 			timers.length > 0 ||
+			checkpoints.length > 0 ||
 			modules.length > 0,
 		titleChanged,
 		fromTitle: a.title,
@@ -866,6 +947,7 @@ export function diffRecipes(
 		sections,
 		temperatures,
 		timers,
+		checkpoints,
 		modules,
 	};
 }

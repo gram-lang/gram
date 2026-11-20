@@ -14,7 +14,7 @@ exports[`each inspector, on a fixture writes the AST as it always has 1`] = `
         (Quantity :unit "ml" :fixed false
           (single :value 500 :text "500")))
       (Text :value "and rest ")
-      (Timer :isPassive true
+      (Timer :raw "1-2h" :isPassive true
         (Quantity :unit "h" :fixed false
           (range :value 1.5 :range 1-2 :text "1-2")))
       (Text :value "."))))"

@@ -22,7 +22,8 @@ describe("decimals in the reader's language", () => {
 			expect(out).toContain("1,5 kg");
 			expect(out).toContain("1 1/4 cup");
 			expect(out).toContain("2,5-3");
-			expect(out).toContain("1,5 h");
+			// A timer is a duration, shown as every time is (`~{1.5h}`).
+			expect(out).toContain("1\u00A0h 30\u00A0min");
 			expect(out).toContain("180,5 °C");
 			// A common fraction stays a fraction
 			expect(out).toContain("1/2 tsp");
@@ -34,14 +35,14 @@ describe("decimals in the reader's language", () => {
 		const md = toMarkdown(recipe, { lang: "en" });
 		expect(md).toContain("1.5 kg");
 		expect(md).toContain("2.5-3");
-		expect(md).toContain("1.5 h");
+		expect(md).toContain("180.5 °C");
 	});
 
 	it("keeps the point in what a script reads back (data attributes)", () => {
 		const html = toHTML(recipe, { lang: "fr" });
 		expect(html).toContain('data-value="1.5"');
 		expect(html).toContain('data-value="180.5"');
-		expect(html).toContain("1,5 h");
+		expect(html).toContain('data-minutes="90"');
 	});
 });
 

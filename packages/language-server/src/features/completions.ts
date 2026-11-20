@@ -1,6 +1,6 @@
 import { type CompletionItem, CompletionItemKind } from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
-import { collectIntermediates } from "../utils/ast-walker";
+import { collectIngredients, collectIntermediates } from "../utils/ast-walker";
 import type { IngredientDB } from "../ingredient-loader";
 import { isInsideBraces, provideUnitCompletions } from "./completions-units";
 import {
@@ -44,6 +44,19 @@ export function provideCompletions(
 	}
 
 	if (isInsideBraces(prefix)) {
+		// The target of a share or a ratio (`{70% @&`, `{1 / 100 g &`): the
+		// recipe's ingredients, or its intermediates, and no unit.
+		const target = /(@&|&)\s*[^{}@&]*$/.exec(
+			prefix.slice(prefix.lastIndexOf("{")),
+		);
+		if (target?.[1] === "@&") {
+			const names = new Set(collectIngredients(state.ast).map((i) => i.name));
+			return [...names].map((name) => ({
+				label: name,
+				kind: CompletionItemKind.Field,
+			}));
+		}
+		if (target) return intermediateCompletions(state, false);
 		return provideUnitCompletions(prefix);
 	}
 
@@ -52,15 +65,25 @@ export function provideCompletions(
 		return provideIngredientCompletions(db);
 	}
 
-	if (isAfterReference(prefix)) {
-		return collectIntermediates(state.ast).map(({ decl }) => ({
-			label: decl.name,
-			kind: CompletionItemKind.Variable,
-			detail: `intermediate: ->&${decl.name}`,
-			// Multi-word names require {} in the reference syntax (&name{})
-			insertText: decl.name.includes(" ") ? `${decl.name}{}` : decl.name,
-		}));
-	}
+	if (isAfterReference(prefix)) return intermediateCompletions(state, true);
 
 	return [];
+}
+
+/**
+ * The intermediates the recipe declares. A reference with a multi-word name
+ * needs braces (`&name{}`); a target inside braces does not.
+ */
+function intermediateCompletions(
+	state: DocumentState,
+	asReference: boolean,
+): CompletionItem[] {
+	if (!state.ast) return [];
+	return collectIntermediates(state.ast).map(({ decl }) => ({
+		label: decl.name,
+		kind: CompletionItemKind.Variable,
+		detail: `intermediate: ->&${decl.name}`,
+		insertText:
+			asReference && decl.name.includes(" ") ? `${decl.name}{}` : decl.name,
+	}));
 }

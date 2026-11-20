@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { cliEnv } from "./helpers";
 
 /*
  * `gram plan` end to end: the real CLI is started as a process, so what is
@@ -38,12 +39,18 @@ afterAll(async () => {
 	await rm(dir, { recursive: true, force: true });
 });
 
-function gram(...args: string[]) {
-	const run = Bun.spawnSync([process.execPath, ENTRY, ...args], { cwd: dir });
+/** `gram` in the test project, with `env` set for this run (a `LANG`). */
+function gramWith(env: Record<string, string>, ...args: string[]) {
+	const run = Bun.spawnSync([process.execPath, ENTRY, ...args], {
+		cwd: dir,
+		env: cliEnv(env),
+	});
 	const strip = (b: Uint8Array) =>
 		new TextDecoder().decode(b).replace(/\x1b\[[0-9;]*m/g, "");
 	return { code: run.exitCode, out: strip(run.stdout), err: strip(run.stderr) };
 }
+
+const gram = (...args: string[]) => gramWith({}, ...args);
 
 const PLAN = [
 	"plan",
@@ -66,10 +73,43 @@ describe("gram plan", () => {
 		expect(out).toMatch(/SUN 11\s+▮ 12:30 – 13:00\s+Bake/);
 	});
 
+	it("writes the times in 12 hours with --clock 12h", () => {
+		const { code, out } = gram(
+			...PLAN,
+			"--available",
+			"08:00-22:00",
+			"--clock",
+			"12h",
+		);
+		expect(code).toBe(0);
+		const text = out.replace(/\u202f/g, " ");
+		expect(text).toContain("For Sunday, October 11 at 1:00 PM");
+		expect(text).toMatch(/SUN 11\s+▮ 12:30 – 1:00 PM\s+Bake/);
+		expect(text).not.toMatch(/\b1[3-9]:\d\d\b|\b2[0-3]:\d\d\b/);
+	});
+
+	it("follows the region of the machine's locale, not the language of the recipe", () => {
+		const at = (env: Record<string, string>, ...extra: string[]) =>
+			gramWith(env, ...PLAN, "--available", "08:00-22:00", ...extra).out;
+		// LC_TIME, which the tests set to C, comes before LANG.
+		expect(at({ LC_TIME: "en_US.UTF-8" })).toMatch(/1:00\sPM/);
+		expect(at({ LC_TIME: "en_GB.UTF-8" })).toContain("at 13:00");
+		expect(at({ LC_TIME: "fr_FR.UTF-8" })).toContain("at 13:00");
+		expect(at({ LC_TIME: "en_US.UTF-8" }, "--clock", "24h")).toContain(
+			"at 13:00",
+		);
+	});
+
+	it("rejects an unknown --clock", () => {
+		const { code, out, err } = gram(...PLAN, "--clock", "am-pm");
+		expect(code).toBe(1);
+		expect(`${out}${err}`).toContain('Unknown --clock value "am-pm"');
+	});
+
 	it("stretches the rest to keep the kneading out of the night, and says so", () => {
 		const { out } = gram(...PLAN, "--available", "08:00-22:00");
 		expect(out).toMatch(/SAT 10\s+▮ 21:\d\d – 22:\d\d\s+Dough/);
-		expect(out).toContain("Dough : Rise extended to 14h 30m");
+		expect(out).toMatch(/Dough : Rise extended to 14\sh 30\smin/);
 	});
 
 	it("starts in the night when nothing says otherwise, and does not stretch", () => {
@@ -127,8 +167,8 @@ describe("gram plan", () => {
 	it("follows --rests", () => {
 		const shortest = gram(...PLAN, "--rests", "shortest").out;
 		const longest = gram(...PLAN, "--rests", "longest").out;
-		expect(shortest).toMatch(/Dough : Rise 8h to 16h/);
-		expect(longest).toMatch(/Dough : Rise 16h \(8h to 16h\)/);
+		expect(shortest).toMatch(/Dough : Rise 8–16\sh/);
+		expect(longest).toMatch(/Dough : Rise 16\sh \(8–16\sh\)/);
 	});
 
 	it("writes a calendar, in UTC, stamped from --now, with the status on stderr", async () => {
@@ -252,7 +292,7 @@ describe("gram plan without a serving time", () => {
 		const { code, out } = gram(...RELATIVE);
 		expect(code).toBe(0);
 		expect(out).toContain("Run sheet — Country bread");
-		expect(out).toMatch(/Day D\s+▮ ~ \d+m/);
+		expect(out).toMatch(/Day D\s+▮ ~ \d+\smin/);
 		expect(out).not.toContain("For Sunday");
 		expect(out).toContain("Ready as early as");
 		expect(out).toContain("if you start now.");
@@ -302,6 +342,39 @@ describe("gram plan --find", () => {
 		expect(out).not.toContain("20:00");
 	});
 
+	it("tries meal times written in 12 hours", () => {
+		const { code, out } = gram(...FIND, "--meal-times", "7pm");
+		expect(code).toBe(0);
+		expect(out).toContain("October 11 19:00");
+		expect(out).not.toContain("20:00");
+	});
+
+	it("proposes the serving times on the clock asked for", () => {
+		const { out } = gram(...FIND, "--meal-times", "7pm", "--clock", "12h");
+		expect(out.replace(/\u202f/g, " ")).toContain("October 11 7:00 PM");
+		expect(out).not.toContain("19:00");
+	});
+
+	it("takes the clock from the project setting, below --clock", async () => {
+		const project = await mkdtemp(join(tmpdir(), "gram-cli-clock-"));
+		try {
+			await mkdir(join(project, ".gram"), { recursive: true });
+			await writeFile(join(project, ".gram", "config.yaml"), "clock: 12h\n");
+			await writeFile(join(project, "bread.gram"), BREAD);
+			const run = (...extra: string[]) =>
+				new TextDecoder().decode(
+					Bun.spawnSync([process.execPath, ENTRY, ...PLAN, ...extra], {
+						cwd: project,
+						env: cliEnv(),
+					}).stdout,
+				);
+			expect(run()).toMatch(/at 1:00\sPM/);
+			expect(run("--clock", "24h")).toContain("at 13:00");
+		} finally {
+			await rm(project, { recursive: true, force: true });
+		}
+	});
+
 	it("takes the meal times from the project setting", async () => {
 		const project = await mkdtemp(join(tmpdir(), "gram-cli-meals-"));
 		try {
@@ -313,6 +386,7 @@ describe("gram plan --find", () => {
 			await writeFile(join(project, "bread.gram"), BREAD);
 			const run = Bun.spawnSync([process.execPath, ENTRY, ...FIND], {
 				cwd: project,
+				env: cliEnv(),
 			});
 			const out = new TextDecoder().decode(run.stdout);
 			expect(out).toContain("18:30");
@@ -377,6 +451,7 @@ describe("the timezone setting", () => {
 	const inProject = (...args: string[]) => {
 		const run = Bun.spawnSync([process.execPath, ENTRY, ...args], {
 			cwd: project,
+			env: cliEnv(),
 		});
 		const strip = (b: Uint8Array) =>
 			new TextDecoder().decode(b).replace(/\x1b\[[0-9;]*m/g, "");
@@ -610,7 +685,7 @@ describe("the run sheet with the recipe, in export and print", () => {
 					"--serve",
 					"2026-10-11 13:00",
 				],
-				{ cwd: project },
+				{ cwd: project, env: cliEnv() },
 			);
 			expect(run.exitCode).toBe(0);
 			const md = await readFile(join(project, "out.md"), "utf-8");
@@ -676,7 +751,7 @@ portions: 6
 				"2026-10-10T10:00",
 				...extra,
 			],
-			{ cwd: project },
+			{ cwd: project, env: cliEnv() },
 		);
 		return {
 			code: run.exitCode,

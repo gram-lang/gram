@@ -1,3 +1,9 @@
+import {
+	type ClockMode,
+	VIEW_SETTINGS,
+	chooseClock,
+	systemLocale,
+} from "@gram-lang/renderer";
 import type { Availability } from "@gram-lang/scheduler";
 import {
 	WEEKDAYS,
@@ -7,6 +13,7 @@ import {
 	parseAvailability as parseEntries,
 	parseInstant,
 	parseMealTimes as readMealTimes,
+	parseLocalDateTime,
 } from "@gram-lang/scheduler";
 import { ExitCode, GramCLIError } from "../errors";
 
@@ -37,20 +44,18 @@ export function collectFlag(rawArgs: string[], name: string): string[] {
 
 /**
  * `--serve "2026-10-11 13:00"`: a local date and time, in the time zone of the
- * plan. A `T` instead of the space works too.
+ * plan. A `T` instead of the space works too, and so does a 12-hour time
+ * ("2026-10-11 1:00 pm").
  */
 export function parseServe(value: unknown): string {
 	const text = String(value ?? "").trim();
-	const m = /^(\d{4}-\d{2}-\d{2})[T ](\d{1,2}):(\d{2})$/.exec(text);
-	if (!m) {
-		return fail(
-			`Expected --serve like "2026-10-11 13:00" (a local date and time), got "${text}".`,
-		);
-	}
-	if (!isCalendarDate(m[1]!)) {
-		return fail(`--serve "${text}": ${m[1]} is not a day of the calendar.`);
-	}
-	return `${m[1]}T${m[2]!.padStart(2, "0")}:${m[3]}`;
+	const parsed = parseLocalDateTime(text);
+	if (parsed.ok) return parsed.local;
+	return parsed.reason === "date"
+		? fail(`--serve "${text}": ${parsed.date} is not a day of the calendar.`)
+		: fail(
+				`Expected --serve like "2026-10-11 13:00" or "2026-10-11 1:00 pm" (a local date and time), got "${text}".`,
+			);
 }
 
 /**
@@ -102,7 +107,7 @@ export function parseTimeZone(value: unknown, configured?: string): string {
  * When the cook is available, from the first of: the `--available` entries,
  * the `availability` setting of the project (or global) config (one entry or
  * a list of them, in the same syntax), all day. Each entry is one of:
- *   08:00-22:00            every day
+ *   08:00-22:00            every day (or 8am-10pm: 24 or 12 hours)
  *   fri=18:00-22:00        a day of the week (mon … sun)
  *   2026-10-09=none        a date (none: not available at all)
  * Several ranges go after one key, separated by commas, and an entry may be
@@ -129,7 +134,7 @@ export function parseAvailability(
 		);
 	}
 	return fail(
-		`Expected ${name} like 08:00-22:00 (several: 08:00-09:00,18:00-22:00, none for no availability)${where}, got "${parsed.part}" in "${parsed.entry}"${fix}.`,
+		`Expected ${name} like 08:00-22:00 or 8am-10pm (several: 08:00-09:00,18:00-22:00, none for no availability)${where}, got "${parsed.part}" in "${parsed.entry}"${fix}.`,
 	);
 }
 
@@ -138,13 +143,13 @@ function configEntries(configured: unknown): string[] {
 	return (
 		availabilityEntries(configured) ??
 		fail(
-			"The `availability` setting of .gram/config.yaml must be an entry like 08:00-22:00, or a list of them.",
+			"The `availability` setting of .gram/config.yaml must be an entry like 08:00-22:00 or 8am-10pm, or a list of them.",
 		)
 	);
 }
 
 /**
- * `--meal-times 12:30,20:00`, else the `mealTimes` of the config, else none
+ * `--meal-times 12:30,20:00` (or 12:30pm,8pm), else the `mealTimes` of the config, else none
  * (the scheduler's defaults, 12:30 and 20:00).
  */
 export function parseMealTimes(
@@ -159,31 +164,64 @@ export function parseMealTimes(
 	const parsed = readMealTimes(raw);
 	if (parsed.ok) return parsed.times;
 	return fail(
-		`Expected --meal-times like 12:30,20:00 (the \`mealTimes\` setting is a list of "HH:MM"), got "${parsed.part}".`,
+		`Expected --meal-times like 12:30,20:00 or 12:30pm,8pm (the \`mealTimes\` setting is a list of times), got "${parsed.part}".`,
 	);
 }
 
-const LOCAL_BOUND = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{1,2}:\d{2})?$/;
+/** A bound of `--find`: a date alone, or a date and a time; `null` otherwise. */
+function findBound(text: string): string | null {
+	const bound = text.trim();
+	if (isCalendarDate(bound)) return bound;
+	const parsed = parseLocalDateTime(bound);
+	return parsed.ok ? parsed.local : null;
+}
 
 /**
  * `--find 2026-10-12/2026-10-15`: the two local bounds of the search, each a
- * date or a date and time. A bare date as the end means the whole day.
+ * date or a date and time ("2026-10-12 18:00", "2026-10-12 6pm"). A bare date
+ * as the end means the whole day.
  */
 export function parseFindRange(value: unknown): { from: string; to: string } {
 	const text = String(value ?? "").trim();
 	const parts = text.split("/");
-	if (
-		parts.length !== 2 ||
-		!parts.every(
-			(p) =>
-				LOCAL_BOUND.test(p.trim()) && isCalendarDate(p.trim().slice(0, 10)),
-		) ||
-		parts[0]!.trim() > parts[1]!.trim()
-	) {
+	const [from, to] = parts.length === 2 ? parts.map(findBound) : [];
+	// Both normalized ("2026-10-12T09:00"), so they compare as text.
+	if (!from || !to || from > to) {
 		return fail(
 			`Expected --find like "2026-10-12/2026-10-15" (a start and an end, local dates or date and time, in that order), got "${text}".`,
 		);
 	}
-	const norm = (p: string) => p.trim().replace(" ", "T");
-	return { from: norm(parts[0]!), to: norm(parts[1]!) };
+	return { from, to };
+}
+
+/** How a run sheet is written: its clock, and the machine's locale for `auto`. */
+export interface ClockChoice {
+	clock: ClockMode;
+	/** This machine's locale (`LC_ALL`, `LC_TIME`, `LANG`), when it names one. */
+	locale?: string;
+}
+
+/**
+ * The clock of a run sheet, from the first of: `--clock 12h|24h`, the `clock`
+ * setting of the project (or global) config, the region of this machine's
+ * locale (`auto`). Like `timezone`, the setting is only checked here.
+ */
+export function resolveClock(
+	flag: ClockMode | undefined,
+	configured?: unknown,
+): ClockChoice {
+	if (
+		configured !== undefined &&
+		configured !== null &&
+		!VIEW_SETTINGS.clock.accepts(configured)
+	) {
+		return fail(
+			`Unknown \`clock\` setting "${String(configured)}" in .gram/config.yaml: use ${VIEW_SETTINGS.clock.values.join(", ")}, or fix it with \`gram config set clock <value>\`.`,
+		);
+	}
+	const locale = systemLocale(process.env, process.platform);
+	return {
+		clock: chooseClock(flag, configured as ClockMode | undefined),
+		...(locale !== undefined && { locale }),
+	};
 }

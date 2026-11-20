@@ -93,3 +93,34 @@ describe("slugify", () => {
 		expect(slug).toBe(slugify("🔥🔥🔥"));
 	});
 });
+
+describe("a temperature's note (1.5)", () => {
+	// biome-ignore lint/suspicious/noExplicitAny: reading a compiled step token.
+	const temperature = (line: string): any =>
+		compile(
+			getAST(`## Section\n\n${line}\n`),
+		).sections[0]?.steps[0]?.content.find(
+			// biome-ignore lint/suspicious/noExplicitAny: reading a compiled step token.
+			(c: any) => c?.type === "temperature",
+		);
+
+	it("is carried into the compiled token", () => {
+		expect(temperature("Bake at ^oven{160°C}(fan).")).toEqual({
+			type: "temperature",
+			name: "oven",
+			quantity: { type: "single", value: 160, text: "160" },
+			unit: "°C",
+			note: "fan",
+		});
+		expect(temperature("Cook on ^{high}(covered).")).toEqual({
+			type: "temperature",
+			text: "high",
+			note: "covered",
+		});
+	});
+
+	it("is left out when there is none, or when it is empty", () => {
+		expect("note" in temperature("Bake at ^{160°C}.")).toBe(false);
+		expect("note" in temperature("Bake at ^{160°C}().")).toBe(false);
+	});
+});

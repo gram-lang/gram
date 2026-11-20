@@ -19,6 +19,7 @@ import {
 	categoriesTable,
 	type Table,
 } from "../src/data/api-reference";
+import { termLabel, type TermId } from "../src/data/terms";
 
 const SITE_ORIGIN = "https://gram-lang.org";
 const CONTENT_DIR = join(import.meta.dirname, "..", "src", "content", "docs", "docs");
@@ -30,10 +31,12 @@ const OUT_FILE = join(import.meta.dirname, "..", "public", "llms-full.txt");
 const PAGES: [string, string][] = [
 	["explanation/philosophy.mdx", "/docs/explanation/philosophy"],
 	["reference/syntax/document-structure.mdx", "/docs/reference/syntax/document-structure"],
+	["reference/syntax/modules.mdx", "/docs/reference/syntax/modules"],
 	["reference/syntax/ingredients.mdx", "/docs/reference/syntax/ingredients"],
 	["reference/syntax/cookware.mdx", "/docs/reference/syntax/cookware"],
 	["reference/syntax/times.mdx", "/docs/reference/syntax/times"],
 	["reference/syntax/temperatures.mdx", "/docs/reference/syntax/temperatures"],
+	["reference/syntax/target-states.mdx", "/docs/reference/syntax/target-states"],
 	["reference/syntax/intermediate-variables.mdx", "/docs/reference/syntax/intermediate-variables"],
 	["reference/syntax/relative-quantities.mdx", "/docs/reference/syntax/relative-quantities"],
 	["reference/syntax/composite-ingredients.mdx", "/docs/reference/syntax/composite-ingredients"],
@@ -99,7 +102,17 @@ function stripStarlightComponents(content: string): string {
 		.replace(/<Card\s+title="([^"]+)"(?:\s+[^>]*)?>/g, "### $1\n")
 		.replace(/<\/Card>/g, "")
 		.replace(/<\/?Steps>/g, "")
-		.replace(/<Badge\s+text="([^"]+)"(?:\s+[^>]*)?\s*\/>/g, "[$1]");
+		.replace(/<Badge\s+text="([^"]+)"(?:\s+[^>]*)?\s*\/>/g, "[$1]")
+		.replace(/<Term\s+([^>]+?)\s*\/>/g, (_m, attrs: string) => {
+			const idMatch = attrs.match(/id="([^"]+)"/);
+			if (!idMatch) return "";
+			const label = termLabel(idMatch[1] as TermId, "en");
+			const cap = /\bcap\b/.test(attrs);
+			const text = cap
+				? label.charAt(0).toUpperCase() + label.slice(1)
+				: label.charAt(0).toLowerCase() + label.slice(1);
+			return `**${text}**`;
+		});
 }
 
 const sections = PAGES.map(([relPath, urlPath]) => {

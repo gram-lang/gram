@@ -1,15 +1,26 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
 import { Code } from "astro:components";
 import Icon from "./Icon.astro";
 import gramGrammar from "@gram-lang/parser/textmate";
 import FeaturePanel from "./FeaturePanel.astro";
 import { GRAM_VERSION } from "../lib/gram-version";
-import { NUTRIENTS, type NutrientKey } from "@gram-lang/analyzer";
+import { getHomeOgSlug, ogPathFromSlug } from "../lib/og/catalog";
+import { getHomepageAnnouncement } from "../lib/releases";
+import type { NutrientKey } from "@gram-lang/analyzer";
 import { nutritionRows } from "@gram-lang/renderer";
 import { getDictionary } from "@gram-lang/i18n";
 
 const { lang, t } = Astro.props;
+const allPosts = await getCollection("blog");
+const announcement = getHomepageAnnouncement(allPosts, lang, GRAM_VERSION);
+const announcementMinor = announcement?.version.replace(/\.0$/, "");
+const releaseNotesLabel = announcementMinor
+	? lang === "fr"
+		? `Nouveautés de la ${announcementMinor}`
+		: `What's new in ${announcementMinor}`
+	: undefined;
 const gramLang = { ...gramGrammar, name: "gram" } as any;
 const codeThemes: Record<string, any> = {
 	light: "github-light",
@@ -59,7 +70,7 @@ const mockNutrientRows = portionRows
 	}));
 ---
 
-<Layout title="Gram" description={t.metaDescription} currentLang={lang}>
+<Layout title="Gram" description={t.metaDescription} currentLang={lang} ogImage={ogPathFromSlug(getHomeOgSlug(lang))}>
   <!-- Hero Section -->
   <section class="section hero" aria-labelledby="hero-heading">
     <div class="homepage-container">
@@ -73,9 +84,7 @@ const mockNutrientRows = portionRows
 
           <div class="actions">
             <a
-              href={lang === "fr"
-                ? "/fr/docs/explanation/philosophy"
-                : "/docs/explanation/philosophy"}
+              href={lang === "fr" ? "/fr/docs/" : "/docs/"}
               class="button primary">{t.heroGetStarted}</a
             >
             <a
@@ -84,9 +93,19 @@ const mockNutrientRows = portionRows
             >
           </div>
 
-          <div class="version-badge">
-            <a href={lang === "fr" ? "/fr/docs/changelog" : "/docs/changelog"}
-              >Version {GRAM_VERSION}</a
+          <div class="version-meta">
+            <span class="version-tag">v{GRAM_VERSION}</span>
+            {
+              announcement && releaseNotesLabel && (
+                <>
+                  <span class="version-sep" aria-hidden="true">&middot;</span>
+                  <a href={announcement.href}>{releaseNotesLabel}</a>
+                </>
+              )
+            }
+            <span class="version-sep" aria-hidden="true">&middot;</span>
+            <a href={lang === "fr" ? "/fr/changelog" : "/changelog"}
+              >{lang === "fr" ? "Changelog complet" : "Full changelog"}</a
             >
           </div>
         </div>
@@ -445,9 +464,7 @@ const mockNutrientRows = portionRows
             {t.readBookDesc}
           </p>
           <a
-            href={lang === "fr"
-              ? "/fr/docs/explanation/philosophy"
-              : "/docs/explanation/philosophy"}
+            href={lang === "fr" ? "/fr/docs/" : "/docs/"}
             class="link-btn"
             >{t.readBookLink}<span class="sr-only">: {t.readBookTitle}</span><span aria-hidden="true"> &rarr;</span></a
           >
@@ -662,17 +679,38 @@ const mockNutrientRows = portionRows
     flex: 1 1 400px;
   }
 
-  .version-badge {
-    margin-top: 1rem;
+  .version-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.15rem;
+    font-size: 0.95rem;
   }
-  .version-badge a {
-    font-size: 1.1rem;
+
+  .version-tag {
+    font-family: var(--sl-font-mono);
     font-weight: 600;
+    color: var(--sl-color-gray-2);
+    white-space: nowrap;
+  }
+
+  .version-sep {
+    color: var(--sl-color-gray-4);
+    user-select: none;
+  }
+
+  .version-meta a {
+    font-weight: 500;
     color: var(--sl-color-text);
     text-decoration: underline;
     text-decoration-color: var(--gram-orange);
     text-decoration-thickness: 2px;
     text-underline-offset: 3px;
+  }
+
+  .version-meta a:hover {
+    color: var(--sl-color-white);
   }
 
   .title {
@@ -1301,7 +1339,7 @@ const mockNutrientRows = portionRows
   .copy-cmd-btn:focus-visible,
   .learn-more-link:focus-visible,
   .link-btn:focus-visible,
-  .version-badge a:focus-visible {
+  .version-meta a:focus-visible {
     outline: 2px solid var(--sl-color-accent);
     outline-offset: 3px;
     border-radius: 2px;

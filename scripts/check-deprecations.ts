@@ -12,7 +12,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import yaml from "js-yaml";
+import { parse as parseYaml } from "yaml";
 
 const LAYERS = ["syntax", "ast", "compiled-json", "analyzed-json", "api", "cli", "renderer"] as const;
 const STATUSES = ["active", "planned", "removed"] as const;
@@ -262,7 +262,7 @@ function main() {
 		console.error(`Registry file not found at: ${registryPath}`);
 		process.exit(1);
 	}
-	const entries = validateRegistry(yaml.load(readFileSync(registryPath, "utf-8")), errors);
+	const entries = validateRegistry(parseYaml(readFileSync(registryPath, "utf-8")), errors);
 	const current = getCurrentVersion();
 	const markers = scanMarkers(errors);
 	const byId = new Map(entries.map((e) => [e.id, e]));

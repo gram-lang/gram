@@ -5,7 +5,6 @@ description: "Référence de la structure d'un fichier .gram : frontmatter YAML,
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
-import Since from '../../../../../../components/Since.astro';
 import Term from '../../../../../../components/Term.astro';
 
 Un fichier de recette Gram (`.gram`) se découpe en plusieurs blocs distincts : les Métadonnées, les Sections, les Étapes et les Commentaires.
@@ -56,8 +55,6 @@ densities:
 
 ## 2. Imports de modules
 
-<Since v="1.2.0" />
-
 Juste après le frontmatter, avant toute étape, une recette peut `@use` d'autres fichiers `.gram` comme sous-composants réutilisables.
 
 ```gram
@@ -101,11 +98,11 @@ Les recettes un peu touffues comportent souvent plusieurs sous-préparations (ex
 ```gram
 ## Pâte
 
-Mélanger la @farine{200 g} et l'@eau{100 ml} jusqu'à obtenir un mélange lisse.
+[Mélanger] La @farine{200 g} et l'@eau{100 ml} jusqu'à obtenir un mélange lisse.
 
 ## Garniture
 
-Combiner le @fromage{100 g} et les @épinards{50 g}, puis assaisonner selon le goût.
+[Combiner] Le @fromage{100 g} et les @épinards{50 g}, puis assaisonner selon le goût.
 ```
 
 ### Rétroplanning (ordonnancement)
@@ -115,7 +112,7 @@ Il est possible d'assigner un délai de rétroplanning à une `## Section` en gl
 ## Pâte Feuilletée ~{-2d}
 ```
 Cette annotation indique au compilateur que la section "Pâte Feuilletée" doit être anticipée **2 jours à l'avance**.
-Les suffixes supportés sont `d` (jours), `h` (heures), `min` ou `m` (minutes) — un texte libre (ex : `~{la veille}`) n'est pas valide ici et est signalé par le compilateur.
+Le décalage est une durée négative en jours, heures et minutes, écrite comme un minuteur (`~{-2j}`, `~{-12h}`, `~{-1h30}`, `~{-1j 12h}`) — un texte libre (ex : `~{la veille}`) n'est pas valide ici et est signalé par le compilateur.
 
 *Voir [Temps & Planification](/fr/docs/reference/syntax/times#rétroplanning-de-section) pour la syntaxe complète et la gestion des erreurs.*
 
@@ -133,12 +130,12 @@ Les commentaires vous permettent d'expliciter vos instructions sans pour autant 
 
 **Commentaires en ligne (`//`)** :
 ```gram
-Écraser les @pommes de terre{2 kg} jusqu'à obtenir une purée lisse // sinon, vous pouvez les faire bouillir avant.
+[Écraser] Les @pommes de terre{2 kg} jusqu'à obtenir une purée lisse // sinon, vous pouvez les faire bouillir avant.
 ```
 
 **Commentaires en bloc (`/* ... */`)** :
 ```gram
-Ajouter doucement le @lait{4 tasses} /* TODO changer les unités en litres */, et continuer à mélanger.
+[Ajouter] Doucement le @lait{4 tasses} /* TODO changer les unités en litres */, et continuer à mélanger.
 ```
 
 :::note[Commentaires vs Notes YAML]

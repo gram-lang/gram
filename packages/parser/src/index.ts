@@ -11,12 +11,17 @@ import {
 	type CompositeAST,
 	type CookwareAST,
 	type QuantityAST,
+	type CompoundQuantityAST,
+	type QuantityTermAST,
 	type QuantityValueAST,
 	type RelativeQuantityAST,
+	type RatioQuantityAST,
+	type RatioTermAST,
 	type TextQuantityAST,
 	type ReferenceAST,
 	type TimerAST,
 	type TemperatureAST,
+	type CheckpointAST,
 	type CommentAST,
 	type AlternativeAST,
 	type IntermediateDecl,
@@ -72,19 +77,59 @@ function throwMalformedQuantity(
 	hint = "a number and/or a unit",
 ): never {
 	const raw = braces.sourceString;
+	// A ratio glued to its slash (`{1/100g @&flour}`) reads as a fraction:
+	// say how to write the ratio rather than what a quantity is.
+	const glued = GLUED_RATIO.test(raw);
+	const what = glued ? "a ratio with a space around its slash" : hint;
+	const sample = glued ? "{1 / 100 g @&flour}" : example;
 	const target = name ? `${kind} '${name}'` : kind;
 	const problem = raw.endsWith("}")
 		? `Invalid quantity '${raw}' for ${target}`
 		: `Unclosed quantity '${raw}' for ${target} (missing '}')`;
-	throw new GramParseError(
-		`Gram Syntax Error: ${problem}. Expected ${hint}, e.g. ${example}.`,
+	throwBracesError(
+		problem,
+		`${what}, e.g. ${sample}`,
+		`a valid quantity in braces, e.g. ${sample}`,
 		braces.source.startIdx,
-		`a valid quantity in braces, e.g. ${example}`,
 	);
 }
 
-const RETRO_PLANNING_NUMBER_UNIT = /^(-)?\s*(\d+(?:\.\d+)?)\s*(\p{L}+)$/u;
-const RETRO_PLANNING_NUMBER_ONLY = /^(-)?\s*(\d+(?:\.\d+)?)\s*$/;
+/** A ratio written with its slash glued to both numbers: `{1/100g @&flour}`. */
+const GLUED_RATIO = /^\{\s*\d+\/\d+\s*\p{L}*\s*(@&|&)/u;
+
+/** The one shape of every "{...}" error: what is wrong, then what was expected. */
+function throwBracesError(
+	problem: string,
+	expectation: string,
+	expected: string,
+	offset: number,
+): never {
+	throw new GramParseError(
+		`Gram Syntax Error: ${problem}. Expected ${expectation}.`,
+		offset,
+		expected,
+	);
+}
+
+/**
+ * Raises the readable error for a target state with nothing in its braces
+ * (`={}`, `={ }`) or none closed on its line (`={ribbon stage`).
+ */
+function throwMalformedCheckpoint(raw: string, offset: number): never {
+	const example = "={ribbon stage}";
+	const problem = raw.endsWith("}")
+		? `Empty target state '${raw}'`
+		: `Unclosed target state '${raw}' (missing '}')`;
+	throwBracesError(
+		problem,
+		`the state that ends the step, e.g. ${example}`,
+		`a target state in braces, e.g. ${example}`,
+		offset,
+	);
+}
+
+const RETRO_PLANNING_NUMBER_UNIT = /^(-)?\s*(\d+(?:[.,]\d+)?)\s*(\p{L}+)$/u;
+const RETRO_PLANNING_NUMBER_ONLY = /^(-)?\s*(\d+(?:[.,]\d+)?)\s*$/;
 
 /**
  * Mechanically extracts sign/value/unit from a raw `~{...}` retro-planning
@@ -98,7 +143,7 @@ const parseRetroPlanning = (raw: string): RetroPlanningAST => {
 		return {
 			raw,
 			sign: numberUnit[1] ? -1 : 1,
-			value: Number(numberUnit[2]),
+			value: readDecimal(numberUnit[2] ?? ""),
 			unit: numberUnit[3] ?? null,
 		};
 	}
@@ -108,7 +153,7 @@ const parseRetroPlanning = (raw: string): RetroPlanningAST => {
 		return {
 			raw,
 			sign: numberOnly[1] ? -1 : 1,
-			value: Number(numberOnly[2]),
+			value: readDecimal(numberOnly[2] ?? ""),
 			unit: null,
 		};
 	}
@@ -120,12 +165,60 @@ const parseRetroPlanning = (raw: string): RetroPlanningAST => {
 const getOpt = (node: any) =>
 	node.children.length > 0 ? node.children[0].toAST() : null;
 
+/**
+ * `{ invalidNumber }` when a number was written but has no value (a fraction
+ * over zero, `1/0`), so the compiler can say why the element lost it;
+ * nothing otherwise, which keeps the AST of every valid quantity unchanged.
+ */
+const refusedNumber = (
+	node: { sourceString: string },
+	value: unknown,
+): { invalidNumber?: string } =>
+	value == null && node.sourceString.trim()
+		? { invalidNumber: node.sourceString.trim() }
+		: {};
+
+/** One side of a ratio from its number and unit nodes (`ratioTerm`, `ratioDenominator_amount`). */
+// biome-ignore lint/suspicious/noExplicitAny: Ohm CST nodes, see `getOpt`.
+const ratioTermOf = (val: any, unit: any): RatioTermAST => {
+	const value = val.toAST() as QuantityValueAST | null;
+	return { value, unit: getOpt(unit), ...refusedNumber(val, value) };
+};
+
+/**
+ * The one builder of a ratio's AST, for an ingredient's braces as for a
+ * timer's: `targetRef` is the `@&name` / `&name` node, `durationRaw` the
+ * timer's numerator as written.
+ */
+const buildRatioAST = (
+	numerator: RatioTermAST,
+	denominator: RatioTermAST | null,
+	// biome-ignore lint/suspicious/noExplicitAny: Ohm CST node, see `getOpt`.
+	targetRef: any,
+	raw: string,
+	loc: { start: number; end: number },
+	durationRaw?: string,
+): RatioQuantityAST => {
+	const [marker, , name] = targetRef.children;
+	return {
+		type: ASTNodeType.RatioQuantity,
+		numerator,
+		denominator: denominator ?? { value: null, unit: null },
+		...(durationRaw !== undefined ? { durationRaw } : {}),
+		target: clean(name.sourceString),
+		referenceType: marker.sourceString === "&" ? "variable" : "ingredient",
+		raw: clean(raw),
+		loc,
+	};
+};
+
 // The number/fraction layer lives in ./numbers.ts (audit 2026-07-22, parser
 // finding P3), imported (not re-exported) here — it's an internal
 // implementation detail of the grammar actions below, not part of this
 // package's public surface, and stays independently testable in isolation.
 import {
 	parseNumber,
+	readDecimal,
 	unicodeFractionValue,
 	makeMixedFraction,
 	makeRange,
@@ -270,7 +363,10 @@ semantics.addOperation("toAST", {
 	},
 
 	retroPlanning(_1, content, _2): RetroPlanningAST {
-		return parseRetroPlanning(clean(content.sourceString));
+		return {
+			...parseRetroPlanning(clean(content.sourceString)),
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
 	},
 
 	// --- Module imports ---
@@ -494,8 +590,14 @@ semantics.addOperation("toAST", {
 		let modifiers = _mods.children.map((m) => m.sourceString) as Modifier[];
 		const qtyAST = _qty.toAST();
 
-		if (modifiers.includes("=")) {
-			if (qtyAST && qtyAST.type === ASTNodeType.Quantity) {
+		// A ratio keeps its `=` among the modifiers: it always follows its
+		// target, so the compiler refuses the pair instead of dropping it.
+		if (modifiers.includes("=") && qtyAST?.type !== ASTNodeType.RatioQuantity) {
+			if (
+				qtyAST &&
+				(qtyAST.type === ASTNodeType.Quantity ||
+					qtyAST.type === ASTNodeType.CompoundQuantity)
+			) {
 				qtyAST.fixed = true;
 			}
 			modifiers = modifiers.filter((m) => m !== "=");
@@ -599,6 +701,51 @@ semantics.addOperation("toAST", {
 		return content.toAST();
 	},
 
+	ingredientAmount(
+		_lb,
+		_s1,
+		content,
+		_s3,
+		_rb,
+	):
+		| RelativeQuantityAST
+		| RatioQuantityAST
+		| QuantityAST
+		| CompoundQuantityAST {
+		return content.toAST();
+	},
+
+	closedQuantity(quantity, _s, _rb): QuantityAST {
+		return quantity.toAST();
+	},
+
+	// `-` sets `minus` on the term after it; `+` leaves the term as it is.
+	compoundQuantity(first, _s1, ops, _s2, rest): CompoundQuantityAST {
+		const terms: QuantityTermAST[] = [first.toAST()];
+		rest.children.forEach((node, i) => {
+			const term = node.toAST() as QuantityTermAST;
+			const minus = ops.children[i]?.sourceString === "-";
+			terms.push(minus ? { minus: true, ...term } : term);
+		});
+		return {
+			type: ASTNodeType.CompoundQuantity,
+			terms,
+			fixed: false, // set by the element's `=` modifier
+			raw: this.sourceString,
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	quantityTerm(val, _s, unit): QuantityTermAST {
+		const value = val.toAST();
+		return {
+			value,
+			unit: getOpt(unit),
+			...refusedNumber(val, value),
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
 	relativeQuantity(
 		val,
 		_s1,
@@ -608,31 +755,64 @@ semantics.addOperation("toAST", {
 		_s3,
 		name,
 	): RelativeQuantityAST {
+		const value = val.toAST() as QuantityValueAST | null;
 		return {
 			type: ASTNodeType.RelativeQuantity,
-			percent: parseFloat(val.sourceString),
+			// The grammar's number, not `parseFloat` of its text, which stops at
+			// a decimal comma: `{12,5% &dough}` must not become 12%. A fraction
+			// over zero has no value (`parseNumber`): its text is read as before,
+			// and `invalidNumber` lets the compiler say so.
+			percent: value?.value ?? readDecimal(val.sourceString),
+			text: val.sourceString,
 			target: clean(name.sourceString),
 			referenceType: marker.sourceString === "&" ? "variable" : "ingredient",
+			...refusedNumber(val, value),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
 
+	ratioQuantity(numerator, _s1, _slash, _s2, denominator, _s3, targetRef) {
+		return buildRatioAST(
+			numerator.toAST(),
+			getOpt(denominator),
+			targetRef,
+			this.sourceString,
+			{ start: this.source.startIdx, end: this.source.endIdx },
+		);
+	},
+
+	ratioTerm(val, _s, unit): RatioTermAST {
+		return ratioTermOf(val, unit);
+	},
+
+	ratioDenominator_amount(val, _s, unit): RatioTermAST {
+		return ratioTermOf(val, unit);
+	},
+
+	ratioDenominator_unit(unit): RatioTermAST {
+		return { value: null, unit: unit.toAST() };
+	},
+
 	absoluteQuantity(val, _s2, unit, _sUnit): QuantityAST {
+		const value = getOpt(val);
 		return {
 			type: ASTNodeType.Quantity,
-			value: getOpt(val),
+			value,
 			unit: getOpt(unit),
 			fixed: false, // In v1, fixed is a modifier on the element, not the quantity
+			...refusedNumber(val, value),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
 
 	cookwareQuantity(_lb, _s1, val, _s2, _rb): QuantityAST {
+		const value = getOpt(val);
 		return {
 			type: ASTNodeType.Quantity,
-			value: getOpt(val),
+			value,
 			unit: null,
 			fixed: false,
+			...refusedNumber(val, value),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
@@ -653,10 +833,12 @@ semantics.addOperation("toAST", {
 		return parseNumber(this.sourceString);
 	},
 
-	mixedFraction(whole, _sp, num, _slash, den): QuantityValueAST {
+	mixedFraction(whole, _sp, num, _slash, den): QuantityValueAST | null {
 		const w = parseInt(whole.sourceString, 10);
 		const n = parseInt(num.sourceString, 10);
 		const d = parseInt(den.sourceString, 10);
+		// Over zero it has no value, like `1/0` (`parseNumber`).
+		if (d === 0) return null;
 		return makeMixedFraction(w, n, d, this.sourceString);
 	},
 
@@ -783,27 +965,114 @@ semantics.addOperation("toAST", {
 		return {
 			type: ASTNodeType.Timer,
 			name: n,
+			raw: clean(qty.sourceString.slice(1, -1)),
 			quantity: qty.toAST(),
 			isPassive: passiveMod.children.length > 0,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
 
-	Temperature(_1, name, qty): TemperatureAST {
+	Timer_ratio(_1, passiveMod, name, ratio): TimerAST {
+		const child = name.children[0];
+		return {
+			type: ASTNodeType.Timer,
+			name: child ? clean(child.sourceString) : null,
+			raw: clean(ratio.sourceString.slice(1, -1)),
+			quantity: ratio.toAST(),
+			isPassive: passiveMod.children.length > 0,
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	timerRatio(
+		_lb,
+		_s1,
+		duration,
+		_s2,
+		_slash,
+		_s3,
+		denominator,
+		_s4,
+		targetRef,
+		_s5,
+		_rb,
+	): RatioQuantityAST {
+		const start = duration.source.startIdx;
+		const end = targetRef.source.endIdx;
+		return buildRatioAST(
+			{ value: null, unit: null },
+			getOpt(denominator),
+			targetRef,
+			this.source.sourceString.slice(start, end),
+			{ start, end },
+			clean(duration.sourceString),
+		);
+	},
+
+	Timer_text(_1, passiveMod, name, text): TimerAST {
 		const child = name.children[0];
 		const n = child ? clean(child.sourceString) : null;
+		const raw = clean(text.sourceString.slice(1, -1));
+		return {
+			type: ASTNodeType.Timer,
+			name: n,
+			raw,
+			quantity: {
+				type: ASTNodeType.TextQuantity,
+				value: raw,
+				loc: { start: text.source.startIdx, end: text.source.endIdx },
+			},
+			isPassive: passiveMod.children.length > 0,
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	checkpoint_full(_open, state, _close, noteNode): CheckpointAST {
+		const s = clean(state.sourceString);
+		if (!s)
+			throwMalformedCheckpoint(
+				`={${state.sourceString}}`,
+				this.source.startIdx,
+			);
+		// Omitted when absent or empty (`={ribbon}()`), as on a temperature.
+		const note = getOpt(noteNode);
+		return {
+			type: ASTNodeType.Checkpoint,
+			state: s,
+			...(note ? { note } : {}),
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	checkpoint_malformed(_eq, braces) {
+		throwMalformedCheckpoint(`=${braces.sourceString}`, this.source.startIdx);
+	},
+
+	temperature(_1, name, qty, noteNode): TemperatureAST {
+		const child = name.children[0];
+		// `|| null`: the rule is lexical, so `^ {180°C}` reads a name of one
+		// space, which the syntactic rule used to skip.
+		const n = (child && clean(child.sourceString)) || null;
 		const qAST = qty.toAST();
+		// Omitted when absent or empty (`^{160°C}()`), so a temperature
+		// without a note keeps the AST it had before 1.5.0.
+		const note = getOpt(noteNode);
 		const base = {
 			type: ASTNodeType.Temperature as const,
 			name: n,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
+			...(note ? { note } : {}),
 		};
 
 		if (qAST.type === ASTNodeType.TextQuantity) {
 			return { ...base, text: qAST.value };
 		}
 		if (qAST.type === ASTNodeType.Quantity && !qAST.value) {
-			return { ...base, text: qAST.unit || "" };
+			return {
+				...base,
+				text: qAST.unit || "",
+				...(qAST.invalidNumber ? { invalidNumber: qAST.invalidNumber } : {}),
+			};
 		}
 		return {
 			...base,

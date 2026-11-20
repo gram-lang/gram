@@ -17,12 +17,33 @@ import type {
 	Usage,
 	ShoppingListItem,
 	RegistryEntry,
+	PercentFormula,
+	RatioFailure,
+	RatioFormula,
+	RatioProblem,
+	RatioSpec,
 } from "@gram-lang/kitchen";
+import type { Term } from "@gram-lang/i18n";
 import {
-	getNumericQty,
+	convertUnitInFamily,
+	groupTerms,
+	isMeasureUnit,
+	isTermValue,
+	mergeKey,
+	termsTotal,
+} from "@gram-lang/i18n";
+import {
+	termsOfUsage,
 	WarningCode,
 	round2,
 	isPurchasableReference,
+	pushRatioWarnings,
+	pushWarning,
+	shoppingAmount,
+	variablePartsOf,
+	recomputeSchedule,
+	resolveRatios,
+	slugify,
 } from "@gram-lang/kitchen";
 import type {
 	AnalyzedCompilationResult,
@@ -37,9 +58,10 @@ import type {
 import { calculateMassMetrics } from "./metrics";
 import { calculateNutrition, type NutritionItem } from "./nutrition";
 import {
-	standardizeMass,
+	analyzerConverter,
 	parseDensityOverrides,
-	applyYield,
+	weighAmount,
+	type WeighedAmount,
 } from "./mass_standardization";
 import { getIngredientData } from "./ingredient_db";
 import { aggregateShoppingList } from "./shopping_aggregation";
@@ -107,31 +129,48 @@ function standardizeUsageMass(
 	enableYieldCalculation: boolean,
 	lang?: string,
 ): void {
-	const numericQty = getNumericQty(usage.qty);
-	if (numericQty === null) return;
+	const weighed = weighUsage(
+		termsOfUsage(usage),
+		usage,
+		database,
+		overrides,
+		enableYieldCalculation,
+		lang,
+	);
+	if (!weighed) return;
 
-	const norm = standardizeMass(
-		numericQty,
-		usage.unit || "unit",
+	usage.conversionMethod = weighed.method;
+	usage.isEstimate = weighed.isEstimate;
+	usage.normalizedMass = round2(weighed.normalizedMass);
+	if (weighed.purchasingMass !== undefined) {
+		usage.purchasingMass = round2(weighed.purchasingMass);
+	}
+}
+
+/**
+ * What `terms` of `usage`'s ingredient weigh (`weighAmount`), its waste
+ * factor applied when yields are on: the whole usage, or the share of it a
+ * shopping entry holds.
+ */
+function weighUsage(
+	terms: readonly Term[],
+	usage: Partial<Usage> & Pick<Usage, "id">,
+	database: Record<string, IngredientData>,
+	overrides: Record<string, number>,
+	enableYieldCalculation: boolean,
+	lang?: string,
+): WeighedAmount | null {
+	const yieldFactor = enableYieldCalculation
+		? getIngredientData(usage.id, database)?.physical?.yield
+		: undefined;
+	return weighAmount(
+		terms,
 		database,
 		usage.name || usage.id,
 		overrides,
 		lang,
+		yieldFactor,
 	);
-	if (!norm) return;
-
-	usage.conversionMethod = norm.method;
-	usage.isEstimate = norm.isEstimate;
-
-	const dbData = getIngredientData(usage.id, database);
-	const yieldFactor = enableYieldCalculation
-		? dbData?.physical?.yield
-		: undefined;
-	const yielded = applyYield(norm.mass, norm.method, yieldFactor);
-	usage.normalizedMass = round2(yielded.normalizedMass);
-	if (yielded.purchasingMass !== undefined) {
-		usage.purchasingMass = round2(yielded.purchasingMass);
-	}
 }
 
 /**
@@ -234,57 +273,337 @@ function standardizeSectionMasses(
 	return allRawIngredients;
 }
 
+/** A usage whose amount comes from another one, with its alternative's earlier options. */
+interface RelativeEntry {
+	usage: AnalyzedUsage;
+	/** For an option of an alternative: the options before it. */
+	earlier?: AnalyzedUsage[];
+}
+
+/** Its amount still comes from another one: a share or a ratio not resolved. */
+const isPendingUsage = (usage: Usage) =>
+	usage.formula !== undefined && !isTermValue(usage.qty);
+
 /**
- * Pass 1.5: resolves Relative Quantities (`% of &target`), mutating
- * `sections` in place. Must run after `standardizeSectionMasses` — it reads
- * the `normalizedMass` that pass just computed on the target ingredient.
+ * The usages of a section whose amount comes from another one (a share, a
+ * ratio): its ingredients and references, then the options of its
+ * alternatives, each with the options before it.
+ */
+function relativeEntries(sec: AnalyzedSection): RelativeEntry[] {
+	const entries: RelativeEntry[] = [];
+	for (const item of sec.ingredients) {
+		if (item.type === "alternative") continue;
+		if (item.formula) entries.push({ usage: item });
+	}
+	for (const item of sec.ingredients) {
+		if (item.type !== "alternative" || !Array.isArray(item.options)) continue;
+		const earlier: AnalyzedUsage[] = [];
+		for (const opt of item.options) {
+			if (typeof opt === "string" || !("id" in opt) || !opt.id) continue;
+			const option = opt as AnalyzedUsage;
+			if (option.formula)
+				entries.push({ usage: option, earlier: [...earlier] });
+			earlier.push(option);
+		}
+	}
+	return entries;
+}
+
+/**
+ * The sections, each one after the sections that make the intermediates it
+ * uses: an intermediate used whole takes the mass of the section that makes
+ * it, which must be known first.
+ */
+function producersFirst(sections: AnalyzedSection[]): AnalyzedSection[] {
+	const producerOf = new Map<string, number>();
+	sections.forEach((sec, index) => {
+		if (sec.intermediate_preparation)
+			producerOf.set(slugify(sec.intermediate_preparation), index);
+	});
+	const order: AnalyzedSection[] = [];
+	const seen = new Set<number>();
+	const visit = (index: number) => {
+		if (seen.has(index)) return;
+		seen.add(index);
+		for (const item of sections[index]!.ingredients) {
+			const producer =
+				item.type === "reference" ? producerOf.get(item.id) : undefined;
+			if (producer !== undefined) visit(producer);
+		}
+		order.push(sections[index]!);
+	};
+	for (let index = 0; index < sections.length; index++) visit(index);
+	return order;
+}
+
+/**
+ * What an intermediate used whole in `sec` weighs (`Roll out the &dough`,
+ * no amount written for it in the section): the mass of the section that
+ * makes it, when that section declares it in its title and its mass is
+ * complete. Refused when another section uses it too (who takes what?), and
+ * when a step makes it (`stepProducer`): what a step makes has no mass of its
+ * own yet.
+ * `null` when the section does write an amount for it.
+ */
+function wholeUseMass(
+	targetId: string,
+	sec: AnalyzedSection,
+	sections: AnalyzedSection[],
+): { mass: number } | { reason: Exclude<RatioFailure, "deferred"> } | null {
+	const usesOf = (s: AnalyzedSection) =>
+		s.ingredients.filter((i) => i.type === "reference" && i.id === targetId);
+	const here = usesOf(sec);
+	if (here.length === 0 || here.some((i) => termsOfUsage(i).length > 0)) {
+		return null;
+	}
+	if (sections.filter((s) => usesOf(s).length > 0).length > 1) {
+		return { reason: "wholeUseAmbiguous" };
+	}
+	const producer = sections.find(
+		(s) =>
+			s.intermediate_preparation &&
+			slugify(s.intermediate_preparation) === targetId,
+	);
+	if (
+		!producer &&
+		sections.some((s) =>
+			s.steps.some(
+				(step) =>
+					step.type === "step" && step.intermediate_preparation === targetId,
+			),
+		)
+	) {
+		return { reason: "stepProducer" };
+	}
+	const metrics = producer?.metrics;
+	if (!metrics || metrics.massStatus === "incomplete" || !metrics.totalMass) {
+		return { reason: "producerMassUnknown" };
+	}
+	return { mass: metrics.totalMass };
+}
+
+/**
+ * Pass 1.5: resolves what comes from another ingredient, mutating `sections`
+ * in place: shares (`10% @&flour`, in grams) and ratios with units that
+ * kitchen left waiting (`1 / 100 ml @&flour`: a density, a unit weight).
+ * Must run after `standardizeSectionMasses`, whose masses it reads.
+ *
+ * In each section, in the order of the dependencies: a share waits while its
+ * target is itself pending, so a share and a ratio can target each other's
+ * results. Sections come after those that make the intermediates they use:
+ * an intermediate used whole (`Roll out the &dough`) weighs the section that
+ * makes it (an estimate: what went in the bowl, before cooking), so each
+ * section's mass is computed right after its own pass.
+ *
+ * An alternative's options are resolved too, each one for itself: an option
+ * never adds to the others, since only one is bought. An option may take a
+ * share of an earlier option of the same group (`@butter{100 g}|@oil{80%
+ * @&butter}`), which then wins over the section's own mentions.
+ *
+ * Returns whether a proportional time changed (the schedule is laid out
+ * again) and the usages it resolved that kitchen had left waiting.
  */
 function resolveRelativeQuantities(
 	sections: AnalyzedSection[],
 	warnings: CompilationResult["warnings"],
-): void {
-	sections.forEach((sec) => {
-		sec.ingredients.forEach((item) => {
-			if (item.formula?.target) {
-				const targetId = item.dependencies?.[0];
-				const isVariable = item.formula.raw.includes("% of &");
+	database: Record<string, IngredientData>,
+	overrides: Record<string, number>,
+	opts: AnalyzerOptions,
+): { timersChanged: boolean } {
+	const convertFor = analyzerConverter(database, overrides, opts.lang);
+	let timersChanged = false;
 
-				let targetMass = 0;
-				let foundMass = false;
+	for (const sec of producersFirst(sections)) {
+		const entries = relativeEntries(sec);
+		const ratios = entries.filter(
+			(e) => e.usage.formula && "ratio" in e.usage.formula,
+		);
+		let shares = entries.filter(
+			(e) => e.usage.formula && "percent" in e.usage.formula,
+		);
+		const wholeUse = (spec: RatioSpec) => {
+			const whole = wholeUseMass(spec.targetId, sec, sections);
+			if (!whole || "reason" in whole) return whole;
+			return { terms: [{ value: whole.mass, unit: "g" }] };
+		};
 
-				if (!isVariable && targetId) {
-					sec.ingredients.forEach((other) => {
-						if (other.id === targetId && other.normalizedMass !== undefined) {
-							targetMass += other.normalizedMass;
-							foundMass = true;
-						}
-					});
+		let problems: RatioProblem[] = [];
+		let progress = true;
+		while (progress) {
+			progress = false;
+			const waiting: RelativeEntry[] = [];
+			for (const entry of shares) {
+				const outcome = resolveShare(entry, sec, sections, warnings);
+				if (outcome === "wait") waiting.push(entry);
+				else progress = true;
+			}
+			shares = waiting;
+
+			const resolvedBefore = ratios.filter(
+				(e) => !isPendingUsage(e.usage),
+			).length;
+			const pass = resolveRatios([sec], convertFor, {
+				mode: "analyzer",
+				lang: opts.lang,
+				wholeUse,
+			});
+			if (pass.timersChanged) timersChanged = true;
+			problems = pass.problems;
+			for (const { usage } of ratios) {
+				if (isPendingUsage(usage)) {
+					delete usage.normalizedMass;
+					delete usage.conversionMethod;
+					continue;
 				}
-
-				if (foundMass && targetMass > 0) {
-					const calculatedMass = (item.formula.percent / 100) * targetMass;
-					item.normalizedMass = round2(calculatedMass);
-					// `Usage.qty` accepts QuantityValueAST's "single"/"fraction"/
-					// "range" variants, never a raw QuantityAST (`type:
-					// ASTNodeType.Quantity` = the literal string "Quantity") —
-					// this happened to still render correctly only because
-					// renderer's getQty() has an untyped fallback that reads
-					// `.value` off *any* object shape, ignoring `.type`. `unit`
-					// isn't part of QuantityValueAST either — `item.unit` below
-					// is the real, and only, place that's read from.
-					item.qty = { type: "single", value: item.normalizedMass };
-					item.unit = "g";
-					item.conversionMethod = "relative";
-				} else {
-					warnings.push({
-						code: WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS,
-						message: `Cannot compute relative quantity for '${item.name || item.id}' because the mass of target '${item.formula.target}' is unknown.`,
-						item: item.name || item.id,
-					});
+				standardizeUsageMass(
+					usage,
+					database,
+					overrides,
+					opts.enableYieldCalculation !== false,
+					opts.lang,
+				);
+				if (
+					usage.normalizedMass !== undefined &&
+					isEstimatedRatio(usage, sec, sections, overrides, opts.lang)
+				) {
+					usage.isEstimate = true;
 				}
 			}
-		});
+			const resolvedAfter = ratios.filter(
+				(e) => !isPendingUsage(e.usage),
+			).length;
+			if (resolvedAfter > resolvedBefore) progress = true;
+		}
+
+		// A share still waiting waits on a target that never resolved.
+		for (const { usage } of shares) warnUnknownMass(usage, warnings);
+		// What kitchen already said (two counts that differ) is not said twice.
+		const said = (problem: RatioProblem) =>
+			warnings.some(
+				(w) =>
+					w.code === WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS &&
+					w.loc?.start === problem.spec.loc?.start &&
+					w.loc?.uri === problem.spec.loc?.uri,
+			);
+		pushRatioWarnings(
+			warnings,
+			problems.filter((p) => !said(p)),
+		);
+
+		sec.metrics = calculateMassMetrics(sec.ingredients);
+	}
+
+	return { timersChanged };
+}
+
+/**
+ * A resolved ratio is an estimate when what it counts from is one: a target
+ * whose own mass is estimated, an intermediate used whole (what went in the
+ * bowl, before cooking), or a conversion that took a density or a unit
+ * weight from the database (the recipe's own `densities:` are exact).
+ */
+function isEstimatedRatio(
+	usage: AnalyzedUsage,
+	sec: AnalyzedSection,
+	sections: AnalyzedSection[],
+	overrides: Record<string, number>,
+	lang?: string,
+): boolean {
+	const spec = (usage.formula as RatioFormula).ratio;
+	const targets = sec.ingredients.filter(
+		(o) => o.id === spec.targetId && o !== usage,
+	);
+	if (targets.some((t) => t.isEstimate)) return true;
+	if (
+		spec.referenceType === "variable" &&
+		wholeUseMass(spec.targetId, sec, sections) !== null
+	) {
+		return true;
+	}
+	if (overrides[spec.targetId] !== undefined) return false;
+	const per = spec.denominator.unit;
+	return targets
+		.flatMap((t) => termsOfUsage(t))
+		.some(
+			(term) =>
+				(isMeasureUnit(per, lang) || isMeasureUnit(term.unit, lang)) &&
+				convertUnitInFamily(1, term.unit, per, lang) === null,
+		);
+}
+
+/** The 1.3.0 warning of a share whose target's mass is unknown. */
+function warnUnknownMass(
+	item: AnalyzedUsage,
+	warnings: CompilationResult["warnings"],
+): void {
+	warnings.push({
+		code: WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS,
+		message: `Cannot compute relative quantity for '${item.name || item.id}' because the mass of target '${item.formula?.target}' is unknown.`,
+		item: item.name || item.id,
 	});
+}
+
+/**
+ * Resolves one share (`10% @&flour`) against the mentions it may target, in
+ * grams: `wait` while a target is itself pending.
+ */
+function resolveShare(
+	entry: RelativeEntry,
+	sec: AnalyzedSection,
+	sections: AnalyzedSection[],
+	warnings: CompilationResult["warnings"],
+): "wait" | "done" {
+	const item = entry.usage;
+	const formula = item.formula as PercentFormula;
+	const targetId = item.dependencies?.[0];
+	const pool = entry.earlier?.some((o) => o.id === targetId)
+		? entry.earlier
+		: sec.ingredients;
+	const targets = pool.filter((o) => o.id === targetId && o !== item);
+	if (targets.some(isPendingUsage)) return "wait";
+
+	let targetMass = 0;
+	let estimate = false;
+	for (const other of targets) {
+		if (other.normalizedMass === undefined) continue;
+		targetMass += other.normalizedMass;
+		if (other.isEstimate) estimate = true;
+	}
+
+	// An intermediate used whole: the mass of the section that makes it.
+	if (!(targetMass > 0) && targetId) {
+		const qty = item.qty as { referenceType?: string } | undefined;
+		const whole =
+			qty?.referenceType === "variable"
+				? wholeUseMass(targetId, sec, sections)
+				: null;
+		if (whole && "reason" in whole) {
+			pushWarning(warnings, WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS, {
+				targetName: formula.target,
+				item: item.name || item.id,
+				reason: whole.reason,
+			});
+			return "done";
+		}
+		if (whole) {
+			targetMass = whole.mass;
+			estimate = true;
+		}
+	}
+
+	if (targetMass > 0) {
+		item.normalizedMass = round2((formula.percent / 100) * targetMass);
+		// `Usage.qty` accepts QuantityValueAST's "single"/"fraction"/"range"
+		// variants, never a raw QuantityAST — the renderer's getQty() happened
+		// to read `.value` off any shape. `unit` is the one place read from.
+		item.qty = { type: "single", value: item.normalizedMass };
+		item.unit = "g";
+		item.conversionMethod = "relative";
+		if (estimate) item.isEstimate = true;
+	} else {
+		warnUnknownMass(item, warnings);
+	}
+	return "done";
 }
 
 /**
@@ -363,6 +682,52 @@ function syncEnrichedFieldsIntoSteps(sections: AnalyzedSection[]): void {
 }
 
 /**
+ * The mass a shopping entry holds of one usage. A usage is bought whole in
+ * one entry, unless it is a sum over several ladders (`{1 cup + 20 g}`):
+ * the shopping list then buys one entry per ladder (`byLadder` in kitchen),
+ * each listing the usage, and each weighs only its own terms, never the
+ * usage's whole mass (which would count the sum once per entry).
+ */
+function shareOfEntry(
+	usage: AnalyzedUsage,
+	entry: ShoppingListItem,
+	database: Record<string, IngredientData>,
+	overrides: Record<string, number>,
+	enableYieldCalculation: boolean,
+	lang?: string,
+): Pick<
+	AnalyzedUsage,
+	"normalizedMass" | "purchasingMass" | "isEstimate" | "conversionMethod"
+> {
+	const groups = groupTerms(termsOfUsage(usage), "ladder");
+	if (groups.length <= 1) return usage;
+	const key = mergeKey(entry.unit || null, "ladder");
+	const terms = groups.find(
+		(group) => mergeKey(group[0]?.unit || null, "ladder") === key,
+	);
+	const weighed = terms
+		? weighUsage(
+				terms,
+				usage,
+				database,
+				overrides,
+				enableYieldCalculation,
+				lang,
+			)
+		: null;
+	if (!weighed) return {};
+	return {
+		normalizedMass: round2(weighed.normalizedMass),
+		purchasingMass:
+			weighed.purchasingMass !== undefined
+				? round2(weighed.purchasingMass)
+				: undefined,
+		isEstimate: weighed.isEstimate,
+		conversionMethod: weighed.method,
+	};
+}
+
+/**
  * Pass 2: enriches the master Shopping List with the same physical masses
  * computed per-section in pass 1 (composites/alternatives/plain items each
  * need their own aggregation rule), then resolves database aliases and
@@ -376,6 +741,20 @@ function enrichShoppingList(
 	overrides: Record<string, number>,
 	opts: AnalyzerOptions,
 ): CompilationResult["shopping_list"] {
+	// The options of an alternative whose percentage pass 1.5 resolved, by
+	// `_usageId`: the shopping list holds its own copy of each option.
+	const resolvedOptions = new Map<string, AnalyzedUsage>();
+	allRawIngredients.forEach((usage) => {
+		if (usage.type !== "alternative" || !Array.isArray(usage.options)) return;
+		usage.options.forEach((opt) => {
+			if (typeof opt === "string" || !("_usageId" in opt)) return;
+			const option = opt as AnalyzedUsage;
+			if (option._usageId && option.conversionMethod === "relative") {
+				resolvedOptions.set(option._usageId, option);
+			}
+		});
+	});
+
 	shoppingList.forEach((item) => {
 		if (opts.enableMassStandardization !== false) {
 			if (
@@ -430,6 +809,19 @@ function enrichShoppingList(
 				// standardizeUsageMass needs an object with an `id`.
 				item.options.forEach((opt) => {
 					if (typeof opt === "string" || !("id" in opt) || !opt.id) return;
+					// A percentage option was resolved on the section's copy
+					// (pass 1.5): the shopping list buys that amount.
+					const option = opt as Usage;
+					const resolved = option._usageId
+						? resolvedOptions.get(option._usageId)
+						: undefined;
+					if (resolved) {
+						option.qty = resolved.qty;
+						option.unit = resolved.unit;
+						option.normalizedMass = resolved.normalizedMass;
+						option.conversionMethod = resolved.conversionMethod;
+						return;
+					}
 					standardizeUsageMass(
 						opt,
 						database,
@@ -454,7 +846,15 @@ function enrichShoppingList(
 				let hasEstimate = false;
 				let hasRelativeResolved = false;
 
-				usages.forEach((u) => {
+				usages.forEach((usage) => {
+					const u = shareOfEntry(
+						usage,
+						stdItem,
+						database,
+						overrides,
+						opts.enableYieldCalculation !== false,
+						opts.lang,
+					);
 					if (u.normalizedMass !== undefined) {
 						totalMass += u.normalizedMass;
 						totalPurchasing += u.purchasingMass ?? u.normalizedMass;
@@ -462,6 +862,27 @@ function enrichShoppingList(
 						if (u.conversionMethod === "relative") hasRelativeResolved = true;
 					}
 				});
+
+				// A ratio kitchen left waiting and resolved here: the entry's
+				// amount is written again from its usages' terms (in the
+				// ratio's own unit, not in grams like a share), and what is
+				// still not counted stays as written.
+				const resolvedHere = usages.some(
+					(u) =>
+						u.formula &&
+						"ratio" in u.formula &&
+						isTermValue(u.qty) &&
+						stdItem.variable_entries?.includes(u.formula.raw),
+				);
+				if (resolvedHere && !hasRelativeResolved) {
+					const total = termsTotal(usages.flatMap((u) => termsOfUsage(u)));
+					if (total) Object.assign(stdItem, shoppingAmount(total));
+					const parts = usages
+						.filter((u) => termsOfUsage(u).length === 0)
+						.flatMap((u) => variablePartsOf(u));
+					if (parts.length > 0) stdItem.variable_entries = parts;
+					else delete stdItem.variable_entries;
+				}
 
 				if (totalMass > 0) {
 					stdItem.normalizedMass = round2(totalMass);
@@ -482,7 +903,15 @@ function enrichShoppingList(
 					if (hasRelativeResolved) {
 						stdItem.qty = stdItem.normalizedMass;
 						stdItem.unit = "g";
-						stdItem.variable_entries = [];
+						// What is still not counted (a quantity in words, a
+						// share or ratio not resolved) stays as written.
+						stdItem.variable_entries = usages
+							.filter(
+								(u) =>
+									u.conversionMethod !== "relative" &&
+									termsOfUsage(u).length === 0,
+							)
+							.flatMap((u) => variablePartsOf(u));
 					}
 				}
 			}
@@ -527,12 +956,14 @@ function applyBakersMath(
 
 		if (
 			bakersReferenceItem &&
-			bakersReferenceItem.conversionMethod === "relative"
+			(bakersReferenceItem.conversionMethod === "relative" ||
+				("relative" in bakersReferenceItem && bakersReferenceItem.relative))
 		) {
-			// The 100% base must be a physical anchor. A reference whose own mass was
-			// derived from another ingredient's percentage can't also be the base —
-			// that's a circular definition, not a bug in the math, so we refuse
-			// silently, disable Baker's Math for this run, and explain why.
+			// The 100% base must be a physical anchor. A reference whose own amount
+			// comes from another ingredient (a percentage, or since 1.5.0 a ratio)
+			// can't also be the base — that's a circular definition, not a bug in
+			// the math, so we refuse, disable Baker's Math for this run, and
+			// explain why.
 			warnings.push({
 				code: WarningCode.INVALID_BAKERS_REFERENCE,
 				message: `Cannot use '${bakersReferenceItem.name || bakersReferenceItem.id}' as the Baker's Percentage reference: its quantity is itself computed from another ingredient's percentage, not an absolute mass.`,
@@ -686,7 +1117,18 @@ export function analyze(
 		result.registry.ingredients,
 	);
 
-	resolveRelativeQuantities(sections, result.warnings);
+	// The passes below add their warnings to a copy: the compiled result is
+	// never modified, so analyzing it again (LSP, playground) does not pile up
+	// the same warnings.
+	const warnings = [...result.warnings];
+
+	const { timersChanged } = resolveRelativeQuantities(
+		sections,
+		warnings,
+		database,
+		overrides,
+		opts,
+	);
 
 	// Mass metrics are computed only now, after pass 1.5. They used to run
 	// straight after pass 1, on the very same objects — so an ingredient
@@ -712,7 +1154,7 @@ export function analyze(
 		opts,
 	);
 
-	applyBakersMath(shopping_list, sections, opts, result.warnings);
+	applyBakersMath(shopping_list, sections, opts, warnings);
 
 	const nutrition = estimateNutrition(
 		shopping_list,
@@ -723,13 +1165,39 @@ export function analyze(
 	);
 
 	const nutritionWarnings = nutrition?.warnings || [];
-	const allWarnings = [...result.warnings, ...nutritionWarnings];
+	const allWarnings = [...warnings, ...nutritionWarnings];
+
+	// A proportional time resolved here (`~{4 min / @&cutlet}` with a unit
+	// weight) changes the schedule: laid out again on a copy, through the
+	// same functions as `compile`. The compiled result stays untouched.
+	const planned: Pick<
+		CompilationResult,
+		"sections" | "tasks" | "schedule" | "metrics"
+	> = {
+		sections,
+		tasks: result.tasks,
+		schedule: result.schedule,
+		metrics: result.metrics,
+	};
+	if (timersChanged) {
+		const copy = {
+			...result,
+			sections,
+			tasks: structuredClone(result.tasks),
+			schedule: structuredClone(result.schedule),
+			metrics: structuredClone(result.metrics),
+		};
+		recomputeSchedule(copy);
+		Object.assign(planned, copy);
+	}
 
 	// 4. Assemble and return the final structurally and physically enriched recipe package
 	const analyzedResult: AnalyzedCompilationResult = {
 		...result,
 		warnings: allWarnings,
-		sections,
+		sections: planned.sections as AnalyzedSection[],
+		tasks: planned.tasks,
+		schedule: planned.schedule,
 		// shopping_list's working type is kitchen's general
 		// (CompositeItem | ShoppingListItem | Usage)[] throughout this
 		// function, but by this point every entry has actually been enriched
@@ -737,7 +1205,7 @@ export function analyze(
 		// etc.) — the same gap as the calculateNutrition() call above.
 		shopping_list: shopping_list as AnalyzedCompilationResult["shopping_list"],
 		metrics: {
-			...result.metrics,
+			...planned.metrics,
 			...globalMassMetrics,
 			nutrition,
 		},

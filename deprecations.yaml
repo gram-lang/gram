@@ -50,6 +50,7 @@ deprecations:
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/core.ts"
+      - "packages/kitchen/src/recompute.ts"
 
   - id: kitchen-metrics-active-time
     layer: compiled-json
@@ -61,6 +62,7 @@ deprecations:
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/core.ts"
+      - "packages/kitchen/src/recompute.ts"
 
   - id: kitchen-metrics-breakdowns
     layer: compiled-json
@@ -72,6 +74,7 @@ deprecations:
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/core.ts"
+      - "packages/kitchen/src/recompute.ts"
 
   - id: kitchen-legacy-schedule-fallback
     layer: api
@@ -135,6 +138,17 @@ deprecations:
     status: active
     description: "The labels of the playground's old view selector: playground.viewLabel and, in playground.views, json, ast, jsonTree, markdown, preview and runSheet. The playground shows the views of the renderer as tabs and its inspectors in a menu instead"
     replacement: "renderer.outputs (by output id: recipe, runSheet, ast, json, json-tree), renderer.formats (html, markdown, text, print) and playground.output.views / inspect"
+    files:
+      - "packages/i18n/src/locales/en.ts"
+      - "packages/i18n/src/locales/fr.ts"
+
+  - id: i18n-run-sheet-range
+    layer: api
+    deprecatedIn: "1.5.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The runSheetRange string of the renderer dictionary (\"{min} to {max}\"), which wrote the range of a wait in the run sheet"
+    replacement: "formatDurationRange() of @gram-lang/renderer (8–16 h), as the run sheet and the steps now write a range"
     files:
       - "packages/i18n/src/locales/en.ts"
       - "packages/i18n/src/locales/fr.ts"

@@ -1,3 +1,4 @@
+import { type HourCycle, clockFormatOptions } from "@gram-lang/renderer";
 import { WEEKDAYS, type Weekday } from "@gram-lang/scheduler";
 
 /** The hours of one day of the week, when it has its own. */
@@ -163,10 +164,15 @@ export function weekdayNames(lang: string): Record<Weekday, string> {
 
 /**
  * "Sun 11 Oct, 13:00": a local serving time ("2026-10-11T13:00"), in the
- * page's language. Read as UTC and written in UTC, so the browser's own zone
- * never moves it; the raw value when it can't be read.
+ * page's language and on the reader's clock ("Sun, Oct 11, 1:00 PM"). Read as
+ * UTC and written in UTC, so the browser's own zone never moves it; the raw
+ * value when it can't be read.
  */
-export function serveAtLabel(serveAt: string, lang: string): string {
+export function serveAtLabel(
+	serveAt: string,
+	lang: string,
+	hourCycle: HourCycle = "h23",
+): string {
 	const instant = new Date(`${serveAt}:00Z`);
 	if (Number.isNaN(instant.getTime())) return serveAt;
 	return new Intl.DateTimeFormat(lang, {
@@ -174,8 +180,19 @@ export function serveAtLabel(serveAt: string, lang: string): string {
 		weekday: "short",
 		day: "numeric",
 		month: "short",
-		hour: "2-digit",
-		minute: "2-digit",
-		hourCycle: "h23",
+		...clockFormatOptions(hourCycle),
 	}).format(instant);
+}
+
+/**
+ * The reader's locale, from the browser ("en-US", "fr-FR"): the clock of
+ * `clock: auto`. Not the page's language: an American reading the French docs
+ * still reads 12 hours. `undefined` where there is no browser.
+ */
+export function browserLocale(): string | undefined {
+	try {
+		return globalThis.navigator?.language || undefined;
+	} catch {
+		return undefined;
+	}
 }

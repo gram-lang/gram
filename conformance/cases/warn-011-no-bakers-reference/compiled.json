@@ -60,12 +60,7 @@
       ]
     }
   ],
-  "warnings": [
-    {
-      "code": "NO_BAKERS_REFERENCE",
-      "message": "No Baker's Percentage reference found. Mark an ingredient with the `*` modifier, or pass --bakers-reference=<id>."
-    }
-  ],
+  "warnings": [],
   "metrics": {
     "totalTime": 3,
     "totalBreakdown": [

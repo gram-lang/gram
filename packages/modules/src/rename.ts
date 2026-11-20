@@ -3,7 +3,6 @@ import {
 	type SectionAST,
 	type StepAST,
 	type ImportBinding,
-	type IngredientAST,
 } from "@gram-lang/parser";
 import { slugify } from "@gram-lang/kitchen";
 import type { ExportInfo } from "./exports";
@@ -80,21 +79,44 @@ export function buildRenameTable(
  * according to `table`. Touches exactly the four places an intermediate
  * name can appear (Phase C.2): a section's own `->&` declaration, a
  * step-level `->&` declaration, a `&name` reference, and the target of a
- * `50% of &name` relative-quantity formula. Never touches ingredient
+ * quantity taken from an intermediate (`50% &name`, `2 g / 100 g &name`,
+ * `~{30 min / 1 kg &name}`), on an ingredient, a reference or a timer. Never touches ingredient
  * (`@name`) or cookware (`#name`) names — those stay global on purpose
  * (Phase C.1).
  */
-/** If `ing`'s quantity is a `50% of &name`-style variable relative quantity, renames its target in place per `rename`. */
+/**
+ * If `quantity` takes its amount from an intermediate (`50% &dough`,
+ * `2 g / 100 g &dough`, `~{30 min / 1 kg &dough}`), renames its target in
+ * place per `rename`. An ingredient target (`@&flour`) stays global.
+ */
 function renameRelativeTarget(
-	ing: IngredientAST,
+	quantity:
+		| {
+				type: string;
+				referenceType?: string;
+				target?: string;
+				targetDisplayName?: string;
+		  }
+		| null
+		| undefined,
 	rename: (name: string) => string,
+	scoped?: ReadonlySet<string>,
 ): void {
 	if (
-		ing.quantity &&
-		ing.quantity.type === ASTNodeType.RelativeQuantity &&
-		ing.quantity.referenceType === "variable"
+		quantity &&
+		(quantity.type === ASTNodeType.RelativeQuantity ||
+			quantity.type === ASTNodeType.RatioQuantity) &&
+		quantity.referenceType === "variable" &&
+		quantity.target !== undefined
 	) {
-		ing.quantity.target = rename(ing.quantity.target);
+		// As for a name (`rename` in `applyRename`): a scoped target keeps
+		// what its author wrote for the reader, the innermost across splices.
+		if (scoped?.has(quantity.target)) {
+			quantity.targetDisplayName ??= quantity.target;
+		} else if (rename(quantity.target) !== quantity.target) {
+			delete quantity.targetDisplayName;
+		}
+		quantity.target = rename(quantity.target);
 	}
 }
 
@@ -125,17 +147,20 @@ export function applyRename(
 		section.children.forEach((child) => {
 			if (child.type !== ASTNodeType.Step) return;
 			(child as StepAST).children.forEach((c) => {
-				if (
-					c.type === ASTNodeType.IntermediateDecl ||
-					c.type === ASTNodeType.Reference
-				) {
+				if (c.type === ASTNodeType.IntermediateDecl) {
 					rename(c);
-				} else if (c.type === ASTNodeType.Ingredient) {
-					renameRelativeTarget(c, renameName);
+				} else if (c.type === ASTNodeType.Reference) {
+					rename(c);
+					renameRelativeTarget(c.quantity, renameName, table.scoped);
+				} else if (
+					c.type === ASTNodeType.Ingredient ||
+					c.type === ASTNodeType.Timer
+				) {
+					renameRelativeTarget(c.quantity, renameName, table.scoped);
 				} else if (c.type === ASTNodeType.Alternative) {
 					c.options.forEach((opt) => {
 						if (opt.type === ASTNodeType.Ingredient) {
-							renameRelativeTarget(opt, renameName);
+							renameRelativeTarget(opt.quantity, renameName, table.scoped);
 						}
 					});
 				}

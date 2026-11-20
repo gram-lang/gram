@@ -19,6 +19,7 @@ This page documents all features currently deprecated across Gram, categorized b
 | Writing an editor client for the language server | See [Language server preview notification](#language-server-preview-notification). |
 | Programmatic integration of `@gram-lang/kitchen` or `@gram-lang/analyzer` | See [Compiled JSON fields](#compiled-json-fields), [`calculatePreparationTime`](#the-calculatepreparationtime-function), and [Backwards compatibility with older JSON](#backwards-compatibility-with-older-json). |
 | Rendering the HTML recipe with `toHTML()` options (`@gram-lang/renderer`) | See [The `interactiveNutrition` option](#the-interactivenutrition-option) and [The `interactiveScaling` option](#the-interactivescaling-option). |
+| Reading the strings of `@gram-lang/i18n` to build a custom view | See [The `runSheetRange` string](#the-runsheetrange-string) and [Playground view labels](#playground-view-labels). |
 
 To audit your application code, see [Identify deprecated usages in your codebase](#identify-deprecated-usages-in-your-codebase).
 
@@ -201,6 +202,22 @@ The playground now shows the views of the renderer as tabs, each in its formats,
 | `playground.views.markdown` | `renderer.formats.markdown` (Markdown is a format of a view, not a view) |
 | `playground.viewLabel` | `playground.output.views` (the tabs) and `playground.output.inspect` (the inspector menu) |
 
+### The `runSheetRange` string
+
+<Since v="1.5.0" type="deprecated" />
+
+**Deprecated:** the `renderer.runSheetRange` string of `@gram-lang/i18n` (`"{min} to {max}"`, `"{min} à {max}"` in French). **Recommended replacement:** `formatDurationRange()` from `@gram-lang/renderer`.
+
+The run sheet used it to write the range of a wait with a word (`8 h to 16 h`), while the steps write the same range with an en dash (`8–16 h`), a writing Gram can read back. Since 1.5.0 both go through `formatDurationRange()`, and the string is no longer used. It keeps its text until 2.0.0.
+
+```typescript
+// Before
+fillTemplate(t.renderer.runSheetRange, { min: formatDuration(480), max: formatDuration(960) }); // "8 h to 16 h"
+
+// After
+formatDurationRange(480, 960, lang); // "8–16 h"
+```
+
 ### The `interactiveNutrition` option
 
 <Since v="1.4.0" type="deprecated" />
@@ -261,7 +278,7 @@ When writing TypeScript, deprecated properties and functions from `@gram-lang/ki
   <LinkCard
     title="Changelog"
     description="Full release history, migration notes, and version changes."
-    href="/docs/changelog/"
+    href="/changelog/"
   />
   <LinkCard
     title="Data formats"

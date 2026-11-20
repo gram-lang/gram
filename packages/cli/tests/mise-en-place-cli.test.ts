@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { cliEnv } from "./helpers";
 import { compile, scheduleTimes } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
 
@@ -46,7 +47,10 @@ afterAll(async () => {
 });
 
 function gram(...args: string[]) {
-	const run = Bun.spawnSync([process.execPath, ENTRY, ...args], { cwd: dir });
+	const run = Bun.spawnSync([process.execPath, ENTRY, ...args], {
+		cwd: dir,
+		env: cliEnv(),
+	});
 	const strip = (b: Uint8Array) =>
 		new TextDecoder().decode(b).replace(/\x1b\[[0-9;]*m/g, "");
 	return {
@@ -58,13 +62,13 @@ function gram(...args: string[]) {
 
 /** "2h 5min", "2h", "35min" -> minutes. */
 function toMinutes(text: string): number {
-	const h = /(\d+)h/.exec(text)?.[1] ?? "0";
-	const m = /(\d+)m/.exec(text)?.[1] ?? "0";
+	const h = /(\d+)\sh\b/.exec(text)?.[1] ?? "0";
+	const m = /(\d+)\smin/.exec(text)?.[1] ?? "0";
 	return Number(h) * 60 + Number(m);
 }
 
 const viewTotal = (out: string) =>
-	toMinutes(/Total time: ([^\s│]+(?: \d+min)?)/.exec(out)?.[1] ?? "");
+	toMinutes(/Total time: (\d+\sh(?: \d+\smin)?|\d+\smin)/.exec(out)?.[1] ?? "");
 
 describe("gram view --mise-en-place", () => {
 	it("plans right before each section by default", () => {

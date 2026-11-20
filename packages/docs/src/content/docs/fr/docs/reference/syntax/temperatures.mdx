@@ -4,6 +4,7 @@ description: "Définissez des ^températures exactes ou sémantiques en Celsius 
 ---
 
 import { CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 Les consignes thermiques de cuisson se déclarent au sein des étapes de recette à l'aide du symbole `^`.
 
@@ -16,16 +17,16 @@ Les températures exactes précisent une valeur numérique suivie d'une unité r
 <Tabs>
   <TabItem label="Température exacte standard">
 ```gram
-Préchauffer le #four à ^{180°C}.
+[Préchauffer] Le #four à ^{180°C}.
 
-Cuire à ^{350°F} jusqu'à coloration bien dorée.
+[Cuire] À ^{350°F} jusqu'à coloration bien dorée.
 ```
   </TabItem>
   <TabItem label="Température associée à un appareil">
 À l'instar des `~minuteurs`, vous pouvez qualifier une température en lui associant un nom d'appareil ou d'usage, permettant aux interfaces de mettre en valeur les réglages nécessaires :
 
 ```gram
-Préchauffer le #four à ^four{180°C}.
+[Préchauffer] Le #four à ^four{180°C}.
 ```
   </TabItem>
 </Tabs>
@@ -35,9 +36,9 @@ Préchauffer le #four à ^four{180°C}.
 Pour les cuissons sur le feu ou les indications qualitatives où une mesure précise en degrés n'est pas adaptée, vous pouvez saisir un texte descriptif libre :
 
 ```gram
-Saisir sur la ^plaque{feu vif} pendant ~{2min}.
+[Saisir] Sur la ^plaque{feu vif} pendant ~{2min}.
 
-Baisser à ^{feu doux} et laisser mijoter.
+[Mijoter] Baisser à ^{feu doux} et laisser mijoter.
 ```
 
 :::note[Distinction lors de l'analyse]
@@ -45,6 +46,23 @@ Lorsque le compilateur Gram traite un élément `^température` :
 - Si le texte entre accolades débute par un chiffre, il est analysé comme une **température exacte** et son unité est validée.
 - S'il commence par une lettre ou un mot, l'ensemble du contenu est traité comme une **température sémantique**.
 :::
+
+## Mode de cuisson et précisions
+<Since v="1.5.0" />
+
+Ajoutez une précision entre parenthèses juste après l'accolade fermante pour indiquer le mode du four, le point de mesure ou une condition de cuisson. Cela fonctionne sur les températures exactes comme sémantiques, nommées ou non, à la manière d'une préparation d'ingrédient :
+
+```gram
+[Préchauffer] Le #four à ^{160°C}(chaleur tournante).
+
+[Rôtir] Jusqu'à ^{63°C}(à cœur).
+
+[Cuire] Sur ^plaque{feu vif}(à découvert) pendant ~{5min}.
+```
+
+La précision s'affiche toujours à côté de la température, à l'écran comme sur papier, et reste telle qu'écrite dans la langue de la recette, sans être interprétée par Gram.
+
+Comme pour les ingrédients et le matériel, gardez la parenthèse ouvrante collée à `}` sur la même ligne : avec un espace (`^{180°C} (four bien chaud)`), elle redevient du texte ordinaire.
 
 ## Gestion des erreurs
 

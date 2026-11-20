@@ -1,0 +1,817 @@
+{
+  "title": "Quantity Compound Scale",
+  "slug": "quantity-compound-scale",
+  "meta": {
+    "title": "Quantity Compound Scale",
+    "portions": "4"
+  },
+  "registry": {
+    "ingredients": {
+      "dough": {
+        "id": "dough",
+        "name": "dough",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter"
+      },
+      "juice": {
+        "id": "juice",
+        "name": "juice",
+        "default_unit": "ml",
+        "is_composite": true,
+        "parent": "oranges"
+      },
+      "oranges": {
+        "id": "oranges",
+        "name": "oranges",
+        "is_composite": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 34,
+      "unit": "tbsp"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 12,
+      "unit": "tbsp"
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "3"
+      ],
+      "fixed": true,
+      "qty": 1,
+      "unit": "tsp",
+      "multiUnit": true
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "3"
+      ],
+      "fixed": true,
+      "qty": 1,
+      "unit": "pinch",
+      "multiUnit": true
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 35,
+      "unit": "tbsp",
+      "range": {
+        "min": 34,
+        "max": 36
+      }
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 2,
+      "unit": "cup",
+      "multiUnit": true
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 40,
+      "unit": "g",
+      "multiUnit": true,
+      "normalizedMass": 40,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "type": "composite",
+      "id": "oranges",
+      "name": "oranges",
+      "qty": 40,
+      "usage": [
+        {
+          "id": "juice",
+          "unit": "ml",
+          "qty": 200
+        }
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Dough",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 34,
+          "unit": "tbsp",
+          "parts": [
+            {
+              "qty": 2,
+              "unit": "cup"
+            },
+            {
+              "qty": 2,
+              "unit": "tbsp"
+            }
+          ]
+        },
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "qty": 12,
+          "unit": "tbsp",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 4,
+              "unit": "tbsp",
+              "minus": true
+            }
+          ]
+        },
+        {
+          "id": "salt",
+          "_usageId": "3",
+          "qty": 5.24,
+          "unit": "ml",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "tsp"
+            },
+            {
+              "qty": 1,
+              "unit": "pinch"
+            }
+          ],
+          "fixed": true
+        },
+        {
+          "id": "milk",
+          "_usageId": "4",
+          "qty": {
+            "type": "range",
+            "value": 35,
+            "range": {
+              "min": 34,
+              "max": 36
+            }
+          },
+          "unit": "tbsp",
+          "parts": [
+            {
+              "qty": 2,
+              "unit": "cup"
+            },
+            {
+              "qty": {
+                "type": "range",
+                "value": 3,
+                "range": {
+                  "min": 2,
+                  "max": 4
+                }
+              },
+              "unit": "tbsp"
+            }
+          ]
+        },
+        {
+          "id": "butter",
+          "_usageId": "5",
+          "unit": "2 cup + 40 g",
+          "parts": [
+            {
+              "qty": 2,
+              "unit": "cup"
+            },
+            {
+              "qty": 40,
+              "unit": "g"
+            }
+          ]
+        },
+        {
+          "id": "juice",
+          "_usageId": "6",
+          "qty": 200,
+          "unit": "ml",
+          "composite": {
+            "parent": "oranges",
+            "quantity": 40,
+            "unit": "oz",
+            "parts": [
+              {
+                "qty": 2,
+                "unit": "lb"
+              },
+              {
+                "qty": 8,
+                "unit": "oz"
+              }
+            ]
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 34,
+              "unit": "tbsp",
+              "parts": [
+                {
+                  "qty": 2,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 2,
+                  "unit": "tbsp"
+                }
+              ]
+            },
+            "with ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "qty": 12,
+              "unit": "tbsp",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 4,
+                  "unit": "tbsp",
+                  "minus": true
+                }
+              ]
+            },
+            "and ",
+            {
+              "id": "salt",
+              "_usageId": "3",
+              "qty": 5.24,
+              "unit": "ml",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "tsp"
+                },
+                {
+                  "qty": 1,
+                  "unit": "pinch"
+                }
+              ],
+              "fixed": true
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "milk",
+              "_usageId": "4",
+              "qty": {
+                "type": "range",
+                "value": 35,
+                "range": {
+                  "min": 34,
+                  "max": 36
+                }
+              },
+              "unit": "tbsp",
+              "parts": [
+                {
+                  "qty": 2,
+                  "unit": "cup"
+                },
+                {
+                  "qty": {
+                    "type": "range",
+                    "value": 3,
+                    "range": {
+                      "min": 2,
+                      "max": 4
+                    }
+                  },
+                  "unit": "tbsp"
+                }
+              ]
+            },
+            "and ",
+            {
+              "id": "butter",
+              "_usageId": "5",
+              "unit": "2 cup + 40 g",
+              "parts": [
+                {
+                  "qty": 2,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 40,
+                  "unit": "g"
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Squeeze ",
+            {
+              "id": "juice",
+              "_usageId": "6",
+              "qty": 200,
+              "unit": "ml",
+              "composite": {
+                "parent": "oranges",
+                "quantity": 40,
+                "unit": "oz",
+                "parts": [
+                  {
+                    "qty": 2,
+                    "unit": "lb"
+                  },
+                  {
+                    "qty": 8,
+                    "unit": "oz"
+                  }
+                ]
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "dough",
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "flour",
+          "sugar",
+          "salt",
+          "milk",
+          "butter",
+          "juice"
+        ]
+      }
+    },
+    {
+      "title": "Bake",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "dough",
+          "name": "dough",
+          "_usageId": "7",
+          "qty": 2400,
+          "unit": "g",
+          "parts": [
+            {
+              "qty": 2,
+              "unit": "kg"
+            },
+            {
+              "qty": 400,
+              "unit": "g"
+            }
+          ],
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 2400
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Shape ",
+            {
+              "type": "reference",
+              "id": "dough",
+              "name": "dough",
+              "_usageId": "7",
+              "qty": 2400,
+              "unit": "g",
+              "parts": [
+                {
+                  "qty": 2,
+                  "unit": "kg"
+                },
+                {
+                  "qty": 400,
+                  "unit": "g"
+                }
+              ],
+              "normalizedMass": 2400,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "on a tray."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 2400,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"flour\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"sugar\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"salt\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"butter\" — omitted from nutritional totals."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"juice\" — omitted from nutritional totals."
+    }
+  ],
+  "metrics": {
+    "totalTime": 16,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 6
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 8,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 6
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 8,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 8
+      }
+    ],
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "flour",
+      "sugar",
+      "salt",
+      "milk",
+      "butter",
+      "juice"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"flour\" — omitted from nutritional totals."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"sugar\" — omitted from nutritional totals."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"salt\" — omitted from nutritional totals."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"butter\" — omitted from nutritional totals."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"juice\" — omitted from nutritional totals."
+        }
+      ],
+      "portions": 4,
+      "perPortion": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      }
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 7,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 7,
+          "duration": 7
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 1,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 7
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 7,
+            "duration": 7
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s1.prep.dough",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "dough",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.2"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "consumes": [
+          "dough"
+        ],
+        "after": [
+          "s0.2"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0,
+        "intermediate": "dough"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 16,
+    "activeTime": 8,
+    "preparationTime": 8,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 7
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 7,
+        "end": 9
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 9,
+        "end": 11
+      },
+      {
+        "kind": "step",
+        "task": "s0.2",
+        "section": 0,
+        "step": 2,
+        "start": 11,
+        "end": 13
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep.dough",
+        "section": 1,
+        "start": 13,
+        "end": 14
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 14,
+        "end": 16
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 16,
+        "sections": [
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "scaleFactor": 2
+}

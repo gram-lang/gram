@@ -21,6 +21,9 @@
       "name": "farine",
       "_usageIds": [
         "1"
+      ],
+      "variable_entries": [
+        "environ 200g"
       ]
     },
     {
@@ -28,6 +31,9 @@
       "name": "sel",
       "_usageIds": [
         "2"
+      ],
+      "variable_entries": [
+        "une pincée"
       ]
     }
   ],
@@ -91,6 +97,9 @@
       "loc": {
         "start": 18,
         "end": 39
+      },
+      "data": {
+        "reason": "hiddenQuantity"
       }
     }
   ],

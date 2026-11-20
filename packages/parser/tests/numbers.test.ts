@@ -28,6 +28,17 @@ describe("parseNumber", () => {
 		});
 	});
 
+	it("reads a comma between two digits as a decimal, keeping the text as written", () => {
+		expect(parseNumber("1,5")).toEqual({
+			type: "single",
+			value: 1.5,
+			text: "1,5",
+		});
+		expect(parseNumber("0,125")?.value).toBe(0.125);
+		expect(parseNumber("1,000")?.value).toBe(1);
+		expect(parseNumber("1,5/2")?.value).toBe(0.75);
+	});
+
 	it("parses a simple fraction", () => {
 		expect(parseNumber("1/2")).toEqual({
 			type: "fraction",

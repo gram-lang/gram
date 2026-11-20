@@ -1,0 +1,19 @@
+---
+// Preserve URL fragments (e.g. #140---2026-11-13) when redirecting shared
+// links from the former /docs/changelog route to /changelog.
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="0;url=/changelog" />
+  <link rel="canonical" href="https://gram-lang.org/changelog" />
+  <title>Redirecting to Gram Changelog...</title>
+  <script is:inline>
+    window.location.replace("/changelog" + window.location.hash);
+  </script>
+</head>
+<body>
+  <p>Redirecting to <a href="/changelog">Gram Changelog</a>...</p>
+</body>
+</html>

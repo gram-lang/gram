@@ -1,0 +1,150 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Ambiguous Number"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": {
+        "raw": "-1,000h",
+        "sign": -1,
+        "value": 1,
+        "unit": "h",
+        "loc": {
+          "start": 49,
+          "end": 59
+        }
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "base",
+        "loc": {
+          "start": 60,
+          "end": 67
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 69,
+                "end": 73
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1,000"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 80,
+                  "end": 87
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 73,
+                "end": 88
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 88,
+                "end": 89
+              }
+            }
+          ],
+          "loc": {
+            "start": 69,
+            "end": 91
+          }
+        }
+      ],
+      "loc": {
+        "start": 38,
+        "end": 91
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Glaze",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 101,
+                "end": 105
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 1,
+                "text": "1,000",
+                "target": "base",
+                "referenceType": "variable",
+                "loc": {
+                  "start": 112,
+                  "end": 124
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 105,
+                "end": 125
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 125,
+                "end": 126
+              }
+            }
+          ],
+          "loc": {
+            "start": 101,
+            "end": 127
+          }
+        }
+      ],
+      "loc": {
+        "start": 91,
+        "end": 127
+      }
+    }
+  ]
+}

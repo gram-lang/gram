@@ -1,0 +1,126 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Relative Not Supported"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Composite parent",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 65,
+                "end": 69
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 76,
+                  "end": 81
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 69,
+                "end": 82
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 83,
+                "end": 88
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "eggs",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 3,
+                  "text": "3"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 94,
+                  "end": 95
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "box",
+                "quantity": {
+                  "type": "RelativeQuantity",
+                  "percent": 50,
+                  "text": "50",
+                  "target": "flour",
+                  "referenceType": "ingredient",
+                  "loc": {
+                    "start": 102,
+                    "end": 113
+                  }
+                },
+                "preparation": null,
+                "loc": {
+                  "start": 96,
+                  "end": 114
+                }
+              },
+              "loc": {
+                "start": 88,
+                "end": 114
+              }
+            },
+            {
+              "type": "Text",
+              "value": ">.",
+              "loc": {
+                "start": 114,
+                "end": 116
+              }
+            }
+          ],
+          "loc": {
+            "start": 65,
+            "end": 117
+          }
+        }
+      ],
+      "loc": {
+        "start": 44,
+        "end": 117
+      }
+    }
+  ]
+}

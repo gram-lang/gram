@@ -94,6 +94,7 @@
         { "include": "#cookware" },
         { "include": "#timers" },
         { "include": "#temperatures" },
+        { "include": "#checkpoints" },
         { "include": "#references" },
         { "include": "#composites" },
         { "include": "#intermediate-decl" }
@@ -103,7 +104,7 @@
       "patterns": [
         {
           "name": "meta.ingredient.gram",
-          "begin": "(@)([-?&*=]*)([^\\{\\[@#~^&:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
+          "begin": "(@)([-?&*=]*)((?:(?!=\\{)[^\\{\\[@#~^&:<])+?)(?:(:)([\\w\\s]+))?(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -123,7 +124,7 @@
         },
         {
           "name": "meta.ingredient.bare.gram",
-          "match": "(@)([-?&*=]*)([^\\s\\{\\[@#~^&:<]+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
+          "match": "(@)([-?&*=]*)((?:(?!=\\{)[^\\s\\{\\[@#~^&:<])+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
           "captures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -139,7 +140,7 @@
       "patterns": [
         {
           "name": "meta.cookware.gram",
-          "begin": "(#)([-?&*=]*)([^\\{\\[@#~^&:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
+          "begin": "(#)([-?&*=]*)((?:(?!=\\{)[^\\{\\[@#~^&:<])+?)(?:(:)([\\w\\s]+))?(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.cookware.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -159,7 +160,7 @@
         },
         {
           "name": "meta.cookware.bare.gram",
-          "match": "(#)([-?&*=]*)([^\\s\\{\\[@#~^&:<]+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
+          "match": "(#)([-?&*=]*)((?:(?!=\\{)[^\\s\\{\\[@#~^&:<])+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
           "captures": {
             "1": { "name": "keyword.control.cookware.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -184,7 +185,40 @@
       "endCaptures": {
         "1": { "name": "punctuation.section.embedded.end.gram" }
       },
-      "patterns": [ { "include": "#quantity-content" } ]
+      "patterns": [ { "include": "#timer-content" } ]
+    },
+    "timer-content": {
+      "comment": "A duration as written: 1h30, 1 hr 30 mins, 1:30 h, 5'30\", 45 min - 1 h. Mirrors tokenizeDuration (@gram-lang/i18n): numbers, units in any script, primes, and the : + - signs.",
+      "patterns": [
+        { "include": "#ratio-target" },
+        {
+          "match": "\\d+(?:[.,]\\d+)?(?:/\\d+)?|[\u00bc-\u00be\u2150-\u215e]",
+          "name": "constant.numeric.gram"
+        },
+        {
+          "comment": "Primes: ' ’ ′ for minutes, \" ” ″ or '' for seconds.",
+          "match": "''|[\"\u201d\u2033'\u2019\u2032]",
+          "name": "keyword.other.unit.gram"
+        },
+        {
+          "comment": "A unit, in any script, with the dot of an abbreviation (hr., Std.).",
+          "match": "\\p{L}+\\.?",
+          "name": "keyword.other.unit.gram"
+        },
+        {
+          "match": ":",
+          "name": "punctuation.separator.duration.gram"
+        },
+        {
+          "match": "[+\\-\u2013]",
+          "name": "keyword.operator.duration.gram"
+        },
+        {
+          "comment": "The slash of a proportional time (~{15 min / 500 g @&roast}, since 1.5.0).",
+          "match": "/",
+          "name": "keyword.operator.duration.gram"
+        }
+      ]
     },
     "temperatures": {
       "name": "meta.temperature.gram",
@@ -194,11 +228,26 @@
         "2": { "name": "constant.numeric.temperature.gram" },
         "3": { "name": "punctuation.section.embedded.begin.gram" }
       },
-      "end": "(\\})",
+      "end": "(\\})(?:\\(([^)\\n]+)\\))?",
       "endCaptures": {
-        "1": { "name": "punctuation.section.embedded.end.gram" }
+        "1": { "name": "punctuation.section.embedded.end.gram" },
+        "2": { "name": "string.other.preparation.gram" }
       },
       "patterns": [ { "include": "#temperature-content" } ]
+    },
+    "checkpoints": {
+      "name": "meta.checkpoint.gram",
+      "begin": "(=)(\\{)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.checkpoint.gram" },
+        "2": { "name": "punctuation.section.embedded.begin.gram" }
+      },
+      "end": "(\\})(?:\\(([^)\\n]+)\\))?",
+      "endCaptures": {
+        "1": { "name": "punctuation.section.embedded.end.gram" },
+        "2": { "name": "string.other.preparation.gram" }
+      },
+      "contentName": "string.unquoted.checkpoint.gram"
     },
     "references": {
       "patterns": [
@@ -218,7 +267,7 @@
         },
         {
           "name": "meta.reference.usage.bare.gram",
-          "match": "(&)([^\\s\\{\\[@#~^&:<,\\}]+)",
+          "match": "(&)((?:(?!=\\{)[^\\s\\{\\[@#~^&:<,\\}])+)",
           "captures": {
             "1": { "name": "keyword.control.reference.gram" },
             "2": { "name": "entity.name.tag.reference.gram" }
@@ -230,7 +279,7 @@
       "patterns": [
         {
           "name": "meta.composite.gram",
-          "begin": "(<@)([^\\{\\[@#~^&:<]+?)(\\{)",
+          "begin": "(<@)((?:(?!=\\{)[^\\{\\[@#~^&:<])+?)(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "entity.name.type.ingredient.gram" },
@@ -244,7 +293,7 @@
         },
         {
           "name": "meta.composite.bare.gram",
-          "match": "(<@)([^\\s\\{\\[@#~^&:<]+)",
+          "match": "(<@)((?:(?!=\\{)[^\\s\\{\\[@#~^&:<])+)",
           "captures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "entity.name.type.ingredient.gram" }
@@ -259,11 +308,16 @@
              "2": { "name": "entity.name.tag.intermediate.gram" }
          }
     },
+    "number": {
+      "comment": "A number on its own: digits, a decimal point or comma between two digits, a fraction. Patterns that capture a number and its unit together (#temperature-content) keep their own copy: a TextMate regex cannot include another.",
+      "match": "\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?",
+      "name": "constant.numeric.gram"
+    },
     "temperature-content": {
       "patterns": [
         {
           "comment": "Numeric value + a recognized unit (C/F, °C/°F, case-insensitive) — matches the compiler's own whitelist.",
-          "match": "(\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?)\\s*(°?[CFcf])\\b",
+          "match": "(\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?)\\s*(°?[CFcf])\\b",
           "captures": {
             "1": { "name": "constant.numeric.gram" },
             "2": { "name": "keyword.other.unit.gram" }
@@ -271,16 +325,13 @@
         },
         {
           "comment": "Numeric value + anything else — same INVALID_UNIT case the compiler warns on.",
-          "match": "(\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?)\\s*([^\\d\\}]+)",
+          "match": "(\\d+(?:[.,]\\d+)?(?:/\\d+(?:[.,]\\d+)?)?)\\s*([^\\d\\}]+)",
           "captures": {
             "1": { "name": "constant.numeric.gram" },
             "2": { "name": "invalid.illegal.unit.gram" }
           }
         },
-        {
-          "match": "\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?",
-          "name": "constant.numeric.gram"
-        },
+        { "include": "#number" },
         {
           "comment": "No leading digit — a semantic/qualitative temperature (e.g. 'medium heat'), not a unit.",
           "match": "[^\\d\\}]+",
@@ -288,26 +339,42 @@
         }
       ]
     },
+    "ratio-target": {
+      "comment": "The target of a ratio or a percentage (@&flour, &dough), up to * or ×, where a cycle multiplier will go (since 1.5.0).",
+      "match": "(@&|&)([^}*×\\n]+)",
+      "captures": {
+        "1": { "name": "keyword.control.reference.gram" },
+        "2": { "name": "entity.name.tag.reference.gram" }
+      }
+    },
     "quantity-content": {
       "patterns": [
-        {
-           "match": "\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?",
-           "name": "constant.numeric.gram" 
-        },
+        { "include": "#number" },
         {
            "match": "(%)",
            "name": "keyword.operator.percent.gram"
         },
         {
-           "match": "(@&|&|@)([^\\}]+)",
+           "comment": "The slash of a ratio with units ({1 / 100 g @&flour}, since 1.5.0); a fraction's slash belongs to its number.",
+           "match": "\\s*/\\s*",
+           "name": "keyword.operator.quantity.gram"
+        },
+        { "include": "#ratio-target" },
+        {
+           "match": "(@)([^\\}]+)",
            "captures": {
                "1": { "name": "keyword.control.reference.gram" },
                "2": { "name": "entity.name.tag.reference.gram" }
            }
         },
         {
-           "match": "[^\\d%@&\\}]+", 
-           "name": "keyword.other.unit.gram" 
+           "comment": "The + or - of a sum of quantities ({1 cup + 1 tbsp}, since 1.5.0), and the dash of a range: a unit never holds one.",
+           "match": "\\s*[+\\-]\\s*",
+           "name": "keyword.operator.quantity.gram"
+        },
+        {
+           "match": "[^\\d%@&\\}+\\-/]+",
+           "name": "keyword.other.unit.gram"
         }
       ]
     }

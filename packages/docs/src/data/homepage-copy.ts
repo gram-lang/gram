@@ -75,11 +75,11 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		recipeFileName: "lemon-curd.gram",
 		recipeCode: `## Lemon Curd
 
-[Mix] Whisk @lemon juice{100 g}<@lemons{3}, @eggs{2}, and @sugar{120% @&lemon juice} in a #saucepan{}. ->&base
+[Mix] Whisk the @lemon juice{100 g}<@lemons{3}, @eggs{2}, and @sugar{120% @&lemon juice} in a #saucepan{}. ->&base
 
-[Cook] Heat the &base to ^{82C} over medium heat for ~{5m}.
+[Cook] Heat the &base to ^{180°F} over medium heat for ~{5min}, until ={thickened}.
 
-[Emulsify] Remove from heat and blend in @butter{120 g}. Chill for ~_fridge{2h}.`,
+[Emulsify] Remove from heat and blend in the @butter{120 g}. Chill for ~_fridge{2h}.`,
 
 		whyGram: "Design Philosophy",
 		whyGramDesc:
@@ -155,7 +155,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabInput: "Gram Syntax",
 		tabOutput: "Parsed Result",
 
-		nutritionInput: `---\nportions: 4\n---\n\n## Chantilly Cream\n\n[Whisk] @Heavy cream{1 cup} and @powdered sugar{2 tbsp} until soft peaks form.\n\n[Fold] Gently incorporate @vanilla extract{1 tsp}.`,
+		nutritionInput: `---\nportions: 4\n---\n\n## Chantilly Cream\n\n[Whisk] The @heavy cream{1 cup} and @powdered sugar{2 tbsp} until ={soft peaks} form.\n\n[Fold] Gently incorporate the @vanilla extract{1 tsp}.`,
 		nutritionOutput: JSON.stringify(
 			{
 				shopping_list: [
@@ -173,7 +173,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 						name: "powdered sugar",
 						qty: 2,
 						unit: "tbsp",
-						normalizedMass: 300,
+						normalizedMass: 15,
 						isEstimate: true,
 						conversionMethod: "estimate",
 					},
@@ -182,7 +182,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 						name: "vanilla extract",
 						qty: 1,
 						unit: "tsp",
-						normalizedMass: 300,
+						normalizedMass: 4,
 						isEstimate: true,
 						conversionMethod: "estimate",
 					},
@@ -192,7 +192,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		scheduleInput: `---\ntitle: Lemon Tart\n---\n\n## Dough ->&dough ~{-1d}\n\n[Mix] Rub @flour{250g} with @butter{125g} ~{10min}.\n\n[Chill] Let the dough rest ~_{8-24h}.\n\n## Tart\n\n[Bake] Line the #tart ring{} with the &dough and blind bake ~{20min}.`,
+		scheduleInput: `---\ntitle: Lemon Tart\n---\n\n## Dough ->&dough ~{-1d}\n\n[Mix] Rub the @flour{250g} with @butter{125g} for ~{10min}.\n\n[Chill] Let the dough rest for ~_{8-24h}.\n\n## Tart\n\n[Bake] Line the #tart ring{} with the &dough and blind bake for ~{20min}.`,
 		scheduleOutput: JSON.stringify(
 			{
 				title: "Lemon Tart",
@@ -298,7 +298,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		modulesInput: `@use "./bases/shortcrust.gram" as &crust\n\n## Lemon Tart\n\n[Line] The #tart ring{} with &crust{250g}.\n\n[Bake] Blind bake for ~_oven{18min} at ^{175C}.\n\n[Fill] Pour in the @lemon curd{300g}.`,
+		modulesInput: `@use "./bases/shortcrust.gram" as &crust\n\n## Lemon Tart\n\n[Line] The #tart ring{} with the &crust{250g}.\n\n[Bake] Blind bake for ~_oven{18min} at ^{350°F}.\n\n[Fill] Pour in the @lemon curd{300g}.`,
 		modulesOutput: JSON.stringify(
 			{
 				modules: [
@@ -367,7 +367,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 
 [Mélanger] Fouetter le @jus de citron{100 g}<@citrons{3}, les @œufs{2}, et le @sucre{120% @&jus de citron} dans une #casserole{}. ->&base
 
-[Cuire] Chauffer la &base à ^{82C} sur feu moyen pendant ~{5m}.
+[Cuire] Chauffer la &base à ^{82°C} sur feu moyen pendant ~{5 min}, jusqu'à ={épaississement}.
 
 [Emulsionner] Retirer du feu et incorporer le @beurre{120 g}. Réserver au frais pendant ~_frigo{2h}.`,
 
@@ -444,7 +444,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabInput: "Syntaxe Gram",
 		tabOutput: "Résultat compilé",
 
-		nutritionInput: `---\nportions: 4\n---\n\n## Crème Chantilly\n\n[Fouetter] La @crème liquide{1 tasse} et le @sucre glace{2 c.à.s} jusqu'à obtenir des pics souples.\n\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 c.à.c}.`,
+		nutritionInput: `---\nportions: 4\n---\n\n## Crème Chantilly\n\n[Fouetter] La @crème liquide{1 tasse} et le @sucre glace{2 c.à.s} jusqu'à obtenir un ={bec d'oiseau}.\n\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 c.à.c}.`,
 		nutritionOutput: JSON.stringify(
 			{
 				shopping_list: [
@@ -462,7 +462,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 						name: "sucre glace",
 						qty: 2,
 						unit: "tbsp",
-						normalizedMass: 300,
+						normalizedMass: 15,
 						isEstimate: true,
 						conversionMethod: "estimate",
 					},
@@ -471,7 +471,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 						name: "extrait de vanille",
 						qty: 1,
 						unit: "tsp",
-						normalizedMass: 300,
+						normalizedMass: 4,
 						isEstimate: true,
 						conversionMethod: "estimate",
 					},
@@ -481,7 +481,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		scheduleInput: `---\ntitle: Tarte au citron\n---\n\n## Pâte ->&pâte ~{-1d}\n\n[Sabler] Sabler la @farine{250g} avec le @beurre{125g} ~{10min}.\n\n[Reposer] Laisser reposer la pâte ~_{8-24h}.\n\n## Tarte\n\n[Cuire] Foncer le #cercle à tarte{} avec la &pâte et cuire à blanc ~{20min}.`,
+		scheduleInput: `---\ntitle: Tarte au citron\n---\n\n## Pâte ->&pâte ~{-1d}\n\n[Sabler] Sabler la @farine{250g} avec le @beurre{125g} pendant ~{10min}.\n\n[Reposer] Laisser reposer la pâte pendant ~_{8-24h}.\n\n## Tarte\n\n[Cuire] Foncer le #cercle à tarte{} avec la &pâte et cuire à blanc pendant ~{20min}.`,
 		scheduleOutput: JSON.stringify(
 			{
 				title: "Tarte au citron",
@@ -528,8 +528,8 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			{
 				shopping_list: [
 					{
-						id: "farine-a-pain",
-						name: "farine à pain",
+						id: "farine-t65",
+						name: "farine T65",
 						modifiers: ["bakers_percentage"],
 						qty: 400,
 						unit: "g",

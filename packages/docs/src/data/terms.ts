@@ -23,6 +23,14 @@ interface Term {
 
 export const TERMS = {
 	runSheet: { view: "runSheet", href: "/docs/how-to/plan-a-meal/" },
+	ratio: {
+		words: { en: "ratio with units", fr: "proportion avec unités" },
+		href: "/docs/reference/syntax/relative-quantities/",
+	},
+	targetState: {
+		words: { en: "target state", fr: "état attendu" },
+		href: "/docs/reference/syntax/target-states/",
+	},
 } satisfies Record<string, Term>;
 
 export type TermId = keyof typeof TERMS;

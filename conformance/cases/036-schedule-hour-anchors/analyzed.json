@@ -165,12 +165,14 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "36h",
               "quantity": {
                 "type": "single",
                 "value": 36,
                 "text": "36"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 2160
             },
             "."
           ],
@@ -226,12 +228,14 @@
             "for ",
             {
               "type": "timer",
+              "raw": "25min",
               "quantity": {
                 "type": "single",
                 "value": 25,
                 "text": "25"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 25
             },
             "."
           ],

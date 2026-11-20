@@ -50,7 +50,7 @@ function getDefaultReleaseUrl(ver: string, fr: boolean): string {
 	}
 	// Fallback to the release on the changelog page
 	const anchor = changelogAnchor(ver);
-	return `${prefix}/docs/changelog${anchor ? `#${anchor}` : ""}`;
+	return `${prefix}/changelog${anchor ? `#${anchor}` : ""}`;
 }
 
 const targetUrl = href || getDefaultReleaseUrl(cleanVersion, isFrench);

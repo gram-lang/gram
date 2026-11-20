@@ -1,0 +1,385 @@
+{
+  "title": "Warn Ambiguous Number",
+  "slug": "warn-ambiguous-number",
+  "meta": {
+    "title": "Warn Ambiguous Number"
+  },
+  "registry": {
+    "ingredients": {
+      "base": {
+        "id": "base",
+        "name": "base",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 1,
+      "unit": "g"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "1% of base"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 1,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 1,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "base",
+      "retro_planning": {
+        "raw": "-1,000h",
+        "sign": -1,
+        "value": 1,
+        "unit": "h",
+        "minutes": -60
+      }
+    },
+    {
+      "title": "Glaze",
+      "ingredients": [
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 1,
+            "target": "base",
+            "referenceType": "variable",
+            "loc": {
+              "start": 112,
+              "end": 124
+            }
+          },
+          "dependencies": [
+            "base"
+          ],
+          "formula": {
+            "raw": "1% of base",
+            "target": "base",
+            "percent": 1,
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 1,
+                "target": "base",
+                "referenceType": "variable",
+                "loc": {
+                  "start": 112,
+                  "end": 124
+                }
+              },
+              "dependencies": [
+                "base"
+              ],
+              "formula": {
+                "raw": "1% of base",
+                "target": "base",
+                "percent": 1,
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 60,
+            "end": 62,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "AMBIGUOUS_NUMBER",
+      "message": "\"1,000\" on \"Section\" was read as 1: Gram reads a comma between two digits as a decimal and has no thousands separator. Write 1000 if that is the number you meant.",
+      "item": "Section",
+      "loc": {
+        "start": 49,
+        "end": 59
+      }
+    },
+    {
+      "code": "AMBIGUOUS_NUMBER",
+      "message": "\"1,000\" on \"flour\" was read as 1: Gram reads a comma between two digits as a decimal and has no thousands separator. Write 1000 if that is the number you meant.",
+      "item": "flour",
+      "loc": {
+        "start": 73,
+        "end": 88
+      }
+    },
+    {
+      "code": "AMBIGUOUS_NUMBER",
+      "message": "\"1,000\" on \"sugar\" was read as 1: Gram reads a comma between two digits as a decimal and has no thousands separator. Write 1000 if that is the number you meant.",
+      "item": "sugar",
+      "loc": {
+        "start": 105,
+        "end": 125
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 65,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Glaze",
+        "duration": 2
+      }
+    ],
+    "idleTime": 58,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Glaze",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ]
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2,
+          "intermediates": 1
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 1,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.prep.base",
+        "kind": "prep",
+        "section": 0,
+        "intermediate": "base",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s1.prep",
+        "kind": "prep",
+        "section": 1,
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      }
+    ],
+    "sections": [
+      {
+        "day": 0,
+        "deadline": 60,
+        "intermediate": "base"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 64,
+    "activeTime": 4,
+    "preparationTime": 3,
+    "idleTime": 57,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 4
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep",
+        "section": 1,
+        "start": 61,
+        "end": 62
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 62,
+        "end": 64
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 64,
+        "sections": [
+          0,
+          1
+        ]
+      }
+    ]
+  }
+}

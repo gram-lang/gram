@@ -3,11 +3,8 @@ title: "@gram-lang/scheduler"
 description: "Moteur d'ordonnancement : calcule la chronologie d'un graphe de tâches, le projette sur le calendrier selon l'heure de service et les disponibilités, et génère une fiche de production."
 ---
 
-import Since from '../../../../../../components/Since.astro';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../../components/Term.astro';
-
-<Since v="1.4.0" />
 
 Le moteur d'ordonnancement de Gram prend en entrée un **graphe de tâches** agnostique (le champ `tasks` d'une recette compilée) et répond à deux questions fondamentales : comment ces tâches s'articulent-elles chronologiquement (`layout`), et à quel moment précis démarrer chaque tâche compte tenu de l'heure de service visée et des disponibilités de l'utilisateur (`project`).
 
@@ -333,7 +330,7 @@ Donne à chaque passage d'un planning calendaire sa marge d'anticipation (`windo
 
 `runSheet()` l'appelle déjà quand vous lui passez `graph` et `context` : vous n'en avez besoin que pour ajouter des marges à un planning construit sans elles. Un planning relatif, ou sans heure de service, est renvoyé tel quel.
 
-## `findServeTimes` et `earliestServe` <Since v="1.4.0" />
+## `findServeTimes` et `earliestServe`
 
 Les deux reposent sur `project()` : elles essaient des heures de service et gardent celles qui peuvent être suivies. Une heure est rejetée quand le plan a un problème non résolu, un début déjà passé compris, et chaque rejet porte ses raisons.
 
@@ -404,7 +401,17 @@ function parseInstant(value: string, timeZone: string): number;  // instant ISO 
 function toLocalIso(utcMinutes: number, timeZone: string): string; // → "2026-10-11T13:00"
 function toUtcIso(utcMinutes: number): string;                    // → "2026-10-11T11:00:00Z"
 function isCalendarDate(value: string): boolean;                 // "2028-02-29" → true, "2026-02-30" → false
+
+// Les heures telles qu'on les écrit, en 24 ou en 12 heures (depuis 1.5.0) : la syntaxe
+// de `--available`, `--meal-times`, `--serve` et de leurs réglages
+function parseTimeOfDay(text: string, options?: { end?: boolean }): string | null;
+// "13:00", "9:30" → "09:30", "1pm", "1:00 PM", "8:30 a.m." → "08:30" ; "12am" → "00:00", "12pm" → "12:00" ;
+// avec `end` (la fin d'une plage), "12am" et "24:00" → "24:00" ; "8", "13pm", "0am" → null
+function parseLocalDateTime(text: string): { ok: true; local: string } | { ok: false; reason: "date" | "format"; date?: string };
+// "2026-10-11 1:00 pm" → { ok: true, local: "2026-10-11T13:00" } ; "2026-02-30 20:00" → { ok: false, reason: "date", date: "2026-02-30" }
 ```
+
+`parseAvailability()` et `parseMealTimes()` lisent chaque heure avec `parseTimeOfDay()` : `8am-10pm`, `fri=6pm-12am` (jusqu'à minuit) et `["12:30pm", "8pm"]` donnent les mêmes valeurs que leur forme en 24 heures. Une heure est toujours rendue sous la forme `"HH:MM"` : le plan ne dépend jamais de la façon dont elle a été écrite.
 
 Lors du passage à l'heure d'été, une heure locale inexistante (par exemple 02:30 lors de l'avance des horloges) est automatiquement décalée vers la première heure valide suivante ; lors du passage à l'heure d'hiver, une heure ambiguë (apparaissant deux fois lors du recul) est résolue sur sa première occurrence.
 

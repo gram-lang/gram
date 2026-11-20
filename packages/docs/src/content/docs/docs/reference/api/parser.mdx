@@ -99,6 +99,7 @@ interface RetroPlanningAST {
   value: number | null;    // null if no number could be extracted (e.g. free text)
   unit: string | null;     // null if no unit token was found; otherwise the raw token
                            // as written (kitchen resolves/validates it against d/h/min)
+  loc?: Location;          // since 1.5.0: the anchor itself, braces included (`~{-2h}`)
 }
 ```
 
@@ -108,7 +109,7 @@ For `## Puff Pastry ~{-2h}`, `retroPlanning` is `{ raw: "-2h", sign: -1, value: 
 interface StepAST {
   type: ASTNodeType.Step;
   action?: string | null;              // e.g. "Mix" from "[Mix] ..."
-  children: (TextAST | IngredientAST | CookwareAST | TimerAST | TemperatureAST
+  children: (TextAST | IngredientAST | CookwareAST | TimerAST | TemperatureAST | CheckpointAST
     | ReferenceAST | AlternativeAST | IntermediateDecl | CommentAST)[];
   loc?: Location;
 }
@@ -119,7 +120,7 @@ interface IngredientAST {
   type: ASTNodeType.Ingredient;
   name: string;
   modifiers: Modifier[];               // Sigil modifiers present on the ingredient
-  quantity: QuantityAST | RelativeQuantityAST | TextQuantityAST | null;
+  quantity: QuantityAST | CompoundQuantityAST | RelativeQuantityAST | RatioQuantityAST | TextQuantityAST | null;
   alias?: string | null;
   preparation?: string | null;
   composite?: CompositeAST | null;     // set for "<@parent" composite ingredients
@@ -136,18 +137,19 @@ interface QuantityAST {
 interface RelativeQuantityAST {
   type: ASTNodeType.RelativeQuantity;
   percent: number;
+  text?: string;          // the percentage as written, e.g. "12,5"
   target: string;
   referenceType: "variable" | "ingredient"; // "&name" vs "@name"
 }
 ```
 
-The remaining node interfaces (`CookwareAST`, `ReferenceAST`, `TimerAST`, `TemperatureAST`, `CommentAST`, `AlternativeAST`, `IntermediateDecl`, `TextQuantityAST`) follow the same pattern — see `packages/parser/src/types.ts` for the exhaustive list.
+The remaining node interfaces (`CookwareAST`, `ReferenceAST`, `TimerAST`, `TemperatureAST`, `CheckpointAST`, `CommentAST`, `AlternativeAST`, `IntermediateDecl`, `TextQuantityAST`) follow the same pattern — see `packages/parser/src/types.ts` for the exhaustive list.
 
 ## Type guards
 
-13 type guards are exported for safely narrowing `ASTNode | StepAST | ... | null | undefined` inputs without manual `.type` checks:
+17 type guards are exported for safely narrowing `ASTNode | StepAST | ... | null | undefined` inputs without manual `.type` checks:
 
-`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isQuantity`, `isTextQuantity`, `isRelativeQuantity`.
+`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isCheckpoint`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isImportDecl`, `isQuantity`, `isCompoundQuantity`, `isTextQuantity`, `isRatioQuantity`, `isRelativeQuantity`.
 
 ```typescript
 import { getAST, isIngredient, isTimer } from '@gram-lang/parser';

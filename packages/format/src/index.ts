@@ -3,6 +3,7 @@ export interface FormatterChanges {
 	spacesBeforeBrace: number;
 	spacesInsideBraces: number;
 	trailingZeros: number;
+	quantityOperatorSpacing: number;
 	temperatureSpacing: number;
 	compositeSeparatorSpacing: number;
 	arrowDeclarationSpacing: number;
@@ -19,6 +20,7 @@ export function hasChanges(changes: FormatterChanges): boolean {
 		changes.spacesBeforeBrace > 0 ||
 		changes.spacesInsideBraces > 0 ||
 		changes.trailingZeros > 0 ||
+		changes.quantityOperatorSpacing > 0 ||
 		changes.temperatureSpacing > 0 ||
 		changes.compositeSeparatorSpacing > 0 ||
 		changes.arrowDeclarationSpacing > 0 ||
@@ -41,6 +43,8 @@ export function summarizeChanges(changes: FormatterChanges): string {
 		parts.push(`${p(changes.spacesInsideBraces, "brace")} interior trimmed`);
 	if (changes.trailingZeros > 0)
 		parts.push(`${p(changes.trailingZeros, "trailing zero")} removed`);
+	if (changes.quantityOperatorSpacing > 0)
+		parts.push(`${p(changes.quantityOperatorSpacing, "sum")} spacing fixed`);
 	if (changes.temperatureSpacing > 0)
 		parts.push(`${p(changes.temperatureSpacing, "temperature")} spacing fixed`);
 	if (changes.compositeSeparatorSpacing > 0)
@@ -105,6 +109,92 @@ function splitFrontmatter(source: string): {
 	return { frontmatter: "", body: source };
 }
 
+/** An operator between two terms of a sum, once spaced (` + `, ` - `). */
+const SUM_OPERATOR = / [+-] /;
+
+/** A target after the first character: `5% @&flour`, `1 / 100 g &dough`. */
+const HAS_TARGET = /.(?:@&|&)/u;
+
+/**
+ * A decimal number whose decimals end in zeros (`1.50`, `2,0`), standing on
+ * its own: not inside a longer number, nor part of a name (`v2.0`,
+ * `chocolat-70.0`); a `-` before it is a range's or a sign's.
+ */
+const DECIMAL_WITH_ZEROS =
+	/(?<![\p{L}\d.,_])(?<!\p{L}-)(\d+)([.,])(\d*?)(0+)(?![\d.,]\d)(?!\d)/gu;
+
+/**
+ * Removes the trailing decimal zeros of every number in a quantity's
+ * braces, after a point or a comma (`1,50` → `1,5`, `2.0` → `2`). A comma
+ * followed by exactly three digits (`1,000`) is left as written: it may be a
+ * thousands separator, which the compiler flags (AMBIGUOUS_NUMBER), and
+ * stripping it would hide the question. A target (`@&b`, `&dough`) is a
+ * name and keeps its digits.
+ */
+function trimTrailingZeros(inner: string): {
+	text: string;
+	count: number;
+} {
+	const target = HAS_TARGET.exec(inner);
+	const end = target ? target.index + 1 : inner.length;
+	let count = 0;
+	const amount = inner
+		.slice(0, end)
+		.replace(
+			DECIMAL_WITH_ZEROS,
+			(match, n: string, sep: string, digits: string, zeros: string) => {
+				if (sep === "," && digits.length + zeros.length === 3) return match;
+				count++;
+				return digits ? `${n}${sep}${digits}` : n;
+			},
+		);
+	return { text: amount + inner.slice(end), count };
+}
+
+/** What the brace at an offset opens (see `braceOwner`). */
+type BraceOwner =
+	| "ingredient"
+	| "timer"
+	| "temperature"
+	| "cookware"
+	| "checkpoint"
+	| "other";
+
+/**
+ * What the brace at `offset` opens: a target state when an `=` touches it
+ * (`={ribbon stage}`, 1.5), otherwise the element of the nearest sigil
+ * before it on its line, an `@` (an ingredient, a composite parent) or a `&`
+ * (a reference) for an ingredient's amount, a `~` for a timer, a `^` for a
+ * temperature, a `#` for cookware.
+ */
+function braceOwner(body: string, offset: number): BraceOwner {
+	if (body[offset - 1] === "=") return "checkpoint";
+	for (let i = offset - 1; i >= 0; i--) {
+		const c = body[i];
+		if (c === "\n" || c === "}" || c === "{") return "other";
+		if (c === "@" || c === "&") return "ingredient";
+		if (c === "~") return "timer";
+		if (c === "^") return "temperature";
+		if (c === "#") return "cookware";
+	}
+	return "other";
+}
+
+/** A target state is words: only rule 3 (spaces inside braces) touches it. */
+const isCheckpoint = (body: string, offset: number) =>
+	braceOwner(body, offset) === "checkpoint";
+
+/**
+ * One space around each operator of a sum: a `+` between an amount and a
+ * number, a `-` only after a unit (`1 cup-2 tbsp`), never between two
+ * numbers, where it is a range (`1-2 cups`).
+ */
+function spaceSumOperators(inner: string): string {
+	return inner
+		.replace(/(?<=[\p{L}\d%.])\s*\+\s*(?=[\d\p{No}])/gu, " + ")
+		.replace(/(?<=[\p{L}%])\s*-\s*(?=[\d\p{No}])/gu, " - ");
+}
+
 /**
  * The CLI (`gram format`, 9 rules, whole-body regexes) and the
  * language server (`format on save`, ~6 rules, line-by-line) used to be two
@@ -123,6 +213,7 @@ export function formatGram(source: string): {
 		spacesBeforeBrace: 0,
 		spacesInsideBraces: 0,
 		trailingZeros: 0,
+		quantityOperatorSpacing: 0,
 		temperatureSpacing: 0,
 		compositeSeparatorSpacing: 0,
 		arrowDeclarationSpacing: 0,
@@ -165,7 +256,8 @@ export function formatGram(source: string): {
 	// Runs before rule 4, whose patterns allow no space before the unit: in
 	// the other order `{160.0 °C}` only became `{160.0°C}`, and a second run
 	// was needed to drop the zero.
-	body = body.replace(/\{([^}]*)\}/g, (_, inner) => {
+	body = body.replace(/\{([^}]*)\}/g, (match, inner, offset) => {
+		if (isCheckpoint(body, offset)) return match;
 		const fixed = inner.replace(/(\d+)\s+°/g, (_m: string, n: string) => {
 			changes.temperatureSpacing++;
 			return `${n}°`;
@@ -173,14 +265,30 @@ export function formatGram(source: string): {
 		return `{${fixed}}`;
 	});
 
-	// Rule 4: Remove trailing decimal zeros in quantities ({500.0g} → {500g}, {1.50g} → {1.5g})
-	body = body.replace(/\{(\d+)\.0+([a-zA-Z°%]*)\}/g, (_, n, u) => {
-		changes.trailingZeros++;
-		return `{${n}${u}}`;
+	// Rule 4: Remove trailing decimal zeros from every number in a quantity's
+	// braces ({500.0g} → {500g}, {1.50 kg} → {1.5 kg}), whatever follows it:
+	// a unit, a range's other bound ({1.50-2.50 cup}), a sum's next term, a
+	// ratio's slash or a timer's unit (~{1.50 h}). See `trimTrailingZeros`.
+	body = body.replace(/\{([^{}\n]*)\}/g, (match, inner: string, offset) => {
+		if (isCheckpoint(body, offset)) return match;
+		const { text, count } = trimTrailingZeros(inner);
+		if (count === 0) return match;
+		changes.trailingZeros += count;
+		return `{${text}}`;
 	});
-	body = body.replace(/\{(\d+\.\d*[1-9])0+([a-zA-Z°%]*)\}/g, (_, n, u) => {
-		changes.trailingZeros++;
-		return `{${n}${u}}`;
+
+	// Rule 4b: A sum of quantities, in an ingredient's braces only (`@…{`,
+	// `<@…{`, `&…{`; never a timer's `~{1h30-2h}` nor a temperature's):
+	// one space around each operator (rule 4 has trimmed its terms).
+	body = body.replace(/\{([^{}\n]*)\}/g, (match, inner: string, offset) => {
+		if (braceOwner(body, offset) !== "ingredient") return match;
+		// A quantity relative to a target (`5% @&chocolat-70`) is never a sum:
+		// spacing the `-` of its target's name would rename the target.
+		if (HAS_TARGET.test(inner)) return match;
+		const spaced = spaceSumOperators(inner);
+		if (!SUM_OPERATOR.test(spaced) || spaced === inner) return match;
+		changes.quantityOperatorSpacing++;
+		return `{${spaced}}`;
 	});
 
 	// Rule 6 (from language-server): normalize composite separator spacing

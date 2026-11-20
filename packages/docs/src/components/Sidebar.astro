@@ -1,0 +1,161 @@
+---
+import DefaultSidebar from "@astrojs/starlight/components/Sidebar.astro";
+import Icon from "./Icon.astro";
+import type { starlightIcons } from "../lib/starlight-icons";
+
+type SidebarEntry = (typeof Astro.locals.starlightRoute.sidebar)[number];
+
+const fullSidebar = Astro.locals.starlightRoute.sidebar;
+
+const TOPIC_ICONS: (keyof typeof starlightIcons)[] = [
+	"rocket",
+	"document",
+	"laptop",
+	"setting",
+];
+
+function hasCurrent(entry: SidebarEntry): boolean {
+	if (entry.type === "link") return entry.isCurrent;
+	return entry.entries.some(hasCurrent);
+}
+
+function firstHref(entry: SidebarEntry): string {
+	if (entry.type === "link") return entry.href;
+	for (const child of entry.entries) {
+		const href = firstHref(child);
+		if (href) return href;
+	}
+	return "#";
+}
+
+const topics = fullSidebar.map((entry, idx) => ({
+	label: entry.label,
+	href: firstHref(entry),
+	icon: TOPIC_ICONS[idx] ?? "document",
+	active: hasCurrent(entry),
+	entries: entry.type === "group" ? entry.entries : [entry],
+}));
+
+const activeTopic = topics.find((t) => t.active) ?? topics[0];
+if (activeTopic) {
+	activeTopic.active = true;
+}
+const activeEntries = activeTopic ? activeTopic.entries : fullSidebar;
+
+// Render Starlight's built-in Sidebar with only the active topic's tree so
+// SidebarPersister hashes each topic independently.
+Astro.locals.starlightRoute.sidebar = activeEntries;
+---
+
+{
+	topics.length > 1 && (
+		<div class="gram-topics">
+			<ul class="gram-topic-list">
+				{topics.map((topic) => (
+					<li>
+						<a
+							href={topic.href}
+							class="gram-topic-link"
+							data-active={topic.active ? "true" : undefined}
+						>
+							<span class="gram-topic-icon">
+								<Icon name={topic.icon} size="1.05rem" />
+							</span>
+							<span class="gram-topic-label">{topic.label}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</div>
+	)
+}
+
+<DefaultSidebar />
+
+<style>
+	.gram-topics {
+		margin-bottom: 1.1rem;
+	}
+
+	.gram-topic-list {
+		list-style: none;
+		padding: 0.25rem;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.125rem;
+		border-radius: 3px;
+		border: 1px solid var(--sl-color-gray-5);
+		background-color: var(--sl-color-gray-7);
+	}
+
+	:global(:root[data-theme="light"]) .gram-topic-list {
+		background-color: var(--sl-color-gray-7);
+	}
+
+	:global(#starlight__sidebar) a.gram-topic-link {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		padding: 0.45rem 0.65rem;
+		border-radius: 3px;
+		border: 1px solid transparent;
+		font-size: 0.92rem;
+		font-weight: 500;
+		line-height: 1.35;
+		text-decoration: none;
+		color: var(--sl-color-gray-2);
+		transition:
+			color 0.15s ease,
+			background-color 0.15s ease,
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	:global(:root[data-theme="light"] #starlight__sidebar) a.gram-topic-link {
+		color: var(--sl-color-gray-3);
+	}
+
+	:global(#starlight__sidebar) a.gram-topic-link:hover {
+		color: var(--sl-color-white);
+		background-color: var(--sl-color-gray-6);
+	}
+
+	:global(#starlight__sidebar) a.gram-topic-link[data-active="true"] {
+		color: var(--sl-color-white);
+		font-weight: 600;
+		background-color: var(--sl-color-gray-6);
+		border-color: var(--sl-color-gray-5);
+		box-shadow: none;
+	}
+
+	:global(:root[data-theme="light"] #starlight__sidebar)
+		a.gram-topic-link[data-active="true"] {
+		background-color: var(--sl-color-bg);
+		border-color: var(--sl-color-gray-5);
+		box-shadow: none;
+	}
+
+	.gram-topic-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		color: inherit;
+		opacity: 0.78;
+		transition:
+			color 0.15s ease,
+			opacity 0.15s ease;
+	}
+
+	:global(#starlight__sidebar) a.gram-topic-link:hover .gram-topic-icon {
+		opacity: 1;
+	}
+
+	:global(#starlight__sidebar)
+		a.gram-topic-link[data-active="true"]
+		.gram-topic-icon {
+		color: var(--sl-color-accent);
+		opacity: 1;
+	}
+</style>

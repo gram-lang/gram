@@ -4,10 +4,7 @@ description: "Un guide pratique pour découper des recettes en composants réuti
 ---
 
 import { Steps, Tabs, TabItem, FileTree, CardGrid, LinkCard } from '@astrojs/starlight/components';
-import Since from '../../../../../components/Since.astro';
 import Term from '../../../../../components/Term.astro';
-
-<Since v="1.2.0" />
 
 À mesure que votre collection de recettes `.gram` s'enrichit, découper vos préparations complexes en éléments réutilisables (pâtes, sauces, bouillons ou marinades) vous fait gagner un temps précieux tout en garantissant une parfaite régularité en cuisine. En isolant ces préparations de base dans leurs propres fichiers, vous évitez les copier-coller répétitifs : dès que vous peaufinez une recette (un temps de repos mieux ajusté, un dosage de farine affiné), l'ensemble de vos recettes en profite automatiquement.
 
@@ -15,7 +12,7 @@ Ce guide vous présente les meilleures pratiques pour structurer, découper et o
 
 ## Atelier pas à pas : extraire et importer son premier module
 
-Si vous avez suivi le guide [Votre première recette](/fr/docs/tutorials/first-recipe), la **Tarte au citron meringuée** y était rédigée d'un seul tenant. Voyons comment extraire sa pâte sucrée dans un module réutilisable et l'importer avec `@use`.
+Si vous avez suivi le guide [Votre première recette](/fr/docs/tutorials/first-recipe), la **Tarte au citron** y était rédigée d'un seul tenant. Voyons comment extraire sa pâte sucrée dans un module réutilisable et l'importer avec `@use`.
 
 <Steps>
 
@@ -24,13 +21,13 @@ Si vous avez suivi le guide [Votre première recette](/fr/docs/tutorials/first-r
     Reprenons la section consacrée à la pâte dans la recette d'origine :
 
     ```gram title="Section d'origine"
-    ## Pâte Sucrée ->&pâte sucrée{}
+    ## Pâte sucrée ->&pâte sucrée{}
 
     [Mixer] Dans un #robot multifonction{}, la @farine{180 g}, le @sucre glace{55 g}, et le @sel{1/4 c.à.c}.
 
-    [Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
+    [Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange ={sableux}.
 
-    [Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
+    [Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte ={forme une boule}.
 
     [Repos] Envelopper de #film alimentaire{} et laisser reposer au réfrigérateur pendant ~_{1 h}.
     ```
@@ -39,16 +36,16 @@ Si vous avez suivi le guide [Votre première recette](/fr/docs/tutorials/first-r
 
     ```gram title="bases/pate-sucree.gram"
     ---
-    title: 'Pâte Sucrée'
+    title: 'Pâte sucrée'
     ---
 
-    ## Pâte Sucrée
+    ## Pâte sucrée
 
     [Mixer] Dans un #robot multifonction{}, la @farine{180 g}, le @sucre glace{55 g}, et le @sel{1/4 c.à.c}.
 
-    [Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
+    [Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange ={sableux}.
 
-    [Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
+    [Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte ={forme une boule}.
 
     [Repos] Envelopper de #film alimentaire{} et laisser reposer au réfrigérateur pendant ~_{1 h}.
     ```
@@ -62,25 +59,25 @@ Si vous avez suivi le guide [Votre première recette](/fr/docs/tutorials/first-r
 
     ```gram title="tarte-au-citron.gram"
     ---
-    title: Tarte au Citron Meringuée
+    title: Tarte au citron
     portions: 8
     ---
 
     @use "./bases/pate-sucree.gram" as &pâte
 
-    ## Crémeux au Citron ->&crémeux
+    ## Crémeux au citron ->&crémeux
 
     [Fouetter] Dans une #casserole{}, le @zeste de citron{1 c.à.s}<@citron, le @jus de citron{120 g}<@citrons{2}, le @sucre{125% @&jus de citron}, et les @œufs{3}.
 
-    [Cuire] À ^{feu moyen} pendant ~{8 min} jusqu'à épaississement.
+    [Cuire] À ^{feu moyen} pendant ~{8 min} jusqu'à ={la nappe}(un doigt passé sur le dos de la cuillère laisse une trace nette).
 
-    ## Cuisson du Fond de Tarte ->&fond cuit{}
+    ## Cuisson du fond de tarte ->&fond cuit{}
 
     [Préchauffer] Le #four à ^{180°C}.
 
     [Étaler] La &pâte{450g} pendant ~{5 min} et la foncer dans un #cercle à tarte{}.
 
-    [Cuire] Pendant ~_{20 min} jusqu'à coloration dorée. Laisser refroidir.
+    [Cuire] Pendant ~_{20 min} jusqu'à coloration ={dorée}. Laisser refroidir.
 
     ## Assemblage
 
@@ -95,7 +92,7 @@ Si vous avez suivi le guide [Votre première recette](/fr/docs/tutorials/first-r
 
     ```gram title="tartelettes-confiture.gram"
     ---
-    title: Tartelettes à la Confiture
+    title: Tartelettes à la confiture
     ---
 
     @use "./bases/pate-sucree.gram" as &pâte
@@ -288,17 +285,13 @@ Les quantités relatives et les liaisons entre ingrédients (`@sucre{125% @&jus 
 
 Cette isolation stricte par section garantit que découper vos recettes en modules ne crée aucun effet de bord indésirable. Pour découvrir tous les détails de ce mécanisme, consultez la section [Encapsulation](/fr/docs/reference/syntax/modules#encapsulation).
 
-## Tester dans le Playground
+## Tester dans le playground
 
 Le [Playground](/fr/play) en ligne prend en charge l'édition de recettes multi-fichiers : ouvrez l'exemple **Tarte au Citron (multi-fichiers, @use)** dans le sélecteur pour visualiser et modifier la recette principale et sa base côte à côte dans deux onglets distincts.
 
 ## Planifier avec des imports
 
-Lors de la génération d'un [plan de marche](/fr/docs/how-to/plan-a-meal/), chaque base importée via `@use` est pleinement intégrée à l'ordonnancement global : ses étapes de confection et sa mise en place sont coordonnées avec le reste de la recette.
-
-- **Anticipation sur plusieurs jours :** L'ajout d'une ancre temporelle sur la directive d'importation (par exemple `@use "./bases/biscuit.gram" as &biscuit ~{-2d}`) programme automatiquement la confection de cette sous-recette deux jours avant le service.
-- **Bases déjà prêtes (`--stock`) :** Si vous déclarez une préparation comme étant déjà disponible au congélateur ou en réserve (`--stock ./bases/biscuit.gram`), aucune journée de confection n'est planifiée. Elle apparaît simplement annotée « en stock » dans la mise en place lors de la session où la recette principale en a besoin.
-- **Traçabilité des étapes :** Dans la partie exécution d'un passage, une section issue d'un module importé mentionne explicitement son fichier d'origine à côté de son titre (par exemple : `BISCUIT — biscuit.gram`).
+Lors de la génération d'un [plan de marche](/fr/docs/how-to/plan-a-meal/), chaque section importée est coordonnée avec la recette principale et conserve la mention de son fichier d'origine à côté de son titre (par exemple : `BISCUIT — biscuit.gram`). Les bases marquées en stock (`--stock`) ne sont pas replanifiées : elles apparaissent simplement annotées « en stock » dans la mise en place du passage qui les utilise.
 
 ## Ressources associées
 

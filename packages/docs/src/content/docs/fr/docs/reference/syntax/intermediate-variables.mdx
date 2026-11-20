@@ -58,13 +58,13 @@ Placée à la fin d'un en-tête de section `## Titre`, la variable capture le r�
 Pour exploiter une variable préalablement déclarée, préfixez simplement son nom avec `&` :
 
 ```gram
-Utiliser la &pâte feuilletée{} pour foncer le moule à tarte.
+[Foncer] Utiliser la &pâte feuilletée{} pour foncer le moule à tarte.
 ```
 
 Vous pouvez également lui assigner une quantité pour l'affichage dans la recette rendue :
 
 ```gram
-Prendre de la &pâte feuilletée{200g} et l'abaisser.
+[Abaisser] Prendre de la &pâte feuilletée{200g} et l'abaisser.
 ```
 
 :::note[Liste de courses vs ingrédients d'étape]
@@ -92,7 +92,8 @@ Vous pouvez calculer la quantité d'un ingrédient en pourcentage de la masse d'
 Le compilateur s'assure de la cohérence de vos variables en émettant des diagnostics ciblés :
 
 - **`SCOPE_CONFLICT`** : émis lorsqu'un même nom de variable intermédiaire est déclaré plusieurs fois au sein de sections différentes.
-- **`UNUSED_VARIABLE`** : émis lorsqu'une variable déclarée avec `->&` n'est jamais consommée dans les étapes suivantes de la recette.
+- **`UNDEFINED_REFERENCE`** : émis lorsqu'une référence `&nom` pointe vers une variable qui n'a pas encore été déclarée.
+- **`CIRCULAR_REFERENCE`** : émis lorsqu'une variable intermédiaire dépend d'elle-même directement ou via une autre variable.
 
 ## Ressources associées
 

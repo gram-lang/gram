@@ -7,6 +7,7 @@ import {
 	parseAvailability,
 	parseMealTimes,
 } from "@gram-lang/scheduler";
+import { type ClockMode, VIEW_SETTINGS } from "@gram-lang/renderer";
 import { parse } from "yaml";
 
 /** What the language server reads of a project's `.gram/config.yaml`. */
@@ -19,6 +20,8 @@ export interface ProjectConfig {
 	availability?: Availability;
 	/** The times of day a serving time is looked for at (`gram plan --meal-times`). */
 	mealTimes?: string[];
+	/** How the times of day are written, when the editor's `gram.clock` is `auto`. */
+	clock?: ClockMode;
 }
 
 /**
@@ -59,6 +62,7 @@ export function readProjectConfigSync(projectRoot: string): ProjectConfig {
 		const meals = strings ? parseMealTimes(raw.mealTimes as string[]) : null;
 		if (meals?.ok) config.mealTimes = meals.times;
 	}
+	if (VIEW_SETTINGS.clock.accepts(raw.clock)) config.clock = raw.clock;
 	return config;
 }
 

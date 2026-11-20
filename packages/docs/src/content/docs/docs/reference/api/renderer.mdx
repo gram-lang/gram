@@ -30,7 +30,7 @@ const html = toHTML(compiled, { lang: 'en' });
 
 `toPrintHTML` produces a complete, standalone HTML document (with inline `<style>`, A4 `@page` rules, and no external dependencies), suitable for PDF export or paper printing. `toHTML` produces an HTML fragment intended to be embedded in an existing page layout.
 
-`toText` <Since v="1.4.0" /> writes the recipe as plain text, for a terminal or a plain file: a box with the title, the portions and the times, then the shopping list, the cookware, each section (its ingredients, then its numbered steps), the notes and the nutrition. Nothing is escaped and there is no markup; the words come from `@gram-lang/i18n`. It is the `text` format of the recipe view (`render("recipe", input, "text")`), what `gram view` shows and `gram export --format text` writes. Colors are up to the surface, through `textStyle`:
+`toText` writes the recipe as plain text, for a terminal or a plain file: a box with the title, the portions and the times, then the shopping list, the cookware, each section (its ingredients, then its numbered steps), the notes and the nutrition. Nothing is escaped and there is no markup; the words come from `@gram-lang/i18n`. It is the `text` format of the recipe view (`render("recipe", input, "text")`), what `gram view` shows and `gram export --format text` writes. Colors are up to the surface, through `textStyle`:
 
 ```typescript
 import chalk from 'chalk';
@@ -51,22 +51,22 @@ All four formatters use the same underlying traversal (`RenderBackend`). This gu
 |---|---|---|
 | `icons` | `RendererIcons` | Overrides default icons (see `DEFAULT_ICONS` below). |
 | `classes` | `RendererClasses` | Overrides CSS class names applied to generated HTML elements (HTML/print only). |
-| `formatFraction` | `(value: number) => string` | <Since v="1.4.1" type="changed" /> Writes every numeric quantity of the recipe views (steps, section ingredients, shopping list) in place of the default: a whole number, a common kitchen fraction (`0.5` → `"1/2"`) or a decimal in the `lang` of the options (`1.5` → `"1,5"` in French). It receives the number only, so it handles the language itself. Standardized masses, kilograms of the shopping list, nutrition values and the run sheet keep the default. Declared since 1.0, it was only read from 1.4.1 on. |
-| `formatDuration` | `(minutes: number) => string` | Custom duration formatter (defaults to e.g. `90` → `"1h 30min"`, in the `lang` of the options). |
-| `hideStepQty` | `boolean` | Omits ingredient quantities from the step text (shopping and section ingredient lists retain them). By default, <Since v="1.4.0" /> all formats display the quantity immediately after each ingredient, alongside its standardized mass when available: `flour (250 ml, ~148 g)`. In HTML, this is rendered as a `<span class="step-quantity">` (`classes.stepQuantity`), with detailed conversion info in its tooltip. |
-| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | <Since v="1.4.0" /> Scheduling strategy followed by the document: preparation immediately before each section (`'perSection'`, default), grouped upfront at recipe start (`'upfront'`), or at the start of each working day (`'perDay'`). Determines the total time displayed in the header. The recipe instructions show no temporal schedule: the detailed timeline and required equipment list reside in the <Term id="runSheet" /> (`runSheet`). The timeline is computed on the fly from the `tasks` graph. |
-| `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Controls resolution for passive timers defined as ranges (`~_{12-24h}`): minimum duration (`'shortest'`, default), midpoint (`'balanced'`), or maximum duration (`'longest'`). Exact passive timers and active timers are unaffected. Governs the same computed times as `miseEnPlace`. |
-| `comments` | `'show' \| 'hide'` | <Since v="1.4.0" /> Shows (`'show'`, default) or leaves out (`'hide'`) the comments of the recipe (`// like this`): both standalone notes on their own line and inline comments at the end of a line (rendered as footnotes in recipe views). Applies uniformly across all views, including the run sheet. |
+| `formatFraction` | `(value: number) => string` | Writes every numeric quantity of the recipe views (steps, section ingredients, shopping list) in place of the default: a whole number, a common kitchen fraction (`0.5` → `"1/2"`) or a decimal in the `lang` of the options (`1.5` → `"1,5"` in French). It receives the number only, so it handles the language itself. Standardized masses, kilograms of the shopping list, nutrition values and the run sheet keep the default. |
+| `formatDuration` | `(minutes: number) => string` | Custom duration formatter (defaults to e.g. `90` → `"1 h 30 min"`, in the `lang` of the options). |
+| `hideStepQty` | `boolean` | Omits ingredient quantities from the step text (shopping and section ingredient lists retain them). By default, all formats display the quantity immediately after each ingredient, alongside its standardized mass when available: `flour (250 ml, ~148 g)`. In HTML, this is rendered as a `<span class="step-quantity">` (`classes.stepQuantity`), with detailed conversion info in its tooltip. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | Scheduling strategy followed by the document: preparation immediately before each section (`'perSection'`, default), grouped upfront at recipe start (`'upfront'`), or at the start of each working day (`'perDay'`). Determines the total time displayed in the header. The recipe instructions show no temporal schedule: the detailed timeline and required equipment list reside in the <Term id="runSheet" /> (`runSheet`). The timeline is computed on the fly from the `tasks` graph. |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | Controls resolution for passive timers defined as ranges (`~_{12-24h}`): minimum duration (`'shortest'`, default), midpoint (`'balanced'`), or maximum duration (`'longest'`). Exact passive timers and active timers are unaffected. Governs the same computed times as `miseEnPlace`. |
+| `comments` | `'show' \| 'hide'` | Shows (`'show'`, default) or leaves out (`'hide'`) the comments of the recipe (`// like this`): both standalone notes on their own line and inline comments at the end of a line (rendered as footnotes in recipe views). Applies uniformly across all views, including the run sheet. |
 | `bakersMathOnly` | `boolean` | Shows only baker's percentages, hiding absolute ingredient quantities. |
 | `interactiveScaling` | `boolean` | <Since type="deprecated" v="1.4.0" /> Draws a portions stepper in the hero bar of the HTML recipe, whose buttons work only if the page around it handles them. Scale the recipe before rendering it instead: the view shows the scaled portions and the factor (`×1.5`) by itself. Removed in 2.0.0. |
 | `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Selects the nutrition calculation basis. `'auto'` (default) shows per 100 g and per portion side by side (per portion only when portions are declared), with the whole recipe under them, in the HTML, Markdown and text formats alike. |
 | `interactiveNutrition` | `boolean` | <Since type="deprecated" v="1.4.0" /> No longer has any effect: the HTML recipe shows every nutrition basis side by side in a table. Removed in 2.0.0. |
 | `lang` | `string` | BCP-47 language tag (e.g. `'en'`, `'fr'`) for UI string localization via `@gram-lang/i18n`. |
 | `renderId` | `string` | Prefix for footnote anchor IDs — prevents ID collisions when rendering multiple recipes on one page. |
-| `textStyle` | `TextStyle` | <Since v="1.4.0" /> Plain text only: how to set parts apart, one function per part (`title`, `heading`, `dim`, `ingredient`, `reference`, `cookware`, `timer`, `action`), each taking a piece of text and returning it styled, without changing its visible width (terminal colors, for instance). A part left out stays plain, so the renderer never depends on a terminal library. |
-| `width` | `number` | <Since v="1.4.0" /> Plain text only: the width of the title box and of the section rules (default `78`, `DEFAULT_TEXT_WIDTH`). |
+| `textStyle` | `TextStyle` | Plain text only: how to set parts apart, one function per part (`title`, `heading`, `dim`, `ingredient`, `reference`, `cookware`, `timer`, `action`), each taking a piece of text and returning it styled, without changing its visible width (terminal colors, for instance). A part left out stays plain, so the renderer never depends on a terminal library. |
+| `width` | `number` | Plain text only: the width of the title box and of the section rules (default `78`, `DEFAULT_TEXT_WIDTH`). |
 
-## Settings <Since v="1.4.0" />
+## Settings
 
 Recipe and view settings are defined once here so that every tool built on Gram provides the same options: CLI flags, editor `gram.*` configuration keys, and playground settings all derive from these descriptors.
 
@@ -88,7 +88,7 @@ const html = toHTML(analyzed.result, viewSettingsToRendererOptions(view));
 
 | Export | Description |
 |---|---|
-| `VIEW_SETTINGS` | View presentation settings: `miseEnPlace`, `rests`, `comments`, `nutritionBasis`, `bakersMathOnly`, `stepQuantities`. |
+| `VIEW_SETTINGS` | View presentation settings: `miseEnPlace`, `rests`, `comments`, `nutritionBasis`, `bakersMathOnly`, `stepQuantities`, `clock` <Since v="1.5.0" />. |
 | `RECIPE_SETTINGS` | Analyzer computation settings (all enabled by default): `bakersMath`, `massStandardization`, `yieldCalculation`, `nutritionEstimation`. |
 | `SETTINGS` | Both view and recipe settings combined in a single list. |
 | `parseViewSettings(raw)`, `parseRecipeSettings(raw)` | Parse settings from an arbitrary object, falling back to defaults for any missing or unknown key. |
@@ -97,6 +97,132 @@ const html = toHTML(analyzed.result, viewSettingsToRendererOptions(view));
 | `recipeSettingsToAnalyzerOptions(settings)` | Converts recipe settings into analyzer options (`enableBakersMath`, ...). |
 
 Each descriptor exposes its `key`, `kind` (`"view"` or `"recipe"`), `type` (`"choice"` with its `values`, or `"flag"`), `default`, `description`, and validation/parsing methods (`accepts(raw)`, `parse(raw)`).
+
+## Icons
+
+```typescript
+import { DEFAULT_ICONS, toHTML } from '@gram-lang/renderer';
+
+const html = toHTML(compiled, {
+  icons: { ...DEFAULT_ICONS.html, clock: '<svg class="my-clock-icon">...</svg>' },
+});
+```
+
+`DEFAULT_ICONS` provides two full icon sets: `DEFAULT_ICONS.html` (inline Phosphor SVG elements) and `DEFAULT_ICONS.md` (emojis). They cover all identifiers in `RendererIcons` (`hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `arrowElbowDownRight`, `warning`, `pencilSimple`, `minus`, `plus`, `clock`, `clockCounterClockwise`, `fire`, `knife`, `scales`, `package`, `info`). Any icon can be overridden individually via `options.icons`.
+
+## Formatting utilities
+
+Low-level utilities used internally by formatters are exported to support building custom renderers adhering to language conventions:
+
+```typescript
+function formatDecimalToFraction(value: unknown, unit?: string, style?: { lang?: string; formatFraction?: (value: number) => string }): string   // 0.5 -> "1/2", 1.5 -> "1,5" with lang "fr"
+function getQty(item: Record<string, unknown>, style?: { lang?: string; formatFraction?: (value: number) => string }): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
+function formatQuantityValue(q: any, lang?: string): string                // Timer/temperature quantity -> display string, decimals in `lang`
+function formatDuration(minutes: number, lang?: string, options?: { days?: boolean }): string // 90 -> "1 h 30 min" (a non-breaking space between number and unit); seconds below 1h (0.33 -> "20 s"), minutes up to a day (64.5 -> "1 h 5 min"), hours from a day up (1506 -> "1 d 1 h", "1 j 1 h" in French)
+function formatDurationRange(min: number, max: number, lang?: string, options?: { days?: boolean }): string // (45, 60) -> "45 min – 1 h", (60, 120) -> "1–2 h"; Gram reads it back
+function formatTimerDuration(timer: { raw?: string; quantity?: unknown; unit?: string | null; minutes?: number }, lang?: string, format?: (minutes: number) => string): string // a compiled timer as the views show it: { minutes: 90 } -> "1 h 30 min", as written when refused ({ raw: "1:30" } -> "1:30"); with `format` (your formatDuration), each end of a range in full
+function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h" (the timer as written; the views use formatTimerDuration)
+function toCommonFraction(value: number): string | undefined   // 0.25 -> "1/4", 0.3 -> undefined
+function escapeHtml(unsafe: string | null | undefined): string
+function escapeMarkdownHtml(unsafe: string | null | undefined): string   // escapes `<`/`&` for downstream markdown-to-HTML safety
+function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
+```
+
+### `formatUsageQuantity` <Since v="1.5.0" />
+
+`formatUsageQuantity` writes the amount of an ingredient, a reference or a shopping-list entry the one way the views do, from its terms (`parts`, or `qty` / `unit`): as written when Gram changed nothing (`1 cup + 1 tbsp`), worked out when the recipe is scaled or for a shopping list (`2 cup + 2 tbsp`, never `34 tbsp`; ranges by their bounds). `gram shop` and `gram scale` use it too. See [scaling sums of quantities](/docs/explanation/scaling/#scaling-sums-of-quantities).
+
+```typescript
+function formatUsageQuantity(item: Record<string, unknown>, ctx?: QuantityContext): string
+interface QuantityContext { lang?: string; formatFraction?: (value: number) => string; scaled?: boolean; buying?: boolean }
+
+formatUsageQuantity({ qty: 34, unit: 'tbsp' }, { buying: true });                       // "2 cup + 2 tbsp"
+formatUsageQuantity({ qty: 13.5, unit: 'tbsp', range: { min: 13, max: 14 } }, { buying: true }); // "13-14 tbsp"
+```
+
+## The run sheet
+
+From the `RunSheet` object returned by `runSheet()` (`@gram-lang/scheduler`) and the compiled recipe, the renderer outputs the run sheet in four distinct formats and exposes underlying extraction helpers:
+
+```typescript
+import { project, runSheet } from '@gram-lang/scheduler';
+import {
+  runSheetToText, runSheetToMarkdown, runSheetToHTML, runSheetToPrintHTML,
+  describeRunSheet, visitKit, sectionProgram,
+} from '@gram-lang/renderer';
+
+const context = { serveAt: '2026-10-17T20:00', timeZone: 'Europe/Paris', availability };
+const sheet = runSheet(project([{ graph: compiled.tasks }], context), { graph: compiled.tasks, context });
+
+runSheetToText(sheet, compiled, { lang: 'en' });      // plain text
+runSheetToMarkdown(sheet, compiled, { lang: 'en' });  // Markdown, check lists as - [ ]
+runSheetToHTML(sheet, compiled, { lang: 'en' });      // HTML fragment, no script
+runSheetToPrintHTML(sheet, compiled, { lang: 'en' }); // standalone print document, one day per page
+const model = describeRunSheet(sheet, compiled);       // the plan in words, as data
+```
+
+The run sheet for a recipe without an explicit target serving time is obtained via `runSheet(compiled.schedule, { graph: compiled.tasks })` (or from `layout(...).schedule`): days are labeled relatively (`D-2`, `D-1`, `Day D`), time slots represent relative wait durations, and no absolute clock margins are computed.
+
+### `RunSheetRenderOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `lang` | `string` | Language code (`'en'`, `'fr'`) for labels and date formatting. |
+| `roundTo` | `number` | Display only: rounding of times to minute intervals (default: `5`). Internal computations remain exact. |
+| `formatDuration` | `(minutes: number) => string` | Custom duration formatter. |
+| `hourCycle` <Since v="1.5.0" /> | `'h23' \| 'h12'` | How times of day are written: `'h23'` (default, `13:00`) or `'h12'` (`1:00 PM`, its marks in the language of `lang`). Also read by `describeServeTimes()` and `describeEarliestServe()`. `prepareViews()` resolves it from the `clock` setting. |
+| `comments` | `'show' \| 'hide'` | Shows (default) or leaves out the comments of the recipe in the steps. When enabled, a standalone note sits beneath its step and an end-of-line note remains within the sentence in parentheses; HTML formatting styles both in small, muted text. |
+
+### `RunSheetModel`
+
+`describeRunSheet()` returns:
+
+| Field | Description |
+|---|---|
+| `title`, `subtitle`, `summary` | "Run sheet — Entremets", "For Saturday, October 17 at 20:00 · 6 portions", "3 days · 3 visits to the kitchen · 45m of work in all". |
+| `problems` | Contextual diagnostics reported when scheduling constraints could not be met (one descriptive sentence per problem). |
+| `schedule[]` | Multi-day schedule summary: one entry per active kitchen visit (`kind: 'visit'`), background thread (`'thread'`), and the final service (`'serve'`), containing `day`, `time`, and `text`. |
+| `days[]` | Per-day details: header (`heading`), time slot (`slot`), adjusted wait notices (`notices`), and visits (`visits[]`), each with `slot`, anticipation margin (`margin`), required items (`kit[]`, groups of lines, filled in `perDay` and `upfront` modes), the sections to cook (`program[]`: a section, its `steps[]` as the recipe numbers them with their action, HTML, Markdown and text, the time it starts (`startTime`, with a serving time), a `continued` flag when it goes on from an earlier visit, its source file (`origin`) when imported, a reference such as `steps 1 to 3`, and in `perSection` mode its own `kit[]` for mise en place), and unattended background tasks (`leaving[]`). |
+| `events[]` | One calendar event per visit (`start`, `end` in UTC, `title`, `description`), for a plan with a serving time. |
+
+### `visitKit()`, `sectionProgram()` and `sectionSteps()`
+
+Three high-level extraction helpers used by the run sheet are exported to simplify custom UI implementations:
+
+```typescript
+visitKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
+// { kind: 'ingredient' | 'prepared' | 'cookware', name, quantity?, detail?, mass?, note? }
+
+sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): SectionProgram | undefined
+// { section, title, origin?, from, to }
+
+sectionSteps(compiled, section: number, stepIndexes: number[], { lang?, comments?, formatDuration? }): ProgramStep[]
+// { number?, action?, comment?, html, md, text }: a step as the recipe view numbers it, or a standalone note
+```
+
+### The reader's clock <Since v="1.5.0" />
+
+The `clock` view setting (`'auto'`, `'12h'`, `'24h'`, default `'auto'`) says how the run sheet and the serving time suggestions write the time of day. It is the reader's clock, not the recipe's: `'auto'` follows the region of the reader's locale, which `prepareViews()` takes as its `locale` option (`'en-US'`, `'fr-FR'`), separate from `lang`, the language of the words. A locale whose region writes 12 hours (`en-US`, `en-CA`, `en-AU`, `en-IN`) reads `1:00 PM`; any other, a locale without a region (`'en'`) and no locale at all read `13:00`. The renderer never guesses the reader: a surface passes their locale (the playground `navigator.language`, the CLI and the language server `systemLocale(process.env, process.platform)`). The data stays local ISO (`serveAt: "2026-10-11T13:00"`) whatever the clock.
+
+```typescript
+import { prepareViews, resolveHourCycle, systemLocale } from '@gram-lang/renderer';
+
+const views = prepareViews(compiled, { clock: 'auto' }, { lang: 'en', locale: 'en-US', kitchen, serveAt });
+views.hourCycle;                              // "h12": the run sheet writes "1:00 PM"
+resolveHourCycle('auto', 'en-GB');            // "h23"
+systemLocale({ LANG: 'en_US.UTF-8' });        // "en_US.UTF-8"
+```
+
+| Export | Description |
+|---|---|
+| `resolveHourCycle(clock, locale)` | `'h12'` or `'h23'`: the clock the setting names, else (`'auto'`) the one of `locale`. |
+| `hourCycleOf(locale)` | The clock of a locale, `'h23'` when it names no region or cannot be read; a POSIX locale (`en_US.UTF-8`) is read as its BCP 47 tag. |
+| `systemLocale(env, platform?)` | The locale of a machine: the first of `LC_ALL`, `LC_TIME`, `LANG` that is set (`C` and `POSIX` name none); on Windows (`platform: 'win32'`), the runtime's. |
+| `chooseClock(...choices)` | The first clock actually chosen, `'auto'` meaning not chosen: `chooseClock(flag, projectSetting)`. |
+| `formatClock(hhmm, hourCycle, lang?)` | `"13:05"` written on a clock: as it is in 24 hours, `"1:05 PM"` in 12. |
+| `clockFormatOptions(hourCycle)` | The `Intl.DateTimeFormat` options of a time of day on that clock, for a format that also writes a date. |
+
+Nothing is invented: names and quantities are those of the `.gram` file, and the run sheet writes the steps out as the recipe has them. The mode of the kit (`perSection`, `perDay`, `upfront`) is read from `RunSheet.recipes[].miseEnPlace` (also carried by `RunSheetModel.miseEnPlace`): the renderer has no option for it. `describeServeTimes()` and `describeEarliestServe()` put the result of `findServeTimes()` and `earliestServe()` in words the same way.
 
 ## Gantt chart (`toGanttHTML` & `attachGanttInteractivity`) <Since type="deprecated" v="1.4.0" />
 
@@ -136,97 +262,6 @@ handle.dispose();
 | `timeMode` | `'forward' \| 'reverse' \| 'target'` | Timeline display mode: elapsed time (T+), countdown (T-), or clock time anchored to serve time. |
 | `targetTime` | `string` | Target serve time in `"HH:MM"` format. |
 | `isCompactMode` | `boolean` | Toggles compact vertical row height. |
-
-## Icons
-
-```typescript
-import { DEFAULT_ICONS, toHTML } from '@gram-lang/renderer';
-
-const html = toHTML(compiled, {
-  icons: { ...DEFAULT_ICONS.html, clock: '<svg class="my-clock-icon">...</svg>' },
-});
-```
-
-`DEFAULT_ICONS` provides two full icon sets: `DEFAULT_ICONS.html` (inline Phosphor SVG elements) and `DEFAULT_ICONS.md` (emojis). They cover all identifiers in `RendererIcons` (`hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `arrowElbowDownRight`, `warning`, `pencilSimple`, `minus`, `plus`, `clock`, `clockCounterClockwise`, `fire`, `knife`, `scales`, `package`, `info`). Any icon can be overridden individually via `options.icons`.
-
-## Formatting utilities
-
-Low-level utilities used internally by formatters are exported to support building custom renderers adhering to language conventions:
-
-```typescript
-function formatDecimalToFraction(value: unknown, unit?: string, style?: { lang?: string; formatFraction?: (value: number) => string }): string   // 0.5 -> "1/2", 1.5 -> "1,5" with lang "fr"
-function getQty(item: Record<string, unknown>, style?: { lang?: string; formatFraction?: (value: number) => string }): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
-function formatQuantityValue(q: any, lang?: string): string                // Timer/temperature quantity -> display string, decimals in `lang`
-function formatDuration(minutes: number, lang?: string): string // 90 -> "1h 30min"; seconds below 1h (0.33 -> "20s"), minutes up to a day (64.5 -> "1h 5min"), hours from a day up (1506 -> "1d 1h", "1j 1h" in French)
-function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h"
-function toCommonFraction(value: number): string | undefined   // 0.25 -> "1/4", 0.3 -> undefined
-function escapeHtml(unsafe: string | null | undefined): string
-function escapeMarkdownHtml(unsafe: string | null | undefined): string   // escapes `<`/`&` for downstream markdown-to-HTML safety
-function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
-```
-
-## The run sheet
-
-<Since v="1.4.0" />
-
-From the `RunSheet` object returned by `runSheet()` (`@gram-lang/scheduler`) and the compiled recipe, the renderer outputs the run sheet in four distinct formats and exposes underlying extraction helpers:
-
-```typescript
-import { project, runSheet } from '@gram-lang/scheduler';
-import {
-  runSheetToText, runSheetToMarkdown, runSheetToHTML, runSheetToPrintHTML,
-  describeRunSheet, visitKit, sectionProgram,
-} from '@gram-lang/renderer';
-
-const context = { serveAt: '2026-10-17T20:00', timeZone: 'Europe/Paris', availability };
-const sheet = runSheet(project([{ graph: compiled.tasks }], context), { graph: compiled.tasks, context });
-
-runSheetToText(sheet, compiled, { lang: 'en' });      // plain text
-runSheetToMarkdown(sheet, compiled, { lang: 'en' });  // Markdown, check lists as - [ ]
-runSheetToHTML(sheet, compiled, { lang: 'en' });      // HTML fragment, no script
-runSheetToPrintHTML(sheet, compiled, { lang: 'en' }); // standalone print document, one day per page
-const model = describeRunSheet(sheet, compiled);       // the plan in words, as data
-```
-
-The run sheet for a recipe without an explicit target serving time is obtained via `runSheet(compiled.schedule, { graph: compiled.tasks })` (or from `layout(...).schedule`): days are labeled relatively (`D-2`, `D-1`, `Day D`), time slots represent relative wait durations, and no absolute clock margins are computed.
-
-### `RunSheetRenderOptions`
-
-| Option | Type | Description |
-|---|---|---|
-| `lang` | `string` | Language code (`'en'`, `'fr'`) for labels and date formatting. |
-| `roundTo` | `number` | Display only: rounding of times to minute intervals (default: `5`). Internal computations remain exact. |
-| `formatDuration` | `(minutes: number) => string` | Custom duration formatter. |
-| `comments` | `'show' \| 'hide'` | <Since v="1.4.0" /> Shows (default) or leaves out the comments of the recipe in the steps. When enabled, a standalone note sits beneath its step and an end-of-line note remains within the sentence in parentheses; HTML formatting styles both in small, muted text. |
-
-### `RunSheetModel`
-
-`describeRunSheet()` returns:
-
-| Field | Description |
-|---|---|
-| `title`, `subtitle`, `summary` | "Run sheet — Entremets", "For Saturday, October 17 at 20:00 · 6 portions", "3 days · 3 visits to the kitchen · 45m of work in all". |
-| `problems` | Contextual diagnostics reported when scheduling constraints could not be met (one descriptive sentence per problem). |
-| `schedule[]` | Multi-day schedule summary: one entry per active kitchen visit (`kind: 'visit'`), background thread (`'thread'`), and the final service (`'serve'`), containing `day`, `time`, and `text`. |
-| `days[]` | Per-day details: header (`heading`), time slot (`slot`), adjusted wait notices (`notices`), and visits (`visits[]`), each with `slot`, anticipation margin (`margin`), required items (`kit[]`, groups of lines, filled in `perDay` and `upfront` modes), the sections to cook (`program[]`: a section, its `steps[]` as the recipe numbers them with their action, HTML, Markdown and text, the time it starts (`startTime`, with a serving time), a `continued` flag when it goes on from an earlier visit, its source file (`origin`) when imported, a reference such as `steps 1 to 3`, and in `perSection` mode its own `kit[]` for mise en place), and unattended background tasks (`leaving[]`). |
-| `events[]` | One calendar event per visit (`start`, `end` in UTC, `title`, `description`), for a plan with a serving time. |
-
-### `visitKit()`, `sectionProgram()` and `sectionSteps()`
-
-Three high-level extraction helpers used by the run sheet are exported to simplify custom UI implementations:
-
-```typescript
-visitKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
-// { kind: 'ingredient' | 'prepared' | 'cookware', name, quantity?, detail?, mass?, note? }
-
-sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): SectionProgram | undefined
-// { section, title, origin?, from, to }
-
-sectionSteps(compiled, section: number, stepIndexes: number[], { lang? }): ProgramStep[]
-// { number?, action?, comment?, html, md, text }: a step as the recipe view numbers it, or a standalone note
-```
-
-Nothing is invented: names and quantities are those of the `.gram` file, and the run sheet writes the steps out as the recipe has them. The mode of the kit (`perSection`, `perDay`, `upfront`) is read from `RunSheet.recipes[].miseEnPlace` (also carried by `RunSheetModel.miseEnPlace`): the renderer has no option for it. `describeServeTimes()` and `describeEarliestServe()` put the result of `findServeTimes()` and `earliestServe()` in words the same way.
 
 ## Related resources
 

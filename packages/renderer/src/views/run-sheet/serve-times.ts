@@ -8,18 +8,20 @@ import {
 	toLocalIso,
 } from "@gram-lang/scheduler";
 import type { ViewInput } from "../../prepare-views";
+import { type HourCycle, clockFormatOptions } from "../../shared/clock";
 import { longDate, shortDay } from "./dates";
 import { describeProblems } from "./model";
 import type { RunSheetRenderOptions } from "./model";
+import { clockOf } from "./words";
 import type { RenderableCompilationResult } from "../../types";
 
-/** "Saturday, October 17 at 20:00" */
-const whenOf = (local: string, lang?: string) =>
-	`${longDate(local, lang)} ${local.slice(11, 16)}`;
+/** "Saturday, October 17 20:00", on the reader's clock. */
+const whenOf = (local: string, options: RunSheetRenderOptions) =>
+	`${longDate(local, options.lang)} ${clockOf(local, options)}`;
 
-/** "Thu 19:55" */
-const startOf = (local: string, lang?: string) =>
-	`${shortDay(local, lang)} ${local.slice(11, 16)}`;
+/** "Thu 19:55", on the reader's clock. */
+const startOf = (local: string, options: RunSheetRenderOptions) =>
+	`${shortDay(local, options.lang)} ${clockOf(local, options)}`;
 
 /** One candidate in a sentence: when, when to start, how much of the kitchen, what was adjusted. */
 function candidateLine(
@@ -28,8 +30,7 @@ function candidateLine(
 	options: RunSheetRenderOptions & { timeZone: string },
 ): string {
 	const t = getDictionary(options.lang).renderer;
-	const lang = options.lang;
-	const when = whenOf(c.serveAt, lang);
+	const when = whenOf(c.serveAt, options);
 	if (c.ok) {
 		const visits = fillTemplate(
 			c.visits === 1 ? t.runSheetVisits : t.runSheetVisitsMany,
@@ -44,7 +45,7 @@ function candidateLine(
 					);
 		return fillTemplate(t.runSheetFindOk, {
 			when,
-			start: c.startsAt ? startOf(c.startsAt, lang) : "",
+			start: c.startsAt ? startOf(c.startsAt, options) : "",
 			visits,
 			adjusted,
 		});
@@ -52,7 +53,9 @@ function candidateLine(
 	const past = c.reasons.some((r) => r.code === "START_IN_PAST");
 	const reason =
 		past && c.startsAt
-			? fillTemplate(t.runSheetFindStart, { start: startOf(c.startsAt, lang) })
+			? fillTemplate(t.runSheetFindStart, {
+					start: startOf(c.startsAt, options),
+				})
 			: describeProblems(c.reasons, data, options, options.timeZone).reduce(
 					(text, line, i, all) =>
 						i > 0
@@ -99,12 +102,12 @@ export function describeEarliestServe(
 	const t = getDictionary(options.lang).renderer;
 	if (result.found) {
 		return fillTemplate(t.runSheetEarliest, {
-			when: whenOf(result.found.serveAt, options.lang),
+			when: whenOf(result.found.serveAt, options),
 		});
 	}
 	return fillTemplate(t.runSheetEarliestNone, {
 		days: String(EARLIEST_SERVE_HORIZON_DAYS),
-		until: whenOf(result.searchedUntil, options.lang),
+		until: whenOf(result.searchedUntil, options),
 	});
 }
 
@@ -138,16 +141,18 @@ export interface SuggestServeOptions {
 	mealTimes?: string[];
 }
 
-/** "Sat 17 Oct, 20:00", in the reader's language. */
-function shortLabel(serveAt: string, lang?: string): string {
+/** "Sat 17 Oct, 20:00", in the reader's language and on their clock. */
+function shortLabel(
+	serveAt: string,
+	lang: string | undefined,
+	hourCycle: HourCycle,
+): string {
 	return new Intl.DateTimeFormat(lang || "en", {
 		timeZone: "UTC",
 		weekday: "short",
 		day: "numeric",
 		month: "short",
-		hour: "2-digit",
-		minute: "2-digit",
-		hourCycle: "h23",
+		...clockFormatOptions(hourCycle),
 	}).format(new Date(`${serveAt}:00Z`));
 }
 
@@ -183,23 +188,26 @@ export function suggestServeTimes(
 	const earliest = input.earliestServe();
 	if (!search || !earliest) return null;
 	const lang = options.lang ?? input.lang;
+	const { hourCycle } = input;
 	const words = describeServeTimes(search, input.recipe, {
 		...range,
 		timeZone,
+		hourCycle,
 		...(lang !== undefined && { lang }),
 	});
 	return {
 		candidates: search.candidates.map((c, i) => ({
 			serveAt: c.serveAt,
-			label: shortLabel(c.serveAt, lang),
+			label: shortLabel(c.serveAt, lang, hourCycle),
 			title: words[i] ?? "",
 		})),
 		rejected: words.slice(search.candidates.length),
 		earliest: earliest.found
 			? {
 					serveAt: earliest.found.serveAt,
-					label: shortLabel(earliest.found.serveAt, lang),
+					label: shortLabel(earliest.found.serveAt, lang, hourCycle),
 					text: describeEarliestServe(earliest, {
+						hourCycle,
 						...(lang !== undefined && { lang }),
 					}),
 				}

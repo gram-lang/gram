@@ -1,0 +1,113 @@
+---
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/600.css";
+import { getAllOgEntries, ogPathFromSlug } from "../../lib/og/catalog";
+import { renderOgHtml } from "../../lib/og/html-preview";
+import type { OgEntry } from "../../lib/og/types";
+
+export async function getStaticPaths() {
+	if (!import.meta.env.DEV) return [];
+
+	const entries = await getAllOgEntries();
+	return [
+		{ params: { slug: undefined }, props: { entries, current: entries[0] } },
+		...entries.map((entry) => ({
+			params: { slug: entry.slug },
+			props: { entries, current: entry },
+		})),
+	];
+}
+
+const { entries, current } = Astro.props as {
+	entries: OgEntry[];
+	current: OgEntry;
+};
+const cardHtml = renderOgHtml(current.card);
+const pngUrl = ogPathFromSlug(current.slug);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OG Preview · {current.slug}</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #0d0b09;
+        color: #e6ddd3;
+        font-family: "Inter", sans-serif;
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        max-width: 1200px;
+        margin: 0 auto 20px;
+      }
+      .toolbar select,
+      .toolbar a {
+        background: #211b16;
+        color: #e6ddd3;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        padding: 8px 12px;
+        font-size: 14px;
+        text-decoration: none;
+      }
+      .stage {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .label {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: #9d9286;
+        margin-bottom: 8px;
+      }
+      .frame {
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+      .frame * {
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <strong>OG HTML/CSS Preview ({entries.length} cards)</strong>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <select onchange="if (this.value) window.location.href = '/og-preview/' + this.value">
+          {entries.map((entry) => (
+            <option value={entry.slug} selected={entry.slug === current.slug}>
+              /{entry.slug} ({entry.card.kind})
+            </option>
+          ))}
+        </select>
+        <a href={pngUrl} target="_blank">Open PNG ↗</a>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div>
+        <div class="label">Live HTML / CSS (1200×630 — inspectable with DevTools, HMR on templates.ts)</div>
+        <div class="frame" set:html={cardHtml} />
+      </div>
+      <div>
+        <div class="label">Rendered PNG ({pngUrl})</div>
+        <img src={pngUrl} width="1200" height="630" alt={`OG PNG for ${current.slug}`} style="border: 1px solid rgba(255,255,255,0.14);" />
+      </div>
+    </div>
+  </body>
+</html>

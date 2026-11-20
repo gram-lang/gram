@@ -2,7 +2,7 @@
 
 > Gram is an open-source declarative and computational recipe DSL built for developers. Code your recipes in plain text: `.gram` files compile into structured, calculated JSON — with relational variables, physical-accuracy shopping lists, modular imports (@use), and strict data contracts for temperatures, times, ingredients, and cookware.
 
-Gram is a pipeline of composable `@gram-lang/*` npm packages (`parser`, `modules`, `kitchen`, `analyzer`, `renderer`, `format`, `i18n`), plus a `gram` CLI, a Language Server, and a VS Code extension. Full documentation is at https://gram-lang.org/ (with a French translation under `/fr/`). For the complete language spec in a single file, see https://gram-lang.org/llms-full.txt.
+Gram is a pipeline of composable `@gram-lang/*` npm packages (`parser`, `modules`, `kitchen`, `scheduler`, `analyzer`, `renderer`, `format`, `i18n`), plus a `gram` CLI, a Language Server, and a VS Code extension. Full documentation is at https://gram-lang.org/ (with a French translation under `/fr/`). For the complete language spec in a single file, see https://gram-lang.org/llms-full.txt.
 
 ## Getting Started
 
@@ -17,9 +17,10 @@ Gram is a pipeline of composable `@gram-lang/*` npm packages (`parser`, `modules
 - [Ingredients](https://gram-lang.org/docs/reference/syntax/ingredients): `@ingredient` declarations, quantities, units, and modifiers.
 - [Cookware](https://gram-lang.org/docs/reference/syntax/cookware): `#cookware` declarations and quantities.
 - [Times & Scheduling](https://gram-lang.org/docs/reference/syntax/times): `~timer` declarations, active vs. passive, and section retro-planning.
-- [Temperatures](https://gram-lang.org/docs/reference/syntax/temperatures): `^temperature` declarations, exact and semantic.
+- [Temperatures](https://gram-lang.org/docs/reference/syntax/temperatures): `^temperature` declarations, exact and semantic, with optional notes.
+- [Target States](https://gram-lang.org/docs/reference/syntax/target-states): `={state}` sensory cues and verification notes.
 - [Intermediate Variables](https://gram-lang.org/docs/reference/syntax/intermediate-variables): Declaring and referencing sub-components (`->&name`) like dough or sauce across steps.
-- [Relative Quantities](https://gram-lang.org/docs/reference/syntax/relative-quantities): Defining a quantity as a dynamic percentage of another ingredient or variable.
+- [Relative Quantities & Ratios](https://gram-lang.org/docs/reference/syntax/relative-quantities): Defining a quantity as a dynamic percentage or unit ratio of another ingredient or variable.
 - [Composite Ingredients](https://gram-lang.org/docs/reference/syntax/composite-ingredients): `<@parent` syntax so sub-parts (zest/juice) aggregate correctly in the shopping list.
 - [Cheatsheet](https://gram-lang.org/docs/reference/syntax/cheatsheet): One-page quick reference for all syntax elements and modifiers.
 - [Writing Gram Programmatically](https://gram-lang.org/docs/reference/syntax/ai-generation-notes): Guidance and common mistakes for scripts/AI models generating `.gram` files.
@@ -29,7 +30,8 @@ Gram is a pipeline of composable `@gram-lang/*` npm packages (`parser`, `modules
 - [API Overview](https://gram-lang.org/docs/reference/api/): The pipeline of composable packages and install instructions.
 - [@gram-lang/parser](https://gram-lang.org/docs/reference/api/parser): `getAST()` — turns `.gram` source into a plain-object AST.
 - [@gram-lang/modules](https://gram-lang.org/docs/reference/api/modules): `loadModuleGraph()`, `composeRecipe()` — resolves `@use` imports and composes multi-file ASTs.
-- [@gram-lang/kitchen](https://gram-lang.org/docs/reference/api/kitchen): `compile()` — produces the shopping list, timings, registry, and warnings.
+- [@gram-lang/kitchen](https://gram-lang.org/docs/reference/api/kitchen): `compile()` — produces the shopping list, task graph, default schedule, registry, and warnings.
+- [@gram-lang/scheduler](https://gram-lang.org/docs/reference/api/scheduler): `layout()`, `project()`, `runSheet()`, `findServeTimes()`, `earliestServe()` — ALAP scheduling and calendar projection.
 - [@gram-lang/analyzer](https://gram-lang.org/docs/reference/api/analyzer): `analyze()` — enriches a compiled recipe with mass, yield, nutrition, and baker's percentages.
 - [@gram-lang/renderer](https://gram-lang.org/docs/reference/api/renderer): Rendering a compiled/analyzed result to Markdown or HTML.
 - [@gram-lang/format](https://gram-lang.org/docs/reference/api/format): `formatGram()` — canonical code formatter with 13 unified formatting rules.
@@ -39,8 +41,10 @@ Gram is a pipeline of composable `@gram-lang/*` npm packages (`parser`, `modules
 
 ## Guides
 
+- [How to Organize Modular Recipes](https://gram-lang.org/docs/how-to/organize-modular-recipes): Splitting bases and composing recipes with `@use`.
 - [How to Manage an Ingredient Database](https://gram-lang.org/docs/how-to/manage-database): Sync, lint, and enrich a local `ingredients.yaml` via the CLI.
 - [How to Scale Recipes Dynamically](https://gram-lang.org/docs/how-to/scale-recipes): Relative quantities and baker's math for ratio-based recipes.
+- [How to Plan a Meal](https://gram-lang.org/docs/how-to/plan-a-meal): Scheduling prep days and serving times with `gram plan`.
 - [How to Generate a Weekly Shopping List](https://gram-lang.org/docs/how-to/weekly-shopping-list): Aggregating ingredients across multiple `.gram` files with `gram shop`.
 - [How to Build a Custom UI](https://gram-lang.org/docs/how-to/build-custom-ui): Consuming Gram's compiled JSON to build a custom frontend.
 
@@ -48,10 +52,12 @@ Gram is a pipeline of composable `@gram-lang/*` npm packages (`parser`, `modules
 
 - [Playground](https://gram-lang.org/play): Interactive in-browser editor with a live compiler preview.
 - [CLI Commands](https://gram-lang.org/docs/reference/tooling/cli): Reference for the `gram` command-line tool.
-- [VS Code Extension](https://gram-lang.org/docs/reference/tooling/vscode-extension): Live preview, nutrition CodeLens, ingredient matching.
+- [VS Code Extension](https://gram-lang.org/docs/reference/tooling/vscode-extension): Live preview, run sheet, nutrition summary, ingredient matching.
 - [Language Server](https://gram-lang.org/docs/reference/tooling/language-server): The LSP implementation powering editor integrations.
-- [The Gram Lifecycle](https://gram-lang.org/docs/explanation/engine/lifecycle): How the parser → modules → kitchen → analyzer → renderer pipeline fits together.
+- [The Gram Lifecycle](https://gram-lang.org/docs/explanation/engine/lifecycle): How the parser → modules → kitchen → scheduler → analyzer → renderer pipeline fits together.
 - [Module Resolution & Composition](https://gram-lang.org/docs/explanation/engine/modules): Resolving @use dependency graphs, yield scaling, and intermediate hygiene.
+- [Deep Dive: ALAP Scheduling](https://gram-lang.org/docs/explanation/alap-scheduling): Backward scheduling, elastic rests, and working-day sessions.
+- [Deep Dive: Planning & Run Sheet](https://gram-lang.org/docs/explanation/planning): Kitchen visits, preparation grouping, and calendar projection.
 - [Deep Dive: Mass Standardization & Yield](https://gram-lang.org/docs/explanation/mass-and-yield): Converting volumes/counts to standardized mass.
 - [Deep Dive: Nutritional Estimation](https://gram-lang.org/docs/explanation/nutrition): The macro/micronutrient calculation flow.
 - [Deep Dive: Shopping List Aggregation](https://gram-lang.org/docs/explanation/shopping-list-aggregation): ID normalization, alias resolution, and unit merging.

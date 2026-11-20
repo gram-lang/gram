@@ -286,7 +286,7 @@ describe("section retro-planning", () => {
 
 	it("extracts a negative signed duration", () => {
 		const ast = getAST("## Dough ~{-2h}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "-2h",
 			sign: -1,
 			value: 2,
@@ -296,7 +296,7 @@ describe("section retro-planning", () => {
 
 	it("extracts a positive (unsigned) duration", () => {
 		const ast = getAST("## Dough ~{2d}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "2d",
 			sign: 1,
 			value: 2,
@@ -306,7 +306,7 @@ describe("section retro-planning", () => {
 
 	it("extracts value with no unit (kitchen will flag as MISSING_UNIT)", () => {
 		const ast = getAST("## Dough ~{5}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "5",
 			sign: 1,
 			value: 5,
@@ -316,7 +316,7 @@ describe("section retro-planning", () => {
 
 	it("extracts an unrecognized unit token as-is (kitchen resolves/validates it)", () => {
 		const ast = getAST("## Dough ~{5xyz}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "5xyz",
 			sign: 1,
 			value: 5,
@@ -326,7 +326,7 @@ describe("section retro-planning", () => {
 
 	it("leaves free text with no value/unit extracted (kitchen will flag as invalid)", () => {
 		const ast = getAST("## Dough ~{la veille}\nStep.\n");
-		expect((ast.children[0] as any).retroPlanning).toEqual({
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
 			raw: "la veille",
 			sign: 1,
 			value: null,
@@ -346,8 +346,8 @@ describe("section retro-planning", () => {
 			.children[0] as any;
 
 		const expected = { raw: "-2h", sign: -1, value: 2, unit: "h" };
-		expect(retroFirst.retroPlanning).toEqual(expected);
-		expect(declFirst.retroPlanning).toEqual(expected);
+		expect(retroFirst.retroPlanning).toMatchObject(expected);
+		expect(declFirst.retroPlanning).toMatchObject(expected);
 		expect(retroFirst.intermediateDecl.name).toBe("dough");
 		expect(declFirst.intermediateDecl.name).toBe("dough");
 	});
@@ -568,7 +568,7 @@ describe("malformed quantity braces are errors, not silent drops (issue #24)", (
 		["#casserole{2 l}", "cookware 'casserole'", 10],
 		["@farine{200g}<@pâte{x/y}", "composite parent 'pâte'", 19],
 		["&dough{1 /}", "reference 'dough'", 6],
-		["~repos{1 /}", "timer 'repos'", 6],
+		["~repos{10 min", "missing '}'", 6],
 	];
 
 	for (const [src, fragment, col] of cases) {
@@ -590,5 +590,271 @@ describe("malformed quantity braces are errors, not silent drops (issue #24)", (
 		expect(() =>
 			getAST("## T\n\nPréchauffer ^four{thermostat 6/7}\n"),
 		).not.toThrow();
+	});
+});
+
+describe("natural timers keep what was written in raw", () => {
+	const timers = (src: string): any[] => {
+		const ast = getAST(`## T\n\n${src}\n`);
+		const section = ast.children[0] as { children: { children: any[] }[] };
+		return section.children[0].children.filter(
+			(c: any) => c.type === ASTNodeType.Timer,
+		);
+	};
+
+	it("fills raw for a timer read as a quantity", () => {
+		const [timer] = timers("Cuire ~{ 10 min }.");
+		expect(timer.raw).toBe("10 min");
+		expect(timer.quantity.unit).toBe("min");
+	});
+
+	it("keeps the quantity branch for 1h30, whose unit is h30", () => {
+		const [timer] = timers("Cuire ~{1h30}.");
+		expect(timer.raw).toBe("1h30");
+		expect(timer.quantity.unit).toBe("h30");
+	});
+
+	it.each([
+		["~{1:30 h}", "1:30 h"],
+		["~{5'30\"}", "5'30\""],
+		["~{1h + 30min}", "1h + 30min"],
+		["~{1h30-2h}", "1h30-2h"],
+		["~{1:30}", "1:30"],
+		["~four{0:04:30}", "0:04:30"],
+		["~_{45 min – 1 h}", "45 min – 1 h"],
+		["~repos{1 /}", "1 /"],
+	])("parses %s as text instead of failing", (src, raw) => {
+		const [timer] = timers(`Cuire ${src}.`);
+		expect(timer.raw).toBe(raw);
+		expect(timer.quantity).toMatchObject({
+			type: ASTNodeType.TextQuantity,
+			value: raw,
+		});
+	});
+
+	it("keeps the name and the passive marker on a text timer", () => {
+		const [timer] = timers("Laisser lever ~_pousse{1:30 h}.");
+		expect(timer.name).toBe("pousse");
+		expect(timer.isPassive).toBe(true);
+	});
+
+	it("stops a text timer at the end of the line", () => {
+		expect(() => getAST("## T\n\nCuire ~{1:30 h\nsuite}.\n")).toThrow(
+			GramParseError,
+		);
+	});
+});
+
+describe("decimal comma", () => {
+	// Every element of a step, in a one-step recipe.
+	const elements = (src: string): any[] => {
+		const ast = getAST(`## T\n\n${src}\n`);
+		const section = ast.children[0] as { children: { children: any[] }[] };
+		return section.children[0].children;
+	};
+	const ofType = (src: string, type: ASTNodeType) =>
+		elements(src).filter((c) => c.type === type);
+
+	it("reads a comma between two digits as a decimal in an ingredient", () => {
+		const [ing] = firstIngredients("@farine{1,5 kg}");
+		expect(ing.quantity.value).toEqual({
+			type: "single",
+			value: 1.5,
+			text: "1,5",
+		});
+		expect(ing.quantity.unit).toBe("kg");
+	});
+
+	it("reads it in a range, a fraction and a number glued to its unit", () => {
+		expect(firstIngredients("@eau{1,5-2,5 l}")[0].quantity.value.range).toEqual(
+			{
+				min: 1.5,
+				max: 2.5,
+			},
+		);
+		expect(firstIngredients("@sel{1,5/2 g}")[0].quantity.value.value).toBe(
+			0.75,
+		);
+		expect(firstIngredients("@lait{0,5l}")[0].quantity.unit).toBe("l");
+	});
+
+	it("reads it in a relative quantity (12,5% is not 12%)", () => {
+		const [ing] = firstIngredients("@eau{12,5% &pâte}");
+		expect(ing.quantity.percent).toBe(12.5);
+	});
+
+	it("reads it in a timer, a temperature and a cookware count", () => {
+		expect(
+			ofType("Cuire ~{1,5 h}.", ASTNodeType.Timer)[0].quantity.value.value,
+		).toBe(1.5);
+		expect(
+			ofType("Four ^{37,5 °C}.", ASTNodeType.Temperature)[0].value.value,
+		).toBe(37.5);
+		expect(
+			ofType("Prendre #moules{1,5}.", ASTNodeType.Cookware)[0].quantity.value
+				.value,
+		).toBe(1.5);
+	});
+
+	it("reads it in a section anchor", () => {
+		const ast = getAST("## Pâte ~{-1,5h}\n\nPétrir.\n");
+		expect((ast.children[0] as any).retroPlanning).toMatchObject({
+			raw: "-1,5h",
+			sign: -1,
+			value: 1.5,
+			unit: "h",
+		});
+	});
+
+	it("leaves commas of the prose alone", () => {
+		const names = firstIngredients(
+			"Mélanger @farine{1}, @sucre{2,5 g}, @sel et @oeufs{3}.",
+		).map((i) => i.name);
+		expect(names).toEqual(["farine", "sucre", "sel", "oeufs"]);
+	});
+
+	it("still rejects a comma that is not between two digits", () => {
+		expect(() => getAST("## T\n\n@farine{1, 5 kg}.\n")).toThrow(GramParseError);
+		expect(() => getAST("## T\n\n@farine{1,kg}.\n")).toThrow(GramParseError);
+	});
+});
+
+describe("sums of quantities (since 1.5.0)", () => {
+	const elements = (src: string): any[] => {
+		const ast = getAST(`## T\n\n${src}\n`);
+		const section = ast.children[0] as { children: { children: any[] }[] };
+		return section.children[0].children.filter(
+			(c: any) => c.type !== ASTNodeType.Text,
+		);
+	};
+	const quantity = (src: string): any => elements(src)[0].quantity;
+	const terms = (src: string) =>
+		quantity(src).terms.map((t: any) => [
+			t.minus ? "-" : "+",
+			t.value?.text ?? null,
+			t.unit,
+		]);
+
+	// [written, terms as [sign, number as written, unit]]
+	const accepted: [string, [string, string | null, string | null][]][] = [
+		[
+			"{1 cup + 1 tbsp}",
+			[
+				["+", "1", "cup"],
+				["+", "1", "tbsp"],
+			],
+		],
+		[
+			"{1 cup - 2 tbsp}",
+			[
+				["+", "1", "cup"],
+				["-", "2", "tbsp"],
+			],
+		],
+		[
+			"{1 cup+20g}",
+			[
+				["+", "1", "cup"],
+				["+", "20", "g"],
+			],
+		],
+		[
+			"{ 1 cup + 1-2 tbsp }",
+			[
+				["+", "1", "cup"],
+				["+", "1-2", "tbsp"],
+			],
+		],
+		[
+			"{1 cup - 1 - 2 tbsp}",
+			[
+				["+", "1", "cup"],
+				["-", "1 - 2", "tbsp"],
+			],
+		],
+		[
+			"{2 1/2 cups + 1½ tbsp - 1,5 tsp}",
+			[
+				["+", "2 1/2", "cups"],
+				["+", "1½", "tbsp"],
+				["-", "1,5", "tsp"],
+			],
+		],
+		[
+			"{1 + 1 cup}",
+			[
+				["+", "1", null],
+				["+", "1", "cup"],
+			],
+		],
+		[
+			"{100g + 10%}",
+			[
+				["+", "100", "g"],
+				["+", "10", "%"],
+			],
+		],
+		[
+			"{1 kg + 2 fl oz}",
+			[
+				["+", "1", "kg"],
+				["+", "2", "fl oz"],
+			],
+		],
+	];
+
+	for (const [braces, expected] of accepted) {
+		it(`reads @farine${braces} as a sum`, () => {
+			const q = quantity(`@farine${braces}`);
+			expect(q.type).toBe(ASTNodeType.CompoundQuantity);
+			expect(terms(`@farine${braces}`)).toEqual(expected);
+			expect(q.raw).toBe(braces.slice(1, -1).trim());
+		});
+	}
+
+	it("keeps a plain quantity and a range as they were", () => {
+		expect(quantity("@farine{200 g}").type).toBe(ASTNodeType.Quantity);
+		const range = quantity("@farine{1 - 2 cups}");
+		expect(range.type).toBe(ASTNodeType.Quantity);
+		expect(range.value.range).toEqual({ min: 1, max: 2 });
+		expect(range.unit).toBe("cups");
+		expect(quantity("@farine{}").type).toBe(ASTNodeType.Quantity);
+		expect(quantity("@farine{10% &pâte}").type).toBe(
+			ASTNodeType.RelativeQuantity,
+		);
+	});
+
+	it("marks a fixed sum with =", () => {
+		const q = quantity("@=sel{1 tsp + 1 pinch}");
+		expect(q.type).toBe(ASTNodeType.CompoundQuantity);
+		expect(q.fixed).toBe(true);
+		expect(quantity("@sel{1 tsp + 1 pinch}").fixed).toBe(false);
+	});
+
+	it("reads a sum on a composite parent and on a reference", () => {
+		const [ing] = elements("@jus{1}<@citron{1 cup + 1 tbsp}");
+		expect(ing.composite.quantity.type).toBe(ASTNodeType.CompoundQuantity);
+		const [ref] = elements("&pâte{1 kg + 200 g}");
+		expect(ref.type).toBe(ASTNodeType.Reference);
+		expect(ref.quantity.type).toBe(ASTNodeType.CompoundQuantity);
+		expect(ref.quantity.terms.map((t: any) => t.unit)).toEqual(["kg", "g"]);
+	});
+
+	it("leaves timers and temperatures as they were", () => {
+		const [temperature] = elements("^{180°C + 20°C}");
+		expect(temperature.type).toBe(ASTNodeType.Temperature);
+		expect(temperature.text).toBe("180°C + 20°C");
+		const [timer] = elements("~{1h + 30min}");
+		expect(timer.quantity.type).toBe(ASTNodeType.TextQuantity);
+		expect(timer.raw).toBe("1h + 30min");
+	});
+
+	it.each([
+		["@sel{100 g + 10% &farine}", "ingredient 'sel'"],
+		["@sel{100 g +}", "ingredient 'sel'"],
+		["@sel{+ 100 g}", "ingredient 'sel'"],
+		["@sel{1 cup ++ 1 tbsp}", "ingredient 'sel'"],
+	])("still rejects %s", (src, fragment) => {
+		expect(() => getAST(`## T\n\n${src}\n`)).toThrow(fragment);
 	});
 });

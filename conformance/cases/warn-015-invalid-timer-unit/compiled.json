@@ -21,7 +21,8 @@
           "content": [
             "Wait ",
             {
-              "type": "timer"
+              "type": "timer",
+              "raw": "3 bananas"
             },
             "."
           ],

@@ -153,6 +153,11 @@ export const en = {
 		runSheetInStock: "in stock",
 		runSheetProgramStep: "step {n}",
 		runSheetProgramSteps: "steps {from} to {to}",
+		/**
+		 * @deprecated Since 1.5.0, will be removed in 2.0.0. (Ref: i18n-run-sheet-range)
+		 * The run sheet writes a range with `formatDurationRange` (`8–16 h`), as the steps do.
+		 */
+		// @remove-in: 2.0.0 [i18n-run-sheet-range]
 		runSheetRange: "{min} to {max}",
 		runSheetPossibleFrom: "Possible from {time}.",
 		runSheetFixedService:
@@ -208,6 +213,10 @@ export const en = {
 		tooltipBakers: "Baker's %",
 		tooltipTakenFrom: "Taken from",
 		alternatives: "Alternatives",
+		// A ratio with units (`1 / 100 g @&flour`): its tooltip row, and either
+		// relative form (`70%`, `1 / 100 g`) while it stays unresolved.
+		tooltipRatio: "Ratio",
+		relativeOf: "{amount} of {target}",
 		// The deprecated portions stepper of the HTML recipe (`interactiveScaling`).
 		// @remove-in: 2.0.0 [renderer-interactive-scaling]
 		decreasePortions: "Decrease portions",
@@ -215,7 +224,7 @@ export const en = {
 		increasePortions: "Increase portions",
 		returnToStep: "Return to step",
 		mixedUnitsTooltip:
-			"Couldn't be combined into one total — add a density to the ingredient database to merge them",
+			"Mixed units: couldn't be combined into one total — add a density to the ingredient database to merge them",
 		mixedUnits: "Mixed units",
 		copyShoppingList: "Copy list",
 		copied: "Copied!",
@@ -399,6 +408,10 @@ export const en = {
 				"Writes the quantity of each ingredient in the text of the steps, after its name.",
 			nutritionBasis: "Nutrition basis",
 			nutritionBasisAuto: "Automatic (every basis, side by side)",
+			clock: "Time format",
+			clockAuto: "Automatic (as your region writes it)",
+			clock12h: "12 hours (1:00 PM)",
+			clock24h: "24 hours (13:00)",
 			rejectedSlots: "Unavailable slots:",
 			forceReference: "Force Reference:",
 			autoDetect: "Auto (detect @*)",
@@ -434,6 +447,8 @@ export const en = {
 				"Expresses each ingredient as a percentage of a base ingredient set at 100% (typically flour, or any chosen ingredient), making ratios and formulation easy to evaluate.",
 			comments:
 				"Shows or leaves out the comments written in the recipe with //: the notes alone on a line and the ones at the end of a line. They are set apart discreetly in the run sheet.",
+			clock:
+				"How the run sheet and the suggested serving times write the time. Automatic follows your browser's region.",
 			stepQuantities:
 				"Writes each quantity in the step that uses it, with its weight in grams when the masses are standardized. Leave it off for shorter steps: the quantities stay in the ingredient lists.",
 			nutritionBasis:
@@ -478,12 +493,21 @@ export const en = {
 			show: "Show",
 			expandConsole: "Expand console",
 			collapseConsole: "Collapse console",
+			notInDatabase: "Not in the example database.",
+			showDatabase: "See the database",
 		},
 		errorState: {
 			title: VIEWS_PAUSED.title,
 			blockingDescription: VIEWS_PAUSED.description,
 			jumpToError: "Jump to error",
 			line: "Line",
+		},
+		database: {
+			tabLabel: "Ingredient database, read-only",
+			project:
+				"In a project, this is your own ingredients.yaml, which the CLI fills for you. Here it is read-only.",
+			docLink: "How to manage an ingredient database",
+			docHref: "/docs/how-to/manage-database",
 		},
 		tabs: {
 			addFile: "Add file",
@@ -509,6 +533,19 @@ export const en = {
 		statusValid: "Valid",
 		statusWarnings: "Warnings",
 		copyBtn: "Copy to Clipboard",
+	},
+	cook: {
+		/** Under a step of `gram cook`: the state that ends it (`={ribbon stage}`). */
+		targetState: "Target:",
+		/** When a timer of a step rings: the target states to check, `{states}`. */
+		checkTargetState: "Check: {states}",
+	},
+	languageServer: {
+		/** Hover on a section anchor: `{duration}` is the anticipation. */
+		anchorReady: "Ready {duration} before it is used.",
+		anchorInDays: "In days: opens a working day of its own.",
+		anchorInHours:
+			"In hours or minutes: a deadline within the day, no working day of its own.",
 	},
 };
 

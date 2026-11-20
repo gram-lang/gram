@@ -1,0 +1,594 @@
+{
+  "title": "Target State",
+  "slug": "target-state",
+  "meta": {
+    "title": "Target State"
+  },
+  "registry": {
+    "ingredients": {
+      "jaunes": {
+        "id": "jaunes",
+        "name": "jaunes"
+      },
+      "sucre": {
+        "id": "sucre",
+        "name": "sucre",
+        "default_unit": "g"
+      },
+      "sel": {
+        "id": "sel",
+        "name": "sel"
+      },
+      "creme-anglaise": {
+        "id": "creme-anglaise",
+        "name": "crème anglaise",
+        "is_intermediate": true
+      }
+    },
+    "cookware": {
+      "casserole": {
+        "id": "casserole",
+        "name": "casserole"
+      }
+    }
+  },
+  "shopping_list": [
+    {
+      "id": "jaunes",
+      "name": "jaunes",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 4
+    },
+    {
+      "id": "sucre",
+      "name": "sucre",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 80,
+      "unit": "g",
+      "normalizedMass": 80,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "sel",
+      "name": "sel",
+      "_usageIds": [
+        "3"
+      ]
+    }
+  ],
+  "cookware": [
+    {
+      "id": "casserole",
+      "_usageId": "4",
+      "fixed": false
+    }
+  ],
+  "sections": [
+    {
+      "title": "Crème",
+      "ingredients": [
+        {
+          "id": "jaunes",
+          "_usageId": "1",
+          "qty": 4
+        },
+        {
+          "id": "sucre",
+          "_usageId": "2",
+          "qty": 80,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 80
+        },
+        {
+          "id": "sel",
+          "_usageId": "3"
+        }
+      ],
+      "cookware": [
+        {
+          "id": "casserole",
+          "_usageId": "4",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Fouetter ",
+            {
+              "id": "jaunes",
+              "_usageId": "1",
+              "qty": 4
+            },
+            "et ",
+            {
+              "id": "sucre",
+              "_usageId": "2",
+              "qty": 80,
+              "unit": "g",
+              "normalizedMass": 80,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "jusqu'au ",
+            {
+              "type": "checkpoint",
+              "state": "ruban",
+              "note": "la pâte retombe en ruban continu"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Saler avec ",
+            {
+              "id": "sel",
+              "_usageId": "3"
+            },
+            "jusqu'à ",
+            {
+              "type": "checkpoint",
+              "state": "goût"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Cuire dans la ",
+            {
+              "id": "casserole",
+              "_usageId": "4",
+              "fixed": false
+            },
+            "à ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 82,
+                "text": "82"
+              },
+              "unit": "°C",
+              "note": "à cœur"
+            },
+            ", en remuant, jusqu'à ",
+            {
+              "type": "checkpoint",
+              "state": "la nappe",
+              "note": "la crème nappe la cuillère"
+            },
+            {
+              "type": "declaration",
+              "name": "crème anglaise",
+              "id": "creme-anglaise"
+            }
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          },
+          "intermediate_preparation": "creme-anglaise"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Laisser jusqu'à ",
+            {
+              "type": "checkpoint",
+              "state": "refroidissement complet"
+            },
+            "(environ 1 h)."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Verser ",
+            {
+              "type": "reference",
+              "id": "creme-anglaise",
+              "name": "crème anglaise",
+              "_usageId": "5"
+            },
+            "jusqu'à ",
+            {
+              "type": "checkpoint",
+              "state": "tiède"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 8,
+            "end": 10,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Battre ",
+            {
+              "type": "timer",
+              "raw": "5 min",
+              "quantity": {
+                "type": "single",
+                "value": 5,
+                "text": "5"
+              },
+              "unit": "min",
+              "minutes": 5
+            },
+            "jusqu'à ",
+            {
+              "type": "checkpoint",
+              "state": "mousseux"
+            },
+            "(environ 5 min"
+          ],
+          "timings": {
+            "start": 10,
+            "end": 15,
+            "activeDuration": 5
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Servir (froid)."
+          ],
+          "timings": {
+            "start": 15,
+            "end": 17,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 80,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "jaunes",
+          "sel"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"jaunes\" — omitted from nutritional totals."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"sucre\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 22,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Crème",
+        "duration": 17
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 17,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Crème",
+        "duration": 17
+      }
+    ],
+    "preparationTime": 5,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      },
+      {
+        "label": "cookware_overhead",
+        "duration": 1
+      }
+    ],
+    "totalMass": 80,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "jaunes",
+      "sel"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"jaunes\" — omitted from nutritional totals."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"sucre\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 5,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4,
+          "intermediates": 1
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 4
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 3,
+            "duration": 3
+          },
+          {
+            "kind": "gather",
+            "target": "cookware",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.prep.creme-anglaise",
+        "kind": "prep",
+        "section": 0,
+        "intermediate": "creme-anglaise",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.2"
+        ]
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+        "duration": {
+          "nominal": 2
+        },
+        "produces": [
+          "crème anglaise"
+        ],
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s0.3",
+        "kind": "step",
+        "section": 0,
+        "step": 3,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.2"
+        ]
+      },
+      {
+        "id": "s0.4",
+        "kind": "step",
+        "section": 0,
+        "step": 4,
+        "duration": {
+          "nominal": 2
+        },
+        "consumes": [
+          "crème anglaise"
+        ],
+        "after": [
+          "s0.3",
+          "s0.2"
+        ]
+      },
+      {
+        "id": "s0.5",
+        "kind": "step",
+        "section": 0,
+        "step": 5,
+        "duration": {
+          "nominal": 5
+        },
+        "after": [
+          "s0.4"
+        ]
+      },
+      {
+        "id": "s0.6",
+        "kind": "step",
+        "section": 0,
+        "step": 6,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.5"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 22,
+    "activeTime": 17,
+    "preparationTime": 5,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 5
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 5,
+        "end": 7
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 7,
+        "end": 9
+      },
+      {
+        "kind": "step",
+        "task": "s0.2",
+        "section": 0,
+        "step": 2,
+        "start": 9,
+        "end": 11
+      },
+      {
+        "kind": "step",
+        "task": "s0.3",
+        "section": 0,
+        "step": 3,
+        "start": 11,
+        "end": 13
+      },
+      {
+        "kind": "step",
+        "task": "s0.4",
+        "section": 0,
+        "step": 4,
+        "start": 13,
+        "end": 15
+      },
+      {
+        "kind": "step",
+        "task": "s0.5",
+        "section": 0,
+        "step": 5,
+        "start": 15,
+        "end": 20
+      },
+      {
+        "kind": "step",
+        "task": "s0.6",
+        "section": 0,
+        "step": 6,
+        "start": 20,
+        "end": 22
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 22,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}

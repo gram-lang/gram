@@ -64,13 +64,15 @@ describe("display", () => {
 		expect(isDisplayModified({ ...defaults(), stepQuantities: "hide" })).toBe(
 			true,
 		);
+		expect(isDisplayModified({ ...defaults(), clock: "12h" })).toBe(true);
 	});
 
-	it("resets both, leaving the other options", () => {
+	it("resets all of them, leaving the other options", () => {
 		const reset = resetDisplay({
 			...defaults(),
 			comments: "hide",
 			stepQuantities: "hide",
+			clock: "24h",
 			bakersMath: true,
 		});
 		expect(isDisplayModified(reset)).toBe(false);

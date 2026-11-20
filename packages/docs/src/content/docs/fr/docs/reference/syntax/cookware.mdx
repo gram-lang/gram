@@ -12,13 +12,13 @@ Le matériel, les ustensiles et l'équipement requis par une recette se déclare
 À l'instar d'un `@ingrédient`, si le nom du `#matériel` tient en un seul mot et qu'un seul exemplaire est requis, les accolades `{}` sont facultatives :
 
 ```gram
-Faire chauffer la #poêle.
+[Chauffer] Faire chauffer la #poêle.
 ```
 
 Si le nom contient des espaces ou si vous souhaitez préciser une quantité, les accolades `{}` deviennent nécessaires :
 
 ```gram
-Prendre une #plaque de cuisson{}.
+[Prendre] Une #plaque de cuisson{}.
 ```
 
 ## Quantités vs dimensions
@@ -41,6 +41,8 @@ Pour préciser la taille, le diamètre, le matériau ou un qualificatif d'usage,
 #poêle(20cm)                        // 1 poêle de 20cm
 #plaque de cuisson{2}(antiadhésive) // 2 plaques de cuisson antiadhésives
 ```
+
+Comme pour les ingrédients, la parenthèse ouvrante reste collée au nom ou à la `}` sur la même ligne : dans `#poêle (20cm)`, `(20cm)` reste du texte ordinaire.
   </TabItem>
 </Tabs>
 
@@ -71,23 +73,23 @@ Le `#matériel` prend en charge plusieurs mécanismes avancés identiques à ceu
 Vous pouvez appliquer les modificateurs Optionnel (`?`), Masqué (`-`), Fixe (`=`) et Référence (`&`) directement après le `#` :
 
 ```gram
-Utiliser un #?wok si vous en avez un, sinon une #-grande poêle conviendra.
+[Utiliser] Un #?wok si vous en avez un, sinon une #-grande poêle conviendra.
 
-Revenir au #&wok pour terminer la sauce.
+[Revenir] Au #&wok pour terminer la sauce.
 ```
   </TabItem>
   <TabItem label="Alias de composant">
 Vous pouvez renommer un équipement pour l'affichage tout en conservant un identifiant canonique grâce à l'opérateur `:` :
 
 ```gram
-Utiliser la #poêle en fonte:poêle{}.
+[Utiliser] La #poêle en fonte:poêle{}.
 ```
   </TabItem>
   <TabItem label="Alternatives">
 Vous pouvez définir des alternatives d'ustensiles interchangeables avec l'opérateur `|` :
 
 ```gram
-Cuire dans une #poêle|#wok.
+[Cuire] Dans une #poêle|#wok.
 ```
   </TabItem>
 </Tabs>

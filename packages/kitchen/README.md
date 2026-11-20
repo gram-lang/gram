@@ -1,17 +1,17 @@
 # @gram-lang/kitchen
 
-[![npm version](https://badge.fury.io/js/@gram-lang%2Fkitchen.svg)](https://www.npmjs.com/package/@gram-lang/kitchen)
+[![npm](https://img.shields.io/npm/v/@gram-lang/kitchen?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/kitchen)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 *Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
 
-The compiler for the Gram recipe language. It takes a typed Recipe AST (produced by `@gram-lang/parser`) and compiles it into a structured, minified recipe JSON (aggregating shopping lists, processing sections, splitting the mise en place by section, and laying out the task graph and the default schedule). The scheduling itself is done by [`@gram-lang/scheduler`](../scheduler/README.md), which kitchen feeds with a neutral list of tasks..
+The compiler for the Gram recipe language. It takes a typed Recipe AST (produced by `@gram-lang/parser` or composed by `@gram-lang/modules`) and compiles it into a structured, minified recipe JSON (aggregating shopping lists, processing sections, resolving compound quantities and same-family unit ratios, splitting the mise en place by section, and laying out the task graph and default schedule). The scheduling itself is done by [`@gram-lang/scheduler`](../scheduler/README.md), which kitchen feeds with a neutral list of tasks.
 
 ---
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://docs.gram-lang.org/)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/docs/)**.
 
 ---
 
@@ -33,6 +33,7 @@ import { compile } from '@gram-lang/kitchen';
 
 const source = `
 ## My Recipe
+
 [Mix] @flour{200g} and @water{100ml} for ~{5min}.
 `;
 
@@ -53,13 +54,15 @@ console.log(result.miseEnPlace);         // How long each section's own preparat
 
 ## 🏗️ Structure
 
-*   `src/core.ts`: The main compiler entry point.
+*   `src/core.ts`: The main compiler entry point (`compile`).
 *   `src/processor.ts`: Processes step-by-step block content, local scopes, and timers.
 *   `src/section.ts`: Compiles individual recipe sections.
 *   `src/shopping.ts`: Deduplicates and aggregates ingredients into a master shopping list.
+*   `src/terms.ts`, `src/compound.ts`: Normalizes and evaluates compound quantities (`1 cup + 2 tbsp`).
+*   `src/ratio.ts`: Resolves unit ratios (`resolveRatios`) and scales proportional timers.
 *   `src/mise-en-place.ts`, `src/metrics.ts`: Split the preparation (ingredients, cookware, intermediates) by section, and compute the preparation time.
-*   `src/task-graph.ts`: Builds the list of tasks (steps, timers, preparations) and what each one waits for, handed to the scheduler.
-*   `src/schedule-mode.ts`: `scheduleFor()` and `scheduleTimes()`, to choose between the timelines (`perSection`, `upfront`, `perDay`) the same way everywhere.
+*   `src/task-graph.ts`, `src/step-timing.ts`: Builds the list of tasks (steps, timers, preparations) and what each one waits for, handed to the scheduler.
+*   `src/schedule-mode.ts`, `src/recompute.ts`: `scheduleFor()`, `scheduleTimes()`, and `recomputeSchedule()` after scaling or ratio resolution.
 *   `src/schedule-warnings.ts`, `src/overlap-warnings.ts`: Turn what the scheduler reports (`DAY_OVERFLOW`, track contention...) and passive overlaps on the same cookware (`PASSIVE_OVERLAP_SAME_COOKWARE`) into compiler warnings.
 *   `src/legacy-timings.ts`: The deprecated `steps[].timings` and `metrics` time fields, kept until 2.0.0.
 *   `src/graph.ts`: Traverses relative quantities and runs cycle detection (DFS).

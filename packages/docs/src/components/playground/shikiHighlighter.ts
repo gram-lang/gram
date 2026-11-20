@@ -46,6 +46,7 @@ export function getHighlighter(): Promise<HighlighterCore> {
 				import("shiki/langs/json.mjs"),
 				import("shiki/langs/scheme.mjs"),
 				import("shiki/langs/markdown.mjs"),
+				import("shiki/langs/yaml.mjs"),
 			],
 			engine: createOnigurumaEngine(import("shiki/wasm")),
 		});

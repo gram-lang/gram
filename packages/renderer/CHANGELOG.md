@@ -1,5 +1,72 @@
 # @gram-lang/renderer
 
+## 1.5.0
+
+### Minor Changes
+
+- 9c86b70: **Scheduler, Renderer & CLI**: Clock times can now be entered and displayed in 12-hour (`1:00 PM`) as well as 24-hour (`13:00`) format:
+  - `--available`, `--meal-times`, `--serve`, `--find`, their `availability` and `mealTimes` settings, and the editor's serving time accept 12-hour times in any case or spacing (`8am-10pm`, `fri=6pm-12am`, `12:30pm,8pm`, `"2026-10-11 1:00 pm"`), rejecting invalid forms like `13pm`, `0am`, or bare hours.
+  - Adds a `clock` view setting (`auto`, `12h`, `24h`) controlling time formatting in the run sheet, serving-time suggestions, and iCalendar descriptions; `auto` (default) follows the reader's locale region rather than the recipe language.
+  - Configurable via `--clock` (`gram plan`, `gram export`, `gram print`), `clock` in `.gram/config.yaml` (or global config), `gram.clock` in VS Code, and the playground's Display menu.
+  - Adds `locale` support to `prepareViews()`, an `hourCycle` option to run sheets, clock helpers (`formatClock`, `chooseClock`, `resolveHourCycle`, `systemLocale`) in `@gram-lang/renderer`, and `parseTimeOfDay` / `parseLocalDateTime` in `@gram-lang/scheduler` (JSON and ISO data remain unchanged).
+- 073d4f1: **Parser & Kitchen**: An ingredient or intermediate quantity can now be written as a sum or difference of terms (`@flour{1 cup + 1 tbsp}`, `@sugar{1 cup - 2 tbsp}`, `@butter{1 cup + 20 g}`, `&dough{1 kg + 200 g}`):
+  - Supports any number of `+`/`-` terms (including fractions and ranges) on ingredients, composite parents (`<@oranges{1 lb + 4 oz}`), and intermediates (including `@use` base yields); scaling multiplies each term, and `gram import` now preserves multi-measure sums instead of folding them into decimals.
+  - Steps and section ingredient lists keep sums as written (`100 g + 100 g`), while scaled amounts format cleanly for cooking (`2 cup + 2 tbsp`, `2.4 kg`); compiled JSON stores terms in `parts` (with `minus: true` for subtraction) and totals in `qty`/`unit` (or full text in `unit` for mixed unit kinds).
+  - Invalid sums (missing unit, percentage, multiplication, subtracting a range or across unit kinds, zero total) raise `INVALID_QUANTITY` with a suggestion in `data`; `OZ_AFTER_VOLUME` flags `oz` after a volume (`{1 cup + 2 oz}`), and `INVALID_UNIT` suggests a sum for adjacent quantities (`{1 kg 200 g}`).
+  - Masses and nutrition weigh each term individually (returning no mass if any term cannot be weighed), `gram diff` shows formatted quantities via `fromText`/`toText`, `@gram-lang/renderer` exports `formatUsageQuantity`, and `@gram-lang/i18n` exports `termsTotal`, `mergeTerms`, `formatTerms`, and `Term`.
+- a9e6231: **Kitchen & Rendering**: The shopping list merges repeated quantities of an ingredient wherever possible:
+  - Units from the same measuring system combine onto one line in natural cooking units (`1 cup` and `2 tbsp` become `1 cup + 2 tbsp`; `1 kg` and `200 g` become `1.2 kg`), reducing mixed-unit warnings and supporting `gram scale --target`.
+  - Different measuring systems (`1 cup` and `100 ml`) or unit kinds (volume and weight) stay on separate lines.
+  - Ranges add by their bounds (`2-3 g` and `200 g` become `202-203 g` instead of `202.5 g`).
+  - In compiled JSON, merged entries store the total in the smallest unit written (`18 tbsp`, `1200 g`) and, for ranges, keep the midpoint in `qty` alongside a new `range` field.
+- f91ec4e: **Parser & Kitchen**: Steps can now mark inline target states with an optional glued verification note (`Whisk until ={ribbon stage}(the batter falls back in a continuous ribbon).`):
+  - Only the state sits inside `={…}`, with an optional single-line note attached to `}`; unclosed or empty `={` raises a syntax error, and braceless `@ingredient` names end before a target state (`@salt until ={taste}`).
+  - Compiled steps emit a `checkpoint` token (`state`, plus optional `note`) without affecting scaling, scheduling, or the shopping list.
+  - Rendered across HTML, Markdown, plain text, and print views; `gram cook` shows checkpoints below each step and reminds you when a step timer rings.
+  - `gram diff` tracks added, removed, and changed target states, `gram import` preserves them from sources, and editors highlight them.
+- 238e012: **Parser & Kitchen**: Temperatures can now carry a glued parenthetical note for oven mode or probe placement (`^{160°C}(fan)`, `^oven{180°C}(grill)`, `^{63°C}(internal)`, `^{high heat}(covered)`):
+  - Only parentheses touching `}` on the same line are parsed as a note; spaced parentheses remain plain step text.
+  - Displayed alongside the temperature in HTML, Markdown, plain text, print, and `gram cook` (which now formats temperatures consistently, including word-based ones like `^{high}`).
+  - Adds an optional `note` field on AST and compiled JSON temperatures, tracks note changes in `gram diff`, and exports `formatTemperature` from `@gram-lang/renderer`.
+  - `gram import` preserves oven modes as temperature notes rather than leaving them in prose.
+- 0fa8c95: **Rendering**: Timers in steps now format durations consistently with the rest of the page using non-breaking spaces (`~{90min}` and `~{1h30}` display as `1 h 30 min`, ranges as `45 min – 1 h` or `1–2 h`), across views, `gram cook`, and the run sheet, via the new `formatDurationRange` and `formatTimerDuration` helpers and the `formatDuration` option.
+
+  **Deprecated**
+  - `@gram-lang/i18n`: `runSheetRange` in the renderer dictionary (`"{min} to {max}"`), no longer used by the run sheet, will be removed in 2.0.0. Use `formatDurationRange()` from `@gram-lang/renderer` instead.
+
+- d5fe9c3: **Parser, Kitchen & Analyzer**: Ingredients, intermediates, and timers can now be written as unit ratios:
+  - Supports ratios across units or counts on ingredients (`@eggs{1 / 100 g @&flour}`, `@salt{15 g / 1 L @&water}`), homemade preparations (`&stock{250 ml / 100 g @&rice}`, plus percentages like `&stock{250% @&rice}`), and proportional timers (`~{15 min / 500 g @&roast}`, `~{4 min / @&cutlet}`).
+  - Resolves compatible units at compile time and cross-family ratios via the ingredient database; incompatible or zero-denominator ratios raise `RELATIVE_QUANTITY_UNKNOWN_MASS` (with `reason`) or `INVALID_QUANTITY` (`reason: "zeroRatioDenominator"`) instead of guessing.
+  - Whole-use references to a section preparation (`Roll out the &dough`) now estimate mass from the producing section, while step-produced intermediates (`Mix … ->&dough`) require an explicit amount (`reason: "stepProducer"`); warnings and formulas in imported bases display original author names rather than internal aliases.
+  - Scaling a recipe re-resolves all ratios and recomputes the schedule, total times, and shopping list.
+  - Views display resolved ratios in tooltips, and the language server provides syntax highlighting, target completion, intermediate renaming, hover previews, and inlay hints.
+
+### Patch Changes
+
+- 80fbc22: **Rendering**: Narrow ingredient lists now switch to a single column before stacking amounts below ingredient names.
+- 4d4b12e: **Kitchen & Rendering**: Fixed text-only quantities (`@sel{une pincée}`, `@pepper{to taste}`) disappearing from steps, section ingredient lists, and shopping lists (stored in `variable_entries` in compiled JSON).
+- Updated dependencies [aa78c53]
+- Updated dependencies [9c86b70]
+- Updated dependencies [073d4f1]
+- Updated dependencies [e0f8fbf]
+- Updated dependencies [8d1b62e]
+- Updated dependencies [7d15360]
+- Updated dependencies [f4c6943]
+- Updated dependencies [a9e6231]
+- Updated dependencies [92bec33]
+- Updated dependencies [f91ec4e]
+- Updated dependencies [238e012]
+- Updated dependencies [4d4b12e]
+- Updated dependencies [0fa8c95]
+- Updated dependencies [55188fc]
+- Updated dependencies [d5fe9c3]
+- Updated dependencies [4d5f79f]
+  - @gram-lang/analyzer@1.5.0
+  - @gram-lang/scheduler@1.5.0
+  - @gram-lang/parser@1.5.0
+  - @gram-lang/kitchen@1.5.0
+  - @gram-lang/i18n@1.5.0
+
 ## 1.4.2
 
 ### Patch Changes

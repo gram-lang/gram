@@ -1,5 +1,18 @@
 import { normalizeUnit } from "@gram-lang/i18n";
-import { slugify, scaleQty, round2 } from "../utils";
+import { slugify, scaleQty, round2, cleanObject } from "../utils";
+import { kitchenConverter, resolveRatios } from "../ratio";
+import { recomputeSchedule } from "../recompute";
+import { generateShoppingList } from "../shopping";
+import {
+	isRefusedSum,
+	scaleTermsChecked,
+	shoppingAmount,
+	scaleUsageTerms,
+	termsOfParts,
+	termsOfQuantity,
+	termsOfUsage,
+	writeSum,
+} from "../terms";
 import type { CompilationResult, Usage } from "../types";
 import type { ShoppingListItem, CompositeItem } from "../shopping";
 import {
@@ -186,19 +199,47 @@ function mutateUsage(
 	// guard it would be scaled twice (factor²) here.
 	const usage = item as Partial<Usage>;
 	if (usage.fixed) return; // @= modifier or TextQuantity — never scaled
-	if ("qty" in usage && usage.qty !== undefined) {
-		usage.qty = scaleQty(usage.qty, factor);
+	// A share or a ratio follows its target (resolved again by
+	// `resolveRatios`): scaling its amount too would scale it twice, or
+	// scale one whose target is `@=`.
+	if (usage.formula) return;
+	if (usage.parts?.length) {
+		// A sum scales term by term, then its total (or, for several
+		// families, its text) is written again. Read before anything else:
+		// that text is no unit to keep.
+		writeSum(
+			usage,
+			scaleTermsChecked(termsOfParts(usage.parts), factor),
+			isRefusedSum(usage),
+		);
+	} else {
+		// Text (`{une pincée}`) and relative (`{10%}`) quantities have no
+		// terms: they are never scaled.
+		const total = scaleUsageTerms(termsOfUsage(usage), factor);
+		// A shopping entry keeps a range as its middle plus its bounds.
+		if (total && "range" in usage) Object.assign(usage, shoppingAmount(total));
+		else if (total) usage.qty = total.qty;
 	}
 	// A composite child's own record of how much of the parent it draws
 	// (`@egg-yolks{2}<@eggs{3}` -> composite.quantity 3) is a separate field
 	// from `.qty` — the shopping list's own aggregated composite total is
 	// scaled independently, further down, but this per-section copy wasn't.
 	const composite = usage.composite;
-	if (composite && composite.quantity !== undefined) {
-		composite.quantity = scaleQty(
-			composite.quantity,
+	if (composite?.parts?.length) {
+		writeSum(
+			composite,
+			scaleTermsChecked(termsOfParts(composite.parts), factor),
+			isRefusedSum({ ...composite, qty: composite.quantity }),
+			"quantity",
+		);
+	} else if (composite) {
+		const parentTotal = scaleUsageTerms(
+			termsOfQuantity(composite.quantity, composite.unit),
 			factor,
-		) as typeof composite.quantity;
+		);
+		if (parentTotal) {
+			composite.quantity = parentTotal.qty as typeof composite.quantity;
+		}
 	}
 	scaled.add(item);
 }
@@ -255,7 +296,14 @@ export function applyScale(
 		if (!Number.isNaN(num)) cloned.meta.portions = String(round2(num * factor));
 	}
 
-	for (const item of cloned.shopping_list ?? []) {
+	// A recipe with no ratio scales exactly as before. One with a ratio has
+	// its ratios resolved again on the scaled targets, its shopping list
+	// built again from the scaled sections (so a fixed and a ratio usage of
+	// one ingredient merge as at compile time), and, when a proportional time
+	// changed, its schedule laid out again.
+	const withRatios = hasRatios(cloned);
+
+	for (const item of withRatios ? [] : (cloned.shopping_list ?? [])) {
 		if (!item || typeof item !== "object") continue;
 		if (item.type === "alternative" && "options" in item) {
 			for (const opt of item.options ?? []) mutateUsage(opt, factor, scaled);
@@ -310,7 +358,41 @@ export function applyScale(
 		}
 	}
 
+	if (withRatios) {
+		const { timersChanged } = resolveRatios(
+			cloned.sections,
+			kitchenConverter(),
+			{ mode: "kitchen" },
+		);
+		cloned.shopping_list = cleanObject(
+			generateShoppingList(cloned.sections, {
+				ingredients: new Map(Object.entries(cloned.registry.ingredients)),
+				cookware: new Map(),
+				warnings: [],
+			}),
+		) as CompilationResult["shopping_list"];
+		if (timersChanged) recomputeSchedule(cloned);
+	}
+
 	cloned.scaleFactor = (result.scaleFactor ?? 1) * factor;
 
 	return cloned;
+}
+
+/** True when a ratio is written anywhere: an ingredient, a reference, a timer. */
+function hasRatios(result: CompilationResult): boolean {
+	const isRatio = (token: unknown): boolean => {
+		if (!token || typeof token !== "object") return false;
+		const t = token as Partial<Usage> & { ratio?: unknown };
+		if (t.ratio !== undefined) return true;
+		if (t.formula && "ratio" in t.formula) return true;
+		return (t.options ?? []).some(isRatio);
+	};
+	return result.sections.some(
+		(sec) =>
+			sec.ingredients.some(isRatio) ||
+			sec.steps.some(
+				(step) => step.type === "step" && step.content.some(isRatio),
+			),
+	);
 }

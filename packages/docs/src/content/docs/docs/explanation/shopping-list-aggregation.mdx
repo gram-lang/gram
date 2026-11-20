@@ -13,7 +13,7 @@ When a recipe (or a batch of multiple recipes) is passed to the Kitchen for shop
 
 ```mermaid
 flowchart TD
-    Raw["Raw Ingredients (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Group by Raw ID & Identical Units"]
+    Raw["Raw Ingredients (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Group by Raw ID & Unit Scale"]
     KitchenGroup --> HasDB{Ingredient DB Supplied?}
     
     HasDB -- Yes --> AliasRes["@gram-lang/analyzer<br/>Alias Resolution (e.g., beurre ➔ butter)"]
@@ -28,7 +28,6 @@ flowchart TD
 ```
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
-import Since from '../../../../components/Since.astro';
 import Term from '../../../../components/Term.astro';
 
 <Steps>
@@ -38,9 +37,15 @@ import Term from '../../../../components/Term.astro';
    Alias resolution happens one layer up, in `@gram-lang/analyzer`, which does have access to the ingredient database. If `beurre` is listed as an alias of `butter` in `ingredients.yaml`, the analyzer re-groups kitchen's raw entries by this canonical id, merging `@butter` and `@beurre` into a single `butter` entry. **This step only runs when an ingredient database is supplied** — without one (compiling with `@gram-lang/kitchen` alone, or a CLI command run without a database), aliases are not resolved and the two ingredients stay separate.
 
 2. ### Unit merging
-   If the grouped ingredients share the same unit (e.g., `100g` and `50g`), they are simply summed (`150g`) — this happens directly in `@gram-lang/kitchen`, no database needed.
+   `@gram-lang/kitchen` merges exact quantities without a database across three levels:
 
-   If they have different units (e.g., `100g` and `1 cup`), summing them requires converting through mass, which — like aliasing — depends on the ingredient database and therefore happens in `@gram-lang/analyzer`. If every contributing quantity resolves to a mass (density known, from the database or a recipe-level override), the analyzer converts them all to grams and merges them into a single entry.
+   - **Same unit**: `100g` and `50g` sum to `150g`, and spelling variants (`cup`/`cups`, `tbsp`/`tablespoon`) collapse together.
+   - **Same scale**: units with exact integer conversions sum in the smallest unit written. US kitchen measures (`tsp`, `tbsp`, `fl oz`, `cup`, `pt`, `qt`, `gal`), imperial weights (`oz`, `lb`), metric weights (`mg`, `g`, `kg`), and metric volumes (`ml`, `cl`, `dl`, `l`) each form a scale: `1 cup` and `2 tbsp` sum to `18 tbsp` (formatted as `1 cup + 2 tbsp`), and `1 kg` and `200 g` sum to `1200 g` (formatted as `1.2 kg`).
+   - **Different systems or kinds** (`cup` and `ml`, or volume and weight): kept as separate entries flagged `multiUnit: true`. Imprecise measures like `pinch` and `dash` stay off every scale.
+
+   A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) behaves like separate mentions (`@milk{1 cup + 50 ml}` acts just like `@milk{1 cup}` followed by `@&milk{50 ml}`), so shopping lists never depend on how quantities were grouped. Ranges sum bound by bound (`2-3 g` and `200 g` yield `202-203 g`), while unrecognized units stay as written (`clove` and `cloves` remain distinct).
+
+   Entries in different kinds of units (e.g., `100g` and `1 cup`) can only be summed converting through mass, which — like aliasing — depends on the ingredient database and therefore happens in `@gram-lang/analyzer`. If every contributing quantity resolves to a mass (density known, from the database or a recipe-level override), the analyzer converts them all to grams and merges them into a single entry.
 
    **Fallback: missing density.** If the density can't be resolved for at least one of the units involved, the analyzer can't produce a single reliable mass total. Rather than guessing, it keeps the entries separate, renames them to the canonical id, and flags all of them with `multiUnit: true`. Renderers use this flag to cluster the entries together under one heading (e.g. "⚠️ Mixed units") instead of scattering them across the list — making it clear to the cook that they're the same ingredient, without silently mis-adding incompatible units.
 
@@ -48,7 +53,7 @@ import Term from '../../../../components/Term.astro';
    The canonical id (e.g. `butter`) exists purely so entries can be grouped and merged — it's an internal key, not the label shown to the cook. The **name** displayed in a shopping-list entry follows one rule, applied identically everywhere (the Playground, `gram view`, `gram shop`, `gram export`):
 
    | In Recipe | Matched ID | Database `name` | Displayed Name | Why? |
-   | --- | --- | --- | --- | --- | --- |
+   | --- | --- | --- | --- | --- |
    | `@flour` | `flour` (Exact) | Wheat Flour | **Wheat Flour** | Exact match = prefer database's enriched name. |
    | `@farine` (FR) | `flour` (Alias) | Wheat Flour | **farine** | Alias match = keep recipe's wording to preserve language. |
    | `@harina` (ES) | `flour` (Alias) | Wheat Flour | **harina** | The trick works with any language configured in your aliases. |
@@ -59,10 +64,10 @@ import Term from '../../../../components/Term.astro';
    **No database, or no matching entry?** There's simply no canonical `name` to prefer, so the recipe's own wording is always used — this works with an empty database (`{}`), a database that has no entry at all for that ingredient, and with `@gram-lang/kitchen`'s `compile()` used on its own without ever calling `@gram-lang/analyzer`.
    :::
 
-3. ### Ghosting relative quantities
-   Relative quantities (like `@water{50% @&flour}`) pose a unique problem for shopping lists, especially in multi-recipe batch processing. 
+3. ### Relative quantities and unresolved formulas
+   When a [relative quantity](/docs/reference/syntax/relative-quantities/) (`@water{50% @&flour}`) or a ratio with units (`@eggs{1 / 100 g @&flour}`) resolves to a concrete amount—using a known mass, matching unit, or database density—it merges directly into the shopping list alongside static ingredients.
 
-   If you scale the batch, the water quantity depends on a flour quantity that might belong to a specific recipe. To prevent mathematical paradoxes, the Kitchen **ghosts** relative quantities in the shopping list. This means they are excluded from the main aggregation and listed separately as unresolvable dependencies, ensuring the static weights remain mathematically pure.
+   If the target's mass or unit conversion cannot be resolved (for instance, missing density in `ingredients.yaml`), Gram keeps the static entries separate and preserves the unresolved formula (`50% of flour`) instead of guessing or dropping it, ensuring static totals stay accurate.
 
 4. ### Resolving composites (MAX vs SUM)
    The most complex part of the aggregation pipeline is handling Composite Ingredients (`<@`). 
@@ -79,8 +84,6 @@ import Term from '../../../../components/Term.astro';
 The result is a highly optimized, deduplicated, and mathematically sound array of `ShoppingItem` objects, grouped by stable culinary categories (`CATEGORY_KEYS` from `@gram-lang/i18n`) and sorted according to localized category rules (`getCategoryLabels(lang)`), ready to be rendered in the terminal or a web UI.
 
 ## Kilograms to buy, grams to weigh
-
-<Since v="1.4.1" />
 
 The same amount is formatted differently depending on how you use it:
 

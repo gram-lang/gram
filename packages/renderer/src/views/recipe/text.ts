@@ -111,8 +111,9 @@ export const textBackend: RenderBackend = {
 	buildContext(data, options) {
 		return {
 			registry: data.registry || { ingredients: {}, cookware: {} },
-			formatDuration: durationFormatter(options),
+			formatDuration: options.formatDuration,
 			formatFraction: options.formatFraction,
+			scaleFactor: data.scaleFactor,
 			bakersMathOnly: options.bakersMathOnly,
 			lang: options.lang,
 			textStyle: options.textStyle,
@@ -313,7 +314,9 @@ export const textBackend: RenderBackend = {
 					(c) => formatElement(c, "text", stepContext),
 					(c) => typeof c !== "string" && c.type !== "comment",
 				)
-					.replace(/\s+/g, " ")
+					// Every run of spaces is one space, but the non-breaking ones
+					// stay: they hold a number to its unit (`10 min`).
+					.replace(/[^\S\u00A0]+/g, " ")
 					.trim();
 				lines.push(
 					`  ${dim(`${String(number).padStart(2)}.`)} ${action}${text}`,

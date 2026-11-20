@@ -1,0 +1,172 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Invalid Duration"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": {
+        "raw": "-1-2d",
+        "sign": 1,
+        "value": null,
+        "unit": null,
+        "loc": {
+          "start": 47,
+          "end": 55
+        }
+      },
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Knead ",
+              "loc": {
+                "start": 57,
+                "end": 63
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1:30",
+              "quantity": {
+                "type": "TextQuantity",
+                "value": "1:30",
+                "loc": {
+                  "start": 64,
+                  "end": 70
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 63,
+                "end": 70
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 70,
+                "end": 71
+              }
+            }
+          ],
+          "loc": {
+            "start": 57,
+            "end": 73
+          }
+        }
+      ],
+      "loc": {
+        "start": 38,
+        "end": 73
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake ",
+              "loc": {
+                "start": 82,
+                "end": 87
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1h75",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "h75",
+                "fixed": false,
+                "loc": {
+                  "start": 89,
+                  "end": 93
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 87,
+                "end": 94
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then ",
+              "loc": {
+                "start": 94,
+                "end": 101
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1-2h30",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "range",
+                  "value": 1.5,
+                  "range": {
+                    "min": 1,
+                    "max": 2
+                  },
+                  "text": "1-2"
+                },
+                "unit": "h30",
+                "fixed": false,
+                "loc": {
+                  "start": 103,
+                  "end": 109
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 101,
+                "end": 110
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 110,
+                "end": 111
+              }
+            }
+          ],
+          "loc": {
+            "start": 82,
+            "end": 112
+          }
+        }
+      ],
+      "loc": {
+        "start": 73,
+        "end": 112
+      }
+    }
+  ]
+}

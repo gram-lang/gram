@@ -103,12 +103,14 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "24h",
               "quantity": {
                 "type": "single",
                 "value": 24,
                 "text": "24"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 1440
             },
             "."
           ],
@@ -198,8 +200,8 @@
       "code": "RETRO_PLANNING_OVERRIDE_SHADOWED",
       "message": "Host retro-planning offset on \"@use ./bases/levain.gram\" overrides the module's internal offset.",
       "loc": {
-        "start": 53,
-        "end": 98
+        "start": 91,
+        "end": 97
       }
     },
     {

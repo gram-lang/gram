@@ -1,4 +1,5 @@
 import { describe, it, expect } from "bun:test";
+import { getAST } from "@gram-lang/parser";
 import { formatGram, hasChanges, summarizeChanges } from "../src/index";
 
 const emptyChanges = {
@@ -6,6 +7,7 @@ const emptyChanges = {
 	spacesBeforeBrace: 0,
 	spacesInsideBraces: 0,
 	trailingZeros: 0,
+	quantityOperatorSpacing: 0,
 	temperatureSpacing: 0,
 	compositeSeparatorSpacing: 0,
 	arrowDeclarationSpacing: 0,
@@ -41,6 +43,21 @@ describe("formatGram", () => {
 		);
 		expect(content).toBe("Add @flour{500g} and @egg{1.5}.\n");
 		expect(changes.trailingZeros).toBe(2);
+	});
+
+	it("removes trailing decimal zeros after a decimal comma, keeping the comma", () => {
+		const { content, changes } = formatGram(
+			"Add @flour{500,0g} and @egg{1,50}.\n",
+		);
+		expect(content).toBe("Add @flour{500g} and @egg{1,5}.\n");
+		expect(changes.trailingZeros).toBe(2);
+	});
+
+	it("leaves a comma followed by three digits as written ({1,000g} may mean a thousand)", () => {
+		const src = "Add @flour{1,000g} and @salt{2,500g}.\n";
+		const { content, changes } = formatGram(src);
+		expect(content).toBe(src);
+		expect(changes.trailingZeros).toBe(0);
 	});
 
 	it("does not touch quantities without trailing zeros", () => {
@@ -278,6 +295,131 @@ describe("summarizeChanges", () => {
 	});
 });
 
+describe("formatGram and sums of quantities", () => {
+	const format = (step: string) => formatGram(`${step}\n`);
+
+	it("puts one space around each operator of an ingredient's sum", () => {
+		const { content, changes } = format(
+			"Add @flour{1cup+1tbsp}, @sugar{1 cup-2 tbsp} and &dough{1 kg  +200 g}.",
+		);
+		expect(content).toBe(
+			"Add @flour{1cup + 1tbsp}, @sugar{1 cup - 2 tbsp} and &dough{1 kg + 200 g}.\n",
+		);
+		expect(changes.quantityOperatorSpacing).toBe(3);
+		expect(summarizeChanges(changes)).toContain("3 sums spacing fixed");
+	});
+
+	it("spaces a composite parent's sum too", () => {
+		expect(format("Juice @juice{100 ml}<@oranges{1 lb+4 oz}.").content).toBe(
+			"Juice @juice{100 ml}<@oranges{1 lb + 4 oz}.\n",
+		);
+	});
+
+	it("never takes a range for a sum", () => {
+		for (const step of [
+			"Add @apples{1-2 cups}.",
+			"Add @flour{1 cup + 1-2 tbsp}.",
+			"Add @water{1.5-2l}.",
+		]) {
+			const { content, changes } = format(step);
+			expect(content).toBe(`${step}\n`);
+			expect(changes.quantityOperatorSpacing).toBe(0);
+		}
+	});
+
+	it("leaves timers and temperatures alone", () => {
+		for (const step of [
+			"Bake ~{1h30-2h}.",
+			"Rest ~dough{45min-1h}.",
+			"Heat to ^{180°C+20°C}.",
+		]) {
+			expect(format(step).content).toBe(`${step}\n`);
+		}
+	});
+
+	it("never spaces the name of a relative quantity's target", () => {
+		for (const step of [
+			"Add @cacao{5% @&chocolat-70}.",
+			"Add @salt{2% &dough-2}.",
+			"Add @eggs{1 / 100 g @&crème-30%}.",
+		]) {
+			const first = format(step);
+			expect(first.content).toBe(`${step}\n`);
+			expect(first.changes.quantityOperatorSpacing).toBe(0);
+			expect(formatGram(first.content).content).toBe(first.content);
+		}
+	});
+
+	it("removes trailing zeros term by term, not a thousands comma", () => {
+		const { content, changes } = format(
+			"Add @flour{1.50 cup + 2.0 tbsp} and @sugar{1,000 g + 1 kg}.",
+		);
+		expect(content).toBe(
+			"Add @flour{1.5 cup + 2 tbsp} and @sugar{1,000 g + 1 kg}.\n",
+		);
+		expect(changes.trailingZeros).toBe(2);
+	});
+
+	it("is idempotent", () => {
+		const first = format(
+			"Add @flour{1.50cup+2.0 tbsp} and @sugar{1 cup -2 tbsp}.",
+		);
+		const second = formatGram(first.content);
+		expect(second.content).toBe(first.content);
+		expect(hasChanges(second.changes)).toBe(false);
+	});
+
+	it("keeps the sum the parser reads, terms and signs", () => {
+		const source =
+			"## Section\n\nAdd @flour{1cup+1tbsp} and @sugar{1 cup-2 tbsp}.\n";
+		const quantities = (text: string) => {
+			const found: unknown[] = [];
+			const walk = (node: unknown): void => {
+				if (!node || typeof node !== "object") return;
+				if (Array.isArray(node)) {
+					node.forEach(walk);
+					return;
+				}
+				const record = node as Record<string, unknown>;
+				if (record.type === "CompoundQuantity") {
+					const terms = record.terms as {
+						minus?: boolean;
+						value: { value: number } | null;
+						unit: string | null;
+					}[];
+					found.push(
+						terms.map((t) => ({
+							minus: t.minus ?? false,
+							value: t.value?.value,
+							unit: t.unit,
+						})),
+					);
+				}
+				Object.values(record).forEach(walk);
+			};
+			walk(getAST(text));
+			return found;
+		};
+		const before = quantities(source);
+		expect(before).toHaveLength(2);
+		expect(quantities(formatGram(source).content)).toEqual(before);
+	});
+});
+
+describe("a temperature's note (1.5)", () => {
+	it("keeps a glued note while fixing the braces", () => {
+		expect(
+			formatGram("## T\n\n^{160.0 °C}(chaleur tournante)\n").content,
+		).toContain("^{160°C}(chaleur tournante)");
+	});
+
+	it("leaves the space before a parenthesis of prose", () => {
+		expect(
+			formatGram("## T\n\nCuire à ^{180°C} (four préchauffé).\n").content,
+		).toContain("^{180°C} (four préchauffé).");
+	});
+});
+
 describe("a temperature with a space and trailing zeros", () => {
 	it("is fixed in a single run", () => {
 		const { content, changes } = formatGram("## T\n\nBake at ^{160.0 °C}.\n");
@@ -292,4 +434,88 @@ describe("a temperature with a space and trailing zeros", () => {
 			"^{37.5°C}",
 		);
 	});
+});
+
+describe("a target state (1.5)", () => {
+	const format = (line: string) => formatGram(`${line}\n`).content.trimEnd();
+
+	it("only has the spaces inside its braces trimmed", () => {
+		expect(format("Cuire jusqu'à ={ la nappe }.")).toBe(
+			"Cuire jusqu'à ={la nappe}.",
+		);
+	});
+
+	it("keeps its words as written: numbers, units, signs", () => {
+		for (const line of [
+			"Cuire jusqu'à ={180 °C à cœur}.",
+			"Étaler jusqu'à ={1.0cm}.",
+			"Abaisser jusqu'à ={2,50mm}.",
+			"Battre @oeufs jusqu'à ={1 cup+1 tbsp}.",
+			"Saler avec @sel jusqu'à ={goût}.",
+		]) {
+			expect(format(line)).toBe(line);
+		}
+	});
+
+	it("keeps its note, glued or spaced, as written", () => {
+		for (const line of [
+			"Cuire jusqu'à ={la nappe}(la crème nappe la cuillère).",
+			"Fouetter jusqu'au ={ruban} (environ 5 min).",
+		]) {
+			expect(format(line)).toBe(line);
+		}
+	});
+
+	it("leaves the quantities around it formatted as before", () => {
+		expect(
+			format("Battre @sucre{80.0g} et @lait{1 cup+1 tbsp} jusqu'à ={ruban}."),
+		).toBe("Battre @sucre{80g} et @lait{1 cup + 1 tbsp} jusqu'à ={ruban}.");
+	});
+
+	it("is a fixed point that still parses to the same target states", () => {
+		const src = "## T\n\nCuire à ^{82.0 °C} jusqu'à ={ la nappe }(test).\n";
+		const once = formatGram(src).content;
+		expect(formatGram(once).content).toBe(once);
+		// biome-ignore lint/suspicious/noExplicitAny: walking a parsed AST in tests.
+		const step = (getAST(once).children[0] as any).children[0];
+		// biome-ignore lint/suspicious/noExplicitAny: walking a parsed AST in tests.
+		expect(
+			step.children.find((c: any) => c.type === "Checkpoint"),
+		).toMatchObject({ state: "la nappe", note: "test" });
+	});
+});
+
+describe("trailing zeros, the same rule for every quantity", () => {
+	const format = (step: string) => formatGram(`## T\n\n${step}\n`).content;
+
+	for (const [input, output] of [
+		["@flour{1.50 cup + 1 tbsp}", "@flour{1.5 cup + 1 tbsp}"],
+		["@flour{1.50 kg}", "@flour{1.5 kg}"],
+		["@flour{1.50kg}", "@flour{1.5kg}"],
+		["@flour{2.0 kg}", "@flour{2 kg}"],
+		["@b{0.50 / 100 g @&a}", "@b{0.5 / 100 g @&a}"],
+		["~{1.50 h}", "~{1.5 h}"],
+		["@flour{1.50-2.50 cup+1 tbsp}", "@flour{1.5-2.5 cup + 1 tbsp}"],
+		["@flour{1,50-2,0 kg}", "@flour{1,5-2 kg}"],
+		["@flour{1 1/2-2.0 cups}", "@flour{1 1/2-2 cups}"],
+	]) {
+		it(`writes ${input} as ${output}, then leaves it`, () => {
+			const once = format(input);
+			expect(once).toContain(output);
+			expect(format(output)).toBe(once);
+			expect(hasChanges(formatGram(once).changes)).toBe(false);
+		});
+	}
+
+	for (const kept of [
+		"@flour{1,000 g}",
+		"@flour{1,000-2,500 g}",
+		"@flour{1.25 kg}",
+		"@salt{2.0 g / 100 g @&chocolat-70.0}",
+		"@x{v2.0 sachets}",
+	]) {
+		it(`keeps the zeros that may matter in ${kept}`, () => {
+			expect(format(kept)).toContain(kept.replace("@salt{2.0 g", "@salt{2 g"));
+		});
+	}
 });

@@ -1,6 +1,8 @@
 import { describe, it, expect } from "bun:test";
 import {
+	convertUnitInFamily,
 	normalizeUnit,
+	sameCountUnit,
 	unitKey,
 	UNIT_CONVERSIONS,
 	UNIT_DICTIONARIES,
@@ -194,5 +196,58 @@ describe("toLargerMetricUnit", () => {
 		expect(toLargerMetricUnit(64, "oz")).toEqual({ value: 64, unit: "oz" });
 		expect(toLargerMetricUnit(12, "cup")).toEqual({ value: 12, unit: "cup" });
 		expect(toLargerMetricUnit(1200, null)).toEqual({ value: 1200, unit: "" });
+	});
+});
+
+describe("convertUnitInFamily", () => {
+	it("gives the value back for the same unit, however spelled", () => {
+		expect(convertUnitInFamily(3, "L", "l")).toBe(3);
+		expect(convertUnitInFamily(2, "gousses", "gousses")).toBe(2);
+		expect(convertUnitInFamily(2, null, "")).toBe(2);
+	});
+
+	it("converts within the mass family and within the volume family", () => {
+		expect(convertUnitInFamily(1, "kg", "g")).toBe(1000);
+		expect(convertUnitInFamily(1, "l", "ml")).toBe(1000);
+		expect(convertUnitInFamily(2, "càs", "càc", "fr")).toBeCloseTo(6);
+	});
+
+	it("refuses to cross families or to convert a counting unit", () => {
+		expect(convertUnitInFamily(1, "l", "g")).toBeNull();
+		expect(convertUnitInFamily(100, "g", "ml")).toBeNull();
+		expect(convertUnitInFamily(1, "gousse", "g")).toBeNull();
+		expect(convertUnitInFamily(1, null, "g")).toBeNull();
+	});
+});
+
+describe("sameCountUnit", () => {
+	it("matches a counting unit with its plural", () => {
+		expect(sameCountUnit("gousse", "gousses")).toBe(true);
+		expect(sameCountUnit("tranches", "tranche")).toBe(true);
+		expect(sameCountUnit("clove", "cloves")).toBe(true);
+		expect(sameCountUnit("box", "boxes")).toBe(true);
+		expect(sameCountUnit("chou", "choux")).toBe(true);
+		expect(sameCountUnit("Gousse", "gousse")).toBe(true);
+	});
+
+	it("tells two different counting units apart", () => {
+		expect(sameCountUnit("gousse", "tranche")).toBe(false);
+		expect(sameCountUnit("gousses", "tranches")).toBe(false);
+	});
+
+	it("looks for no plural under three letters", () => {
+		expect(sameCountUnit("ab", "abs")).toBe(false);
+	});
+
+	it("reads no unit and every spelling of a piece as the same", () => {
+		expect(sameCountUnit(null, "")).toBe(true);
+		expect(sameCountUnit(null, "pièces")).toBe(true);
+		expect(sameCountUnit("pc", "unit")).toBe(true);
+		expect(sameCountUnit(undefined, "gousse")).toBe(false);
+	});
+
+	it("is never true for a mass or a volume", () => {
+		expect(sameCountUnit("g", "g")).toBe(false);
+		expect(sameCountUnit("l", "L")).toBe(false);
 	});
 });

@@ -133,6 +133,26 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 			expect(toMarkdown(analyzed)).toContain("- **flour** (250 ml, ~147.5 g)");
 		});
 
+		it("is shown for a sum unless every term is a metric weight", () => {
+			const sums = analyze(
+				compile(
+					getAST(
+						"## Dough\n\nMix @flour{1 kg + 200 g} and @salt{1 cup + 20 g}.\n",
+					),
+				),
+				{
+					flour: { name: "flour", physical: { density: 0.55 } },
+					salt: { name: "salt", physical: { density: 1.2 } },
+				} as unknown as Record<string, IngredientData>,
+			).result;
+			const md = toMarkdown(sums);
+			// The step as written, the section worked out in the larger unit
+			// written, the shopping list in kilograms.
+			expect(md).toContain("Mix **flour** (1 kg + 200 g)");
+			expect(md).toContain("- **flour** (1.2 kg)");
+			expect(md).toContain("- **salt** (1 cup + 20 g, ~303.9 g)");
+		});
+
 		it("is not shown when the masses are not standardized", () => {
 			const raw = analyze(
 				compile(getAST("## Dough\n\nMix @flour{250ml}.\n")),

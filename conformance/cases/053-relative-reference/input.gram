@@ -1,0 +1,15 @@
+## Rice ->&rice
+
+Cook @rice{200 g}.
+
+## Stock ->&stock
+
+Simmer @water{2 l}.
+
+## Serve
+
+Mix the &rice{200 g} with &stock{250 ml / 100 g @&rice} and @butter{10 g / 100 ml &stock}.
+
+## Finish
+
+Moisten the &rice{100 g} with &stock{25% @&rice}.

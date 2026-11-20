@@ -35,13 +35,13 @@ import { formatNumber, getDictionary } from "@gram-lang/i18n";
 export const markdownBackend: RenderBackend = {
 	buildContext(data, options) {
 		const registry = data.registry || { ingredients: {}, cookware: {} };
-		const formatDuration = durationFormatter(options);
 		return {
 			registry,
 			icons: options.icons,
 			classes: options.classes,
-			formatDuration,
+			formatDuration: options.formatDuration,
 			formatFraction: options.formatFraction,
+			scaleFactor: data.scaleFactor,
 			bakersMathOnly: options.bakersMathOnly,
 			lang: options.lang,
 			// Footnotes are collected here too (GFM `[^id]` refs + definitions at

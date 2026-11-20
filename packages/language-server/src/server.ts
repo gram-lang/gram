@@ -50,10 +50,12 @@ import {
 	type KitchenContext,
 	type RecipeSettings,
 	type ViewSettings,
+	chooseClock,
 	escapeHtml,
 	parseRecipeSettings,
 	parseViewSettings,
 	toGanttHTML,
+	systemLocale,
 	toHTML,
 	viewSettingsToRendererOptions,
 } from "@gram-lang/renderer";
@@ -352,7 +354,7 @@ connection.onInitialized(async () => {
 				invalidateDependents(change.uri);
 			} else if (change.uri.endsWith(".gram/config.yaml")) {
 				// The project's settings changed: its `paths:` aliases (the graph),
-				// `timezone` and `availability` (the views). Every cached project
+				// `timezone`, `availability` and `clock` (the views). Every cached project
 				// context is dropped and every open document refreshed now, rather
 				// than at its next edit.
 				configChanged = true;
@@ -469,6 +471,23 @@ connection.onNotification("gram/setSession", (params: unknown) => {
 	}
 });
 
+/** The locale of this machine: the clock of `gram.clock: auto`. */
+const READER_LOCALE = systemLocale(process.env, process.platform);
+
+/**
+ * The view settings for `uri`: the editor's, with the project's `clock` when
+ * the editor leaves it on `auto`.
+ */
+function viewSettingsOf(uri: string): ViewSettings {
+	if (settings.clock !== "auto" || !uri.startsWith("file:")) return settings;
+	try {
+		const clock = chooseClock(projectContextOf(uri).clock);
+		return clock === "auto" ? settings : { ...settings, clock };
+	} catch {
+		return settings;
+	}
+}
+
 /** The `mealTimes` of the project of `uri`, when it sets them. */
 function mealTimesOf(uri: string): string[] | undefined {
 	if (!uri.startsWith("file:")) return undefined;
@@ -486,9 +505,10 @@ connection.onRequest("gram/serveTimes", (params: unknown) => {
 	if (!state) return null;
 	try {
 		return serveTimesOf(state, {
-			settings,
+			settings: viewSettingsOf(uri),
 			kitchen: kitchenOf(uri),
 			locale,
+			...(READER_LOCALE && { readerLocale: READER_LOCALE }),
 			mealTimes: mealTimesOf(uri),
 		});
 	} catch (e) {
@@ -525,10 +545,11 @@ function renderViews(uri: string): void {
 	const open = openViews.get(uri);
 	if (!open) return;
 	const updates = renderOutputs(uri, state, open, {
-		settings,
+		settings: viewSettingsOf(uri),
 		kitchen: kitchenOf(uri),
 		serveAt: sessions.get(uri)?.serveAt,
 		locale,
+		...(READER_LOCALE && { readerLocale: READER_LOCALE }),
 		onError: (outputId, e) =>
 			connection.console.error(`${outputId} render error: ${e}`),
 	});

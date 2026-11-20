@@ -106,12 +106,14 @@
             {
               "type": "timer",
               "isPassive": true,
+              "raw": "50h",
               "quantity": {
                 "type": "single",
                 "value": 50,
                 "text": "50"
               },
-              "unit": "h"
+              "unit": "h",
+              "minutes": 3000
             },
             "."
           ],
@@ -180,12 +182,14 @@
             "for ",
             {
               "type": "timer",
+              "raw": "30min",
               "quantity": {
                 "type": "single",
                 "value": 30,
                 "text": "30"
               },
-              "unit": "min"
+              "unit": "min",
+              "minutes": 30
             },
             "at ",
             {

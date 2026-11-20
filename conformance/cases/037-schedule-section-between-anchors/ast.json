@@ -12,7 +12,11 @@
         "raw": "-3d",
         "sign": -1,
         "value": 3,
-        "unit": "d"
+        "unit": "d",
+        "loc": {
+          "start": 79,
+          "end": 85
+        }
       },
       "intermediateDecl": {
         "type": "IntermediateDecl",
@@ -158,6 +162,7 @@
             {
               "type": "Timer",
               "name": null,
+              "raw": "24h",
               "quantity": {
                 "type": "Quantity",
                 "value": {
@@ -299,7 +304,11 @@
         "raw": "-1d",
         "sign": -1,
         "value": 1,
-        "unit": "d"
+        "unit": "d",
+        "loc": {
+          "start": 255,
+          "end": 261
+        }
       },
       "intermediateDecl": null,
       "children": [
@@ -345,6 +354,7 @@
             {
               "type": "Timer",
               "name": null,
+              "raw": "40min",
               "quantity": {
                 "type": "Quantity",
                 "value": {

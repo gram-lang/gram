@@ -3,12 +3,9 @@ import type {
 	ProcessedTimer,
 	RestChoice,
 } from "@gram-lang/kitchen";
-import {
-	quantityToMinutes,
-	aggregateSectionIngredients,
-} from "@gram-lang/kitchen";
+import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { isMetricMassUnit } from "@gram-lang/i18n";
-import { formatDecimalToFraction } from "@gram-lang/renderer";
+import { formatDecimalToFraction, formatRelative } from "@gram-lang/renderer";
 import { splitDuration } from "../../core/format";
 import { passiveTimers } from "../../core/schedule";
 import type { RecipeData, FlatStep, CookTimer } from "./types";
@@ -25,7 +22,9 @@ export function fmtQty(item: { qty?: any; unit?: string | null }): string {
 	if (typeof q === "number") {
 		display = formatDecimalToFraction(q, item.unit ?? undefined);
 	} else if (typeof q === "object" && q !== null) {
-		display = q.text ?? (q.value != null ? String(q.value) : "");
+		// A share or a ratio not resolved: written as such (`70% of flour`).
+		display =
+			formatRelative(q) ?? q.text ?? (q.value != null ? String(q.value) : "");
 	} else {
 		display = String(q);
 	}
@@ -54,11 +53,12 @@ export function fmtMass(g: number): string {
 	return `${+g.toFixed(1)} g`;
 }
 
-/** A compiled timer's length: its quantity read in its own unit (`h`, `s`…). */
+/**
+ * A compiled timer's length: the minutes the schedule counts (the middle of
+ * a range), whatever the writing. A refused timer has none, and runs no clock.
+ */
 function timerToMs(timer: ProcessedTimer): number {
-	return (
-		quantityToMinutes({ value: timer.quantity, unit: timer.unit }) * 60_000
-	);
+	return (timer.minutes ?? 0) * 60_000;
 }
 
 function extractTimers(
@@ -98,7 +98,19 @@ function extractTimers(
 		});
 	}
 
-	return timers.filter((t) => t.durationMs > 0);
+	// A timer is an estimate: when it rings, the step's target states say
+	// whether it is done.
+	const checks = stepTargetStates(step).map((c) => c.state);
+	return timers
+		.filter((t) => t.durationMs > 0)
+		.map((t) => (checks.length > 0 ? { ...t, checks } : t));
+}
+
+/** The target states of a step (`={ribbon stage}(note)`), in their order. Since 1.5.0. */
+export function stepTargetStates(
+	step: any,
+): { state: string; note?: string }[] {
+	return (step?.content ?? []).filter((t: any) => t?.type === "checkpoint");
 }
 
 export function prepareRecipeData(

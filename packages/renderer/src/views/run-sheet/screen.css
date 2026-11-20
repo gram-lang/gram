@@ -124,6 +124,11 @@
 		border-bottom: 0;
 	}
 
+	/* A range of 12-hour times, its AM and PM, is wider than in 24 hours. */
+	:scope[data-clock="12h"] .schedule-row {
+		grid-template-columns: 11rem minmax(0, 1fr);
+	}
+
 	.schedule-time {
 		font-family: var(--gram-font-mono);
 		font-size: 0.82rem;
@@ -657,6 +662,8 @@
 		font-size: 0.8rem;
 		font-weight: 700;
 		white-space: nowrap;
+		/* A mono space is a whole character wide: `1 h 30 min` stays compact. */
+		word-spacing: -0.3em;
 	}
 
 	.step-content .temp {
@@ -667,6 +674,16 @@
 	.step-content .timer {
 		background: var(--color-text);
 		color: var(--color-bg);
+	}
+
+	/* A target state is words of the sentence: underlined, never boxed. */
+	.step-content .checkpoint {
+		font-weight: 500;
+		color: var(--color-text);
+	}
+
+	.step-content .checkpoint .gicon {
+		vertical-align: -0.1em;
 	}
 
 	/* ─── What goes on without the cook, then when to come back ────────────── */
@@ -800,6 +817,10 @@
 
 		.schedule-row {
 			grid-template-columns: 6.5rem minmax(0, 1fr);
+		}
+
+		:scope[data-clock="12h"] .schedule-row {
+			grid-template-columns: 8.5rem minmax(0, 1fr);
 		}
 	}
 }

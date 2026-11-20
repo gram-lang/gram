@@ -1,0 +1,511 @@
+{
+  "title": "Quantity Compound",
+  "slug": "quantity-compound",
+  "meta": {
+    "title": "Quantity Compound"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 17,
+      "unit": "tbsp"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 14,
+      "unit": "tbsp"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 17.5,
+      "unit": "tbsp",
+      "range": {
+        "min": 17,
+        "max": 18
+      }
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 8,
+      "unit": "tsp"
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "5"
+      ],
+      "fixed": true,
+      "qty": 1.5,
+      "unit": "g",
+      "multiUnit": true
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "5"
+      ],
+      "fixed": true,
+      "qty": 1,
+      "unit": "pinch",
+      "multiUnit": true
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Batter",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 17,
+          "unit": "tbsp",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 1,
+              "unit": "tbsp"
+            }
+          ]
+        },
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "qty": 14,
+          "unit": "tbsp",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 2,
+              "unit": "tbsp",
+              "minus": true
+            }
+          ]
+        },
+        {
+          "id": "milk",
+          "_usageId": "3",
+          "qty": {
+            "type": "range",
+            "value": 17.5,
+            "range": {
+              "min": 17,
+              "max": 18
+            }
+          },
+          "unit": "tbsp",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": {
+                "type": "range",
+                "value": 1.5,
+                "range": {
+                  "min": 1,
+                  "max": 2
+                },
+                "text": "1-2"
+              },
+              "unit": "tbsp"
+            }
+          ]
+        },
+        {
+          "id": "butter",
+          "_usageId": "4",
+          "qty": 8,
+          "unit": "tsp",
+          "parts": [
+            {
+              "qty": {
+                "type": "fraction",
+                "value": 2.5,
+                "numerator": 5,
+                "denominator": 2,
+                "text": "2 1/2"
+              },
+              "unit": "tbsp"
+            },
+            {
+              "qty": {
+                "type": "fraction",
+                "value": 0.5,
+                "numerator": 1,
+                "denominator": 2,
+                "text": "½"
+              },
+              "unit": "tsp"
+            }
+          ]
+        },
+        {
+          "id": "salt",
+          "_usageId": "5",
+          "unit": "1.5 g + 1 pinch",
+          "parts": [
+            {
+              "qty": 1.5,
+              "unit": "g"
+            },
+            {
+              "qty": 1,
+              "unit": "pinch"
+            }
+          ],
+          "fixed": true
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whisk ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 17,
+              "unit": "tbsp",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 1,
+                  "unit": "tbsp"
+                }
+              ]
+            },
+            "with ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "qty": 14,
+              "unit": "tbsp",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 2,
+                  "unit": "tbsp",
+                  "minus": true
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "milk",
+              "_usageId": "3",
+              "qty": {
+                "type": "range",
+                "value": 17.5,
+                "range": {
+                  "min": 17,
+                  "max": 18
+                }
+              },
+              "unit": "tbsp",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": {
+                    "type": "range",
+                    "value": 1.5,
+                    "range": {
+                      "min": 1,
+                      "max": 2
+                    },
+                    "text": "1-2"
+                  },
+                  "unit": "tbsp"
+                }
+              ]
+            },
+            "and ",
+            {
+              "id": "butter",
+              "_usageId": "4",
+              "qty": 8,
+              "unit": "tsp",
+              "parts": [
+                {
+                  "qty": {
+                    "type": "fraction",
+                    "value": 2.5,
+                    "numerator": 5,
+                    "denominator": 2,
+                    "text": "2 1/2"
+                  },
+                  "unit": "tbsp"
+                },
+                {
+                  "qty": {
+                    "type": "fraction",
+                    "value": 0.5,
+                    "numerator": 1,
+                    "denominator": 2,
+                    "text": "½"
+                  },
+                  "unit": "tsp"
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Season with ",
+            {
+              "id": "salt",
+              "_usageId": "5",
+              "unit": "1.5 g + 1 pinch",
+              "parts": [
+                {
+                  "qty": 1.5,
+                  "unit": "g"
+                },
+                {
+                  "qty": 1,
+                  "unit": "pinch"
+                }
+              ],
+              "fixed": true
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 11,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Batter",
+        "duration": 6
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Batter",
+        "duration": 6
+      }
+    ],
+    "preparationTime": 5,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 5
+      }
+    ]
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 5,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 5,
+          "duration": 5
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 5
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 5,
+            "duration": 5
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.1"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 11,
+    "activeTime": 6,
+    "preparationTime": 5,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 5
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 5,
+        "end": 7
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 7,
+        "end": 9
+      },
+      {
+        "kind": "step",
+        "task": "s0.2",
+        "section": 0,
+        "step": 2,
+        "start": 9,
+        "end": 11
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 11,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}

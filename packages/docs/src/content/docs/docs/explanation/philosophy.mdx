@@ -1,66 +1,34 @@
 ---
 title: "What is Gram?"
-description: "Why Gram treats recipes as code: relational logic, deterministic scheduling, and strict data integrity."
+description: "Why Gram treats recipes as code: relational variables, physical calculations, modular imports, and deterministic ALAP scheduling."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
-import Term from '../../../../components/Term.astro';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-Gram is an open-source declarative DSL (*Domain-Specific Language*) for cooking recipes, built for developers and culinary craftsmen.
+Gram is an open-source declarative DSL (*Domain-Specific Language*) for cooking recipes, built for cooks and developers alike.
 
-Most recipe formats are just static blocks of text. Gram takes a fundamentally different approach: it takes your instructions written in plain text and compiles them into structured, calculated, relational, and schedulable data.
+Most recipe formats are just static blocks of text. Gram takes instructions written in plain text and compiles them into structured, calculated, relational, and schedulable data, ready to drive a shopping list, a kitchen timeline, or an entire application.
 
 ## The philosophy
 
-Cooking is a bit like an algorithm: you take raw ingredients as input and output a finished dish. But to me, it's above all a passion. That's where Gram comes from: I love cooking, and I wanted a tool that combines the rigor of code with creativity in the kitchen. 
+Cooking is a bit like an algorithm: raw ingredients go in, a finished dish comes out. I love cooking, and I wanted a tool that brings the rigor of code to creativity in the kitchen.
 
-I've always loved the idea of writing recipes in plain text, heavily inspired by pioneering projects like the excellent [Cooklang](https://cooklang.org). Cooklang is fantastic for quick, straightforward home recipes. But when things get a bit more complex—like professional pastry formulas with multiple sub-components, baker's math, or tricky scheduling—relying entirely on natural language can get messy. 
+Plain-text formats like [Cooklang](https://cooklang.org) showed how readable text-based recipes can be for everyday cooking, while [Cooking for Engineers](http://www.cookingforengineers.com/) showed how much clarity comes from separating ingredients, intermediate components, and steps. When a recipe grows into multi-day pastry work, baker's math, or tight timing, prose alone breaks down.
 
-Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced presentations: a <Term id="runSheet" /> for the kitchen, tabular flowcharts, and calendar exports. The engine computes; the views, like the run sheet, only show what it computed.
+Because Gram compiles a `.gram` file into a deterministic JSON tree, the data and calculations stay independent from how you present them. Gram ships a few reference views (like a recipe layout and a run sheet) but the real goal is giving any UI a reliable foundation to build on.
 
-I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic**, **physical accuracy**, **modular composition**, and **predictive scheduling** into your recipe writing:
+Gram brings five core ideas to recipe authoring:
 
-- **Relational Variables**: If you make a dough in step 1, you can reference it as an ingredient in step 5, cleanly preventing duplication or manipulation ambiguity.
-- **Physical Accuracy & Calculations**: Gram understands the difference between the "zest of 1 lemon" and "juice of 2 lemons", ensuring your shopping list accurately aggregates to "Buy 2 lemons" instead of 3. It also computes real physical mass and relative ingredient ratios (`70% @&flour`).
-- **Strict Data Contracts**: By using explicit tags (`@`, `~`, `^`, `#`), Gram ensures that temperatures, durations, ingredients, and cookware are never confused by the parser.
-- **Modularity & Reusability (`@use`)**: Split shared bases (pastries, stocks, sauces) into their own `.gram` files. Gram seamlessly inlines their steps, automatically scales their quantities to match what your dish asks for (it measures the base's own mass — no manual scaling to declare or keep in sync), and merges their raw ingredients onto your unified shopping list.
-- **ALAP Scheduling & Retro-planning**: Calculate the exact moment to start each step so everything converges at service time, optimize masked time during passive cooking or chilling, and anticipate cookware bottlenecks.
-
-:::tip[The Ecosystem Approach]
-Gram isn't just a syntax; it's a complete ecosystem for building culinary applications.
-If you're building a recipe app, a meal planner, or a smart kitchen dashboard, you shouldn't have to parse raw text manually. The **Gram Engine** processes your text into a rich Abstract Syntax Tree (AST), enriches it with physical properties (like mass standardization and nutrition), schedules production workflows, and outputs a reliable JSON structure you can actually work with.
-:::
-
-import { Card, CardGrid } from '@astrojs/starlight/components';
-
-## Designed for developers
-
-The Gram ecosystem gives you everything you need to treat recipes like software:
-
-<CardGrid>
-  <Card title="Parser & Compiler" icon="setting">
-    **`@gram-lang/kitchen`**: Simulates the execution timeline, composes `@use` modules, aggregates base shopping lists, and scales dynamic quantities.
-  </Card>
-  <Card title="Scheduling Engine" icon="clock">
-    **`@gram-lang/scheduler`**: Computes ALAP retro-planning, optimizes mise en place placement, resolves equipment contention, and projects recipes onto a real-world calendar.
-  </Card>
-  <Card title="Semantic Analyzer" icon="magnifier">
-    **`@gram-lang/analyzer`**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
-  </Card>
-  <Card title="Language Server (LSP)" icon="laptop">
-    **`@gram-lang/language-server`**: Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
-  </Card>
-  <Card title="CLI" icon="window">
-    **`@gram-lang/cli`**: Compile, scale, schedule, diff, and manage your ingredient database straight from your terminal.
-  </Card>
-  <Card title="Renderer" icon="document">
-    **`@gram-lang/renderer`**: Instantly generate Semantic HTML, run sheets, and Markdown from your compiled JSON: views of data you can also draw yourself.
-  </Card>
-</CardGrid>
+- **Relational variables (`->&`, `&`)**: Capture a dough or sauce in one step (`->&hot milk{}`) and reuse it later (`&hot milk{}`) without duplicating ingredients on your shopping list.
+- **Physical accuracy and ratios**: Bundle parts into whole purchases (`@egg yolks{6}<@eggs{6}` aggregates to 6 eggs), standardize volumes to mass, combine units (`1 cup + 1 tbsp`), and express formulas as percentages (`70% @&flour`) or unit ratios (`15 g / L @&water`, `~{15 min / 500 g @&roast}`).
+- **Strict data contracts**: Explicit markers keep ingredients (`@`), cookware (`#`), timers (`~`), temperatures (`^`), and target states (`={...}`) unambiguous, separating how long a step should take (`~_baking{30 min - 1 h}`) from the sensory cue that tells you it is done (`={golden brown}`).
+- **Modular recipes (`@use`)**: Split shared bases (pastries, stocks, sauces) into their own `.gram` files. Gram scales them automatically to the weight your dish asks for, merges raw ingredients onto your shopping list, and lets you mark bases already on hand (`--stock`).
+- **ALAP (*As Late As Possible*) scheduling**: Backward-schedule prep and resting phases (`~{-1d}`, `~_`) so every component converges at serving time, mask prep inside passive rests, avoid equipment contention on named tracks (`~_baking`), and project plans onto your real availability.
 
 ## How it looks
 
-Gram remains highly readable, but quietly introduces some powerful data structures. Here is a look at a classic French pastry recipe written in Gram:
+Gram stays readable as plain text while packing structured data underneath. Here is a classic French pastry recipe (Bordeaux cannelés) alongside what Gram produces from it:
 
 <CodeTabs>
 ```gram title="canneles.gram"
@@ -73,90 +41,125 @@ portions: 10
 
 [Mix] In a #mixing bowl{}, combine the @flour{300 g}, @sugar{500 g}, and @salt{3 g}. ->&dry ingredients{}
 
-[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to ^{85C}. ->&hot milk{}
+[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to ^{185°F}. ->&hot milk{}
 
 [Mix] Pour the &hot milk{} over the &dry ingredients{} all at once. Whisk vigorously.
 
 [Incorporate] Add the @egg yolks{6}<@eggs{6} and the @rum{100 ml}.
 
-[Chill] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~_refrigerator{24 h}.
+[Rest] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~_refrigerator{24 h}.
+
+## Baking
+
+[Preheat] The #oven to ^{465°F}.
+
+[Grease] The #cannelé molds{38}(lunch/4.5cm).
+
+[Fill] Pour the &batter into the molds, filling them 3/4 full.
+
+[Bake] In the #&oven at ^{465°F} for ~_baking{10 min}.
+
+[Cook] Lower the temperature to ^{360°F} and continue for ~_baking{30 min - 1 h}, until ={dark mahogany}.
 ```
-```json title="Output Glimpse"
+```markdown title="Rendered recipe (excerpt)"
+# Cannelés
+
+> **Metadata**
+> - **Total time**: 2 d
+> - **Active time**: 14 min
+> - **Prep time**: 18 min (est.)
+> - portions: 10
+
+## Shopping List
+
+- **flour** (300 g)
+- **sugar** (500 g)
+- **salt** (3 g)
+- **milk** (1 l)
+- **butter** (100 g)
+- **vanilla bean** (1)
+- **eggs** (6) **(Composite)**:
+  - **egg yolks** (6)
+- **rum** (100 ml)
+
+## Cookware
+
+- *mixing bowl*
+- *large saucepan*
+- *plastic wrap*
+- *oven*
+- *cannelé molds* (38) — lunch/4.5cm
+```
+```json title="Compiled JSON (excerpt)"
 {
   "title": "Cannelés",
   "meta": { "portions": "10" },
-  "generator": "@gram-lang/kitchen@1.4.0",
+  "generator": "@gram-lang/kitchen@1.5.0",
   "metrics": {
-    "preparationTime": 24,
-    "activeTime": 41,
+    "preparationTime": 18,
     "totalMass": 2132,
     "nutrition": {
-      "total": {
-        "calories": 4927,
-        "protein": 80.2,
-        "carbs": 781.6
-        // ...
-      }
+      "total": { "calories": 4927, "protein": 80.2, "carbs": 781.6, "fat": 145.6 }
     }
   },
-  "miseEnPlace": [
-    { "section": 0, "duration": 9, "items": [ { "kind": "gather", "target": "ingredient", "count": 7, "duration": 7 } /* ... */ ] }
-    // ...
-  ],
-  "tasks": { "tasks": [ /* ... */ ], "sections": [ /* ... */ ] },
   "schedule": {
-    "miseEnPlace": "perSection", "rests": "shortest",
-    "totalTime": 1465, "activeTime": 56, "preparationTime": 9, "idleTime": 1400,
-    "blocks": [ { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 9 } /* ... */ ]
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 2901,
+    "activeTime": 14,
+    "preparationTime": 18,
+    "blocks": [ /* ... */ ]
   },
   "shopping_list": [
-    {
-      "id": "flour",
-      "qty": 300,
-      "unit": "g",
-      "normalizedMass": 300,
-      "conversionMethod": "physical"
-    },
+    { "id": "flour", "name": "flour", "qty": 300, "unit": "g", "normalizedMass": 300, "conversionMethod": "physical" },
     // ...
-    {
-      "type": "composite",
-      "id": "eggs",
-      "qty": 6,
-      "usage": [ { "id": "egg-yolks", "qty": 6, "normalizedMass": 102 } ]
-    }
+    { "type": "composite", "id": "eggs", "name": "eggs", "qty": 6, "usage": [ { "id": "egg-yolks", "name": "egg yolks", "qty": 6, "normalizedMass": 102 } ] }
   ],
   "sections": [
     {
       "title": "Batter",
       "retro_planning": { "raw": "-1d", "sign": -1, "value": 1, "unit": "d", "minutes": -1440 },
       "intermediate_preparation": "batter",
+      "steps": [ /* ... */ ]
+    },
+    {
+      "title": "Baking",
       "steps": [
+        // ...
         {
           "type": "step",
-          "action": "Mix",
+          "action": "Cook",
           "content": [
-            "In a ",
-            { "id": "mixing-bowl", "_usageId": "36", "fixed": false },
-            ", combine the ",
-            { "id": "flour", "qty": 300, "unit": "g", "normalizedMass": 300 },
-            // ... (rest of the parsed AST)
+            // ...
+            { "type": "checkpoint", "state": "dark mahogany" },
+            "."
           ]
         }
-        // ... (other steps)
       ]
     }
-    // ... (other sections)
   ]
 }
 ```
 </CodeTabs>
 
-Notice how the `[Incorporate]` step uses `<@eggs{6}`? This *composite ingredient* syntax tells Gram that you are only using the yolks, but the shopping list should correctly aggregate the whole eggs required. The `~{-1d}` section tag creates a retro-planning schedule relative to the final baking time, and `->&hot milk{}` sets up an intermediate variable you can pour later.
+From one readable file, Gram derives the shopping list, links the batter across two days, and outputs structured scheduling data (see [Data formats](/docs/reference/api/data-formats/) for the complete JSON schemas).
 
-import { LinkCard } from '@astrojs/starlight/components';
+## From your editor to your application
 
-<LinkCard
-  title="Ready to dive in?"
-  description="Check out the Getting Started guide to install Gram and write your first recipe."
-  href="/docs/tutorials/getting-started/"
-/>
+- **Editor and terminal**: Write with live preview, run sheets, and diagnostics in [VS Code](/docs/reference/tooling/vscode-extension/), or use the [CLI](/docs/reference/tooling/cli/) for interactive cooking, meal planning, shopping lists, formatting, and AI recipe import.
+- **Embeddable engine**: Import only the lightweight ESM packages you need in Node.js, Bun, Deno, or the browser, from the parser and compiler to the scheduler and renderer. Explore the [API reference](/docs/reference/api/) or [The Gram lifecycle](/docs/explanation/engine/lifecycle/).
+
+## Next steps
+
+<CardGrid>
+  <LinkCard
+    title="Try the Playground"
+    description="Try Cannelés and other recipes live in your browser and switch between the recipe view, run sheet, and compiled JSON."
+    href="/play/"
+  />
+  <LinkCard
+    title="Getting started"
+    description="Install the Gram CLI, set up VS Code, and compile your first recipe locally."
+    href="/docs/tutorials/getting-started/"
+  />
+</CardGrid>

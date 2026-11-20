@@ -9,7 +9,7 @@ Generating a single, consolidated shopping list across multiple recipes is one o
 
 ## The `gram shop` command
 
-Use the CLI `gram shop` command and pass a glob pattern targeting your recipes.
+Run `gram shop` from a Gram workspace initialized with `gram init` (so your `ingredients.yaml` can provide aliases, densities, and aisle categories) and pass a glob pattern targeting your recipes.
 
 ```bash
 # Target a specific folder
@@ -52,6 +52,8 @@ gram shop "menus/*.gram" --format md --output shopping-list.md
 # Export to JSON
 gram shop "menus/*.gram" --format json --output shopping-list.json
 ```
+
+Alongside the formatted `qty` string, `--format json` exports numeric fields (`amount`, `unit`, `range`, `parts`) so scripts and apps can sort, sum, or compare quantities without parsing text. See the [CLI reference](/docs/reference/tooling/cli/#gram-shop-pattern) for the full schema.
 
 ## Related resources
 

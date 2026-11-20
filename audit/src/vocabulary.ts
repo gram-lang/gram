@@ -7,6 +7,9 @@
 // collection-specific (collectIngredients/collectReferences/...), not a
 // generic walk.
 
+import { parseDuration } from "@gram-lang/i18n";
+import { familyOf } from "@gram-lang/kitchen";
+
 interface WalkContext {
 	inStepScope: boolean;
 }
@@ -18,6 +21,21 @@ function addModifierKeys(
 ): void {
 	if (!Array.isArray(modifiers)) return;
 	for (const m of modifiers) shapes.add(`${prefix}:modifier=${m}`);
+}
+
+// How a duration is written (`1h30` is compound, `1:30 h` a clock, `5'30"`
+// primes, `45 min - 1 h` a range), read by the same `parseDuration` as the
+// compiler, so a snippet using a form the syntax pages never show is flagged.
+// A refused duration adds nothing: its warning is the compiler's business.
+function addDurationShapes(raw: unknown, prefix: string, shapes: Set<string>): void {
+	if (typeof raw !== "string") return;
+	const duration = parseDuration(raw);
+	if (!duration.ok) return;
+	for (const side of duration.sides) {
+		shapes.add(`${prefix}:form=${side.form}`);
+		if (side.parts.length > 1) shapes.add(`${prefix}:compound`);
+	}
+	if (duration.range) shapes.add(`${prefix}:range`);
 }
 
 function walk(node: unknown, shapes: Set<string>, ctx: WalkContext): void {
@@ -52,18 +70,55 @@ function walk(node: unknown, shapes: Set<string>, ctx: WalkContext): void {
 			if (record.preparation) shapes.add("Composite:hasPreparation");
 			break;
 		}
+		case "Temperature": {
+			// The note glued to the brace (`^{160°C}(fan)`, 1.5).
+			if (record.note) shapes.add("Temperature:hasNote");
+			break;
+		}
+		case "Checkpoint": {
+			// A target state (`={ribbon stage}(note)`, 1.5).
+			if (record.note) shapes.add("Checkpoint:hasNote");
+			break;
+		}
 		case "Timer":
 			shapes.add(`Timer:isPassive=${Boolean(record.isPassive)}`);
+			addDurationShapes(record.raw, "Timer", shapes);
 			break;
+		case "CompoundQuantity": {
+			// A sum of quantities (`{1 cup + 1 tbsp}`), with what it does that
+			// a plain sum does not: take a term away, or add up several kinds
+			// of amount (`{1 cup + 20 g}`).
+			shapes.add("Ingredient:quantity=compound");
+			const terms = Array.isArray(record.terms) ? (record.terms as Record<string, unknown>[]) : [];
+			if (terms.some((t) => t.minus)) shapes.add("Ingredient:quantity=compound:minus");
+			const families = new Set(
+				terms.map((t) => familyOf(typeof t.unit === "string" ? t.unit : null)),
+			);
+			if (families.size > 1) shapes.add("Ingredient:quantity=compound:mixedFamily");
+			break;
+		}
 		case "RelativeQuantity":
 			shapes.add(`RelativeQuantity:referenceType=${String(record.referenceType)}`);
 			break;
+		case "RatioQuantity": {
+			shapes.add(`RatioQuantity:referenceType=${String(record.referenceType)}`);
+			const denominator = record.denominator as Record<string, unknown> | undefined;
+			if (!denominator?.unit) shapes.add("RatioQuantity:unitlessDenominator");
+			if (typeof record.durationRaw === "string") shapes.add("RatioQuantity:inTimer");
+			break;
+		}
 		case "IntermediateDecl":
 			shapes.add(ctx.inStepScope ? "IntermediateDecl:step-level" : "IntermediateDecl:section-level");
 			break;
-		case "Section":
-			if (record.retroPlanning) shapes.add("Section:hasRetroPlanning");
+		case "Section": {
+			const anchor = record.retroPlanning as Record<string, unknown> | null | undefined;
+			if (anchor) {
+				shapes.add("Section:hasRetroPlanning");
+				if (typeof anchor.raw === "string")
+					addDurationShapes(anchor.raw.trim().replace(/^-/, ""), "Section:retroPlanning", shapes);
+			}
 			break;
+		}
 		default:
 			break;
 	}

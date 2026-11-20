@@ -113,10 +113,31 @@ export interface DbValidateResult {
 	hasErrors: boolean;
 }
 
+/**
+ * An amount on the shopping list as numbers, for a script to read: `amount`
+ * a plain number (the middle of a range), `unit` canonical (`tbsp` for
+ * `tablespoons` or `c. à s.`), `null` for a count.
+ */
+export interface ShoppingAmount {
+	amount: number;
+	unit: string | null;
+	/** The bounds of a range (`13-14 tbsp`); absent otherwise. */
+	range?: { min: number; max: number };
+}
+
 export interface ShoppingEntry {
 	id: string;
 	name: string;
+	/** The amount as a reader sees it (`2 cup + 3 tbsp`, `3,9 kg`, `-`). */
 	displayQty: string;
+	/** The total as a number; `null` with no number, or units that do not add up (see `parts`). */
+	amount: number | null;
+	unit: string | null;
+	range?: { min: number; max: number };
+	/** The amounts listed apart when their units do not add up (`1 1/2 cups + 70 g`). */
+	parts?: ShoppingAmount[];
+	/** What could not be turned into a number (`(2% of dough ❓)`): not counted in `amount`. */
+	unresolved?: string[];
 	isEstimate: boolean;
 	recipes: string[];
 	category: string;
@@ -258,6 +279,12 @@ export const GramConfigFileSchema = z.object({
 	 * checked by the command that uses it, so a typo never stops the others.
 	 */
 	availability: z.unknown().optional(),
+	/**
+	 * How the run sheet writes the times of day: `12h`, `24h`, or `auto` (the
+	 * region of this machine's locale), the default of `--clock`. Like
+	 * `timezone`, only checked by the commands that write a run sheet.
+	 */
+	clock: z.unknown().optional(),
 	/** Set to `false` to disable the passive "update available" notice printed after a command finishes. */
 	updateCheck: z.boolean().optional(),
 	/** Named `@use` specifier aliases (module-imports RFC §B.1/§F.1): `paths: { bases: "./shared/bases" }` lets `@use "@bases/pate.gram"` resolve to `<projectRoot>/shared/bases/pate.gram`. The bare `@/` prefix (project root itself) needs no entry here. */

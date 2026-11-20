@@ -9,13 +9,15 @@ import {
 	provide,
 	nextTick,
 } from "vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import GramDatabase from "./GramDatabase.vue";
 // biome-ignore lint/style/useImportType: GramEditor is used as a component in the <template> block below, which Biome's Vue support doesn't see — a type-only import breaks the ref.
 import GramEditor from "./GramEditor.vue";
 // biome-ignore lint/style/useImportType: GramFileTabs is used as a component in the <template> block below.
 import GramFileTabs from "./GramFileTabs.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import GramOptions from "./GramOptions.vue";
-import type { PlanSettings } from "./planSettings";
+import { type PlanSettings, browserLocale } from "./planSettings";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import GramDrawer from "./GramDrawer.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
@@ -70,7 +72,7 @@ import {
 	viewTabs,
 } from "./outputs";
 import "@gram-lang/renderer/gram.css";
-import { DEFAULT_SOURCES } from "./db";
+import { DATABASE_TAB, EXAMPLE_DATABASE } from "./db";
 import {
 	type OPTION_SETTING_KEYS,
 	type PlaygroundOptions,
@@ -135,7 +137,13 @@ const EDITOR_PANEL_ID = "editor-panel";
 function tabId(path: string): string {
 	return `file-tab-${path.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
 }
-const activeTabId = computed(() => tabId(activeFile.value));
+// The `ingredients.yaml` tab stands in front of the editor without becoming
+// the active file: the preview keeps showing the recipe it showed.
+const databaseOpen = ref(false);
+const selectedTab = computed(() =>
+	databaseOpen.value ? DATABASE_TAB : activeFile.value,
+);
+const activeTabId = computed(() => tabId(selectedTab.value));
 
 const mobileTab = ref<"editor" | "preview">("editor");
 
@@ -361,7 +369,7 @@ const activeModifiersCount = computed(() => {
 	) {
 		count++;
 	}
-	if (modified("comments", "stepQuantities")) {
+	if (modified("comments", "stepQuantities", "clock")) {
 		count++;
 	}
 	if (
@@ -442,7 +450,7 @@ const fileTabsRef = ref<InstanceType<typeof GramFileTabs> | null>(null);
 const outputContent = ref<string | null>("");
 const jsonData = shallowRef<any>({});
 
-let fullDatabase: any = {};
+const fullDatabase = EXAMPLE_DATABASE;
 
 const manifestData = ref<any[]>([]);
 const examples = computed(() => [
@@ -459,13 +467,6 @@ const examples = computed(() => [
 const selectedExample = ref("");
 
 onMounted(() => {
-	// Build database
-	DEFAULT_SOURCES.forEach((source) => {
-		if (source.data) {
-			Object.assign(fullDatabase, source.data);
-		}
-	});
-
 	// Load Examples
 	const manifestName =
 		currentLang.value === "fr" ? "manifest-fr.json" : "manifest.json";
@@ -694,7 +695,7 @@ async function updateGram() {
 
 /** The view settings of the studio: the same for every view. */
 function viewSettings(): ViewSettings {
-	const { comments, nutritionBasis, bakersMathOnly, stepQuantities } =
+	const { comments, nutritionBasis, bakersMathOnly, stepQuantities, clock } =
 		options.value;
 	return {
 		miseEnPlace: schedule.value,
@@ -703,6 +704,7 @@ function viewSettings(): ViewSettings {
 		nutritionBasis,
 		bakersMathOnly,
 		stepQuantities,
+		clock,
 	};
 }
 
@@ -775,8 +777,10 @@ const SURFACE = () => ({
 /** The views' input for `result`: the settings of the studio and its plan. */
 function prepareInput(result: any) {
 	const { serveAt, timeZone } = plan.value;
+	const locale = browserLocale();
 	return prepareViews(result, viewSettings(), {
 		lang: currentLang.value,
+		...(locale && { locale }),
 		kitchen: {
 			timeZone,
 			availability: buildAvailability(plan.value),
@@ -841,10 +845,16 @@ function computeServeSuggestions() {
 	}
 	try {
 		const { timeZone } = plan.value;
+		const locale = browserLocale();
 		const views = prepareViews(
 			result,
-			{ miseEnPlace: schedule.value, rests: rests.value },
 			{
+				miseEnPlace: schedule.value,
+				rests: rests.value,
+				clock: options.value.clock,
+			},
+			{
+				...(locale && { locale }),
 				kitchen: {
 					timeZone,
 					availability: buildAvailability(plan.value),
@@ -866,6 +876,7 @@ watch(
 		jsonData,
 		schedule,
 		rests,
+		() => options.value.clock,
 		() => plan.value.timeZone,
 		() => plan.value.from,
 		() => plan.value.to,
@@ -963,6 +974,7 @@ watch(
 // biome-ignore lint/correctness/noUnusedVariables: handleJump is used in the <template> block below, which Biome's Vue support doesn't see.
 async function handleJump(start: number, end: number, uri?: string) {
 	mobileTab.value = "editor";
+	databaseOpen.value = false;
 	if (uri && uri !== activeFile.value) {
 		activeFile.value = uri;
 		await nextTick();
@@ -972,7 +984,14 @@ async function handleJump(start: number, end: number, uri?: string) {
 
 // biome-ignore lint/correctness/noUnusedVariables: selectFile is used in the <template> block below, which Biome's Vue support doesn't see.
 function selectFile(path: string) {
-	activeFile.value = path;
+	databaseOpen.value = path === DATABASE_TAB;
+	if (!databaseOpen.value) activeFile.value = path;
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: showDatabase is used in the <template> block below, which Biome's Vue support doesn't see.
+function showDatabase() {
+	mobileTab.value = "editor";
+	databaseOpen.value = true;
 }
 
 let nextFileIndex = 1;
@@ -989,6 +1008,7 @@ function addFile() {
 	nextFiles.set(uri, "");
 	files.value = nextFiles;
 	activeFile.value = uri;
+	databaseOpen.value = false;
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: renameFile is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -1189,10 +1209,12 @@ onUnmounted(() => {
               <GramFileTabs
                 ref="fileTabsRef"
                 :files="[...files.keys()]"
-                :active-file="activeFile"
+                :active-file="selectedTab"
                 :entry-file="entryFile"
                 :error-files="errorFiles"
                 :editor-panel-id="EDITOR_PANEL_ID"
+                :pinned-tab="DATABASE_TAB"
+                :pinned-tab-label="t.playground.database.tabLabel"
                 @select="selectFile"
                 @add="addFile"
                 @rename="renameFile"
@@ -1206,11 +1228,13 @@ onUnmounted(() => {
                 :aria-labelledby="activeTabId"
                 tabindex="-1"
               >
+                <GramDatabase v-if="databaseOpen" />
                 <GramEditor
+                  v-show="!databaseOpen"
                   ref="editorRef"
                   :files="files"
                   :active-file="activeFile"
-                  @update:files="(path, val) => files.set(path, val)"
+                  @update:files="(path: string, val: string) => files.set(path, val)"
                 />
               </div>
             </div>
@@ -1254,6 +1278,7 @@ onUnmounted(() => {
             :warnings="diagnostics"
             v-model:collapsed="isConsoleCollapsed"
             @jump="handleJump"
+            @show-database="showDatabase"
           />
         </div>
 

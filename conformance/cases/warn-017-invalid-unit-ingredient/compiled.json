@@ -86,11 +86,15 @@
   "warnings": [
     {
       "code": "INVALID_UNIT",
-      "message": "Unit \"cup 5 tbsp\" of \"farine\" reads as two quantities, which Gram does not add: write the total in one unit (e.g. {1.2 kg} rather than {1 kg 200 g}).",
+      "message": "Unit \"cup 5 tbsp\" of \"farine\" reads as two quantities: write them as a sum, with \" + \" between them (e.g. {1 kg + 200 g} rather than {1 kg 200 g}).",
       "item": "farine",
       "loc": {
         "start": 18,
         "end": 39
+      },
+      "data": {
+        "reason": "twoQuantities",
+        "suggestion": "cup + 5 tbsp"
       }
     }
   ],

@@ -1,0 +1,231 @@
+{
+  "title": "Timer Prime",
+  "slug": "timer-prime",
+  "meta": {
+    "title": "Timer Prime"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Pasta",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Cook the pasta ",
+            {
+              "type": "timer",
+              "raw": "10'",
+              "quantity": {
+                "type": "single",
+                "value": 10
+              },
+              "unit": "min",
+              "minutes": 10
+            },
+            ", the sauce ",
+            {
+              "type": "timer",
+              "raw": "5'30\"",
+              "quantity": {
+                "type": "single",
+                "value": 330
+              },
+              "unit": "s",
+              "minutes": 5.5
+            },
+            "and the garlic ",
+            {
+              "type": "timer",
+              "raw": "45\"",
+              "quantity": {
+                "type": "single",
+                "value": 45
+              },
+              "unit": "s",
+              "minutes": 0.75
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 16.25,
+            "activeDuration": 16.25
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Rest ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "raw": "5–7'",
+              "quantity": {
+                "type": "range",
+                "value": 6,
+                "range": {
+                  "min": 5,
+                  "max": 7
+                }
+              },
+              "unit": "min",
+              "minutes": 6
+            },
+            "."
+          ],
+          "timings": {
+            "start": 16.25,
+            "end": 16.25,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 6,
+              "startOffset": 0
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 22.25,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Pasta",
+        "duration": 16.25
+      },
+      {
+        "label": "timer_passive",
+        "duration": 6
+      }
+    ],
+    "idleTime": 6,
+    "activeTime": 16.25,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Pasta",
+        "duration": 16.25
+      }
+    ],
+    "preparationTime": 0,
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0
+    }
+  },
+  "miseEnPlace": [],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 16.25
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 0
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.1.t0",
+        "kind": "passive",
+        "section": 0,
+        "step": 1,
+        "offset": 0,
+        "duration": {
+          "nominal": 5,
+          "min": 5,
+          "max": 7
+        },
+        "after": [
+          "s0.1"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 21.25,
+    "activeTime": 16.25,
+    "preparationTime": 0,
+    "idleTime": 5,
+    "blocks": [
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 0,
+        "end": 16.25
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 16.25,
+        "end": 16.25
+      },
+      {
+        "kind": "passive",
+        "task": "s0.1.t0",
+        "section": 0,
+        "step": 1,
+        "start": 16.25,
+        "end": 21.25
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 16.25,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}

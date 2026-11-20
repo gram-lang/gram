@@ -1,28 +1,27 @@
 import React from "react";
 import { Box, Text } from "ink";
 import chalk from "chalk";
-import { formatTimer } from "@gram-lang/renderer";
+import { formatTemperature, formatTimerDuration } from "@gram-lang/renderer";
+import { fillTemplate, getDictionary } from "@gram-lang/i18n";
 import type { ActiveTimer, FlatStep } from "./types";
 import type { CompilationResult } from "@gram-lang/kitchen";
-import { fmtQty, fmtMass, fmtCountdown, shouldShowMass } from "./prepare";
+import {
+	fmtQty,
+	fmtMass,
+	fmtCountdown,
+	shouldShowMass,
+	stepTargetStates,
+} from "./prepare";
 
-function getQtyText(q: any): string {
-	if (!q) return "";
-	if (typeof q === "number") return String(q);
-	return (
-		q.text ??
-		(q.value != null
-			? String(typeof q.value === "object" ? q.value.value : q.value)
-			: "")
-	);
+/** A temperature as the views show it (`180 °C`, `vif`), with its note. */
+export function getTempDisplay(token: any): string {
+	const value = formatTemperature(token);
+	return token.note ? `${value} (${token.note})` : value;
 }
 
-function getTempDisplay(token: any): string {
-	return `${getQtyText(token.quantity)}${token.unit ?? "°"}`;
-}
-
-function getTimerDisplay(token: any): string {
-	return formatTimer(token, " ");
+/** A timer as the views show it (`1 h 30 min`, `1–2 h`), or as written when refused. */
+export function getTimerDisplay(token: any): string {
+	return formatTimerDuration(token);
 }
 
 // Strip ANSI escape codes to get visible text (used for smart-join boundary checks)
@@ -48,12 +47,18 @@ function buildInstruction(
 		if (token.type === "comment" || token.type === "declaration") continue;
 
 		if (token.type === "timer") {
-			parts.push(chalk.yellow(formatTimer(token, " ")));
+			parts.push(chalk.yellow(getTimerDisplay(token)));
 			continue;
 		}
 
 		if (token.type === "temperature") {
 			parts.push(chalk.red(getTempDisplay(token)));
+			continue;
+		}
+
+		// The state only: its note is on the target line under the step.
+		if (token.type === "checkpoint") {
+			parts.push(chalk.cyan.underline(token.state));
 			continue;
 		}
 
@@ -106,6 +111,7 @@ interface Props {
 	registry: CompilationResult["registry"];
 	massMap: Record<string, number>;
 	width: number;
+	lang?: string;
 }
 
 export default function StepView({
@@ -121,7 +127,9 @@ export default function StepView({
 	registry,
 	massMap,
 	width,
+	lang,
 }: Props) {
+	const cookWords = getDictionary(lang).cook;
 	const { step, timers, sectionTitle } = flatStep;
 	const now = Date.now();
 
@@ -166,6 +174,14 @@ export default function StepView({
 	const rightW = Math.max(20, innerW - LEFT_W - 2);
 
 	const instruction = buildInstruction(step.content ?? [], registry);
+	const targetLines = stepTargetStates(step).map((c, i) => (
+		// biome-ignore lint/suspicious/noArrayIndexKey: target states have no natural id
+		<Text key={i} wrap="wrap">
+			<Text color="cyan">{`${cookWords.targetState} `}</Text>
+			<Text bold>{c.state}</Text>
+			{c.note && <Text dimColor>{` — ${c.note}`}</Text>}
+		</Text>
+	));
 
 	return (
 		<Box flexDirection="column" paddingX={2} paddingY={1} width={width}>
@@ -247,6 +263,8 @@ export default function StepView({
 					</Box>
 					<Box flexDirection="column" width={rightW}>
 						<Text wrap="wrap">{instruction}</Text>
+						{targetLines.length > 0 && <Text> </Text>}
+						{targetLines}
 					</Box>
 				</Box>
 			) : (
@@ -283,6 +301,8 @@ export default function StepView({
 						</>
 					)}
 					<Text wrap="wrap">{instruction}</Text>
+					{targetLines.length > 0 && <Text> </Text>}
+					{targetLines}
 				</>
 			)}
 
@@ -296,6 +316,11 @@ export default function StepView({
 						<Text key={t.id} color="green">
 							{"  ✓ "}
 							{t.name} — DONE <Text dimColor>[any key to dismiss]</Text>
+							{t.checks && (
+								<Text color="cyan">
+									{`  ${fillTemplate(cookWords.checkTargetState, { states: t.checks.join(", ") })}`}
+								</Text>
+							)}
 						</Text>
 					))}
 					<Text> </Text>

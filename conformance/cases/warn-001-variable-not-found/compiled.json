@@ -104,11 +104,6 @@
         "start": 56,
         "end": 72
       }
-    },
-    {
-      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
-      "message": "Cannot compute relative quantity for 'salt' because the mass of target 'dough' is unknown.",
-      "item": "salt"
     }
   ],
   "metrics": {

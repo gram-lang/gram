@@ -1,14 +1,8 @@
-import changelog from "../../../../CHANGELOG.md?raw";
+import { getChangelogReleases } from "./changelog";
 
-// Each release heading reads `## [1.3.0](<compare url>) - 2026-09-29`, and the
-// changelog page slugs it the way Starlight slugs every heading: "130---2026-09-29".
-const RELEASE_HEADING =
-	/^## \[(\d+\.\d+\.\d+)\]\([^)]*\) - (\d{4}-\d{2}-\d{2})$/gm;
-
-const anchors = new Map<string, string>();
-for (const [, version, date] of changelog.matchAll(RELEASE_HEADING)) {
-	anchors.set(version!, `${version!.replace(/\./g, "")}---${date}`);
-}
+const anchors = new Map<string, string>(
+	getChangelogReleases().map((entry) => [entry.version, entry.anchor]),
+);
 
 /**
  * The anchor of a release on the changelog page, or undefined for a version

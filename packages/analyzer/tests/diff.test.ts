@@ -24,6 +24,19 @@ describe("diffRecipes — temperature ranges", () => {
 		expect(temperatures[0]?.to?.range).toEqual({ min: 100, max: 400 });
 	});
 
+	it("detects a change of note on the same value (1.5)", () => {
+		const a = compileRecipe("## Section\n\nBake at ^{180C}(fan).\n");
+		const b = compileRecipe("## Section\n\nBake at ^{180C}(grill).\n");
+		const { temperatures } = diffRecipes(a, b);
+		expect(temperatures).toHaveLength(1);
+		expect(temperatures[0]?.from).toMatchObject({ value: 180, note: "fan" });
+		expect(temperatures[0]?.to).toMatchObject({ value: 180, note: "grill" });
+		const c = compileRecipe("## Section\n\nBake at ^{180C}.\n");
+		const added = diffRecipes(c, a).temperatures;
+		expect(added).toHaveLength(1);
+		expect(added[0]?.from && "note" in added[0].from).toBe(false);
+	});
+
 	it("reports no change when both value and range are identical", () => {
 		const a = compileRecipe("## Section\nBake at ^{200-300C}.\n");
 		const b = compileRecipe("## Section\nBake at ^{200-300C}.\n");
@@ -191,6 +204,20 @@ describe("diffRecipes — same-named tokens within a single section (finding B3)
 		expect(timers).toHaveLength(1);
 		expect(timers[0]?.from).toBe("10 min");
 		expect(timers[0]?.to).toBe("15 min");
+	});
+});
+
+// A refused timer (`~{1:30}`) keeps only what was written: the diff shows
+// that writing, never "?".
+describe("diffRecipes — refused timers", () => {
+	it("shows the writing of a refused timer", () => {
+		const a = compileRecipe("Bake ~oven{1:30}.\n");
+		const b = compileRecipe("Bake ~oven{1:30 h}.\n");
+
+		const { timers } = diffRecipes(a, b);
+		expect(timers).toHaveLength(1);
+		expect(timers[0]?.from).toBe("1:30");
+		expect(timers[0]?.to).toBe("90 min");
 	});
 });
 
@@ -414,5 +441,55 @@ describe("diffRecipes — the active time is the schedule's", () => {
 			(t) => t.field === "activeTime",
 		);
 		expect(active).toEqual({ field: "activeTime", from: 50, to: 55 });
+	});
+});
+
+describe("diffRecipes — target states (1.5)", () => {
+	const recipe = (line: string) => compileRecipe(`## Crème\n\n${line}\n`);
+
+	it("reports an added and a removed target state", () => {
+		const a = recipe("Cuire la crème.");
+		const b = recipe("Cuire la crème jusqu'à ={la nappe}(test).");
+		const added = diffRecipes(a, b);
+		expect(added.hasChanges).toBe(true);
+		expect(added.checkpoints).toEqual([
+			{
+				section: "Crème",
+				change: "added",
+				to: { state: "la nappe", note: "test" },
+			},
+		]);
+		expect(diffRecipes(b, a).checkpoints).toEqual([
+			{
+				section: "Crème",
+				change: "removed",
+				from: { state: "la nappe", note: "test" },
+			},
+		]);
+	});
+
+	it("reports a change of state or of note", () => {
+		const a = recipe("Cuire jusqu'à ={la nappe}(test).");
+		expect(
+			diffRecipes(a, recipe("Cuire jusqu'à ={épais}(test).")).checkpoints,
+		).toEqual([
+			{
+				section: "Crème",
+				change: "changed",
+				from: { state: "la nappe", note: "test" },
+				to: { state: "épais", note: "test" },
+			},
+		]);
+		expect(
+			diffRecipes(a, recipe("Cuire jusqu'à ={la nappe}.")).checkpoints[0]?.to,
+		).toEqual({ state: "la nappe" });
+	});
+
+	it("reports nothing when the target states are the same", () => {
+		const a = recipe("Cuire jusqu'à ={la nappe}(test).");
+		const result = diffRecipes(a, recipe("Cuire jusqu'à ={la nappe}(test)."));
+		expect(result.checkpoints).toEqual([]);
+		expect(result.preparations).toEqual([]);
+		expect(result.hasChanges).toBe(false);
 	});
 });

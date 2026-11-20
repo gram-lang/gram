@@ -136,6 +136,7 @@ export const fr: GramLocale = {
 		runSheetInStock: "en stock",
 		runSheetProgramStep: "étape {n}",
 		runSheetProgramSteps: "étapes {from} à {to}",
+		// @remove-in: 2.0.0 [i18n-run-sheet-range]
 		runSheetRange: "{min} à {max}",
 		runSheetPossibleFrom: "Possible dès {time}.",
 		runSheetFixedService:
@@ -192,6 +193,11 @@ export const fr: GramLocale = {
 		tooltipBakers: "% boulanger",
 		tooltipTakenFrom: "Prélevé sur",
 		alternatives: "Alternatives",
+		// Une proportion avec unités (`1 / 100 g @&farine`) : sa ligne dans la
+		// bulle, et les deux formes relatives (`70 %`, `1 / 100 g`) tant
+		// qu'elles ne sont pas calculées.
+		tooltipRatio: "Proportion",
+		relativeOf: "{amount} de {target}",
 		// The deprecated portions stepper of the HTML recipe (`interactiveScaling`).
 		// @remove-in: 2.0.0 [renderer-interactive-scaling]
 		decreasePortions: "Diminuer les portions",
@@ -199,7 +205,7 @@ export const fr: GramLocale = {
 		increasePortions: "Augmenter les portions",
 		returnToStep: "Retour à l'étape",
 		mixedUnitsTooltip:
-			"Impossible de fusionner en un seul total — ajoutez une densité à la base de données pour les convertir",
+			"Unités mixtes : impossible de fusionner en un seul total — ajoutez une densité à la base de données pour les convertir",
 		mixedUnits: "Unités mixtes",
 		copyShoppingList: "Copier la liste",
 		copied: "Copié !",
@@ -367,6 +373,10 @@ export const fr: GramLocale = {
 				"Écrit la quantité de chaque ingrédient dans le texte des étapes, juste après son nom.",
 			nutritionBasis: "Base nutritionnelle",
 			nutritionBasisAuto: "Automatique (toutes les bases côte à côte)",
+			clock: "Format de l'heure",
+			clockAuto: "Automatique (selon votre région)",
+			clock12h: "12 heures (1:00 PM)",
+			clock24h: "24 heures (13:00)",
 			rejectedSlots: "Créneaux non retenus :",
 			forceReference: "Forcer la référence :",
 			autoDetect: "Auto (détecte @*)",
@@ -402,6 +412,8 @@ export const fr: GramLocale = {
 				"Exprime chaque ingrédient en pourcentage d'un ingrédient de base fixé à 100 % (par défaut la farine, ou l'ingrédient de votre choix), facilitant l'évaluation des équilibres et des ratios.",
 			comments:
 				"Affiche ou masque les commentaires écrits dans la recette avec // : les notes seules sur une ligne et celles en fin de ligne. Dans le plan de marche, ils sont mis à part, discrètement.",
+			clock:
+				"La façon d'écrire l'heure dans le plan de marche et les horaires suggérés. En automatique, elle suit la région de votre navigateur.",
 			stepQuantities:
 				"Rappelle chaque quantité dans l'étape qui l'utilise, avec son poids en grammes si les masses sont standardisées. Décochez pour des étapes plus courtes : les quantités restent dans les listes d'ingrédients.",
 			nutritionBasis:
@@ -443,12 +455,21 @@ export const fr: GramLocale = {
 			show: "Afficher",
 			expandConsole: "Développer la console",
 			collapseConsole: "Réduire la console",
+			notInDatabase: "Absent de la base d'exemple.",
+			showDatabase: "Voir la base",
 		},
 		errorState: {
 			title: VIEWS_PAUSED.title,
 			blockingDescription: VIEWS_PAUSED.description,
 			jumpToError: "Aller à l'erreur",
 			line: "Ligne",
+		},
+		database: {
+			tabLabel: "Base d'ingrédients, en lecture seule",
+			project:
+				"Base d'exemple en lecture seule. Dans un projet, ce fichier ingredients.yaml est le vôtre (modifiable à la main ou aidé par le CLI).",
+			docLink: "Gérer sa base de données d'ingrédients",
+			docHref: "/fr/docs/how-to/manage-database",
 		},
 		tabs: {
 			addFile: "Ajouter un fichier",
@@ -474,5 +495,15 @@ export const fr: GramLocale = {
 		statusValid: "Valide",
 		statusWarnings: "Avertissements",
 		copyBtn: "Copier dans le presse-papier",
+	},
+	cook: {
+		targetState: "État attendu :",
+		checkTargetState: "Vérifiez : {states}",
+	},
+	languageServer: {
+		anchorReady: "Prête {duration} avant d'être utilisée.",
+		anchorInDays: "En jours : ouvre sa propre journée de travail.",
+		anchorInHours:
+			"En heures ou en minutes : une échéance dans la journée, sans journée de travail à part.",
 	},
 };

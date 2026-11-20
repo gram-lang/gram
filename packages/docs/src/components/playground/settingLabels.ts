@@ -6,7 +6,11 @@ import {
 } from "@gram-lang/renderer";
 
 /** The view settings the playground offers as a list of choices. */
-export type ChoiceSettingKey = "miseEnPlace" | "rests" | "nutritionBasis";
+export type ChoiceSettingKey =
+	| "miseEnPlace"
+	| "rests"
+	| "nutritionBasis"
+	| "clock";
 
 /**
  * The words of each value of a choice setting, in the reader's language. The
@@ -31,6 +35,11 @@ const LABELS: {
 		total: (t) => t.renderer.nutritionWholeRecipe,
 		perPortion: (t) => t.renderer.nutritionPerPortion,
 		per100g: (t) => t.renderer.nutritionPer100g,
+	},
+	clock: {
+		auto: (t) => t.playground.options.clockAuto,
+		"12h": (t) => t.playground.options.clock12h,
+		"24h": (t) => t.playground.options.clock24h,
 	},
 };
 

@@ -1,0 +1,14 @@
+---
+title: Decimal Comma
+portions: 4
+---
+
+## Dough ~{-4,5h} ->&dough
+
+Mix @flour{1,5 kg}, @salt{0,125 kg}, @butter{1.000 kg} and @milk{0,5-0,75 l}, then @water{12,5% @&flour}.
+
+Knead on #board{1} and rest ~{1,5 h}.
+
+## Bake
+
+Bake &dough{} at ^{180,5°C} for ~{2,25 h}.

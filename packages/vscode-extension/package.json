@@ -2,7 +2,7 @@
   "name": "gram-lang",
   "displayName": "Gram - Recipe Language",
   "description": "Syntax highlighting and language intelligence for Gram recipe files",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "private": true,
   "qna": false,
   "publisher": "gram-lang",
@@ -185,6 +185,21 @@
           ],
           "default": "show",
           "description": "Whether the preview writes the quantities of the ingredients in the text of the steps."
+        },
+        "gram.clock": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "12h",
+            "24h"
+          ],
+          "enumDescriptions": [
+            "As your system's region writes the time. Without auto, the `clock` setting of the project's .gram/config.yaml is used when it sets one.",
+            "12 hours: 1:00 PM.",
+            "24 hours: 13:00."
+          ],
+          "default": "auto",
+          "description": "How the run sheet and the serving time suggestions write the times of day."
         },
         "gram.bakersMath": {
           "type": "boolean",

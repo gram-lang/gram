@@ -20,6 +20,7 @@ export const SETTING_STORAGE_KEYS: Record<StoredSettingKey, string> = {
 	nutritionBasis: "gram-playground-nutrition-basis",
 	bakersMathOnly: "gram-playground-bakers-math-only",
 	stepQuantities: "gram-playground-step-quantities",
+	clock: "gram-playground-clock",
 	bakersMath: "gram-playground-bakers-math",
 	massStandardization: "gram-playground-mass-standardization",
 	yieldCalculation: "gram-playground-yield-calculation",

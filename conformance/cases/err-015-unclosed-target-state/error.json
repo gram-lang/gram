@@ -1,0 +1,7 @@
+{
+  "message": "Gram Syntax Error: Unclosed target state '={la nappe' (missing '}'). Expected the state that ends the step, e.g. ={ribbon stage}.",
+  "offset": 24,
+  "expected": "a target state in braces, e.g. ={ribbon stage}",
+  "code": null,
+  "file": null
+}

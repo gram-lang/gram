@@ -80,7 +80,7 @@ describe("the comments option, in the run sheet", () => {
 		const [line] = describeRunSheet(sheet, compiled).days[0]!.visits[0]!
 			.program;
 		expect(line!.steps.map((s) => s.text)).toEqual([
-			"Mix flour (keep it cold) and stir 5 min.",
+			"Mix flour (keep it cold) and stir 5\u00A0min.",
 			"Do not overmix.",
 			"Bake at 200 °C.",
 		]);
@@ -91,7 +91,7 @@ describe("the comments option, in the run sheet", () => {
 			"Mix **flour** *(keep it cold)* and stir",
 		);
 		expect(runSheetToText(sheet, compiled)).toContain(
-			"Mix flour (keep it cold) and stir 5 min.",
+			"Mix flour (keep it cold) and stir 5\u00A0min.",
 		);
 	});
 
@@ -100,7 +100,7 @@ describe("the comments option, in the run sheet", () => {
 		const [line] = describeRunSheet(sheet, compiled, options).days[0]!
 			.visits[0]!.program;
 		expect(line!.steps.map((s) => [s.number, s.text])).toEqual([
-			[1, "Mix flour and stir 5 min."],
+			[1, "Mix flour and stir 5\u00A0min."],
 			[2, "Bake at 200 °C."],
 		]);
 		for (const out of [

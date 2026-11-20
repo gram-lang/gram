@@ -11,55 +11,92 @@ import Term from '../../../../../components/Term.astro';
 
 You can define `~timer` declarations and durations in your recipes using the `~` symbol.
 
-## Basic declaration
+## Writing a duration
 
-A `~timer` **must** specify an explicit unit inside the braces. Fuzzy prose such as `~{about 10 minutes}` is invalid and rejected by the parser.
+Every `~timer` requires a recognizable duration and unit inside braces (`~{25min}`); free-text durations like `~{about 10 minutes}` or `~{half an hour}` trigger a compiler warning.
 
 ```gram
-Bake for ~{25min}.
+[Bake] For ~{25min}.
 ```
 
 **Supported units:**
-- `min` (minutes) - Canonical preferred standard.
+- `min` (minutes) — canonical preferred standard (`m` and `minutes` normalize to `min`).
 - `h` (hours).
 - `d` (days).
 - `s` (seconds).
 
-:::note
-Shorthand `m` or the word `minutes` are automatically normalized to `min` by the compiler.
-:::
-
-These units are resolved through Gram's multi-language time dictionary: localized aliases below are recognized natively regardless of the recipe language (e.g. in a French recipe, `~{2j}` resolves identically to `~{2d}`).
+Units resolve through Gram's multi-language time dictionary, so localized aliases work regardless of the recipe language (`~{2j}` equals `~{2d}`, and `~{1 hr}` works anywhere).
 
 <GeneratedTable table={timeUnitsTable("en")} />
 
-### Timer names
-You can assign an explicit name to a `~timer`. This is especially useful for passive background tasks: when multiple timers run concurrently (like a dough fermenting while a stock simmers), named timers allow user interfaces and production run sheets to track each process simultaneously without confusion.
+### Natural and compound forms
+<Since v="1.5.0" />
+
+Write durations the way recipes naturally do. Spaces don't matter (`~{1h30}`, `~{1 h 30}`, `~{1 hr 30 mins}` all mean 1 h 30 min), and every view formats them consistently in the reader's language:
 
 ```gram
-Boil @eggs{2} for ~eggs{3min}.
+[Simmer] The @stock{2 l} for ~{1h30}.
+
+[Rise] Let the @dough{} rise ~_{1 hr 30 mins}.
+
+[Age] The @ham{1} in the cellar ~_{2d 4h}.
 ```
+
+- **Compound units** (`~{1h30min}`, `~{2 d 4 h}`, `~{1h + 30min}`): list units from largest to smallest, each once. A trailing number without a unit is allowed right after hours (minutes) or minutes (seconds) if it is a whole number under 60 (`~{1h30}`, `~{2min30}`, not `~{1h75}`). With its unit written out, a number is read as written, even past 60: `~{1 h 75 min}` is 2 h 15 min. Decimals and fractions only apply to single-unit durations (`~{1.5 h}`, `~{1½ h}`, not `~{1.5h30}`).
+- **Clock notation** (`~{1:30:00}`, `~{1:30 h}`, `~{4:30 min}`): three parts always work (`hh:mm:ss`); two parts require a leading unit so `1:30` isn't ambiguous between hours and minutes.
+- **Prime notation** (`~{5'}`, `~{5'30"}`, `~{45"}`): `'` counts whole minutes and `"` counts whole seconds (typographic quotes `’`, `′`, `″`, and `''` also work). Primes read like a clock: after minutes, seconds stay under 60 (`~{6'30"}`, not `~{5'90"}`).
+- **Decimals** (`~{1.5 h}`, `~{1,5 h}`): periods and commas both work (see [decimal numbers](/docs/reference/syntax/ingredients/#decimal-numbers)).
+
+:::caution
+A decimal is a fraction of the unit, not minutes: `~{1.30 h}` is 1 h 18 min, not 1 h 30 min. Write `~{1h30}` or `~{1.5 h}` for an hour and a half.
+:::
+
+| Accepted | Rejected | Use instead |
+| :--- | :--- | :--- |
+| `~{1h30}`, `~{1 hr 30}`, `~{1h + 30min}` | `~{1:30}` *(ambiguous)* | `~{1h30}` or `~{1:30 min}` |
+| `~{1:30 h}`, `~{1:30:00}` | `~{1h75}` *(≥ 60 min)* | `~{2h15}` |
+| `~{4'30"}`, `~{4min30}` | `~{30min 1h}` *(wrong order)* | `~{1h30}` |
+| `~{1.5 h}`, `~{1,5 h}`, `~{1½ h}` | `~{1.5h30}` *(decimal in compound)* | `~{1h30}` or `~{1.5 h}` |
+| `~{45 min - 1 h}`, `~{1h30-2h}` | `~{half an hour}` *(words)* | `~{30min}` |
+
+Unrecognized durations raise an `INVALID_DURATION` warning with a suggested fix and are excluded from total times.
 
 ### Exact times and ranges
-<Since v="1.4.0" />
 
-By default, a timer is **exact**: `~_{12h}` lasts exactly 12 hours. When an operation has variable or flexible duration, specify an interval: this provides official elasticity for Gram's scheduling engine.
+By default, a timer is **exact**: `~_{12h}` lasts exactly 12 hours. When an operation has a variable or flexible duration, specify a range:
 
 ```gram
-Let the dough rest in the fridge ~_{12-24h}.
+[Chill] Let the dough rest in the fridge ~_{12-24h}.
 
-Roast the chicken for ~{40-50min}.
+[Roast] The chicken for ~{40-50min}.
 ```
 
-The interpretation of a range differs fundamentally based on timer type:
+Write the shorter duration first, following the duration formats above. You can omit the left-hand unit only when it is a bare number and the right side has a single unit (`~{1-2 h}`, `~{5-7'}`, `~{1:30-2:00 h}`); for compound or mixed-unit bounds, write both sides in full (`~_{2h30-3h}`, `~{45 min - 1 h}`).
 
-- **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning and run sheets](/docs/explanation/planning/)).
-- **How the <Term id="runSheet" /> reflects ranges.** The run sheet displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 (12 to 48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Can't start earlier"). See [Plan a meal](/docs/how-to/plan-a-meal/).
-- **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
+Ranges behave differently depending on whether the timer is passive or active:
 
-:::note
-Deprecated fields of the compiled recipe (`steps[].timings`, `steps[].backgroundTasks`, and `metrics`) continue to evaluate ranges as their average value until version 2.0.0. Consume the modern `schedule` blocks instead.
-:::
+- **Passive range (`~_{12-24h}`) — elasticity**: "ready from 12 hours, optimal up to 24 hours." By default, timelines use the shortest bound (configurable to `shortest`, `balanced`, or `longest` via `--rests` / `gram.rests`), and calendar planning can stretch or compress it within those bounds to fit your kitchen hours.
+- **Active range (`~{40-50min}`) — safety margin**: planned on the longest bound (50 minutes) so service is never delayed (`rests` does not apply).
+
+For how ranges shape margins and kitchen visits on the <Term id="runSheet" />, see [Planning and run sheets](/docs/explanation/planning/) and [Plan a meal](/docs/how-to/plan-a-meal/).
+
+### Proportional times
+<Since v="1.5.0" />
+
+Some cooking times scale with weight or count—such as 15 minutes per 500 g of roast, or 4 minutes per cutlet. Write the duration, a slash, and the reference amount of an ingredient declared earlier in the section, following the same syntax as a [ratio with units](/docs/reference/syntax/relative-quantities/#ratios-with-units):
+
+```gram
+[Season] The @roast{1.2 kg} and roast ~{15 min / 500 g @&roast}. // 36 min
+
+[Braise] The @shoulder{2 kg} ~_{1:30 h / 1 kg @&shoulder}. // 3 h
+
+[Fry] The @cutlets{4} ~{4 min / @&cutlets}. // 16 min
+```
+
+- The duration accepts any standard format (`1h30`, `1:30 h`, or a range like `15-20 min`), while the target amount must be a single number.
+- A time per piece applied to a weight (`~{4 min / @&cutlets}` with `@cutlets{800 g}`) relies on `unit_weight` in your ingredient database; if missing, the timer stays uncomputed with a warning.
+- Scaling the recipe recalculates proportional times and updates the schedule automatically.
+- Multipliers (`~{15 min / 500 g @&roast * 2}`) and proportional section anchors are not supported yet.
 
 ## Active vs passive
 
@@ -78,7 +115,7 @@ The Gram compiler builds a complete execution timeline for each recipe. To achie
 By default, a `~timer` is active. It requires direct hands-on involvement: the step is **blocking** and demands undivided attention before moving on to subsequent operations.
 
 ```gram
-Whisk the @heavy cream{} continuously for ~{5min}.
+[Whisk] The @heavy cream{} continuously for ~{5min}.
 ```
 > ⏱️ **Result:** Adds 5 minutes to **active time**.
 
@@ -86,21 +123,32 @@ Whisk the @heavy cream{} continuously for ~{5min}.
 Add the `_` modifier to designate a passive `~timer`. This represents a **background task**. You initiate the timer (e.g. putting a dish into the oven) and can immediately proceed with subsequent steps.
 
 ```gram
-Bake in the #oven for ~_{45min}.
+[Bake] In the #oven for ~_{45min}.
 
-Meanwhile, prepare the glaze...
+[Prepare] Meanwhile, prepare the glaze...
 ```
 > ⏱️ **Result:** Adds 0 minutes to active time, but extends **idle / passive duration** to ensure these 45 minutes elapse before removing the dish.
+
+## Naming timers and tracks
+
+You can assign an explicit identifier right after `~` or `~_` to label a timer or queue background tasks on a shared resource.
+
+### Timer labels
+When multiple operations run concurrently (like eggs boiling while a stock simmers), naming a timer allows user interfaces and run sheets to track each process clearly:
+
+```gram
+[Boil] @eggs{2} for ~eggs{3min}.
+```
 
 ### Sequential passive timers (named tracks)
 By default, passive timers run concurrently with the rest of the recipe. However, certain background operations sharing equipment cannot physically overlap (e.g. blind-baking a crust for 10 minutes, then lowering the heat and continuing baking for 30 minutes in the same oven).
 
-To enforce **sequential** execution of passive timers, assign them the **same track name**:
+To enforce **sequential** execution of passive timers, give them the **same track name**:
 
 ```gram
-Bake in the #oven at 240°C for ~_baking{10min}.
+[Bake] In the #oven at ^{465°F} for ~_baking{10min}.
 
-Lower the heat to 180°C and bake for ~_baking{30min}.
+[Bake] Lower the heat to ^{350°F} and bake for ~_baking{30min}.
 ```
 
 > ⏱️ **Result:** Because both timers share the track name `baking`, Gram places them on the same background track. The 30-minute timer will only start *after* the 10-minute timer completes. Idle waiting time increases by 40 minutes, while active hands-on time remains zero.
@@ -109,11 +157,62 @@ Lower the heat to 180°C and bake for ~_baking{30min}.
 Two passive timers that overlap in steps citing the **same cookware** (`#oven` in both) with no track in common are reported by `PASSIVE_OVERLAP_SAME_COOKWARE`: the message suggests a named track. It is only informational, since two trays can share an oven. See [Warnings](/docs/reference/api/warnings/#passive_overlap_same_cookware).
 :::
 
+## Section retro-planning
+
+Adding a `~{...}` annotation to a `## Section` header defines an anticipation deadline. This tells the compiler when the section must conclude relative to the final step where it is consumed.
+
+**This acts as a temporal anchor.** An annotation like `~{-2d}` instructs the compiler to complete this section **2 full days before** it is needed in subsequent steps.
+
+To ensure positive relative timestamps starting at `0`, the compiler normalizes the timeline: this anticipated section becomes the new start point (Time 0), and all subsequent operations are shifted proportionally. Its mise en place moves accordingly, scheduled immediately before the section, two days prior to service.
+
+```gram
+## Puff pastry ~{-2d}
+```
+
+The puff pastry must be completed **2 days** before final assembly.
+
+### Days and hours
+
+The chosen unit defines the anchor's semantics:
+
+- **An anchor in days** (`~{-1d}`, `~{-2d}`) opens a distinct working day (day before, two days before), anchoring the "by working day" strategy and day labels (D-1, D-2).
+- **An anchor in hours or minutes** (`~{-18h}`, `~{-90min}`) specifies a precise deadline within that section's scheduled day, without opening a new working day.
+
+Working days are designed to fit within a 24-hour span: if a long passive duration pushes a day's work out of its window (such as a `~{-1d}` dough fermenting for 50 hours), the compiler emits `DAY_OVERFLOW` and recommends anchoring the section further back.
+
+### Strict syntax
+
+Section header retro-planning annotations require a **strictly negative** duration:
+
+- A **required** leading `-` sign.
+- A non-zero duration in days, hours, or minutes (compound and clock forms are both supported; see [Writing a duration](#writing-a-duration)).
+- A single duration—anchors cannot be ranges or include seconds.
+
+```gram
+## Puff pastry ~{-2d}
+
+[Fold] The @butter{250g} into the @dough{500g}.
+
+## Brioche ~{-1d 12h}
+
+[Knead] The @flour{500g}.
+
+## Ganache ~{-1h30}
+
+[Pour] The @cream{200ml} over the @chocolate{200g}.
+```
+
+Free prose (`~{the day before}`), positive values (`~{2h}`), and zero values (`~{0h}`) are invalid and trigger compiler warnings.
+
+Units resolve through the multi-language time dictionary used by `~timer`: `j`, `jour`, and `jours` are recognized aliases for `d`.
+
+See also: [Retro-planning (Scheduling)](/docs/reference/syntax/document-structure#retro-planning-scheduling) in the document structure reference.
+
 ## How time is calculated
 
 Behind the scenes, Gram tracks four distinct time metrics to establish realistic schedules:
 
-:::note[⏱️ The 4 time metrics]
+:::note[The 4 time metrics]
 1. **Preparation time** (mise en place): Time spent gathering and preparing raw ingredients and cookware (fetching, weighing, peeling, chopping).
 2. **Active time**: Cumulative hands-on duration spent executing culinary steps.
 3. **Passive time**: Autonomous baking, resting, fermentation, or idle waiting time.
@@ -135,7 +234,6 @@ Here is how the compiler converts syntax elements into working minutes:
 | **Step without any timer** | - | **+ 2 min** (default fallback) | - |
 
 ### When the mise en place happens
-<Since v="1.4.0" />
 
 Each section has its own mise en place (gathering and preparing ingredients and cookware). Gram supports three layout strategies without requiring any changes to the recipe source text:
 
@@ -156,50 +254,6 @@ Gram natively implements an **As Late As Possible (ALAP)** scheduling algorithm.
 
 For a deeper architectural exploration, see the [ALAP scheduling deep dive](/docs/explanation/alap-scheduling/).
 
-## Section retro-planning
-
-Adding a `~{...}` annotation to a `## Section` header defines an anticipation deadline. This tells the compiler when the section must conclude relative to the final step where it is consumed.
-
-**This acts as a temporal anchor.** An annotation like `~{-2d}` instructs the compiler to complete this section **2 full days before** it is needed in subsequent steps.
-
-To ensure positive relative timestamps starting at `0`, the compiler normalizes the timeline: this anticipated section becomes the new start point (Time 0), and all subsequent operations are shifted proportionally. Its mise en place moves accordingly, scheduled immediately before the section, two days prior to service.
-
-```gram
-## Puff pastry ~{-2d}
-```
-
-The puff pastry must be completed **2 days** before final assembly.
-
-### Days and hours
-<Since v="1.4.0" />
-
-The chosen unit defines the anchor's semantics:
-
-- **An anchor in days** (`~{-1d}`, `~{-2d}`) opens a distinct working day (day before, two days before), anchoring the "by working day" strategy and day labels (D-1, D-2).
-- **An anchor in hours or minutes** (`~{-18h}`, `~{-90min}`) specifies a precise deadline within that section's scheduled day, without opening a new working day.
-
-Working days are designed to fit within a 24-hour span: if a long passive duration pushes a day's work out of its window (such as a `~{-1d}` dough fermenting for 50 hours), the compiler emits `DAY_OVERFLOW` and recommends anchoring the section further back.
-
-### Strict syntax
-
-Section header retro-planning annotations require a **strictly negative** signed number followed by a valid unit:
-
-- A **required** leading `-` sign.
-- A non-zero numeric value.
-- A canonical unit: `d` (days), `h` (hours), or `min` (minutes), or recognized localized aliases.
-
-```gram
-## Puff pastry ~{-2d}
-
-## Ganache ~{-30min}
-```
-
-Free prose (`~{the day before}`), positive values (`~{2h}`), and zero values (`~{0h}`) are invalid. Existing recipes using legacy formats still compile for backward compatibility, but produce compiler warnings.
-
-Units resolve through the multi-language time dictionary used by `~timer`: `j`, `jour`, and `jours` are recognized aliases for `d`.
-
-See also: [Retro-planning (Scheduling)](/docs/reference/syntax/document-structure#retro-planning-scheduling) in the document structure reference.
-
 ## Error handling
 
 The compiler validates `~timer` declarations and section retro-planning annotations, emitting typed warnings for malformed data:
@@ -208,9 +262,11 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (`~timer`): Unrecognized units (e.g. `~{30 lightyears}`) trigger `INVALID_UNIT`.
 - **Missing Unit** (section retro-planning): `~{-2}`, free text, positive (`~{2h}`), or zero values (`~{0h}`) trigger `MISSING_UNIT`.
 - **Invalid Unit** (section retro-planning): Unrecognized units trigger `INVALID_UNIT`.
+- **Invalid Duration**: Unrecognized or ambiguous duration formats (`~{1:30}`, `~{1h75}`, `~{30min 1h}`, `~{1-2h30}`, `~{half an hour}`, or ranges/seconds in anchors) trigger `INVALID_DURATION` with a suggested fix; the timer is excluded from total time and the anchor is ignored.
+- **Ambiguous Number**: A comma followed by three digits (`~{1,000 min}`, `~{-1,000h}`) is parsed as a decimal (`1`) and triggers `AMBIGUOUS_NUMBER`.
 - **Time Paradox**: Anchors conflicting with dependency order (e.g. an ingredient anchored at `-10 min` needed by a section anchored at `-1 h`) trigger `TIME_PARADOX`.
 - **Track Contention**: Concurrent passive timers delayed on the same named track trigger `TRACK_CONTENTION`.
-- **Day overflow** *(Since 1.4.0)*: Passive durations pushing working day tasks beyond the 24-hour window trigger `DAY_OVERFLOW`.
+- **Day overflow**: Passive durations pushing working day tasks beyond the 24-hour window trigger `DAY_OVERFLOW`.
 - **Duration Out Of Range**: Durations exceeding 1,000 years are capped and trigger `DURATION_OUT_OF_RANGE`.
 
 Warnings are non-blocking by default, but can be enforced as errors via `gram check --strict`.

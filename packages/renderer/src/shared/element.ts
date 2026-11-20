@@ -3,13 +3,15 @@ import {
 	escapeHtml,
 	escapeMarkdownHtml,
 	getQty,
-	formatQuantityValue,
-	formatDecimalToFraction,
+	formatTemperature,
+	formatTimerDuration,
 	largerAmount,
-	type NumberStyle,
+	isWrittenInMetricMass,
 	round1,
+	formatRelative,
 } from "./utils";
-import { formatNumber, getDictionary, isMetricMassUnit } from "@gram-lang/i18n";
+import { formatUsageQuantity, quantityContext } from "./quantity";
+import { formatNumber, getDictionary, isTermValue } from "@gram-lang/i18n";
 
 import { DEFAULT_ICONS } from "./icons";
 import { type TooltipRow, tooltipCardAttrs } from "./tooltip-card";
@@ -59,26 +61,41 @@ function massMethodLabel(
 	return undefined;
 }
 
-/** How the numbers of a view are written: its language, its `formatFraction`. */
-function numberStyle(context: RenderContext): NumberStyle {
-	return { lang: context.lang, formatFraction: context.formatFraction };
-}
-
-/** A quantity as written: "2 tbsp", "1/2 tsp", "6". Empty without one. */
-function writtenQty(item: any, style: NumberStyle): string {
-	const qty = getQty(item, style);
-	if (!qty) return "";
-	const value =
-		qty.text || formatDecimalToFraction(qty.value, item.unit, style);
-	return `${value}${item.unit ? ` ${item.unit}` : ""}`;
-}
-
 /**
  * The tooltip of an ingredient in a step. What the text of the step already
  * says is not repeated: the quantity and its mass only when the step hides
  * them (`hideIngredientQty`), except an estimated mass, whose "~" the
  * tooltip explains (converted with an average density...).
  */
+/**
+ * The tooltip row of an amount that comes from another ingredient (`70% of
+ * flour`, `1 / 100 g of flour`), or of a proportional time. Only once the
+ * amount is resolved: one not resolved is already what the step (or the
+ * Quantity row, quantities hidden) shows.
+ */
+function relativeRow(item: any, context: RenderContext): TooltipRow[] {
+	const t = getDictionary(context.lang);
+	const formula = item.formula;
+	const source =
+		item.type === "timer"
+			? item.ratio
+			: formula && "ratio" in formula
+				? formula.ratio
+				: formula && "percent" in formula
+					? {
+							type: "RelativeQuantity",
+							percent: formula.percent,
+							target: formula.target,
+						}
+					: undefined;
+	if (!source) return [];
+	const resolved =
+		item.type === "timer" ? item.minutes !== undefined : isTermValue(item.qty);
+	if (!resolved) return [];
+	const value = formatRelative(source, context.lang);
+	return value ? [{ label: t.renderer.tooltipRatio, value }] : [];
+}
+
 function ingredientTooltip(
 	item: any,
 	context: RenderContext,
@@ -124,6 +141,8 @@ function ingredientTooltip(
 		});
 	}
 
+	rows.push(...relativeRow(item, context));
+
 	if (f.prep) {
 		rows.push({ label: t.renderer.tooltipPreparation, value: f.prep });
 	}
@@ -134,10 +153,15 @@ function ingredientTooltip(
 		const parentName =
 			context.registry?.ingredients?.[composite.parent]?.name ||
 			composite.parent;
-		const parentQty =
-			composite.quantity !== undefined && composite.quantity !== null
-				? `${composite.quantity}${composite.unit ? ` ${composite.unit}` : ""} `
-				: "";
+		const parentAmount = formatUsageQuantity(
+			{
+				qty: composite.quantity,
+				unit: composite.unit,
+				parts: composite.parts,
+			},
+			{ ...quantityContext(context), buying: false },
+		);
+		const parentQty = parentAmount ? `${parentAmount} ` : "";
 		rows.push({
 			label: t.renderer.tooltipTakenFrom,
 			value: `${parentQty}${parentName}`,
@@ -152,6 +176,25 @@ function ingredientTooltip(
 		},
 		t.renderer.colon,
 	);
+}
+
+/**
+ * An element of a step and the note glued to it (a temperature, a target
+ * state), in HTML. The note sits outside the element, which may never wrap:
+ * held with it in a group of its own, it may go to the next line
+ * (`.gram-nobr` only keeps its direct text unbreakable).
+ */
+function withNote(html: string, note: string, context: RenderContext): string {
+	if (!note) return html;
+	const groupClass = context.classes?.noteGroup || "note-group";
+	const prepClass = context.classes?.prepText || "prep";
+	return `<span class="${groupClass}">${html} <span class="${prepClass}">(${escapeHtml(note)})</span></span>`;
+}
+
+/** The note glued to an element, in Markdown or plain text: ` (note)`. */
+function noteSuffix(note: string, format: ElementFormat): string {
+	if (!note) return "";
+	return ` (${format === "text" ? note : escapeMarkdownHtml(note)})`;
 }
 
 const strategies: Record<
@@ -196,9 +239,6 @@ const strategies: Record<
 			}
 		}
 
-		const style = numberStyle(context);
-		const qty = getQty(item, style);
-
 		const prep = item.preparation || "";
 		const isOptional = item.modifiers?.includes("optional");
 
@@ -219,16 +259,9 @@ const strategies: Record<
 		// A shopping list is what you buy: 1000 g or more in kg, 1000 ml or
 		// more in l. Elsewhere a quantity is what you weigh, and stays as is.
 		const buying = context.formatMode === "shopping-list";
-		let plainQty = "";
-		let originalQtyStr = "";
-		if (qty) {
-			originalQtyStr =
-				(buying &&
-					typeof qty.value === "number" &&
-					largerAmount(qty.value, item.unit, context.lang)) ||
-				(qty.text || formatDecimalToFraction(qty.value, item.unit, style)) +
-					(item.unit ? ` ${item.unit}` : "");
-		}
+		// The amount, with the quantities that could not be added to it.
+		const originalQtyStr = formatUsageQuantity(item, quantityContext(context));
+		let plainQty = originalQtyStr;
 
 		if (item.bakersPercentage !== undefined) {
 			const perc = `${formatNumber(item.bakersPercentage, context.lang, 1)}%`;
@@ -236,21 +269,6 @@ const strategies: Record<
 			if (normalizedMass !== null) absMass = `${grams}g`;
 			else absMass = originalQtyStr;
 			plainQty = context.bakersMathOnly ? perc : `${perc} (${absMass})`;
-		} else {
-			plainQty = originalQtyStr;
-		}
-
-		if (
-			item.variable_entries &&
-			item.variable_entries.length > 0 &&
-			item.bakersPercentage === undefined
-		) {
-			plainQty = plainQty
-				? `${plainQty} + ${item.variable_entries.join(" + ")}`
-				: item.variable_entries.join(" + ");
-			if (originalQtyStr)
-				originalQtyStr = `${originalQtyStr} + ${item.variable_entries.join(" + ")}`;
-			else originalQtyStr = item.variable_entries.join(" + ");
 		}
 
 		// The standardized mass, next to the quantity as written, wherever it
@@ -260,7 +278,7 @@ const strategies: Record<
 		const massAddsInfo =
 			normalizedMass !== null &&
 			conversionMethod !== "relative" &&
-			!isMetricMassUnit(item.unit, context.lang);
+			!isWrittenInMetricMass(item, context.lang);
 		const massText =
 			massAddsInfo && item.bakersPercentage === undefined
 				? `${isEstimate ? (format === "text" ? "≈" : "~") : ""}${
@@ -453,14 +471,21 @@ const strategies: Record<
 	},
 
 	timer: (item, format, context) => {
-		const q = item.quantity || { value: "" };
-		const qVal = formatQuantityValue(q, context.lang);
-		// item.quantity can be a bare string (a rejected/free-text timer
-		// value — see processor.ts's INVALID_UNIT handling for TextQuantity),
-		// which has no `.value` of its own; the string itself *is* the value.
-		const dataValue = typeof q === "string" ? q : q.value;
-		const unitStr = item.unit ? ` ${item.unit}` : "";
+		// One writing of time in a page: the timer goes through formatDuration,
+		// like the computed times; a refused timer keeps what was written.
+		const shown = formatTimerDuration(
+			item,
+			context.lang,
+			context.formatDuration,
+		);
+		const q = item.quantity ?? "";
+		// A bare string quantity comes from a JSON compiled before 1.5.
+		const dataValue = typeof q === "object" ? q.value : q;
 		const isPassive = !!item.isPassive;
+		const minutesAttr =
+			typeof item.minutes === "number"
+				? ` data-minutes="${escapeHtml(String(item.minutes))}"`
+				: "";
 
 		if (format === "html") {
 			const t = getDictionary(context.lang);
@@ -471,9 +496,18 @@ const strategies: Record<
 			const tooltipStr = isPassive
 				? t.renderer.passiveTimeTooltip
 				: t.renderer.activeTimeTooltip;
-			return `<span class="${className}" data-tooltip="${tooltipStr}" data-value="${escapeHtml(dataValue)}" data-unit="${escapeHtml(item.unit || "")}">${icon} <span class="timer-text">${escapeHtml(qVal)}${escapeHtml(unitStr)}</span></span>`;
+			// A proportional time also says what its duration follows.
+			const ratioRows = relativeRow(item, context);
+			const tip =
+				ratioRows.length > 0
+					? tooltipCardAttrs(
+							{ title: tooltipStr, rows: ratioRows },
+							t.renderer.colon,
+						)
+					: ` data-tooltip="${tooltipStr}"`;
+			return `<span class="${className}"${tip} data-value="${escapeHtml(dataValue)}" data-unit="${escapeHtml(item.unit || "")}"${minutesAttr}>${icon} <span class="timer-text">${escapeHtml(shown)}</span></span>`;
 		} else if (format === "text") {
-			return styled(context, "timer", `${qVal}${unitStr}`);
+			return styled(context, "timer", shown);
 		} else {
 			const prefix =
 				context.icons?.hourglass !== undefined
@@ -486,7 +520,7 @@ const strategies: Record<
 			const suffix = isPassive
 				? ` (${getDictionary(context.lang).renderer.passive})`
 				: "";
-			return `${prefix}${escapeMarkdownHtml(qVal)}${escapeMarkdownHtml(unitStr)}${suffix}`;
+			return `${prefix}${escapeMarkdownHtml(shown)}${suffix}`;
 		}
 	},
 
@@ -496,30 +530,49 @@ const strategies: Record<
 			(format === "html"
 				? DEFAULT_ICONS.html.thermometer
 				: DEFAULT_ICONS.md.thermometer);
-		const className = context.classes?.temperature || "temp";
+		const value = formatTemperature(item, context.lang);
+		// The note (`^{160°C}(fan)`, 1.5) is an instruction: always in the
+		// sentence, on paper too, never only in a tooltip.
+		const note = item.note ? String(item.note) : "";
 		if (format === "text") {
-			const value = item.text
-				? String(item.text)
-				: `${formatQuantityValue(item.quantity || { value: "" }, context.lang)}${item.unit ? ` ${item.unit}` : ""}`;
-			return styled(context, "timer", value);
+			return styled(context, "timer", value) + noteSuffix(note, format);
 		}
-		if (item.text) {
-			const textVal = item.text;
-			if (format === "html") {
-				return `<span class="${className}" data-semantic="${escapeHtml(textVal)}">${termIcon} ${escapeHtml(textVal)}</span>`;
-			} else {
-				return `${termIcon}${escapeMarkdownHtml(textVal)}`;
-			}
-		} else {
-			const q = item.quantity || { value: "" };
-			const qVal = formatQuantityValue(q, context.lang);
-			const unitStr = item.unit ? ` ${item.unit}` : "";
-			if (format === "html") {
-				return `<span class="${className}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || "")}">${termIcon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
-			} else {
-				return `${termIcon}${escapeMarkdownHtml(qVal)}${escapeMarkdownHtml(unitStr)}`;
-			}
+		if (format !== "html") {
+			return `${termIcon}${escapeMarkdownHtml(value)}${noteSuffix(note, format)}`;
 		}
+		const className = context.classes?.temperature || "temp";
+		const data = item.text
+			? `data-semantic="${escapeHtml(item.text)}"`
+			: `data-value="${escapeHtml((item.quantity || { value: "" }).value)}" data-unit="${escapeHtml(item.unit || "")}"`;
+		return withNote(
+			`<span class="${className}" ${data}>${termIcon} ${escapeHtml(value)}</span>`,
+			note,
+			context,
+		);
+	},
+
+	// A target state (`={ribbon stage}`, 1.5): part of the sentence, marked
+	// so the cook sees what to look for, its note (how to check) always shown.
+	checkpoint: (item, format, context) => {
+		const state = String(item.state ?? "");
+		const note = item.note ? String(item.note) : "";
+		const icon =
+			context.icons?.checkpoint ??
+			(format === "html"
+				? DEFAULT_ICONS.html.checkpoint
+				: DEFAULT_ICONS.md.checkpoint);
+		if (format === "text") {
+			return styled(context, "checkpoint", state) + noteSuffix(note, format);
+		}
+		if (format !== "html") {
+			return `${icon}${escapeMarkdownHtml(state)}${noteSuffix(note, format)}`;
+		}
+		const className = context.classes?.checkpoint || "checkpoint";
+		return withNote(
+			`<span class="${className}" data-state="${escapeHtml(state)}">${icon} ${escapeHtml(state)}</span>`,
+			note,
+			context,
+		);
 	},
 
 	reference: (item, format, context) => {
@@ -528,8 +581,8 @@ const strategies: Record<
 		const ingredients = registry.ingredients || {};
 		const def = ingredients[item.id];
 		const name = def ? def.name : item.id || t.renderer.unknownReference;
-		const style = numberStyle(context);
-		const qty = getQty(item, style);
+		// The amount, with the quantities that could not be added to it.
+		const amount = formatUsageQuantity(item, quantityContext(context));
 
 		if (format === "html") {
 			const caretIcon =
@@ -540,72 +593,37 @@ const strategies: Record<
 			const refAttr = refId ? ` data-ref-id="${escapeHtml(refId)}"` : "";
 
 			if (mode === "inline") {
-				const qtyParts = qty
-					? [
-							writtenQty(item, numberStyle(context)),
-							...(item.variable_entries ?? []),
-						]
-					: [];
 				const tip = tooltipCardAttrs(
 					{
 						title: name,
 						subtitle: t.renderer.intermediateIngredient,
-						rows:
-							qtyParts.length > 0
-								? [{ label: t.renderer.quantity, value: qtyParts.join(" + ") }]
-								: [],
+						rows: [
+							...(amount
+								? [{ label: t.renderer.quantity, value: amount }]
+								: []),
+							...relativeRow(item, context),
+						],
 					},
 					t.renderer.colon,
 				);
 				return `<span class="${className}"${refAttr}${tip}>${caretIcon} ${escapeHtml(name)}</span>`;
-			} else {
-				let html = `<span class="${className}"${refAttr}>${caretIcon} ${escapeHtml(name)}`;
-				if (qty) {
-					const parts = [];
-					const baseQty =
-						qty.text || formatDecimalToFraction(qty.value, item.unit, style);
-					let first = escapeHtml(baseQty);
-					if (item.unit)
-						first += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
-					parts.push(first);
-					if (item.variable_entries && item.variable_entries.length > 0) {
-						parts.push(...item.variable_entries.map(escapeHtml));
-					}
-					html += ` <span class="quantity">${parts.join(" + ")}</span>`;
-				}
-				html += `</span>`;
-				return html;
 			}
+			let html = `<span class="${className}"${refAttr}>${caretIcon} ${escapeHtml(name)}`;
+			if (amount)
+				html += ` <span class="quantity">${escapeHtml(amount)}</span>`;
+			html += `</span>`;
+			return html;
 		} else if (format === "text") {
-			let detail = "";
-			if (qty) {
-				const parts = [
-					`${qty.text || formatDecimalToFraction(qty.value, item.unit, style)}${item.unit ? ` ${item.unit}` : ""}`,
-					...(item.variable_entries ?? []),
-				];
-				detail = parts.join(" + ");
-			}
 			const mode = context.formatMode || "inline";
 			return textRow(
 				mode === "inline" ? { ...context, textColumn: undefined } : context,
 				name,
 				styled(context, "reference", name),
-				detail,
+				amount,
 			);
 		} else {
 			let md = `👉*${escapeMarkdownHtml(name)}*`;
-			if (qty) {
-				const parts = [];
-				const qtyVal =
-					qty.text || formatDecimalToFraction(qty.value, item.unit, style);
-				let first = String(qtyVal);
-				if (item.unit) first += ` ${item.unit}`;
-				parts.push(first);
-				if (item.variable_entries && item.variable_entries.length > 0) {
-					parts.push(...item.variable_entries);
-				}
-				md += ` (${escapeMarkdownHtml(parts.join(" + "))})`;
-			}
+			if (amount) md += ` (${escapeMarkdownHtml(amount)})`;
 			return md;
 		}
 	},
@@ -688,7 +706,7 @@ const strategies: Record<
 							opt.id ||
 							"",
 					),
-					value: writtenQty(opt, numberStyle(context)),
+					value: formatUsageQuantity(opt, quantityContext(context)),
 					detail: opt.preparation || undefined,
 				}));
 

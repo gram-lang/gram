@@ -1,0 +1,208 @@
+{
+  "title": "Timer Clock",
+  "slug": "timer-clock",
+  "meta": {
+    "title": "Timer Clock"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Bake",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Bake for ",
+            {
+              "type": "timer",
+              "raw": "1:30 h",
+              "quantity": {
+                "type": "single",
+                "value": 90
+              },
+              "unit": "min",
+              "minutes": 90
+            },
+            ", then ",
+            {
+              "type": "timer",
+              "name": "four",
+              "raw": "0:04:30",
+              "quantity": {
+                "type": "single",
+                "value": 270
+              },
+              "unit": "s",
+              "minutes": 4.5
+            },
+            "and ",
+            {
+              "type": "timer",
+              "raw": "4:30 min",
+              "quantity": {
+                "type": "single",
+                "value": 270
+              },
+              "unit": "s",
+              "minutes": 4.5
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 99,
+            "activeDuration": 99
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Rest ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "raw": "1:30:00",
+              "quantity": {
+                "type": "single",
+                "value": 5400
+              },
+              "unit": "s",
+              "minutes": 90
+            },
+            "."
+          ],
+          "timings": {
+            "start": 99,
+            "end": 99,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 90,
+              "startOffset": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 189,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Bake",
+        "duration": 99
+      },
+      {
+        "label": "timer_passive",
+        "duration": 90
+      }
+    ],
+    "idleTime": 90,
+    "activeTime": 99,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Bake",
+        "duration": 99
+      }
+    ],
+    "preparationTime": 0
+  },
+  "miseEnPlace": [],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 99
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 0
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.1.t0",
+        "kind": "passive",
+        "section": 0,
+        "step": 1,
+        "offset": 0,
+        "duration": {
+          "nominal": 90
+        },
+        "after": [
+          "s0.1"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 189,
+    "activeTime": 99,
+    "preparationTime": 0,
+    "idleTime": 90,
+    "blocks": [
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 0,
+        "end": 99
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 99,
+        "end": 99
+      },
+      {
+        "kind": "passive",
+        "task": "s0.1.t0",
+        "section": 0,
+        "step": 1,
+        "start": 99,
+        "end": 189
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 99,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}

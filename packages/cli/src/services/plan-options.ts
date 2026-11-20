@@ -8,12 +8,15 @@ import {
 } from "../core/cli-views";
 import { ExitCode, GramCLIError } from "../errors";
 import {
+	type ClockChoice,
 	collectFlag,
 	parseAvailability,
 	parseNow,
 	parseServe,
 	parseTimeZone,
+	resolveClock,
 } from "./plan-flags";
+import { readViewSettingArgs } from "./setting-args";
 
 /**
  * The flags that put a recipe on the calendar, shared by `gram plan` and by the
@@ -24,7 +27,7 @@ export const PLAN_FLAG_ARGS = {
 	serve: {
 		type: "string",
 		description:
-			'When it is served, a local date and time (e.g. "2026-10-11 13:00"): puts the recipe on the calendar',
+			'When it is served, a local date and time (e.g. "2026-10-11 13:00" or "2026-10-11 1:00 pm"): puts the recipe on the calendar',
 	},
 	tz: {
 		type: "string",
@@ -34,7 +37,7 @@ export const PLAN_FLAG_ARGS = {
 	available: {
 		type: "string",
 		description:
-			"When you are available, repeatable: 08:00-22:00 (every day), fri=18:00-22:00 (a day of the week), 2026-10-09=none (a date). Several ranges: 08:00-09:00,18:00-22:00. Default: the `availability` setting of the project, else all day",
+			"When you are available, repeatable: 08:00-22:00 or 8am-10pm (every day), fri=18:00-22:00 (a day of the week), 2026-10-09=none (a date). Several ranges: 08:00-09:00,18:00-22:00. Default: the `availability` setting of the project, else all day",
 	},
 	now: {
 		type: "string",
@@ -85,6 +88,8 @@ export interface ExportView {
 	/** For a view laid out in time (the run sheet). */
 	kitchen?: KitchenContext;
 	serveAt?: string;
+	/** For a view laid out in time: `--clock`, else the `clock` setting, else the machine's. */
+	clock?: ClockChoice;
 }
 
 /**
@@ -95,7 +100,7 @@ export interface ExportView {
 export function resolveExportView(
 	args: Record<string, unknown>,
 	rawArgs: string[] | undefined,
-	config: { timezone?: string; availability?: unknown },
+	config: { timezone?: string; availability?: unknown; clock?: unknown },
 ): ExportView {
 	const view = viewByCliName((args.view as string | undefined) ?? "recipe");
 	const hasServe = args.serve !== undefined && args.serve !== "";
@@ -116,5 +121,9 @@ export function resolveExportView(
 		view,
 		kitchen: resolveKitchenContext(args, rawArgs, config),
 		...(hasServe && { serveAt: parseServe(args.serve) }),
+		clock: resolveClock(
+			readViewSettingArgs(args, ["clock"]).clock,
+			config.clock,
+		),
 	};
 }

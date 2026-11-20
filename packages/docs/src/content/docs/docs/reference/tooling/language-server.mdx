@@ -31,24 +31,24 @@ The Gram Language Server implements the following standard capabilities:
 | LSP Capability | Gram Implementation |
 |---|---|
 | **Diagnostics** | Real-time reporting of syntax errors, structural defects (circular dependencies), and scheduling warnings (`DAY_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
-| **Semantic Tokens** | AST-driven highlighting for modifiers, units, temperatures, and composite ingredients. |
-| **Completion** | Contextual autocomplete for database ingredients, canonical units, and intermediate variables. |
-| **Hover** | Displays nutritional breakdowns and real-time volume-to-mass conversions on ingredient hover. |
-| **Go to Definition** | Direct navigation from an intermediate reference (`&ref`) to its original declaration (`->&ref`). |
-| **Find References** | Locates every usage of a specific intermediate variable across the document. |
-| **Rename** | Safely and atomically renames intermediate variables throughout the file. |
-| **Code Actions** | Quick fixes (declaring missing intermediate variables, converting volume to mass). |
-| **Document Formatting** | Normalizes syntax in-place applying the 13 canonical formatting rules via `@gram-lang/format`. |
-| **Inlay Hints** | Displays the recipe's total time at the end of the `title:` line, following mise en place placement and passive timer resolution (the `gram.miseEnPlace` and `gram.rests` settings). |
-| **Code Lens** | Injects interactive action buttons above the document (such as nutrition calculation). |
+| **Semantic Tokens** | AST-driven highlighting for modifiers, units, temperatures, ratio operators (`/`), and composite ingredients. |
+| **Completion** | Contextual autocomplete for database ingredients, canonical units, and intermediate variables. Offers time units inside `~{…}`, resumes unit completion after `+` or `-` in sums, and suggests `@&` / `&` targets (plus weight units after `/`) in ratios. |
+| **Hover** | Displays nutritional breakdowns and volume-to-mass conversions on ingredient hover. On timers, shows the parsed duration (`~{1h30}` → `1 h 30 min`); on section anchors, the lead time and whether it opens a working day; on sums and ratios, the combined total (`{1 cup + 1 tbsp}` → `= 17 tbsp`) or per-family breakdown, standardized mass, or reason if unresolved. |
+| **Go to Definition** | Direct navigation from an intermediate reference (`&ref`, including inside ratios) to its original declaration (`->&ref`). |
+| **Find References** | Locates every usage of an intermediate variable across the document (including inside ratios). |
+| **Rename** | Safely and atomically renames intermediate variables throughout the file (including inside ratios). |
+| **Code Actions** | Quick fixes (declaring missing intermediate variables, converting volume to mass, inserting missing `+` or applying suggested totals in sums, or changing `oz` after a volume to `fl oz`). |
+| **Document Formatting** | Normalizes syntax in-place via `@gram-lang/format`. |
+| **Inlay Hints** | Displays the recipe's total time on the `title:` line (following `gram.miseEnPlace` and `gram.rests`), and shows resolved values (`= 5`, `= 16 g`, `= 24 min`) inline after unit ratios and proportional times. |
+| **Code Lens** | Injects an action button above the document to open the live preview (`▶ Preview`). |
 | **Document Symbol** | Populates the editor's Outline view for clean structural navigation across recipe sections. |
 | **Folding Range** | Enables folding of YAML frontmatter blocks and `##` section headings. |
 
 ## Settings
 
-<Since v="1.4.0" /> The server reads the `gram` configuration section (`workspace/configuration`) at startup and reloads it upon every `workspace/didChangeConfiguration` notification. Missing or unrecognized values fall back gracefully to defaults, ensuring an invalid configuration never blanks a view.
+The server reads the `gram` configuration section (`workspace/configuration`) at startup and reloads it upon every `workspace/didChangeConfiguration` notification. Missing or unrecognized values fall back gracefully to defaults, ensuring an invalid configuration never blanks a view.
 
-- View settings (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, `gram.stepQuantities`, `gram.nutritionBasis`, `gram.bakersMathOnly`) re-render open recipes directly from their existing compiled state.
+- View settings (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, `gram.stepQuantities`, `gram.nutritionBasis`, `gram.bakersMathOnly`, `gram.clock`) re-render open recipes directly from their existing compiled state.
 - Analyzer settings (`gram.bakersMath`, `gram.massStandardization`, `gram.yieldCalculation`, `gram.nutritionEstimation`) re-analyze open recipes from scratch, refreshing compiler diagnostics and derived data.
 - `gram.ingredientDatabase.path` reloads the ingredient database from disk.
 
@@ -56,7 +56,7 @@ Available values and defaults match those of the [VS Code extension](/docs/refer
 
 ## Views protocol
 
-<Since v="1.4.0" /> Alongside standard LSP capabilities, the server renders recipe views (the recipe and the run sheet) and inspectors (the AST and the compiled JSON) for display in editor client panels. It renders only the views currently open in the client, ensuring closed panels incur no computation overhead.
+Alongside standard LSP capabilities, the server renders recipe views (the recipe and the run sheet) and inspectors (the AST and the compiled JSON) for display in editor client panels. It renders only the views currently open in the client, ensuring closed panels incur no computation overhead.
 
 A client opts into the protocol by providing `initializationOptions: { views: true }` in its `initialize` request, then communicates with the server through three custom notifications and two requests:
 
@@ -73,7 +73,7 @@ The `initialize` response advertises available views via `capabilities.experimen
 - With `state: "ok"`, `payload` contains the rendered HTML for a view, or `null` if the recipe has no corresponding content (such as a <Term id="runSheet" /> for a recipe without schedulable steps). For inspectors, `payload` is `{ presentation, language, text }`: formatted source text for a code pane (`presentation: "code"`, highlighted as `json` or `scheme`), or structured HTML for an interactive tree view (`presentation: "tree"`).
 - With `state: "paused"`, compilation errors prevent view updates and `payload` is omitted: editor clients should retain their last valid rendered view and surface the failure via `error` (`title`, `description`, `code`, `message`, and source `range`). The error title is localized using the editor's configured locale (`locale` from `initialize`). Comprehensive error details continue to be reported via standard LSP diagnostics.
 
-Session state is maintained per document strictly in memory: it is discarded when the document closes or the server restarts, and is never persisted to project configuration. When a serving time is provided, the run sheet is projected onto the calendar in the project's time zone (`timezone` in `.gram/config.yaml`, falling back to system time) and within its availability (`availability`, falling back to all day; a setting that cannot be read also falls back to all day); without a serving time, the plan is organized in relative countdown days. When session overrides (`scale`, `stock`, or `bakersReference`) are defined, the views are recompiled with these parameters while diagnostics, hover tooltips, and inlay hints continue to evaluate the recipe as written on disk. If a scale target cannot be resolved, views gracefully fall back to default proportions.
+Session state is maintained per document strictly in memory: it is discarded when the document closes or the server restarts, and is never persisted to project configuration. When a serving time is provided, the run sheet is projected onto the calendar in the project's time zone (`timezone` in `.gram/config.yaml`, falling back to system time) and within its availability (`availability`, falling back to all day; a setting that cannot be read also falls back to all day); without a serving time, the plan is organized in relative countdown days. Times of day follow `gram.clock`: with `auto`, the `clock` setting of `.gram/config.yaml`, else the region of the server's locale (`LC_ALL`, then `LC_TIME`, then `LANG`; on Windows, the system's region) <Since v="1.5.0" />. When session overrides (`scale`, `stock`, or `bakersReference`) are defined, the views are recompiled with these parameters while diagnostics, hover tooltips, and inlay hints continue to evaluate the recipe as written on disk. If a scale target cannot be resolved, views gracefully fall back to default proportions.
 
 ### Notifications for legacy clients
 

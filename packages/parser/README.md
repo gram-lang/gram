@@ -1,6 +1,6 @@
 # @gram-lang/parser
 
-[![npm version](https://badge.fury.io/js/@gram-lang%2Fparser.svg)](https://www.npmjs.com/package/@gram-lang/parser)
+[![npm](https://img.shields.io/npm/v/@gram-lang/parser?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/parser)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 A robust, 3-stage parser for the Gram recipe language. It is part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram) and is strictly limited to text-to-AST parsing.
@@ -9,7 +9,7 @@ A robust, 3-stage parser for the Gram recipe language. It is part of the [Gram m
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://docs.gram-lang.org/)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/docs/)**.
 
 ---
 
@@ -32,6 +32,7 @@ import { getAST } from '@gram-lang/parser';
 
 const source = `
 ## My Recipe
+
 Mix @flour{200g} and @water{100ml}.
 `;
 
@@ -45,8 +46,11 @@ try {
 
 ## 🏗️ Structure
 
-*   `src/index.ts`: Orchestrates parsing and Ohm Semantics to AST conversions.
+*   `src/index.ts`: Orchestrates parsing and Ohm Semantics to AST conversions (`getAST`, `GramParseError`).
 *   `src/types.ts`: Declares strictly-typed AST node definitions.
+*   `src/guards.ts`: Type guards for AST nodes.
+*   `src/numbers.ts`: Number, mixed fraction, and decimal comma/point parsers.
+*   `src/schemas.ts`: Zod schemas for AST structures.
 *   `grammar.ohm`: The official OhmJS grammar defining the Gram language structure.
 
 ---

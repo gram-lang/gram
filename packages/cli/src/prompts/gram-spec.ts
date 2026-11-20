@@ -1,4 +1,4 @@
-// GRAM_SPEC_VERSION: 8
+// GRAM_SPEC_VERSION: 10
 // Last synced against @gram-lang/parser@1.0.0-beta.3 (grammar.ohm + kitchen processor.ts).
 // Update this version and the prompt body whenever the .gram syntax evolves.
 // Each top-level section maps 1-to-1 to a spec document in packages/docs/src/reference/syntax/.
@@ -118,14 +118,16 @@ Recipes without any ## are a single implicit section (valid for simple recipes).
 
 Options (order is free — both \`~{...}\` before \`->&name\` and \`->&name\` before \`~{...}\` are valid):
 - Retroplanning: \`~{-2h}\` means this section must START 2 hours before the rest.
-  Units: d (days), h (hours), min or m (minutes — auto-corrected to min). Example: \`~{-12h}\`, \`~{-30min}\`.
-  STRICT RULE: the duration MUST be a signed NEGATIVE, non-zero number with an explicit unit.
+  Units: d (days), h (hours), min (minutes). Example: \`~{-12h}\`, \`~{-30min}\`, \`~{-1h30}\`, \`~{-1d 12h}\`.
+  STRICT RULE: the duration MUST be a signed NEGATIVE, non-zero duration with an explicit unit.
+  An anchor in days opens a separate working day (the day before); an anchor in hours does not.
   All of the following are INVALID and produce a compiler warning — never emit them:
     ❌ \`~{2h}\`              (unsigned/positive — the leading "-" is mandatory)
     ❌ \`~{0h}\` or \`~{-0h}\` (zero has no meaning as a lead time)
-    ❌ \`~{the day before}\`  (free text is not accepted, unlike step timers' semantic text)
+    ❌ \`~{the day before}\`  (free text is never accepted in \`~{...}\`)
     ❌ \`~{-2s}\`             (seconds are not a valid retro-planning unit — use min/h/d)
-  ✅ Only \`~{-<positive number><d|h|min>}\` is valid, e.g. \`~{-2d}\`, \`~{-12h}\`, \`~{-30min}\`.
+    ❌ \`~{-1-2d}\`           (an anchor is never a range)
+  ✅ Only a negative duration in d, h and min is valid, e.g. \`~{-2d}\`, \`~{-12h}\`, \`~{-1h30}\`.
 - Intermediate output: \`->&name\` captures the section result for later use.
   Example: \`## Béchamel Sauce ->&bechamel\`
 - Both together: \`## Pastry ~{-2h} ->&pastry\` or \`## Pastry ->&pastry ~{-2h}\`
@@ -136,7 +138,7 @@ One step = one paragraph, separated by blank lines.
 Always start with an action verb in brackets:
 
 \`\`\`
-[Mix] The @flour{250g} with @butter{125g}(cold, cubed) until sandy.
+[Mix] @flour{250g} with @butter{125g}(cold, cubed) until sandy.
 
 [Bind] Add @powdered sugar{70g} and mix until it just comes together.
 \`\`\`
@@ -199,6 +201,16 @@ Braces \`{}\` are MANDATORY when the name contains spaces, even with no quantity
 | Fraction  | \`@butter{1/2}\`             | use / not ÷ ; mixed (\`1 1/2\`) and Unicode glyphs (\`1½\`) also accepted |
 | Range     | \`@apples{3-4}\`             | hyphen between two numbers; a unit may follow a range: \`@water{1.5-2l}\` |
 | To taste  | \`@salt{}\` or \`@salt\`        | empty or omitted                   |
+| Sum       | \`@flour{1 cup + 1 tbsp}\`    | terms added with \` + \`, each with its unit |
+| Minus     | \`@sugar{1 cup - 2 tbsp}\`    | a term taken away with \` - \` (same kind of amount) |
+| Mixed     | \`@butter{1 cup + 20 g}\`     | a volume and a weight may be added |
+
+Write an amount given in several measures as a sum, exactly as the recipe says it:
+"1 cup plus 1 tablespoon" → \`{1 cup + 1 tbsp}\`, "1 cup minus 2 tablespoons" → \`{1 cup - 2 tbsp}\`.
+Never work it out into one number (❌ \`{1.0625 cup}\`, ❌ \`{17 tbsp}\`): Gram adds the terms itself.
+Every term needs its unit, and a term is only an amount: no percentage (❌ \`{100g + 10%}\`),
+no multiplication (❌ \`{2 x 100g}\`), no range after \`-\`. A range may be a term that is added
+(\`{1 cup + 1-2 tbsp}\`).
 
 CRITICAL — unit tokens are ALWAYS canonical English/SI tokens (g, kg, ml, l, tbsp, tsp, cup, min, h…),
 even when the surrounding recipe text is written in another language. Never emit localized unit words
@@ -328,6 +340,23 @@ Scope: \`@&IngredientName\` targets are resolved within the CURRENT section only
 declared in another section cannot be targeted). \`&VariableName\` targets (intermediates) are
 resolved globally — a section-level \`->&name\` can be targeted from any later section.
 
+### Ratios with units (an amount per amount of another ingredient)
+
+\`@eggs{1 / 100 g @&flour}\` — 1 egg per 100 g of flour (5 eggs for 500 g)
+\`@salt{15 g / 1 L @&water}\` — 15 g of salt per liter of water
+\`@parsley{1 tsp / 2 cloves @&garlic}\` — a count can be the target's unit
+\`&stock{250 ml / 100 g @&rice}\` — also on a reference to an intermediate
+
+Syntax: \`{amount / target amount @&IngredientName}\` or \`{amount / target amount &VariableName}\`,
+the target amount being a number and a unit (\`100 g\`), a unit alone (\`L\`), or nothing for one
+piece (\`{1 / @&cutlet}\`). Same scope as percentages. Only write a ratio when the source states a
+proportional rule ("1 egg per 100 g of flour"); otherwise write the amount itself.
+Never emit:
+  ❌ \`{1/100g @&flour}\`        (a slash glued on both sides is a fraction — write \`{1 / 100 g @&flour}\`)
+  ❌ \`{1 / 100 g of @&flour}\`  (no word after the unit — write \`{1 / 100 g @&flour}\`)
+  ❌ \`{1 / 100-200 g @&flour}\` (the target amount is a single number)
+  ❌ \`@=eggs{1 / 100 g @&flour}\` (a ratio always follows its target: never \`=\`)
+
 ### Fixed quantities
 
 \`@=salt{5g}\` — 5g regardless of how many portions are made.
@@ -379,19 +408,35 @@ SECTION 5 — TIMERS (~) & TEMPS (^)
 
 ### Timers
 
-Syntax: \`~name?_?{duration}\`
+Syntax: \`~_?name?{duration}\` (\`_\` first for a passive timer, then an optional name)
 
-A numeric value and a unit are ALWAYS REQUIRED. No fuzzy text.
+A duration with an explicit unit is ALWAYS REQUIRED. No fuzzy text.
 
-| Format          | Example           | Meaning                                      |
-|-----------------|-------------------|----------------------------------------------|
-| Active (blocking)| \`~{10min}\`       | Cook is actively busy for 10 minutes         |
-| Passive         | \`~_{1h}\`          | Background: oven/rest/chill — cook is free   |
-| Named           | \`~eggs{3min}\`     | Named for UI notifications                   |
-| Range           | \`~{10-15min}\`     | Uncertainty range                            |
+| Format            | Example            | Meaning                                      |
+|-------------------|--------------------|----------------------------------------------|
+| Active (blocking) | \`~{10min}\`        | Cook is actively busy for 10 minutes         |
+| Passive           | \`~_{1h}\`          | Background: oven/rest/chill — cook is free   |
+| Named             | \`~eggs{3min}\`     | Named for UI notifications                   |
+| Hours and minutes | \`~{1h30}\`         | 1 hour 30 minutes, written as a cook would   |
+| Days and hours    | \`~_{2d 4h}\`       | 2 days 4 hours                               |
+| Range             | \`~{10-15min}\`     | Uncertainty range (smallest first)           |
+| Range, two units  | \`~{45min-1h}\`, \`~_{1h30-2h}\` | Each side written in full     |
 
-Supported units: \`min\` (preferred), \`h\`, \`d\`, \`s\`
-Note: \`m\` and \`minutes\` are auto-corrected to \`min\` but prefer \`min\` directly.
+Supported units: \`min\` (preferred), \`h\`, \`d\`, \`s\`. Write units from the largest to the smallest.
+Write an hour and a half as \`~{1h30}\` (preferred) or \`~{90min}\`, never as a decimal of an hour
+written with minutes in mind: \`~{1.30h}\` is 1 hour 18 minutes.
+
+Never emit (each produces a warning and the timer is not counted):
+  ❌ \`~{1:30}\`            (hours or minutes? write \`~{1h30}\`)
+  ❌ \`~{1 hour and a half}\`, \`~{2 to 3 hours}\` (no words — write \`~{1h30}\`, \`~{2-3h}\`)
+  ❌ \`~{1-2h30}\`          (ambiguous range — write \`~{1h-2h30}\`)
+  ❌ \`~{2 * 5min}\`        (no multiplication — write one timer per repetition)
+  ❌ \`~{15min / 500g @&roast * 2}\` (no multiplication after a proportional time)
+  ❌ \`~{PT1H30M}\`         (ISO 8601 is for machines — write \`~{1h30}\`)
+
+A proportional time follows the weight of an ingredient written earlier in the section, when the
+source states it ("15 minutes per 500 g", "4 minutes per cutlet"): \`~_{15min / 500g @&roast}\`,
+\`~{4min / @&cutlet}\`, \`~_{30min / 1kg &dough}\`. Always a space around its \`/\`.
 
 RULE — active vs passive vs sequential:
 - Kneading, stirring, whisking, sautéeing → ACTIVE \`~{10min}\`
@@ -409,7 +454,7 @@ RULE — active vs passive vs sequential:
 
 ### Temperatures
 
-Syntax: \`^name?{value}\`
+Syntax: \`^name?{value}(note)?\`
 
 \`^\` is the ONLY valid temperature sigil — never \`°\`, which is not a recognized element trigger. The degree sign is still used inside the unit itself (\`°C\`/\`°F\`), and is also accepted bare (\`C\`/\`F\`), case-insensitively.
 
@@ -418,9 +463,28 @@ Syntax: \`^name?{value}\`
 | Exact     | \`^{180C}\`           | Numeric temperature; unit mandatory, one of \`C\`, \`F\`, \`°C\`, \`°F\` (case-insensitive) |
 | Semantic  | \`^{medium heat}\`    | Stove settings, water state, etc.        |
 | Named     | \`^oven{180C}\`       | When multiple heat sources are active    |
+| With note | \`^{160C}(fan)\`      | Cooking mode, probe target, or condition that goes with the temperature |
 
 Range: \`^{180-200C}\`
 The compiler stores the raw numeric value and normalizes the unit to \`°C\`/\`°F\`; the display engine handles further formatting. Only Celsius and Fahrenheit are supported — no Kelvin or other scales.
+
+Note: when the source gives the oven mode or what the temperature is measured on (fan, convection, broil, conventional, internal, covered), keep it in the note glued to the brace — \`^{160C}(fan)\`, \`^{63C}(internal)\`, \`^{high heat}(covered)\` — instead of leaving it in the prose. Keep the note in the recipe's language. The parenthesis must touch the \`}\`: \`^{180C} (preheated)\` with a space is ordinary text. One line, no nested parentheses.
+
+### Target states
+
+Syntax: \`={state}(note)?\`
+
+The state to reach, when the source gives one: the sensory cue the cook has to recognize (a texture, a color, a smell, a consistency). It is often at the end of the step ("until…"), but it can sit anywhere ("as soon as the butter turns ={nutty brown}, …"). Wrap only the state; keep the linking words ("until", "as soon as", "jusqu'à", "dès que") in the prose. The state and the note stay in the recipe's language.
+
+\`\`\`
+Whisk @egg yolks{4} and @sugar{80g} until ={ribbon stage}(the batter falls back in a continuous ribbon).
+
+Cook on ^{low heat}, stirring, until ={coats the spoon}(a finger leaves a clean line) ->&custard
+\`\`\`
+
+- The note says how to check the state. The parenthesis must touch the \`}\`: \`={ribbon stage} (about 5 min)\` with a space is ordinary text. One line.
+- Never put a temperature, a duration or a quantity inside \`={...}\`: a probe target is \`^{82C}(internal)\`, a time is \`~{5 min}\`. A step may have both: \`Cook ~{5 min}, until ={golden}.\` (the timer is the estimate, the state is the real cue).
+- Only a real cue from the source: never invent one, and leave a plain "cook for 5 minutes" without a target state.
 
 
 ═════════════════════════════════════════

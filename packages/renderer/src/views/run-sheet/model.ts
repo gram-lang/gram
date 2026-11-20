@@ -6,16 +6,22 @@ import type {
 } from "@gram-lang/scheduler";
 import { workingDayLabel } from "../../shared/mise-en-place";
 import { portionsLabel } from "../../shared/portions";
+import { type HourCycle, clockFormatOptions } from "../../shared/clock";
 import { durationFormatter } from "../../shared/utils";
 import type { CommentsMode, RenderableCompilationResult } from "../../types";
 import { longDate, shortDay } from "./dates";
 import type { KitItem, ProgramStep } from "./parts";
 import { type VisitPass, describeDay, startPass } from "./visits";
-import { plural, roundedClock, runSheetWords } from "./words";
+import { clockOf, plural, roundedClockOf, runSheetWords } from "./words";
 
 export interface RunSheetRenderOptions {
 	/** Locale code (e.g. 'en', 'fr') for the words and the dates. */
 	lang?: string;
+	/**
+	 * The clock of the times of day: "h23" (13:00, the default) or "h12"
+	 * (1:00 PM). `prepareViews` resolves it from the `clock` setting.
+	 */
+	hourCycle?: HourCycle;
 	/** Display only: a time is shown to the nearest this many minutes. Default 5. */
 	roundTo?: number;
 	formatDuration?: (minutes: number) => string;
@@ -183,16 +189,14 @@ export function describeProblems(
 		new Intl.DateTimeFormat(lang || "en", {
 			timeZone,
 			weekday: "short",
-			hour: "2-digit",
-			minute: "2-digit",
-			hourCycle: "h23",
+			...clockFormatOptions(options.hourCycle),
 		}).format(new Date(iso));
 	return diagnostics.map((d): string => {
 		switch (d.code) {
 			case "ACTIVE_OUTSIDE_AVAILABILITY":
 				return fillTemplate(t.runSheetOutside, {
 					task: labelOf(d.task),
-					time: `${shortDay(d.local.slice(0, 10), lang)} ${roundedClock(d.local, step)}`,
+					time: `${shortDay(d.local.slice(0, 10), lang)} ${roundedClockOf(d.local, step, options)}`,
 				});
 			case "ACTIVE_BLOCK_EXCEEDS_AVAILABILITY":
 				return fillTemplate(t.runSheetExceeds, {
@@ -235,7 +239,7 @@ function describeSummary(pass: VisitPass) {
 		calendar && sheet.serveAt
 			? fillTemplate(t.runSheetFor, {
 					date: longDate(sheet.serveAt.slice(0, 10), lang),
-					time: sheet.serveAt.slice(11, 16),
+					time: clockOf(sheet.serveAt, w),
 				})
 			: undefined,
 		portionsLabel(data, lang),
@@ -289,7 +293,8 @@ export function describeRunSheet(
 			kind: "serve",
 			...(!calendar &&
 				pass.days.at(-1)?.daysBefore !== 0 && { day: workingDayLabel(0, t) }),
-			...(calendar && sheet.serveAt && { time: sheet.serveAt.slice(11, 16) }),
+			...(calendar &&
+				sheet.serveAt && { time: clockOf(sheet.serveAt, pass.w) }),
 			text: t.runSheetServe,
 		});
 	}

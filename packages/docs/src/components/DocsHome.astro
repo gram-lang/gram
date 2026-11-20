@@ -1,0 +1,1037 @@
+---
+import { getCollection } from "astro:content";
+import Icon from "./Icon.astro";
+import { resolveReleasePostsByVersion } from "../lib/releases";
+import type { starlightIcons } from "../lib/starlight-icons";
+
+interface PillarLink {
+	label: string;
+	href: string;
+}
+
+interface Pillar {
+	title: string;
+	description: string;
+	href: string;
+	icon: keyof typeof starlightIcons;
+	links: PillarLink[];
+}
+
+interface Highlight {
+	badge: string;
+	title: string;
+	description: string;
+	href: string;
+}
+
+interface Props {
+	lang: "en" | "fr";
+}
+
+const { lang } = Astro.props;
+const isFr = lang === "fr";
+const allPosts = await getCollection("blog");
+const releasePost = resolveReleasePostsByVersion(allPosts, lang).get("1.5.0");
+
+const copy = isFr
+	? {
+			heroTitle: "Gram Docs",
+			lead: "Référence du langage, guides et API du moteur pour compiler des recettes en texte brut vers des données structurées et calculées.",
+			primaryCta: "Premiers pas",
+			primaryHref: "/fr/docs/tutorials/getting-started/",
+			secondaryCta: "Antisèche syntaxe",
+			secondaryHref: "/fr/docs/reference/syntax/cheatsheet/",
+			overviewPrompt: "Vous découvrez Gram ?",
+			overviewLinkLabel: "C'est quoi Gram ?",
+			overviewHref: "/fr/docs/explanation/philosophy/",
+			pillarsHeading: "Explorer par section",
+			newHeading: "Nouveautés de la v1.5",
+			newSub: "Un aperçu de quelques nouveautés de cette version.",
+			newLinks: [
+				{
+					label: "Article de release",
+					href: releasePost?.href ?? "/fr/blog/",
+				},
+				{
+					label: "Changelog complet",
+					href: "/fr/changelog",
+				},
+			],
+			pillars: [
+				{
+					title: "Guides",
+					description:
+						"Découvrez la philosophie du langage, rédigez votre première recette et suivez les guides pratiques.",
+					href: "/fr/docs/tutorials/getting-started/",
+					icon: "rocket",
+					links: [
+						{
+							label: "C'est quoi Gram ?",
+							href: "/fr/docs/explanation/philosophy/",
+						},
+						{
+							label: "Votre première recette",
+							href: "/fr/docs/tutorials/first-recipe/",
+						},
+						{
+							label: "Planifier un repas",
+							href: "/fr/docs/how-to/plan-a-meal/",
+						},
+						{
+							label: "Recettes modulaires",
+							href: "/fr/docs/how-to/organize-modular-recipes/",
+						},
+					],
+				},
+				{
+					title: "Syntaxe du langage",
+					description:
+						"L'antisèche et la référence complète des marqueurs de base et des mécanismes avancés.",
+					href: "/fr/docs/reference/syntax/cheatsheet/",
+					icon: "document",
+					links: [
+						{
+							label: "Antisèche",
+							href: "/fr/docs/reference/syntax/cheatsheet/",
+						},
+						{
+							label: "Ingrédients",
+							href: "/fr/docs/reference/syntax/ingredients/",
+						},
+						{
+							label: "Temps & planification",
+							href: "/fr/docs/reference/syntax/times/",
+						},
+						{
+							label: "États attendus",
+							href: "/fr/docs/reference/syntax/target-states/",
+						},
+					],
+				},
+				{
+					title: "Outils & intégration",
+					description:
+						"Utilisez la CLI, l'extension VS Code, le Language Server, l'import IA ou créez votre propre interface.",
+					href: "/fr/docs/reference/tooling/cli/",
+					icon: "laptop",
+					links: [
+						{ label: "Commandes CLI", href: "/fr/docs/reference/tooling/cli/" },
+						{
+							label: "Extension VS Code",
+							href: "/fr/docs/reference/tooling/vscode-extension/",
+						},
+						{
+							label: "Language Server (LSP)",
+							href: "/fr/docs/reference/tooling/language-server/",
+						},
+						{
+							label: "Génération IA",
+							href: "/fr/docs/reference/syntax/ai-generation-notes/",
+						},
+					],
+				},
+				{
+					title: "Moteur & API",
+					description:
+						"Intégrez les paquets TypeScript, consultez les formats JSON et approfondissez l'architecture du compilateur.",
+					href: "/fr/docs/reference/api/",
+					icon: "setting",
+					links: [
+						{ label: "Vue d'ensemble API", href: "/fr/docs/reference/api/" },
+						{
+							label: "Formats de données",
+							href: "/fr/docs/reference/api/data-formats/",
+						},
+						{
+							label: "Avertissements",
+							href: "/fr/docs/reference/api/warnings/",
+						},
+						{
+							label: "Ordonnancement ALAP",
+							href: "/fr/docs/explanation/alap-scheduling/",
+						},
+					],
+				},
+			] satisfies Pillar[],
+			highlights: [
+				{
+					badge: "={…}",
+					title: "États attendus",
+					description:
+						"Indiquez quand une étape est prête (couleur, texture, odeur) et comment le vérifier.",
+					href: "/fr/docs/reference/syntax/target-states/",
+				},
+				{
+					badge: "a + b",
+					title: "Sommes de quantités",
+					description:
+						"Combinez plusieurs unités pour un même ingrédient, comme 1 tasse + 1 càc.",
+					href: "/fr/docs/reference/syntax/ingredients/#sommes-de-quantités",
+				},
+				{
+					badge: "a / b",
+					title: "Proportions avec unités",
+					description:
+						"Indexez un ingrédient ou une cuisson sur le poids ou le nombre d'un autre (ex. 15 min / 500 g).",
+					href: "/fr/docs/reference/syntax/relative-quantities/#proportions-avec-unités",
+				},
+				{
+					badge: "1h30",
+					title: "Durées naturelles",
+					description:
+						"Écrivez les minuteurs comme on les lit au quotidien : 1h30, 1:30 h ou 5'30\".",
+					href: "/fr/docs/reference/syntax/times/#écrire-une-durée",
+				},
+			] satisfies Highlight[],
+			cli: {
+				title: "Passer aux fourneaux",
+				description:
+					"Initialisez votre espace de recettes en local en quelques secondes avec la CLI.",
+				command: "npx @gram-lang/cli init",
+				copyLabel: "Copier",
+				copiedLabel: "Copié",
+				copyAria: "Copier la commande CLI dans le presse-papiers",
+				copiedStatus: "Commande copiée dans le presse-papiers",
+				linkLabel: "Commandes CLI",
+				linkHref: "/fr/docs/reference/tooling/cli/",
+			},
+			community: {
+				heading: "Contribuer & communauté",
+				links: [
+					{
+						label: "Dépôt officiel",
+						href: "https://git.gram-lang.org/gram-lang/gram",
+						icon: "code-branch" as keyof typeof starlightIcons,
+						umamiEvent: undefined as string | undefined,
+					},
+					{
+						label: "Discord",
+						href: "https://discord.gg/nsCBkhjuAR",
+						icon: "rocket" as keyof typeof starlightIcons,
+						umamiEvent: "click-discord",
+					},
+					{
+						label: "Reddit (r/gramlang)",
+						href: "https://www.reddit.com/r/gramlang/",
+						icon: "document" as keyof typeof starlightIcons,
+						umamiEvent: "click-reddit",
+					},
+				],
+			},
+		}
+	: {
+			heroTitle: "Gram Docs",
+			lead: "Language reference, practical guides, and engine APIs for compiling plain-text recipes into structured, calculated data.",
+			primaryCta: "Getting started",
+			primaryHref: "/docs/tutorials/getting-started/",
+			secondaryCta: "Syntax cheatsheet",
+			secondaryHref: "/docs/reference/syntax/cheatsheet/",
+			overviewPrompt: "New to Gram?",
+			overviewLinkLabel: "What is Gram?",
+			overviewHref: "/docs/explanation/philosophy/",
+			pillarsHeading: "Browse by section",
+			newHeading: "What's new in v1.5",
+			newSub: "A look at some of what's new in this release.",
+			newLinks: [
+				{
+					label: "Release blog post",
+					href: releasePost?.href ?? "/blog/",
+				},
+				{
+					label: "Full changelog",
+					href: "/changelog",
+				},
+			],
+			pillars: [
+				{
+					title: "Guides",
+					description:
+						"Understand Gram's philosophy, write your first recipe, and follow practical workflows.",
+					href: "/docs/tutorials/getting-started/",
+					icon: "rocket",
+					links: [
+						{ label: "What is Gram?", href: "/docs/explanation/philosophy/" },
+						{
+							label: "Your first recipe",
+							href: "/docs/tutorials/first-recipe/",
+						},
+						{ label: "Plan a meal", href: "/docs/how-to/plan-a-meal/" },
+						{
+							label: "Modular recipes",
+							href: "/docs/how-to/organize-modular-recipes/",
+						},
+					],
+				},
+				{
+					title: "Language syntax",
+					description:
+						"Quick cheatsheet and complete reference for core markers and advanced expressions.",
+					href: "/docs/reference/syntax/cheatsheet/",
+					icon: "document",
+					links: [
+						{ label: "Cheatsheet", href: "/docs/reference/syntax/cheatsheet/" },
+						{
+							label: "Ingredients",
+							href: "/docs/reference/syntax/ingredients/",
+						},
+						{
+							label: "Times & scheduling",
+							href: "/docs/reference/syntax/times/",
+						},
+						{
+							label: "Target states",
+							href: "/docs/reference/syntax/target-states/",
+						},
+					],
+				},
+				{
+					title: "Tooling & integration",
+					description:
+						"Run recipes from the CLI, edit with VS Code and LSP, import via AI, or build a custom UI.",
+					href: "/docs/reference/tooling/cli/",
+					icon: "laptop",
+					links: [
+						{ label: "CLI commands", href: "/docs/reference/tooling/cli/" },
+						{
+							label: "VS Code extension",
+							href: "/docs/reference/tooling/vscode-extension/",
+						},
+						{
+							label: "Language server (LSP)",
+							href: "/docs/reference/tooling/language-server/",
+						},
+						{
+							label: "Writing programmatically",
+							href: "/docs/reference/syntax/ai-generation-notes/",
+						},
+					],
+				},
+				{
+					title: "Engine & API",
+					description:
+						"Integrate TypeScript packages, inspect compiled JSON schemas, and explore scheduling internals.",
+					href: "/docs/reference/api/",
+					icon: "setting",
+					links: [
+						{ label: "API overview", href: "/docs/reference/api/" },
+						{
+							label: "Data formats",
+							href: "/docs/reference/api/data-formats/",
+						},
+						{
+							label: "Compiler warnings",
+							href: "/docs/reference/api/warnings/",
+						},
+						{
+							label: "ALAP scheduling",
+							href: "/docs/explanation/alap-scheduling/",
+						},
+					],
+				},
+			] satisfies Pillar[],
+			highlights: [
+				{
+					badge: "={…}",
+					title: "Target states",
+					description:
+						"Note when a step is ready (color, texture, smell) and how to tell.",
+					href: "/docs/reference/syntax/target-states/",
+				},
+				{
+					badge: "a + b",
+					title: "Sums of quantities",
+					description:
+						"Combine multiple units for one ingredient, such as 1 cup + 1 tsp.",
+					href: "/docs/reference/syntax/ingredients/#sums-of-quantities",
+				},
+				{
+					badge: "a / b",
+					title: "Ratios with units",
+					description:
+						"Base an ingredient or cooking time on another ingredient's weight or count (e.g. 15 min / 500 g).",
+					href: "/docs/reference/syntax/relative-quantities/#ratios-with-units",
+				},
+				{
+					badge: "1h30",
+					title: "Natural durations",
+					description:
+						"Write timers the way people read them: 1h30, 1:30 h, or 5'30\".",
+					href: "/docs/reference/syntax/times/#writing-a-duration",
+				},
+			] satisfies Highlight[],
+			cli: {
+				title: "Start cooking",
+				description:
+					"Scaffold a new recipe workspace locally in seconds with the CLI.",
+				command: "npx @gram-lang/cli init",
+				copyLabel: "Copy",
+				copiedLabel: "Copied",
+				copyAria: "Copy CLI initialization command to clipboard",
+				copiedStatus: "Command copied to clipboard",
+				linkLabel: "CLI reference",
+				linkHref: "/docs/reference/tooling/cli/",
+			},
+			community: {
+				heading: "Contribute & community",
+				links: [
+					{
+						label: "Official repository",
+						href: "https://git.gram-lang.org/gram-lang/gram",
+						icon: "code-branch" as keyof typeof starlightIcons,
+						umamiEvent: undefined as string | undefined,
+					},
+					{
+						label: "Discord",
+						href: "https://discord.gg/nsCBkhjuAR",
+						icon: "rocket" as keyof typeof starlightIcons,
+						umamiEvent: "click-discord",
+					},
+					{
+						label: "Reddit (r/gramlang)",
+						href: "https://www.reddit.com/r/gramlang/",
+						icon: "document" as keyof typeof starlightIcons,
+						umamiEvent: "click-reddit",
+					},
+				],
+			},
+		};
+---
+
+<div class="docs-home not-content">
+	<section class="docs-hero-band">
+		<div class="docs-hero">
+			<h1 class="docs-hero-title">{copy.heroTitle}</h1>
+			<p class="docs-lead">{copy.lead}</p>
+			<div class="docs-actions">
+				<a href={copy.primaryHref} class="docs-btn docs-btn-primary">
+					{copy.primaryCta}
+					<Icon name="right-arrow" size="0.95rem" />
+				</a>
+				<a href={copy.secondaryHref} class="docs-btn docs-btn-secondary">
+					{copy.secondaryCta}
+				</a>
+			</div>
+			<p class="docs-overview-hint">
+				<span>{copy.overviewPrompt}</span>
+				<a href={copy.overviewHref}>
+					{copy.overviewLinkLabel}
+					<span aria-hidden="true">&rarr;</span>
+				</a>
+			</p>
+		</div>
+	</section>
+
+	<div class="docs-body">
+		<section class="docs-section">
+		<h2 class="docs-section-title">{copy.pillarsHeading}</h2>
+		<div class="docs-pillars">
+			{
+				copy.pillars.map((pillar) => (
+					<div class="docs-pillar-card">
+						<div class="docs-pillar-head">
+							<span class="docs-pillar-icon">
+								<Icon name={pillar.icon} size="1.1rem" />
+							</span>
+							<a href={pillar.href} class="docs-pillar-title">
+								{pillar.title}
+							</a>
+						</div>
+						<p class="docs-pillar-desc">{pillar.description}</p>
+						<ul class="docs-pillar-links">
+							{pillar.links.map((link) => (
+								<li>
+									<a href={link.href}>{link.label}</a>
+								</li>
+							))}
+						</ul>
+					</div>
+				))
+			}
+		</div>
+	</section>
+
+	<section class="docs-section">
+		<div class="docs-cli-card">
+			<div class="docs-cli-copy">
+				<h2 class="docs-cli-title">{copy.cli.title}</h2>
+				<p class="docs-cli-desc">{copy.cli.description}</p>
+				<a href={copy.cli.linkHref} class="docs-cli-link">
+					{copy.cli.linkLabel}
+					<Icon name="right-arrow" size="0.85rem" />
+				</a>
+			</div>
+			<div class="docs-cli-terminal" role="region" aria-label={copy.cli.title}>
+				<code class="docs-cli-cmd"
+					><span class="docs-cli-prompt" aria-hidden="true">$</span> {copy.cli.command}</code
+				>
+				<button
+					type="button"
+					class="docs-copy-btn"
+					aria-label={copy.cli.copyAria}
+					data-copy-cmd={copy.cli.command}
+					data-copy-default={copy.cli.copyLabel}
+					data-copy-done={copy.cli.copiedLabel}
+					data-copy-status={copy.cli.copiedStatus}
+					data-umami-event="copy-cli-init-command"
+				>
+					<span class="docs-copy-label">{copy.cli.copyLabel}</span>
+				</button>
+				<span class="sr-only docs-copy-live" aria-live="polite"></span>
+			</div>
+		</div>
+	</section>
+
+	<section class="docs-section">
+		<div class="docs-section-head">
+			<h2 class="docs-section-title">{copy.newHeading}</h2>
+			<p class="docs-section-sub">{copy.newSub}</p>
+		</div>
+		<div class="docs-highlights">
+			{
+				copy.highlights.map((item) => (
+					<a href={item.href} class="docs-highlight-card">
+						<code class="docs-highlight-badge">{item.badge}</code>
+						<div class="docs-highlight-body">
+							<span class="docs-highlight-title">{item.title}</span>
+							<span class="docs-highlight-desc">{item.description}</span>
+						</div>
+					</a>
+				))
+			}
+		</div>
+		<div class="docs-highlights-links">
+			{
+				copy.newLinks.map((link) => (
+					<a href={link.href} class="docs-highlights-link">
+						{link.label}
+						<Icon name="right-arrow" size="0.8rem" />
+					</a>
+				))
+			}
+		</div>
+	</section>
+
+	<footer class="docs-community-bar">
+		<span class="docs-community-heading">{copy.community.heading}</span>
+		<div class="docs-community-links">
+			{
+				copy.community.links.map((item) => (
+					<a
+						href={item.href}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="docs-community-pill"
+						data-umami-event={item.umamiEvent}
+					>
+						<Icon name={item.icon} size="0.9rem" />
+						<span>{item.label}</span>
+					</a>
+				))
+			}
+		</div>
+	</footer>
+	</div>
+</div>
+
+<script>
+	document.querySelectorAll<HTMLButtonElement>(".docs-copy-btn").forEach((btn) => {
+		const label = btn.querySelector<HTMLElement>(".docs-copy-label");
+		const live = btn.parentElement?.querySelector<HTMLElement>(".docs-copy-live");
+		const cmd = btn.dataset.copyCmd;
+		const defaultText = btn.dataset.copyDefault ?? "Copy";
+		const doneText = btn.dataset.copyDone ?? "Copied";
+		const statusText = btn.dataset.copyStatus ?? "";
+
+		if (!label || !cmd) return;
+
+		btn.addEventListener("click", async () => {
+			try {
+				await navigator.clipboard.writeText(cmd);
+				label.textContent = doneText;
+				if (live) live.textContent = statusText;
+				setTimeout(() => {
+					label.textContent = defaultText;
+					if (live) live.textContent = "";
+				}, 2000);
+			} catch (err) {
+				console.error("Failed to copy CLI command", err);
+			}
+		});
+	});
+</script>
+
+<style>
+	:global(main:has(.docs-home)) > :global(.content-panel:first-child) {
+		display: none;
+	}
+
+	:global(main:has(.docs-home)) > :global(.content-panel) {
+		border-top: 0;
+		padding: 0;
+	}
+
+	:global(main:has(.docs-home))
+		> :global(.content-panel)
+		> :global(.sl-container) {
+		max-width: none;
+		margin: 0;
+	}
+
+	:global(main:has(.docs-home))
+		> :global(.content-panel)
+		> :global(.sl-container)
+		> :global(:not(.sl-markdown-content)) {
+		max-width: var(--sl-content-width);
+		margin-inline: auto;
+		padding-inline: var(--sl-content-pad-x);
+	}
+
+	.docs-home {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.docs-hero-band {
+		width: 100%;
+		border-bottom: 1px solid var(--sl-color-hairline);
+	}
+
+	.docs-hero {
+		width: 100%;
+		max-width: var(--sl-content-width);
+		margin-inline: auto;
+		padding: 2.75rem var(--sl-content-pad-x) 2.25rem;
+		box-sizing: border-box;
+	}
+
+	.docs-hero-title {
+		margin: 0 0 0.85rem;
+		font-size: clamp(2.4rem, 4vw, 3.1rem);
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		line-height: 1.08;
+		color: var(--sl-color-white);
+	}
+
+	.docs-lead {
+		margin: 0 0 1.4rem;
+		font-size: 1.1rem;
+		line-height: 1.6;
+		color: var(--sl-color-gray-1);
+		max-width: 56ch;
+	}
+
+	.docs-body {
+		width: 100%;
+		max-width: var(--sl-content-width);
+		margin-inline: auto;
+		padding: 2.25rem var(--sl-content-pad-x) 2.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 2.5rem;
+		box-sizing: border-box;
+	}
+
+	.docs-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.docs-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.55rem 1.05rem;
+		font-size: 0.9rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition:
+			transform 0.15s ease,
+			border-color 0.15s ease,
+			background-color 0.15s ease;
+	}
+
+	.docs-btn-primary {
+		background-color: var(--sl-color-accent);
+		color: var(--sl-color-white);
+	}
+
+	.docs-btn-primary:hover {
+		filter: brightness(1.08);
+	}
+
+	.docs-btn-secondary {
+		background-color: var(--sl-color-bg);
+		color: var(--sl-color-white);
+		border: 1px solid var(--sl-color-gray-5);
+	}
+
+	.docs-btn-secondary:hover {
+		border-color: var(--sl-color-accent);
+	}
+
+	.docs-overview-hint {
+		margin: 1.15rem 0 0;
+		font-size: 0.88rem;
+		color: var(--sl-color-gray-3);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.45rem;
+	}
+
+	.docs-overview-hint a {
+		color: var(--sl-color-text);
+		font-weight: 500;
+		text-decoration: underline;
+		text-decoration-color: var(--gram-orange);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 3px;
+	}
+
+	.docs-overview-hint a:hover {
+		color: var(--sl-color-white);
+	}
+
+	.docs-section-head {
+		margin-bottom: 1rem;
+	}
+
+	.docs-section-title {
+		margin: 0 0 0.85rem;
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: var(--sl-color-white);
+	}
+
+	.docs-section-head .docs-section-title {
+		margin-bottom: 0.25rem;
+	}
+
+	.docs-section-sub {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--sl-color-gray-3);
+	}
+
+	.docs-pillars {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+	}
+
+	.docs-pillar-card {
+		display: flex;
+		flex-direction: column;
+		padding: 1.15rem 1.25rem;
+		border-radius: 0;
+		border: 1px solid var(--sl-color-gray-5);
+		background-color: var(--sl-color-gray-7);
+		transition: border-color 0.15s ease;
+	}
+
+	.docs-pillar-card:hover {
+		border-color: var(--sl-color-accent);
+	}
+
+	.docs-pillar-head {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		margin-bottom: 0.55rem;
+	}
+
+	.docs-pillar-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		background-color: var(--gram-orange-soft);
+		color: var(--sl-color-accent-high);
+		border: 1px solid color-mix(in srgb, var(--sl-color-accent) 28%, transparent);
+		flex-shrink: 0;
+	}
+
+	.docs-pillar-title {
+		font-size: 1.05rem;
+		font-weight: 600;
+		color: var(--sl-color-white);
+		text-decoration: none;
+	}
+
+	.docs-pillar-title:hover {
+		color: var(--sl-color-accent-high);
+	}
+
+	.docs-pillar-desc {
+		margin: 0 0 0.9rem;
+		font-size: 0.88rem;
+		line-height: 1.5;
+		color: var(--sl-color-gray-3);
+		flex: 1;
+	}
+
+	.docs-pillar-links {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	.docs-pillar-links a {
+		display: inline-block;
+		padding: 0.2rem 0.55rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		text-decoration: none;
+		color: var(--sl-color-gray-1);
+		background-color: var(--sl-color-bg);
+		border: 1px solid var(--sl-color-gray-5);
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.docs-pillar-links a:hover {
+		border-color: var(--sl-color-accent);
+		color: var(--sl-color-accent-high);
+	}
+
+	.docs-highlights {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.75rem;
+	}
+
+	.docs-highlight-card {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.85rem;
+		padding: 0.9rem 1rem;
+		border-radius: 0;
+		border: 1px solid var(--sl-color-gray-5);
+		background-color: var(--sl-color-bg);
+		text-decoration: none;
+		transition:
+			border-color 0.15s ease,
+			transform 0.15s ease;
+	}
+
+	.docs-highlight-card:hover {
+		border-color: var(--sl-color-accent);
+		transform: translateY(-1px);
+	}
+
+	.docs-highlight-badge {
+		flex-shrink: 0;
+		padding: 0.22rem 0.5rem;
+		font-family: var(--sl-font-mono);
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: var(--sl-color-accent-high);
+		background-color: var(--gram-orange-soft);
+		border: 1px solid color-mix(in srgb, var(--sl-color-accent) 25%, transparent);
+	}
+
+	.docs-highlight-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+
+	.docs-highlight-title {
+		font-size: 0.92rem;
+		font-weight: 600;
+		color: var(--sl-color-white);
+	}
+
+	.docs-highlight-desc {
+		font-size: 0.82rem;
+		line-height: 1.45;
+		color: var(--sl-color-gray-3);
+	}
+
+	.docs-highlights-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.25rem;
+		margin-top: 0.85rem;
+	}
+
+	.docs-highlights-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-size: 0.84rem;
+		font-weight: 500;
+		color: var(--sl-color-gray-2);
+		text-decoration: none;
+		transition: color 0.15s ease;
+	}
+
+	.docs-highlights-link:hover {
+		color: var(--sl-color-accent-high);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.docs-cli-card {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem;
+		padding: 1.25rem 1.35rem;
+		border-radius: 0;
+		border: 1px solid var(--sl-color-gray-5);
+	}
+
+	.docs-cli-copy {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		min-width: 0;
+	}
+
+	.docs-cli-title {
+		margin: 0;
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: var(--sl-color-white);
+	}
+
+	.docs-cli-desc {
+		margin: 0;
+		font-size: 0.88rem;
+		line-height: 1.5;
+		color: var(--sl-color-gray-2);
+	}
+
+	.docs-cli-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin-top: 0.25rem;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--sl-color-accent-high);
+		text-decoration: none;
+		width: fit-content;
+	}
+
+	.docs-cli-link:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.docs-cli-terminal {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.85rem;
+		padding: 0.75rem 0.9rem 0.75rem 1.05rem;
+		border-radius: 0;
+		border: 1px solid var(--sl-color-gray-5);
+		background-color: var(--sl-color-bg);
+		flex-shrink: 0;
+		max-width: 100%;
+	}
+
+	.docs-cli-cmd {
+		font-family: var(--sl-font-mono);
+		font-size: 0.86rem;
+		color: var(--sl-color-white);
+		background: transparent;
+		white-space: nowrap;
+	}
+
+	.docs-cli-prompt {
+		color: var(--sl-color-accent-high);
+		margin-right: 0.35rem;
+	}
+
+	.docs-copy-btn {
+		padding: 0.25rem 0.6rem;
+		border: 1px solid var(--sl-color-gray-5);
+		background-color: var(--sl-color-gray-6);
+		color: var(--sl-color-gray-2);
+		font-size: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease;
+	}
+
+	.docs-copy-btn:hover {
+		color: var(--sl-color-white);
+		border-color: var(--sl-color-accent);
+	}
+
+	.docs-community-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 0.75rem 1.25rem;
+		padding-top: 1.35rem;
+		border-top: 1px solid var(--sl-color-hairline);
+	}
+
+	.docs-community-heading {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--sl-color-gray-3);
+	}
+
+	.docs-community-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.docs-community-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.32rem 0.7rem;
+		border: 1px solid var(--sl-color-gray-5);
+		background-color: transparent;
+		font-size: 0.82rem;
+		font-weight: 500;
+		color: var(--sl-color-gray-2);
+		text-decoration: none;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease,
+			background-color 0.15s ease;
+	}
+
+	.docs-community-pill:hover {
+		color: var(--sl-color-white);
+		border-color: var(--sl-color-accent);
+		background-color: var(--sl-color-gray-6);
+	}
+
+	@media (max-width: 860px) {
+		.docs-hero {
+			padding: 2rem var(--sl-content-pad-x);
+		}
+
+		.docs-pillars,
+		.docs-highlights {
+			grid-template-columns: 1fr;
+		}
+
+		.docs-cli-card {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.docs-cli-terminal {
+			justify-content: space-between;
+		}
+	}
+</style>

@@ -152,6 +152,45 @@ describe("buildRenameTable + applyRename", () => {
 		expect(water?.quantity?.target).toBe("pate");
 	});
 
+	it("renames the intermediate target of a ratio on an ingredient, a reference and a timer", () => {
+		const ast = getAST(
+			"## Dough ->&dough\n\nMix @flour{200g}.\n\nAdd @salt{2 g / 100 g &dough} and &stock{250 ml / 100 g &dough}.\n\nRest ~_{30 min / 1 kg &dough}, with @x{1 / 100 g @&flour}.\n",
+		);
+		const { sections, exports } = computeExports(ast);
+		const table = buildRenameTable(sections, exports, [
+			{ exported: "default", local: "pate" },
+		]);
+		const renamed = applyRename(sections, table);
+
+		type Node = { type: string; quantity?: { type: string; target?: string } };
+		const targets = renamed[0]?.children
+			.flatMap((step) => ("children" in step ? (step.children as Node[]) : []))
+			.filter((c) => c.quantity?.type === "RatioQuantity")
+			.map((c) => [c.type, c.quantity?.target]);
+		expect(targets).toEqual([
+			["Ingredient", "pate"],
+			["Reference", "pate"],
+			["Timer", "pate"],
+			// An ingredient target stays global.
+			["Ingredient", "flour"],
+		]);
+	});
+
+	it("renames the intermediate target of a percentage on a reference", () => {
+		const ast = getAST(
+			"## Dough ->&dough\n\nMix @flour{200g}.\n\nAdd &stock{250% &dough}.\n",
+		);
+		const { sections, exports } = computeExports(ast);
+		const table = buildRenameTable(sections, exports, [
+			{ exported: "default", local: "pate" },
+		]);
+		const step = applyRename(sections, table)[0]?.children[1];
+		const stock = (
+			step as { children: { type: string; quantity?: { target?: string } }[] }
+		).children.find((c) => c.type === "Reference");
+		expect(stock?.quantity?.target).toBe("pate");
+	});
+
 	it("does not mutate the input sections (pure)", () => {
 		const ast = getAST("## Pastry ->&paton\n\nMix @flour{200g}.\n");
 		const { sections, exports } = computeExports(ast);

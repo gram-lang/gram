@@ -1,16 +1,16 @@
 ---
 import { GRAM_VERSION } from "../lib/gram-version";
 
-const { siteTitleHref, locale } = Astro.locals.starlightRoute;
+const { locale } = Astro.locals.starlightRoute;
 const homeHref = locale === "fr" ? "/fr/" : "/";
-const changelogHref =
-	locale === "fr" ? "/fr/docs/changelog" : "/docs/changelog";
+const docsHref = locale === "fr" ? "/fr/docs/" : "/docs/";
+const changelogHref = locale === "fr" ? "/fr/changelog" : "/changelog";
 ---
 
 <div class="site-title sl-flex">
 	<a href={homeHref} class="main-site-link">Gram</a>
 	<span class="separator">/</span>
-	<a href={siteTitleHref} class="docs-site-link">Docs</a>
+	<a href={docsHref} class="docs-site-link">Docs</a>
 	<a href={changelogHref} class="version-pill">v{GRAM_VERSION}</a>
 </div>
 

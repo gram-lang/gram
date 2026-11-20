@@ -1,4 +1,11 @@
-import type { StepSchedule, Timeline } from "@gram-lang/scheduler";
+import {
+	type SchedulingDiagnostic,
+	type StepSchedule,
+	type Timeline,
+	computeTimeline,
+	scheduleALAP,
+	serializeTracks,
+} from "@gram-lang/scheduler";
 import type {
 	ProcessedSection,
 	ProcessedStep,
@@ -52,5 +59,46 @@ export function commitTimeline(
 		activeTime: globalActiveTime,
 		activeBreakdown: timeline.activeBreakdown,
 		totalBreakdown: timeline.totalBreakdown,
+	};
+}
+
+/**
+ * The legacy pass, whole: ALAP backward pass, named-track re-serialization,
+ * timeline, then commit onto the steps. It only feeds the deprecated fields
+ * (`timings`, `backgroundTasks`, `metrics`); the default timeline comes from
+ * the task graph and never reads what it writes.
+ *
+ * Each step's `timings` and `backgroundTasks` start again from nothing, so a
+ * recalculation (scaling, analysis) never adds its passive tasks to the
+ * previous ones. Returns the metrics and the scheduling problems found; the
+ * caller decides whether they become warnings (`compile`) or not (a
+ * recalculation describes the same recipe).
+ */
+export function planLegacy(
+	sections: ProcessedSection[],
+	schedules: StepSchedule[],
+): { metrics: ScheduleMetrics; diagnostics: SchedulingDiagnostic[] } {
+	let activeTime = 0;
+	for (const sched of schedules) {
+		if (sched.isComment) continue;
+		const stepObj = sections[sched.sectionIndex]!.steps[
+			sched.stepIndex as number
+		] as ProcessedStep;
+		stepObj.timings = {
+			start: 0,
+			end: 0,
+			activeDuration: sched.localActiveTime,
+		};
+		stepObj.backgroundTasks = [];
+		activeTime += sched.localActiveTime;
+	}
+
+	const diagnostics: SchedulingDiagnostic[] = [];
+	scheduleALAP(schedules, sections, diagnostics);
+	const passives = serializeTracks(schedules, diagnostics);
+	const timeline = computeTimeline(schedules, passives, sections);
+	return {
+		metrics: commitTimeline(timeline, sections, activeTime),
+		diagnostics,
 	};
 }

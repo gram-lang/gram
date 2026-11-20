@@ -13,7 +13,7 @@ Quand une recette (ou un lot complet) est envoyée à la Kitchen pour générer 
 
 ```mermaid
 flowchart TD
-    Raw["Ingrédients Bruts (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Regroupement par ID brut & unités identiques"]
+    Raw["Ingrédients Bruts (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Regroupement par ID brut & échelle d'unités"]
     KitchenGroup --> HasDB{Base BDD Fournie ?}
     
     HasDB -- Oui --> AliasRes["@gram-lang/analyzer<br/>Résolution des Alias (ex: beurre ➔ butter)"]
@@ -28,7 +28,6 @@ flowchart TD
 ```
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
-import Since from '../../../../../components/Since.astro';
 import Term from '../../../../../components/Term.astro';
 
 <Steps>
@@ -38,9 +37,15 @@ import Term from '../../../../../components/Term.astro';
    La résolution des alias intervient une couche au-dessus, dans `@gram-lang/analyzer`, qui lui accède à la base de données. Si `beurre` y est défini comme alias de `butter`, l'Analyseur va regrouper les entrées brutes sous cet identifiant canonique, fusionnant `@butter` et `@beurre` en une seule ligne `butter`. **Cette étape requiert impérativement une base de données** ; sans elle (compilation avec `@gram-lang/kitchen` seul, ou CLI lancé à nu), les alias sont ignorés et le doublon subsiste.
 
 2. ### Fusion des unités
-   Si les ingrédients regroupés partagent la même unité (ex : `100 g` et `50 g`), ils sont simplement additionnés (`150 g`), cela se produit directement dans `@gram-lang/kitchen`, sans avoir besoin de base de données.
+   `@gram-lang/kitchen` fusionne sans base de données tout ce qui s'additionne exactement, à trois niveaux :
 
-   S'ils ont des unités différentes (ex : `100 g` et `1 tasse`), les additionner nécessite une conversion via la masse, ce qui, tout comme la résolution des alias, dépend de la base de données d'ingrédients et se produit donc dans `@gram-lang/analyzer`. Si chaque quantité contributrice se résout en une masse (densité connue, depuis la BDD ou une surcharge au niveau de la recette), l'analyseur les convertit toutes en grammes et les fusionne en une seule entrée.
+   - **Même unité** : `100 g` et `50 g` s'additionnent (`150 g`), et les variantes graphiques d'une unité sont regroupées (`cup` et `cups`, `càs` et `c.à.s`).
+   - **Même échelle** : les unités liées par un rapport entier exact s'additionnent dans la plus petite unité écrite. Cuillères et tasses américaines (`tsp`, `tbsp`, `fl oz`, `cup`, `pt`, `qt`, `gal`), onces et livres (`oz`, `lb`), masses métriques (`mg`, `g`, `kg`) et volumes métriques (`ml`, `cl`, `dl`, `l`) forment chacun une échelle : `1 kg` et `200 g` donnent `1200 g` (affiché `1,2 kg`), `1 cup` et `2 tbsp` donnent `18 tbsp` (affiché `1 cup + 2 tbsp`).
+   - **Systèmes ou natures différents** (`cup` et `ml`, ou volume et masse) : conservés en entrées séparées marquées `multiUnit: true`. Les mesures imprécises comme `pincée` restent hors échelle.
+
+   Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) compte comme des mentions distinctes (`@lait{1 cup + 50 ml}` équivaut à `@lait{1 cup}` puis `@&lait{50 ml}`), de sorte que la liste de courses ne dépend jamais du regroupement choisi dans la recette. Les fourchettes s'additionnent borne par borne (`2-3 g` et `200 g` donnent `202-203 g`), tandis que les unités inconnues restent telles qu'écrites (`gousse` et `gousses` restent séparés).
+
+   Des entrées d'unités de natures différentes (ex : `100 g` et `1 tasse`) ne s'additionnent qu'avec une conversion via la masse, ce qui, tout comme la résolution des alias, dépend de la base de données d'ingrédients et se produit donc dans `@gram-lang/analyzer`. Si chaque quantité contributrice se résout en une masse (densité connue, depuis la BDD ou une surcharge au niveau de la recette), l'analyseur les convertit toutes en grammes et les fusionne en une seule entrée.
 
    **Repli (*Fallback*) : densité manquante.** Si la densité est introuvable pour au moins l'une des unités, l'Analyseur ne peut mathématiquement pas produire un total fiable. Plutôt que d'inventer une valeur, il conserve les lignes séparées, leur applique l'identifiant canonique, et les marque via le *flag* `multiUnit: true`. Les moteurs de rendu exploitent ce flag pour regrouper ces entrées sous un en-tête commun (ex : « ⚠️ Unités mixtes »). Cela signale au cuisinier qu'il s'agit du même ingrédient, tout en évitant d'additionner silencieusement des choux et des carottes.
 
@@ -48,7 +53,7 @@ import Term from '../../../../../components/Term.astro';
    L'id canonique (ex : `butter`) n'existe que pour permettre le regroupement et la fusion des entrées, c'est une clé interne, pas le libellé montré au cuisinier. Le **nom** affiché dans une entrée de la liste de courses suit une seule règle, appliquée à l'identique partout (le Playground, `gram view`, `gram shop`, `gram export`) :
 
    | Ce que vous écrivez | ID Canonique trouvé | `name` dans la base | Nom affiché dans la liste | Pourquoi ? |
-   | --- | --- | --- | --- | --- | --- |
+   | --- | --- | --- | --- | --- |
    | `@flour` | `flour` (Direct) | Wheat Flour | **Wheat Flour** | Correspondance directe = on utilise le nom enrichi de la base. |
    | `@farine` (FR) | `flour` (Alias) | Wheat Flour | **farine** | Alias = on garde le mot de la recette pour préserver sa langue. |
    | `@harina` (ES) | `flour` (Alias) | Wheat Flour | **harina** | L'astuce fonctionne avec n'importe quelle langue configurée dans vos alias. |
@@ -59,10 +64,10 @@ import Term from '../../../../../components/Term.astro';
    **Pas de base de données, ou pas d'entrée correspondante ?** Il n'y a alors tout simplement aucun `name` canonique à préférer, donc le mot de la recette est toujours utilisé, cela fonctionne avec une base vide (`{}`), une base qui n'a aucune entrée pour cet ingrédient, et avec `compile()` de `@gram-lang/kitchen` utilisé seul, sans jamais appeler `@gram-lang/analyzer`.
    :::
 
-3. ### Masquage (*ghosting*) des quantités relatives
-   Les quantités relatives (comme `@eau{50 % @&farine}`) constituent un véritable casse-tête pour les listes de courses, surtout lorsqu'on traite plusieurs recettes en lot (*batch*). 
+3. ### Quantités relatives et formules non résolues
+   Lorsqu'une [quantité relative](/fr/docs/reference/syntax/relative-quantities/) (`@eau{50 % @&farine}`) ou une proportion avec unités (`@œufs{1 / 100 g @&farine}`) peut être calculée à partir d'une masse connue, d'une unité compatible ou d'une densité en base, son résultat fusionne directement dans la liste de courses avec les ingrédients statiques.
 
-   Si vous ajustez les proportions du lot (*scaling*), la quantité d'eau dépend d'une quantité de farine ancrée dans une recette précise. Pour éviter les paradoxes mathématiques, la Kitchen vient **masquer (*ghost*)** ces quantités relatives dans la liste de courses. Elles sont exclues de l'agrégation principale et isolées en tant que dépendances non résolues, préservant ainsi la pureté mathématique des poids statiques.
+   Si la masse ou la conversion de la cible reste impossible à résoudre (par exemple faute de densité dans `ingredients.yaml`), Gram conserve les quantités fixes séparément et laisse la formule telle quelle (`50% of farine`) plutôt que de deviner ou de l'omettre, préservant la justesse des totaux statiques.
 
 4. ### Résolution des composites (MAX vs SUM)
    La partie la plus complexe du pipeline d'agrégation est la gestion des Ingrédients Composites (`<@`). 
@@ -79,8 +84,6 @@ import Term from '../../../../../components/Term.astro';
 En sortie, vous obtenez un tableau d'objets `ShoppingItem` hautement optimisé, dédupliqué et mathématiquement rigoureux. Il est regroupé par clés de catégories culinaires stables (`CATEGORY_KEYS` issues de `@gram-lang/i18n`) et trié selon les règles de traduction locales (`getCategoryLabels(lang)`), prêt à être injecté dans votre terminal ou votre interface web.
 
 ## On achète en kilos, on pèse en grammes
-
-<Since v="1.4.1" />
 
 Une même quantité ne s'affiche pas partout de la même façon, selon l'usage qu'on en fait :
 

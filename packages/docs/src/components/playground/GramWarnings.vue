@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useI18n } from "./useI18n";
+import { WarningCode } from "@gram-lang/kitchen";
 import { warningSeverityOf, type WarningSeverity } from "@gram-lang/modules";
 import type { PlaygroundDiagnostic } from "./diagnostics";
 
@@ -24,7 +25,17 @@ const props = defineProps<{
 const emit = defineEmits<{
 	jump: [start: number, end: number, uri?: string];
 	"update:collapsed": [collapsed: boolean];
+	showDatabase: [];
 }>();
+
+// What the ingredient database answers: the ingredient is not in it, or it is
+// but lacks what the analysis needed. Each offers to show the database.
+// biome-ignore lint/correctness/noUnusedVariables: DATABASE_CODES is used in the <template> block below, which Biome's Vue support doesn't see.
+const DATABASE_CODES = new Set<string>([
+	WarningCode.MISSING_INGREDIENT,
+	WarningCode.MISSING_MACROS,
+	WarningCode.UNKNOWN_MASS,
+]);
 
 const { t } = useI18n();
 
@@ -200,7 +211,11 @@ const overallSeverity = computed<WarningSeverity>(() => {
               <span v-if="w.item" class="diagnostic-item-name">{{ t.playground.warnings.item }}: <code>{{ w.item }}</code></span>
             </div>
             <span class="diagnostic-message">{{ w.message }}</span>
+            <span v-if="w.code === WarningCode.MISSING_INGREDIENT" class="diagnostic-hint">{{ t.playground.warnings.notInDatabase }}</span>
           </div>
+          <button v-if="DATABASE_CODES.has(w.code)" class="diagnostic-jump" @click="emit('showDatabase')">
+            {{ t.playground.warnings.showDatabase }}
+          </button>
           <button v-if="w.loc" class="diagnostic-jump" @click="emit('jump', w.loc.start, w.loc.end, w.uri)">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 256 256">
               <path d="M240,120H215.63A88.13,88.13,0,0,0,136,40.37V16a8,8,0,0,0-16,0V40.37A88.13,88.13,0,0,0,40.37,120H16a8,8,0,0,0,0,16H40.37A88.13,88.13,0,0,0,120,215.63V240a8,8,0,0,0,16,0V215.63A88.13,88.13,0,0,0,215.63,136H240a8,8,0,0,0,0-16ZM128,200a72,72,0,1,1,72-72A72.08,72.08,0,0,1,128,200Zm0-112a40,40,0,1,0,40,40A40,40,0,0,0,128,88Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,152Z"></path>
@@ -471,6 +486,13 @@ const overallSeverity = computed<WarningSeverity>(() => {
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.diagnostic-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--sl-color-gray-2);
 }
 
 .diagnostic-jump {

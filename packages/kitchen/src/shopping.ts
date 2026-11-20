@@ -1,7 +1,20 @@
-import { slugify, getNumericQty, round2 } from "./utils";
+import { slugify } from "./utils";
+import {
+	numericTotal,
+	shoppingAmount,
+	termsOfComposite,
+	termsOfUsage,
+	writeSum,
+} from "./terms";
 import { detectCycles } from "./graph";
 import { ASTNodeType } from "@gram-lang/parser";
-import { normalizeUnit } from "@gram-lang/i18n";
+import {
+	groupTerms,
+	mergeKey,
+	normalizeUnit,
+	type Term,
+	termsTotal,
+} from "@gram-lang/i18n";
 import type { ProcessedSection, Registry, Usage } from "./types";
 import type { CompilerOptions } from "./core";
 import { isPurchasableReference } from "./registry";
@@ -14,7 +27,13 @@ export interface ShoppingListItem {
 	type?: string;
 	id: string;
 	name?: string;
+	/** The total; for a range, its middle (the bounds are in `range`). */
 	qty?: number;
+	/**
+	 * The bounds of a total with a range in it, added up by their bounds
+	 * (`2-3 g` and `200 g` give `202-203 g`, `qty` 202.5). Since 1.5.0.
+	 */
+	range?: { min: number; max: number };
 	unit?: string | null;
 	variable_entries?: string[];
 	fixed?: boolean;
@@ -22,6 +41,8 @@ export interface ShoppingListItem {
 	multiUnit?: boolean;
 	modifiers?: string[];
 	// Internal fields for calculation
+	// No longer set: the sum is kept as terms, outside the item. Still declared
+	// so code that read it keeps type-checking.
 	otherUnits?: Record<string, number>;
 	variableParts?: string[];
 	_usageIds?: string[];
@@ -85,8 +106,31 @@ function formatQuantity(q: Usage["qty"]): string | number {
 	if (q.type === ASTNodeType.RelativeQuantity) {
 		return `${q.percent}% of ${q.target}`;
 	}
+	// A ratio still waiting for its target's amount, as written.
+	if (q.type === ASTNodeType.RatioQuantity) return q.raw;
 
 	return JSON.stringify(q);
+}
+
+/**
+ * What a usage with no number adds to its shopping entry, as written: a
+ * share or a ratio whose target was not found (`(10% of flour ❓)`), an
+ * amount Gram does not count (a percentage, a ratio still waiting for its
+ * target), or a quantity in words (`{une pincée}`, `{to taste}`, bought as
+ * written). The analyzer writes an entry's `variable_entries` again with it
+ * once it has resolved what it could.
+ */
+export function variablePartsOf(item: Usage): string[] {
+	// isGhost is only ever set on a formula: a target not found.
+	if (item.formula?.isGhost === true) return [`(${item.formula.raw} ❓)`];
+	const unit = item.unit || "";
+	if (item.qty) {
+		const uStr = unit ? ` ${unit}` : "";
+		return [`${formatQuantity(item.qty)}${uStr}`];
+	}
+	// A quantity in words: no number, so the whole text is its unit.
+	if (unit && !item.parts?.length) return [unit];
+	return [];
 }
 
 /**
@@ -107,6 +151,18 @@ interface CompositeAccumulator {
 }
 
 /**
+ * A usage as the shopping list adds it up: itself, or, for a sum over
+ * several ladders (`{1 cup + 20 g}`, `{1 cup + 10 ml}`), one copy per ladder,
+ * each holding the terms of that ladder and what they amount to, as if they
+ * had been written apart.
+ */
+function byLadder(item: Usage): Usage[] {
+	const groups = groupTerms(termsOfUsage(item), "ladder");
+	if (groups.length <= 1) return [item];
+	return groups.map((terms) => writeSum({ ...item }, terms));
+}
+
+/**
  * Main entry point for shopping list generation.
  * Iterates through all compiled sections and merges identical ingredients by ID,
  * aggregates compatible quantities, handles composite/parent sub-recipes, and flags circular references.
@@ -117,8 +173,14 @@ export function generateShoppingList(
 	_options?: CompilerOptions,
 ): (ShoppingListItem | CompositeItem | Usage)[] {
 	const listMap = new Map<string, ShoppingListItem>();
+	// The terms each entry of `listMap` adds up, by the same key: one ladder
+	// (`cup` and `tbsp`), or one unit on no ladder (its spellings merged), so
+	// they always amount to a single number.
+	const termsByKey = new Map<string, Term[]>();
 	const compositeMap = new Map<string, CompositeAccumulator>();
 	const alternatives: Usage[] = [];
+	// The usages whose share of a composite parent is already counted.
+	const sharedParent = new Set<string>();
 
 	const circularIds = detectCycles(sections);
 
@@ -136,138 +198,126 @@ export function generateShoppingList(
 			if (!isPurchasableReference(item.type, registry.ingredients.get(item.id)))
 				return;
 
-			if (item.composite) {
-				const parentId = slugify(item.composite.parent);
-				if (!compositeMap.has(parentId)) {
-					compositeMap.set(parentId, {
-						id: parentId,
-						subUsageMap: new Map(),
-						usageAccumulator: new Map(),
-					});
-				}
-				const comp = compositeMap.get(parentId)!;
-
-				let declParentQty = 1;
-				if (item.composite?.quantity) {
-					const numQ = getNumericQty(item.composite.quantity);
-					if (numQ !== null) declParentQty = numQ;
-				}
-
-				const subId = item.id;
-				const currentParentTotal = comp.subUsageMap.get(subId) || 0;
-				comp.subUsageMap.set(subId, currentParentTotal + declParentQty);
-
-				// Spellings of one unit (`cup` / `cups`, `c.à.s` / `tbsp`) share an
-				// entry, shown with the first spelling met.
-				const uKey = `${subId}::${normalizeUnit(item.unit)}`;
-
-				if (!comp.usageAccumulator.has(uKey)) {
-					comp.usageAccumulator.set(uKey, {
-						id: subId,
-						unit: item.unit,
-						// Left undefined (not 0) until a measured usage is seen, so a
-						// composite child written bare (e.g. `@jus<@citron{1/2}`, no
-						// quantity of its own) doesn't display as "(0)" — it stays
-						// unmeasured, like any other bare ingredient.
-						qty: undefined,
-						alias: item.alias,
-					});
-				}
-				const uEntry = comp.usageAccumulator.get(uKey)!;
-
-				const numQ = getNumericQty(item.qty);
-				if (numQ !== null) {
-					uEntry.qty = (typeof uEntry.qty === "number" ? uEntry.qty : 0) + numQ;
-				}
-				return;
-			}
-
-			const id = item.id;
-
-			let numericQty: number | null = null;
-			const unit = item.unit || "";
-			let isGhost = false;
-
-			if (item.formula) {
-				if (item.formula.isGhost) {
-					isGhost = true;
-				} else {
-					const numQ = getNumericQty(item.qty);
-					if (numQ !== null) numericQty = numQ;
-				}
-			} else {
-				const numQ = getNumericQty(item.qty);
-				if (numQ !== null) numericQty = numQ;
-			}
-
-			// Group by ID AND unit (and ghost status) to prevent semantic data loss
-			// where secondary units were stringified into variable_entries. The
-			// unit is normalized, so the spellings of one unit (`cup` / `cups`,
-			// `c.à.s` / `tbsp`) add up in one entry, shown with the first
-			// spelling met.
-			const key = `${id}::${normalizeUnit(unit)}::${isGhost ? "ghost" : "real"}`;
-
-			if (!listMap.has(key)) {
-				const name = registry.ingredients.get(id)?.name || item.name;
-
-				listMap.set(key, {
-					id: id,
-					name: name,
-					unit: unit,
-					otherUnits: {},
-					variableParts: [],
-					_usageIds: [],
-				});
-			}
-
-			const existing = listMap.get(key)!;
-			if (item._usageId) {
-				existing._usageIds!.push(item._usageId);
-			}
-
-			// Track whether every contributing usage is protected (@= or a
-			// TextQuantity like "a pinch"), and whether any is a relative
-			// (formula-derived) quantity — both disqualify this ingredient
-			// as a --scale reference target (see @gram-lang/kitchen's ScaleEngine).
-			existing.allFixed = item.fixed ? (existing.allFixed ?? true) : false;
-			if (item.formula) existing.isRelative = true;
-			// Propagate modifiers (e.g. the `*` baker's-percentage reference marker)
-			// so consumers reading the shopping list — not just per-usage AST nodes —
-			// can find it too.
-			if (item.modifiers && item.modifiers.length > 0) {
-				if (!existing.modifierSet) existing.modifierSet = new Set();
-				item.modifiers.forEach((m: string) => {
-					existing.modifierSet?.add(m);
-				});
-			}
-
-			if (isGhost) {
-				// isGhost is only ever set from `item.formula.isGhost` above, so
-				// `item.formula` is always truthy here — the `.qty`/`.value`
-				// fallback below it was dead code (also, `.value` doesn't exist
-				// on every Usage["qty"] variant, e.g. RelativeQuantityAST).
-				const text = item.formula?.raw ?? "";
-				const display = `${text} ❓`;
-				existing.variableParts!.push(`(${display})`);
-			} else if (numericQty !== null) {
-				const u = existing.unit ?? "";
-				if (!existing.otherUnits![u]) existing.otherUnits![u] = 0;
-				existing.otherUnits![u] += numericQty;
-			} else {
-				if (item.qty) {
-					const qStr = formatQuantity(item.qty);
-					const uStr = unit ? ` ${unit}` : "";
-					existing.variableParts!.push(`${qStr}${uStr}`);
-				}
-			}
-
-			if (!isGhost && item.isCircular) {
-				existing.variableParts!.push("⚠️ Circular Ref.");
-			}
+			// A sum over several ladders (`{1 cup + 20 g}`) is bought as one
+			// amount per ladder, as if they had been written apart.
+			byLadder(item).forEach(addToList);
 		});
 	});
 
-	const standardList = [...listMap.values()].map((item) => {
+	function addToList(item: Usage) {
+		if (item.composite) {
+			const parentId = slugify(item.composite.parent);
+			if (!compositeMap.has(parentId)) {
+				compositeMap.set(parentId, {
+					id: parentId,
+					subUsageMap: new Map(),
+					usageAccumulator: new Map(),
+				});
+			}
+			const comp = compositeMap.get(parentId)!;
+
+			let declParentQty = 1;
+			if (item.composite?.quantity || item.composite?.parts) {
+				const numQ = numericTotal(termsOfComposite(item.composite));
+				if (numQ !== null) declParentQty = numQ;
+			}
+
+			const subId = item.id;
+			// A child split by ladder (`byLadder`) draws on its parent once.
+			if (!item._usageId || !sharedParent.has(item._usageId)) {
+				if (item._usageId) sharedParent.add(item._usageId);
+				const currentParentTotal = comp.subUsageMap.get(subId) || 0;
+				comp.subUsageMap.set(subId, currentParentTotal + declParentQty);
+			}
+
+			// Spellings of one unit (`cup` / `cups`, `c.à.s` / `tbsp`) share an
+			// entry, shown with the first spelling met.
+			const uKey = `${subId}::${normalizeUnit(item.unit)}`;
+
+			if (!comp.usageAccumulator.has(uKey)) {
+				comp.usageAccumulator.set(uKey, {
+					id: subId,
+					unit: item.unit,
+					// Left undefined (not 0) until a measured usage is seen, so a
+					// composite child written bare (e.g. `@jus<@citron{1/2}`, no
+					// quantity of its own) doesn't display as "(0)" — it stays
+					// unmeasured, like any other bare ingredient.
+					qty: undefined,
+					alias: item.alias,
+				});
+			}
+			const uEntry = comp.usageAccumulator.get(uKey)!;
+
+			const numQ = numericTotal(termsOfUsage(item));
+			if (numQ !== null) {
+				uEntry.qty = (typeof uEntry.qty === "number" ? uEntry.qty : 0) + numQ;
+			}
+			return;
+		}
+
+		const id = item.id;
+
+		const unit = item.unit || "";
+		const isGhost = item.formula?.isGhost === true;
+		// The usage's terms, kept only when they amount to a number: a
+		// ghost formula has none to add, and a term without a number goes
+		// to the variable parts below, as written.
+		const terms = isGhost ? [] : termsOfUsage(item);
+		const numericQty = numericTotal(terms);
+
+		// Group by ID AND ladder (and ghost status): the units of one ladder
+		// (`cup` and `tbsp`, `g` and `kg`) add up in one entry, in the
+		// smallest unit written; a unit on no ladder groups with its own
+		// spellings only (`gousse` and `gousses` stay apart). Two systems
+		// (`cup` and `ml`) or two families keep an entry each (`multiUnit`).
+		const key = `${id}::${mergeKey(unit || null, "ladder")}::${isGhost ? "ghost" : "real"}`;
+
+		if (!listMap.has(key)) {
+			const name = registry.ingredients.get(id)?.name || item.name;
+
+			listMap.set(key, {
+				id: id,
+				name: name,
+				unit: unit,
+				variableParts: [],
+				_usageIds: [],
+			});
+		}
+
+		const existing = listMap.get(key)!;
+		if (item._usageId) {
+			existing._usageIds!.push(item._usageId);
+		}
+
+		// Track whether every contributing usage is protected (@= or a
+		// TextQuantity like "a pinch"), and whether any is a relative
+		// (formula-derived) quantity — both disqualify this ingredient
+		// as a --scale reference target (see @gram-lang/kitchen's ScaleEngine).
+		existing.allFixed = item.fixed ? (existing.allFixed ?? true) : false;
+		if (item.formula) existing.isRelative = true;
+		// Propagate modifiers (e.g. the `*` baker's-percentage reference marker)
+		// so consumers reading the shopping list — not just per-usage AST nodes —
+		// can find it too.
+		if (item.modifiers && item.modifiers.length > 0) {
+			if (!existing.modifierSet) existing.modifierSet = new Set();
+			item.modifiers.forEach((m: string) => {
+				existing.modifierSet?.add(m);
+			});
+		}
+
+		if (!isGhost && numericQty !== null) {
+			const entryTerms = termsByKey.get(key);
+			if (entryTerms) entryTerms.push(...terms);
+			else termsByKey.set(key, [...terms]);
+		} else {
+			existing.variableParts!.push(...variablePartsOf(item));
+		}
+		if (!isGhost && item.isCircular) {
+			existing.variableParts!.push("⚠️ Circular Ref.");
+		}
+	}
+
+	const standardList = [...listMap.entries()].map(([key, item]) => {
 		const res: ShoppingListItem = {
 			id: item.id,
 			name: item.name,
@@ -280,29 +330,13 @@ export function generateShoppingList(
 		if (item.modifierSet && item.modifierSet.size > 0)
 			res.modifiers = [...item.modifierSet];
 
-		const units = Object.keys(item.otherUnits!);
-		const primaryUnit = units[0];
-		if (primaryUnit !== undefined) {
-			res.qty = round2(item.otherUnits![primaryUnit] || 0);
-			res.unit = primaryUnit || null;
+		const terms = termsByKey.get(key);
+		if (terms) {
+			Object.assign(res, shoppingAmount(termsTotal(terms), item.unit || null));
 		}
 
-		const hasOther = Object.keys(item.otherUnits!).length > 0;
-
-		const extraEntries: string[] = [];
-		if (hasOther) {
-			const units = Object.keys(item.otherUnits!);
-			for (let i = 1; i < units.length; i++) {
-				const u = units[i];
-				if (u === undefined) continue;
-				const uStr = u ? ` ${u}` : "";
-				extraEntries.push(`${round2(item.otherUnits![u] || 0)}${uStr}`);
-			}
-		}
-
-		const allVars = [...extraEntries, ...(item.variableParts || [])];
-		if (allVars.length > 0) {
-			res.variable_entries = allVars;
+		if (item.variableParts && item.variableParts.length > 0) {
+			res.variable_entries = [...item.variableParts];
 		}
 
 		return res;

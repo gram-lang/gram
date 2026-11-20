@@ -37,3 +37,18 @@ export function makeDb(
 		]),
 	);
 }
+
+/**
+ * The environment of a `gram` run spawned by a test: this machine's locale
+ * left out of the clock (`LC_ALL` dropped, `LC_TIME=C`), so a run sheet reads
+ * in 24 hours wherever the tests run, `clock: auto` following the locale
+ * variables. `extra` sets a variable for one run (`LANG` to test `auto`).
+ */
+export function cliEnv(
+	extra: Record<string, string> = {},
+): Record<string, string | undefined> {
+	const env: Record<string, string | undefined> = { ...process.env };
+	delete env.LC_ALL;
+	env.LC_TIME = "C";
+	return { ...env, ...extra };
+}

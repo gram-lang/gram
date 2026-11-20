@@ -48,6 +48,33 @@ resolveTimeUnit('minutes'); // "m"
 resolveTimeUnit('heures', 'fr'); // "h"
 ```
 
+### Analyser une durée
+
+<Since v="1.5.0" />
+
+`parseDuration` convertit en minutes les durées de minuteurs (`1h30`, `1 hr 30 mins`, `1:30 h`, `5'30"`, `45 min - 1 h`) dans toutes les langues de `TIME_DICTIONARIES`. Toute saisie invalide retourne un motif d'échec — traduit par `@gram-lang/kitchen` en `MISSING_UNIT`, `INVALID_UNIT` ou `INVALID_DURATION` — sans jamais deviner. Chaque borne conserve ses termes (`parts`) et sa forme (`units`, `clock` ou `prime`), les contrôles de signe et de plafond revenant à l'appelant.
+
+```typescript
+function parseDuration(text: string): DurationResult
+
+type DurationResult =
+  | { ok: true; minutes: number; range?: { min: number; max: number }; sides: DurationSide[] }
+  | { ok: false; reason: DurationFailure; unit?: string } // `unit` : le mot lu comme unité, pour "unknownUnit"
+
+interface DurationSide { minutes: number; parts: { value: number; unit: "d" | "h" | "m" | "s" }[]; form: "units" | "clock" | "prime" }
+```
+
+```typescript
+import { parseDuration } from '@gram-lang/i18n';
+
+parseDuration('1h30');         // { ok: true, minutes: 90, sides: [{ minutes: 90, parts: [{ value: 1, unit: "h" }, { value: 30, unit: "m" }], form: "units" }] }
+parseDuration('45 min - 1 h'); // { ok: true, minutes: 52.5, range: { min: 45, max: 60 }, sides: [...] }
+parseDuration('1:30');         // { ok: false, reason: "ambiguousClock" }
+parseDuration('3 bananes');    // { ok: false, reason: "unknownUnit", unit: "bananes" }
+```
+
+Les raisons (`DurationFailure`) sont décrites dans le code source, chacune avec un exemple : `empty`, `missingUnit`, `unknownUnit`, `words`, `multiplication`, `iso8601`, `unexpected`, `ambiguousClock`, `clockFormat`, `unitOrder`, `duplicateUnit`, `overflow60`, `decimalInCompound`, `decimalPrime`, `bareNumber`, `reversedRange`, `emptyRange`, `ambiguousRange`. Les écritures elles-mêmes sont présentées dans [Écrire une durée](/fr/docs/reference/syntax/times/#écrire-une-durée).
+
 ## Catégories d'ingrédients par défaut
 
 Catégories de repli exploitées par `gram shop` (et d'autres consommateurs) pour regrouper la liste de courses par famille culinaire, lorsqu'un ingrédient de la base n'a pas de `category` explicite :
@@ -81,8 +108,6 @@ TIME_TO_MINUTES.h; // 60 (minutes)
 ```
 
 ### Les nombres dans la langue du lecteur
-
-<Since v="1.4.1" />
 
 `formatNumber` écrit un nombre comme un lecteur de la langue l'écrit (`1.5` en anglais, `1,5` en français), arrondi par défaut à deux décimales et sans séparateur de milliers, comme une recette écrit `1500 g`. `localizeDecimals` fait de même pour une quantité déjà écrite en texte (une fourchette, un minuteur), et `decimalSeparator` donne le séparateur lui-même. Toutes les vues et le CLI écrivent les nombres qu'ils affichent avec ces fonctions ; un nombre relu par un script ou un fichier (un attribut `data-*`, du JSON, la source `.gram`) garde son point.
 
@@ -127,6 +152,44 @@ toLargerMetricUnit(999, 'g');    // { value: 999, unit: "g" }
 toLargerMetricUnit(64, 'oz');    // { value: 64, unit: "oz" }
 isMetricMassUnit('kilo', 'fr');  // true
 isMetricMassUnit('lb');          // false
+```
+
+## Sommes de quantités
+
+<Since v="1.5.0" />
+
+Toutes les quantités du pipeline (une [somme](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) comme `{1 cup + 1 tbsp}`, un simple `{200 g}`, les entrées d'une liste de courses) passent par un même modèle de **termes** : une valeur, une unité, et `minus` pour un terme retiré. Kitchen, l'analyzer et le renderer additionnent, mettent à l'échelle et écrivent les quantités avec ces fonctions, et tombent donc toujours d'accord. Le module est pur : il ne connaît ni l'AST ni la recette compilée.
+
+```typescript
+type TermValue = number | QuantityValue; // un nombre, ou la forme single / fraction / range de la recette compilée
+interface Term { value: TermValue; unit: string | null; minus?: boolean }
+interface TermsTotal { qty: TermValue; unit: string | null }
+
+function termsTotal(terms: readonly Term[]): TermsTotal | null
+function mergeTerms(terms: readonly Term[], mode: "unit" | "ladder"): Term[]
+function scaleTerms(terms: readonly Term[], factor: number): Term[]
+function formatTerms(terms: readonly Term[], options?: FormatTermsOptions): string
+
+const UNIT_LADDERS: readonly UnitLadder[]
+function ladderOf(rawUnit: string | undefined | null, lang?: string): LadderStep | null
+function sameLadder(rawUnits: readonly (string | undefined | null)[], lang?: string): boolean
+```
+
+- **`UNIT_LADDERS`** : les unités qui se convertissent par un rapport entier, comptées dans la plus petite unité de leur échelle : volume américain (`tsp` 1, `tbsp` 3, `fl oz` 6, `cup` 48, `pt` 96, `qt` 192, `gal` 768), masse impériale (`oz` 1, `lb` 16), masse métrique (`mg`, `g`, `livre`, `kg`) et volume métrique (`ml`, `cl`, `dl`, `tasse`, `l`). Elles concordent avec `UNIT_CONVERSIONS` à 0,01 % près. `pincée` et les unités inconnues n'appartiennent à aucune échelle.
+- **`termsTotal`** : une seule unité garde son unité (`1 tasse + 1 tasse` reste en `tasse`, jamais converti) ; les unités d'une même échelle s'additionnent dans la plus petite unité écrite, en arithmétique entière exacte ; une même nature sur deux systèmes donne des grammes ou des millilitres ; tout le reste (un volume et une masse, des unités inconnues) donne `null`. Les fourchettes s'additionnent borne par borne, et un total qui en contient une reste une fourchette.
+- **`mergeTerms`** : `"unit"` additionne les termes de chaque unité (les ingrédients d'un passage du plan de marche), `"ladder"` ceux de chaque échelle (la liste de courses). Une quantité ne commence jamais par un terme retiré : `formatTerms` garde l'ordre écrit (`1 cup − 2 tbsp + 30 g`, chaque nature se soustrayant de son côté) et ne remet les termes ajoutés devant que lorsqu'elle commencerait ainsi (`1 cup − 2 tbsp`, jamais `−2 tbsp + 1 cup`).
+- **`formatTerms`** : `mode: "written"` (par défaut) écrit les termes comme l'auteur ; `mode: "computed"` écrit une quantité calculée par Gram comme on la mesure en cuisine (voir [mettre à l'échelle une somme de quantités](/fr/docs/explanation/scaling/#mettre-à-léchelle-une-somme-de-quantités)). Options : `lang`, `buying` (une liste de courses : passer à l'unité dans laquelle on achète), `rounding` (arrondir à ce qu'on peut mesurer, après mise à l'échelle), les séparateurs `plus` / `minus`, et `number` / `text` pour écrire les nombres à votre façon.
+
+```typescript
+import { termsTotal, mergeTerms, scaleTerms, formatTerms, ladderOf } from '@gram-lang/i18n';
+
+const terms = [{ value: 1, unit: 'cup' }, { value: 1, unit: 'tbsp' }];
+termsTotal(terms);                                           // { qty: 17, unit: "tbsp" }
+termsTotal([{ value: 1, unit: 'cup' }, { value: 50, unit: 'ml' }]); // { qty: 286.59, unit: "ml" }
+termsTotal([{ value: 1, unit: 'cup' }, { value: 20, unit: 'g' }]);  // null
+formatTerms(scaleTerms(terms, 2), { mode: 'computed', rounding: true }); // "2 cup + 2 tbsp"
+formatTerms([{ value: 34, unit: 'tbsp' }], { mode: 'computed', buying: true }); // "2 cup + 2 tbsp"
+ladderOf('cups')?.size;                                      // 48 (cuillères à café dans une tasse)
 ```
 
 ## Ressources associées

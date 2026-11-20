@@ -1,0 +1,218 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Pâte",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mélanger ",
+              "loc": {
+                "start": 9,
+                "end": 18
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "farine",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 26,
+                  "end": 31
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 18,
+                "end": 32
+              }
+            },
+            {
+              "type": "Text",
+              "value": "avec ",
+              "loc": {
+                "start": 33,
+                "end": 38
+              }
+            },
+            {
+              "type": "Alternative",
+              "options": [
+                {
+                  "type": "Ingredient",
+                  "name": "beurre",
+                  "modifiers": [],
+                  "quantity": {
+                    "type": "RelativeQuantity",
+                    "percent": 10,
+                    "text": "10",
+                    "target": "farine",
+                    "referenceType": "ingredient",
+                    "loc": {
+                      "start": 46,
+                      "end": 58
+                    }
+                  },
+                  "alias": null,
+                  "preparation": null,
+                  "composite": null,
+                  "loc": {
+                    "start": 38,
+                    "end": 59
+                  }
+                },
+                {
+                  "type": "Ingredient",
+                  "name": "huile",
+                  "modifiers": [],
+                  "quantity": {
+                    "type": "RelativeQuantity",
+                    "percent": 8,
+                    "text": "8",
+                    "target": "farine",
+                    "referenceType": "ingredient",
+                    "loc": {
+                      "start": 67,
+                      "end": 78
+                    }
+                  },
+                  "alias": null,
+                  "preparation": null,
+                  "composite": null,
+                  "loc": {
+                    "start": 60,
+                    "end": 79
+                  }
+                }
+              ],
+              "loc": {
+                "start": 38,
+                "end": 79
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 79,
+                "end": 80
+              }
+            }
+          ],
+          "loc": {
+            "start": 9,
+            "end": 82
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Détendre avec ",
+              "loc": {
+                "start": 82,
+                "end": 96
+              }
+            },
+            {
+              "type": "Alternative",
+              "options": [
+                {
+                  "type": "Ingredient",
+                  "name": "lait",
+                  "modifiers": [],
+                  "quantity": {
+                    "type": "Quantity",
+                    "value": {
+                      "type": "single",
+                      "value": 100,
+                      "text": "100"
+                    },
+                    "unit": "g",
+                    "fixed": false,
+                    "loc": {
+                      "start": 102,
+                      "end": 107
+                    }
+                  },
+                  "alias": null,
+                  "preparation": null,
+                  "composite": null,
+                  "loc": {
+                    "start": 96,
+                    "end": 108
+                  }
+                },
+                {
+                  "type": "Ingredient",
+                  "name": "eau",
+                  "modifiers": [],
+                  "quantity": {
+                    "type": "RelativeQuantity",
+                    "percent": 90,
+                    "text": "90",
+                    "target": "lait",
+                    "referenceType": "ingredient",
+                    "loc": {
+                      "start": 114,
+                      "end": 124
+                    }
+                  },
+                  "alias": null,
+                  "preparation": null,
+                  "composite": null,
+                  "loc": {
+                    "start": 109,
+                    "end": 125
+                  }
+                }
+              ],
+              "loc": {
+                "start": 96,
+                "end": 125
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 125,
+                "end": 126
+              }
+            }
+          ],
+          "loc": {
+            "start": 82,
+            "end": 127
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 127
+      }
+    }
+  ]
+}

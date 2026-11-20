@@ -58,11 +58,13 @@ export async function exportRecipe(
 	const planned = options.view?.kitchen !== undefined;
 	// A view laid out in time reads the tasks of the compiled recipe; the
 	// others show what the analyzer added (masses, nutrition).
+	const clock = options.view?.clock;
 	const input = prepareViews(
 		planned ? compiled : (analyzed?.result ?? compiled),
-		options.settings,
+		clock ? { ...options.settings, clock: clock.clock } : options.settings,
 		{
 			...(options.lang !== undefined && { lang: options.lang }),
+			...(clock?.locale !== undefined && { locale: clock.locale }),
 			...(options.view?.kitchen && { kitchen: options.view.kitchen }),
 			...(options.view?.serveAt !== undefined && {
 				serveAt: options.view.serveAt,

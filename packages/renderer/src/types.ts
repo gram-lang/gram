@@ -59,6 +59,8 @@ export interface RendererIcons {
 	hourglass?: string;
 	timer?: string;
 	thermometer?: string;
+	/** Before a target state (`={ribbon stage}`). Since 1.5.0. */
+	checkpoint?: string;
 	caretRight?: string;
 	arrowRight?: string;
 	arrowUDownLeft?: string;
@@ -113,6 +115,14 @@ export interface RendererClasses {
 	cookware?: string;
 	timer?: string;
 	temperature?: string;
+	/** A target state (`={ribbon stage}`), default `checkpoint`. Since 1.5.0. */
+	checkpoint?: string;
+	/**
+	 * What holds an element and its note together (a temperature, a target
+	 * state), so the note may wrap apart from it (default `note-group`). The
+	 * note itself takes `prepText`. Since 1.5.0.
+	 */
+	noteGroup?: string;
 	declaration?: string;
 	massBadge?: string;
 	/** A quantity written in the text of a step (default `step-quantity`). */
@@ -158,6 +168,8 @@ export interface TextStyle {
 	reference?: (text: string) => string;
 	cookware?: (text: string) => string;
 	timer?: (text: string) => string;
+	/** A target state (`={ribbon stage}`). Since 1.5.0. */
+	checkpoint?: (text: string) => string;
 	/** The action of a step (`[Mix]`). */
 	action?: (text: string) => string;
 }
@@ -234,6 +246,11 @@ export interface RenderContext {
 	icons?: RendererIcons;
 	classes?: RendererClasses;
 	formatFraction?: (value: number) => string;
+	/**
+	 * The caller's duration format, absent when Gram writes the durations
+	 * itself: a timer then keeps the exact, ranged writing of
+	 * `formatTimerDuration` that a plain formatter could not give.
+	 */
 	formatDuration?: (minutes: number) => string;
 	/** Set to true when formatting step tokens to suppress quantity display. */
 	hideIngredientQty?: boolean;
@@ -256,6 +273,12 @@ export interface RenderContext {
 	 * is left out.
 	 */
 	paper?: boolean;
+
+	/**
+	 * The recipe's scale factor (`scaleFactor` of the compiled recipe): when
+	 * it is not 1, every amount is shown worked out (`formatUsageQuantity`).
+	 */
+	scaleFactor?: number;
 
 	/** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
 	formatMode?: "inline" | "mise-en-place" | "shopping-list";

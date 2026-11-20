@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import type { MiseEnPlaceMode, RestChoice } from "@gram-lang/kitchen";
+import { resolveHourCycle } from "@gram-lang/renderer";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import BakersSection from "./BakersSection.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
@@ -13,7 +14,7 @@ import ScaleSection from "./ScaleSection.vue";
 import ScheduleSection from "./ScheduleSection.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import StockSection from "./StockSection.vue";
-import type { PlanSettings } from "./planSettings";
+import { type PlanSettings, browserLocale } from "./planSettings";
 import type { ShoppingItem } from "./scaleSection";
 import type { ServeSuggestions } from "./scheduleSection";
 import type { PlaygroundOptions } from "./settingsStorage";
@@ -38,6 +39,12 @@ const props = defineProps<{
 	serveSuggestions?: ServeSuggestions | null;
 	initialSection?: string;
 }>();
+
+// The clock the serving time is written with in the section's badge, as in the run sheet.
+// biome-ignore lint/correctness/noUnusedVariables: hourCycle is used in the <template> block below, which Biome's Vue support doesn't see.
+const hourCycle = computed(() =>
+	resolveHourCycle(props.options.clock, browserLocale()),
+);
 
 // biome-ignore lint/correctness/noUnusedVariables: emit is used in the <template> block below, which Biome's Vue support doesn't see.
 const emit = defineEmits<{
@@ -92,6 +99,7 @@ function toggleSection(sec: string) {
       :rests="props.rests"
       :plan-error="props.planError"
       :serve-suggestions="props.serveSuggestions"
+      :hour-cycle="hourCycle"
       @toggle="toggleSection('schedule')"
       @update:schedule="emit('update:schedule', $event)"
       @update:rests="emit('update:rests', $event)"

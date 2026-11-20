@@ -5,6 +5,7 @@ import {
 	type CookwareAST,
 	type TimerAST,
 	type TemperatureAST,
+	type CheckpointAST,
 	type ReferenceAST,
 	type IntermediateDecl,
 	type AlternativeAST,
@@ -12,8 +13,10 @@ import {
 	type StepAST,
 	type SectionAST,
 	type QuantityAST,
+	type CompoundQuantityAST,
 	type TextQuantityAST,
 	type RelativeQuantityAST,
+	type RatioQuantityAST,
 	type ImportDecl,
 } from "./types";
 
@@ -37,6 +40,13 @@ export function isTemperature(
 	node: ASTNode | null | undefined,
 ): node is TemperatureAST {
 	return node != null && node.type === ASTNodeType.Temperature;
+}
+
+/** A target state (`={ribbon stage}`). Since 1.5.0. */
+export function isCheckpoint(
+	node: ASTNode | null | undefined,
+): node is CheckpointAST {
+	return node != null && node.type === ASTNodeType.Checkpoint;
 }
 
 export function isReference(
@@ -81,7 +91,9 @@ export function isImportDecl(
 
 type QuantityValueNode =
 	| QuantityAST
+	| CompoundQuantityAST
 	| RelativeQuantityAST
+	| RatioQuantityAST
 	| TextQuantityAST
 	| null
 	| undefined;
@@ -90,10 +102,24 @@ export function isQuantity(node: QuantityValueNode): node is QuantityAST {
 	return node != null && node.type === ASTNodeType.Quantity;
 }
 
+/** A sum of quantities, `{1 cup + 1 tbsp}`. Since 1.5.0. */
+export function isCompoundQuantity(
+	node: QuantityValueNode,
+): node is CompoundQuantityAST {
+	return node != null && node.type === ASTNodeType.CompoundQuantity;
+}
+
 export function isTextQuantity(
 	node: QuantityValueNode,
 ): node is TextQuantityAST {
 	return node != null && node.type === ASTNodeType.TextQuantity;
+}
+
+/** A ratio with units, `{1 / 100 g @&flour}`. Since 1.5.0. */
+export function isRatioQuantity(
+	node: QuantityValueNode,
+): node is RatioQuantityAST {
+	return node != null && node.type === ASTNodeType.RatioQuantity;
 }
 
 export function isRelativeQuantity(

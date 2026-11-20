@@ -11,6 +11,7 @@ import {
 	resolveScaleFactor as resolveScaleFactorEngine,
 	IngredientNotFoundError,
 } from "@gram-lang/kitchen";
+import { formatUsageQuantity } from "@gram-lang/renderer";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,10 @@ export interface ScaledItem {
 	unit?: string | null;
 	originalQty?: number;
 	scaledQty?: number;
+	/** The original amount as the shopping list writes it (`2 cup + 2 tbsp`). */
+	originalText?: string;
+	/** The scaled amount as the shopping list writes it (`4 1/4 cup`). */
+	scaledText?: string;
 	nonScalable?: boolean;
 }
 
@@ -176,9 +181,34 @@ export async function resolveScaleArg(
 
 // ── Shared warning helper ─────────────────────────────────────────────────────
 
+/** How many timers of a recipe are fixed, and how many follow a weight (`~{15 min / 500 g @&roast}`). */
+export interface TimerKinds {
+	fixed: number;
+	proportional: number;
+}
+
+/** Counts the fixed and the proportional timers of a compiled recipe. */
+export function timerKinds(compiled: {
+	sections: { steps: { type: string; content?: unknown[] }[] }[];
+}): TimerKinds {
+	const kinds: TimerKinds = { fixed: 0, proportional: 0 };
+	for (const sec of compiled.sections) {
+		for (const step of sec.steps) {
+			for (const token of step.content ?? []) {
+				const t = token as { type?: string; ratio?: unknown };
+				if (t?.type !== "timer") continue;
+				if (t.ratio) kinds.proportional++;
+				else kinds.fixed++;
+			}
+		}
+	}
+	return kinds;
+}
+
 export function getScaleWarnings(
 	factor: number,
 	totalTimeMinutes: number,
+	timers?: TimerKinds,
 ): string[] {
 	const warnings: string[] = [];
 	if (factor < 0.1 || factor > 20) {
@@ -186,7 +216,14 @@ export function getScaleWarnings(
 			`Extreme scale factor (×${factor.toFixed(2)}). Double-check that the result makes sense.`,
 		);
 	}
-	if (totalTimeMinutes > 0) {
+	// A proportional time follows the scale: only fixed ones are not adjusted.
+	if (timers?.proportional) {
+		if (timers.fixed > 0) {
+			warnings.push(
+				"Proportional times follow the scale; fixed times are not adjusted.",
+			);
+		}
+	} else if (totalTimeMinutes > 0) {
 		warnings.push("Cooking times are not adjusted automatically.");
 	}
 	return warnings;
@@ -206,6 +243,7 @@ const comparisonKey = (i: any): string => `${i.id}::${i.unit ?? ""}`;
 export function buildScaleComparison(
 	original: any[],
 	scaled: any[],
+	lang?: string,
 ): ScaledItem[] {
 	const scaledMap = new Map<string, any>(
 		scaled
@@ -232,6 +270,18 @@ export function buildScaleComparison(
 				originalQty: i.qty,
 				scaledQty:
 					typeof scaledItem?.qty === "number" ? scaledItem.qty : undefined,
+				// Written as the recipe view's shopping list writes them: ranges
+				// by their bounds, spoons and cups recomposed (`2 cup + 2 tbsp`).
+				originalText: formatUsageQuantity(i, { lang, buying: true }),
+				...(scaledItem
+					? {
+							scaledText: formatUsageQuantity(scaledItem, {
+								lang,
+								buying: true,
+								scaled: true,
+							}),
+						}
+					: {}),
 			};
 		});
 }

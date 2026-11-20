@@ -90,7 +90,7 @@ Mix @flour{200g} and @milk{200ml}.
   <TabItem label="Compiled recipe (Kitchen)">
 ```json
 {
-  "generator": "@gram-lang/kitchen@1.4.0",
+  "generator": "@gram-lang/kitchen@1.5.0",
   "title": "Crepes",
   "slug": "crepes",
   "meta": { "title": "Crepes" },
@@ -175,7 +175,7 @@ Mix @flour{200g} and @milk{200ml}.
   <TabItem label="Analyzed recipe (Analyzer)">
 ```json
 {
-  "generator": "@gram-lang/kitchen@1.4.0",
+  "generator": "@gram-lang/kitchen@1.5.0",
   "title": "Crepes",
   "slug": "crepes",
   "meta": { "title": "Crepes" },
@@ -279,13 +279,36 @@ Mix @flour{200g} and @milk{200ml}.
   </TabItem>
 </Tabs>
 
-<Since v="1.4.0" /> The compiled recipe exposes `generator` (which compiler generated it), `miseEnPlace` (operational prep tasks and durations per section), `tasks` (the neutral task graph), and `schedule` (the default theoretical schedule laid out from it; alternative schedules are generated via `layout(tasks, options)`).
+The compiled recipe exposes `generator` (which compiler generated it), `miseEnPlace` (operational prep tasks and durations per section), `tasks` (the neutral task graph), and `schedule` (the default theoretical schedule laid out from it; alternative schedules are generated via `layout(tasks, options)`).
 
 :::note[Deprecated timing fields]
 <Since type="deprecated" v="1.4.0" /> Legacy per-step `timings` and `backgroundTasks`, along with `metrics.totalTime`, `metrics.idleTime`, and time breakdowns are deprecated: they remain populated until removed in version 2.0.0, but are omitted from the example above for clarity. The [Kitchen API reference](/docs/reference/api/kitchen) documents each field and its modern counterpart.
 :::
 
-Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a bare `string`; ingredients, cookware, and intermediate references share the `Usage` structure (no `type` field, identified by the presence of an `id`); timers, temperatures, comments, and declarations each carry an explicit lowercase `type`. This distinction from the parser's PascalCase `ASTNodeType` is intentional: it describes compiled *output*, not parsed source syntax. See [How to build a custom UI](/docs/how-to/build-custom-ui) for a tutorial on consuming this structure in frontend frameworks.
+Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a bare `string`; ingredients, cookware, and intermediate references share the `Usage` structure (no `type` field, identified by the presence of an `id`); timers, temperatures, target states (`checkpoint`, since 1.5.0: `{ type, state, note? }`), comments, and declarations each carry an explicit lowercase `type`. This distinction from the parser's PascalCase `ASTNodeType` is intentional: it describes compiled *output*, not parsed source syntax. See [How to build a custom UI](/docs/how-to/build-custom-ui) for a tutorial on consuming this structure in frontend frameworks.
+
+<Since v="1.5.0" /> A timer token carries `raw` (the duration as written inside the braces) and `minutes` (the scheduled duration, or the midpoint of a range). `quantity` and `unit` remain populated in the smallest written unit (`1h20` produces `80` `min`) for backwards compatibility, while pre-1.5 single-unit formats (`1.5h`) stay unchanged. Unrecognized timers keep only `raw` (plus `name` and `isPassive`) so views can display them as written.
+
+```json
+{ "type": "timer", "raw": "1h30", "quantity": { "type": "single", "value": 90 }, "unit": "min", "minutes": 90 }
+{ "type": "timer", "raw": "1h30-2h", "quantity": { "type": "range", "value": 105, "range": { "min": 90, "max": 120 } }, "unit": "min", "minutes": 105 }
+{ "type": "timer", "raw": "1:30" }
+```
+
+<Since v="1.5.0" /> A [sum of quantities](/docs/reference/syntax/ingredients/#sums-of-quantities) (`@flour{1 cup + 1 tbsp}`) adds `parts` to its `Usage`: each written term with `qty` (a number or `QuantityValue`), `unit`, and `minus: true` for subtracted terms. **`parts` is the source of truth**; `qty` and `unit` retain a compatibility summary:
+
+- **Single unit family**: `qty` and `unit` hold the total, in the smallest written unit when terms share a scale (`{1 cup + 1 tbsp}` → `17` `tbsp`), or in `ml` / `g` otherwise. Any range term makes the total a range.
+- **Multiple families** (a volume and a weight, or unknown units): `qty` is omitted and `unit` holds the written expression (`"1 cup + 20 g"`), similar to text quantities (`{a pinch}`). Read `parts` instead of parsing this string.
+- **Invalid** (`INVALID_QUANTITY`): `parts` only, with neither `qty` nor `unit`.
+
+```json
+{ "id": "flour", "_usageId": "1", "qty": 17, "unit": "tbsp", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 1, "unit": "tbsp" } ] }
+{ "id": "sugar", "_usageId": "2", "qty": 14, "unit": "tbsp", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 2, "unit": "tbsp", "minus": true } ] }
+{ "id": "rice", "_usageId": "3", "unit": "1 cup + 20 g", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 20, "unit": "g" } ] }
+{ "id": "oil", "_usageId": "4", "parts": [ { "qty": 1, "unit": "cup" }, { "qty": 20, "unit": "g", "minus": true } ] }
+```
+
+The same fields appear on a reference (`&dough{1 kg + 200 g}`) and a composite parent (`<@oranges{1 lb + 4 oz}`). In the shopping list, a sum counts as separate mentions: its terms join the entries of their unit, and an entry whose amounts include a range keeps `qty` as its middle plus `range: { min, max }`, added bound by bound.
 
 ## 3. Composed recipes (`@gram-lang/modules`)
 

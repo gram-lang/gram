@@ -4,6 +4,7 @@ description: "Define exact or semantic ^temperatures in Celsius or Fahrenheit, w
 ---
 
 import { CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 You can declare thermal instructions in your recipes using the `^` symbol.
 
@@ -16,16 +17,16 @@ Exact temperatures specify a numeric value accompanied by a recognized unit: `C`
 <Tabs>
   <TabItem label="Standard exact temperature">
 ```gram
-Preheat the #oven to ^{180°C}.
+[Preheat] The #oven to ^{180°C}.
 
-Bake at ^{350°F} until golden brown.
+[Bake] At ^{350°F} until golden brown.
 ```
   </TabItem>
   <TabItem label="Appliance-labeled temperature">
 Just like with `~timers`, you can assign an appliance or process name to a temperature to help renderers and tools highlight equipment setup at a glance:
 
 ```gram
-Preheat the #oven to ^oven{180°C}.
+[Preheat] The #oven to ^oven{350°F}.
 ```
   </TabItem>
 </Tabs>
@@ -35,9 +36,9 @@ Preheat the #oven to ^oven{180°C}.
 For stovetop cooking, searing, or subjective heat levels where exact degree values are impractical, you can write qualitative free-text strings:
 
 ```gram
-Cook on ^stove{high heat} for ~{2min}.
+[Cook] On ^stove{high heat} for ~{2min}.
 
-Turn down to ^{low heat} and let simmer.
+[Simmer] Turn down to ^{low heat} and let simmer.
 ```
 
 :::note[Parsing distinction]
@@ -45,6 +46,23 @@ When the Gram compiler inspects a `^temperature` token:
 - If the text inside the braces starts with a digit, it is parsed as an **Exact temperature** and validated against recognized temperature units.
 - If it starts with non-numeric text, it is treated as a **Semantic temperature** string.
 :::
+
+## Cooking mode and notes
+<Since v="1.5.0" />
+
+Add a parenthetical note right after the closing brace to specify the oven mode, measurement point, or cooking condition. This works on both exact and semantic temperatures, named or unnamed, just like ingredient preparation notes:
+
+```gram
+[Preheat] The #oven to ^{320°F}(fan).
+
+[Roast] Until the meat reaches ^{145°F}(internal).
+
+[Cook] On ^stove{high heat}(uncovered) for ~{5min}.
+```
+
+The note is always shown next to the temperature on screen and in print, and is preserved as written in your recipe's language without being parsed.
+
+As with ingredients and cookware, keep the opening `(` attached to `}` on the same line: with a space (`^{350°F} (preheated)`), the parentheses remain ordinary step text.
 
 ## Error handling
 
@@ -63,7 +81,7 @@ Only Celsius and Fahrenheit temperature scales are supported. The compiler emits
   />
   <LinkCard
     title="Cookware syntax"
-    description="Learn how to declare appliances like ovens, pans, and pans with #cookware."
+    description="Learn how to declare appliances like ovens, pots, and pans with #cookware."
     href="/docs/reference/syntax/cookware/"
   />
   <LinkCard

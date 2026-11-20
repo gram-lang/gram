@@ -1,6 +1,6 @@
 # @gram-lang/language-server
 
-[![npm version](https://badge.fury.io/js/@gram-lang%2Flanguage-server.svg)](https://www.npmjs.com/package/@gram-lang/language-server)
+[![npm](https://img.shields.io/npm/v/@gram-lang/language-server?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/language-server)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 *Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
@@ -11,7 +11,7 @@ The official Language Server Protocol (LSP) implementation for the Gram recipe l
 
 ## 📚 General Documentation
 
-For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://docs.gram-lang.org/)**.
+For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/docs/)**.
 
 ---
 
@@ -56,10 +56,12 @@ client.start();
 ## 🏗️ Capabilities
 
 The Gram Language Server currently supports:
-*   **Diagnostics:** Real-time syntax and semantic validation.
-*   **Semantic Tokens:** Rich semantic highlighting for ingredients, quantities, cookware, and timers.
-*   **Hover:** Nutritional information and scaled quantities on hover.
-*   **Completion:** Suggestions for units, ingredients (based on the user's local ingredient DB), and cookware.
+*   **Diagnostics:** Real-time syntax and semantic validation (including compound quantities, unit ratios, durations, and target states).
+*   **Semantic Tokens:** Rich semantic highlighting for ingredients, quantities, cookware, timers, temperatures, and target states (`={...}`).
+*   **Hover:** Nutritional information, scaled quantities, duration breakdowns, and unit-ratio details on hover.
+*   **Completion:** Suggestions for units (including ratio denominators), ingredients (from the user's local ingredient DB), cookware, and `@use` import paths.
+*   **Navigation & Refactoring:** Go to Definition, Find All References, Rename Symbol (`F2` across references, `%`, and unit ratios), Document Symbols (Outline), and Folding Ranges.
+*   **Code Actions, Inlay Hints & CodeLens:** Quick fixes for common diagnostics, total time / duration inlay hints, and `▶ Preview` CodeLens.
 *   **Document Formatting:** Automatic formatting of `.gram` files to the standard canonical style (powered by [`@gram-lang/format`](../format/README.md)).
 *   **Views protocol:** Renders only the views and inspectors currently open in the client (`gram/setOpenViews`) and answers with `gram/viewUpdated` (recipe and run sheet as HTML, AST and compiled JSON as text or an interactive tree). When a recipe has errors, open outputs are paused instead of replaced by an error card, with a localized error summary beside the usual diagnostics. The outputs a client can open are listed, with their names in the editor's language, in the `initialize` result (`capabilities.experimental.gramViews`), so a client shows a new view without an update of its own. Legacy clients continue receiving `gram/previewUpdated` and `gram/ganttUpdated` (both deprecated) until 2.0.0.
 *   **Sessions:** `gram/setSession` sets the transient choices of a recipe, held in memory and never written to the file: the serving time (which puts the run sheet on the calendar, in the project's `timezone` and within its `availability`), the scale, the imports already in stock and the baker's reference. `gram/sessionChoices` says what these controls offer for a recipe as written (its ingredients, its `@use` imports, whether baker's math is on), and `gram/serveTimes` proposes the serving times that work over the next days, at the project's `mealTimes`, with the reasons of the others.

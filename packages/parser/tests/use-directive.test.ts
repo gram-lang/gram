@@ -98,7 +98,7 @@ describe("@use directive parsing", () => {
 		const ast = getAST(
 			'@use "./bases/levain.gram" as &levain ~{-2d}\n\nstep\n',
 		);
-		expect(ast.imports[0]?.retroPlanning).toEqual({
+		expect(ast.imports[0]?.retroPlanning).toMatchObject({
 			raw: "-2d",
 			sign: -1,
 			value: 2,

@@ -11,7 +11,7 @@ portions: 5
 
 ## Pâte brisée ->&pâte
 
-[Chauffer] Dans une #casserole, l'@eau{150 ml}, le @sel{1/2 càc}, et le @beurre{100 g}. ->&liquides // Retirer du feu dès que le beurre est fondu et laisser refroidir.
+[Chauffer] L'@eau{150 ml}, le @sel{1/2 càc}, et le @beurre{100 g} dans une #casserole jusqu'à ce que le beurre soit ={complètement fondu}. ->&liquides // Retirer du feu et laisser refroidir.
 
 [Pétrir] Incorporer ces &liquides à la @farine{500 g}. Travailler pour former une boule. // Mouiller avec un filet d'eau supplémentaire si la pâte ne lie pas bien
 
@@ -19,13 +19,13 @@ portions: 5
 
 ## Garniture ->&garniture
 
-[Faire suer] Les @oignons{200 g}(finement ciselés) avec un filet d'@huile jusqu'à ce qu'ils soient translucides.
+[Faire suer] Les @oignons{200 g}(finement ciselés) avec un filet d'@huile jusqu'à ce qu'ils soient ={translucides}.
 
 [Incorporer] Le @poivron rouge{1/2}(en brunoise).
 
 [Saisir] Ajouter le @boeuf haché{200 g} à ^{feu vif}.
 
-[Assaisonner] Avec le @sel{1/2 càc}, l'@ail{2 gousses}(hachées), l'@origan frais{1 càc}, le @paprika doux{1 càc}, et le @persil frais{1 càc}. // La règle de la grand-mère argentine : 1 gousse d'ail pour 100g de viande
+[Assaisonner] Avec le @&sel{1/2 càc}, l'@ail{1 gousse / 100 g @&boeuf haché}(haché), l'@origan frais{1 càc}, le @paprika doux{1 càc}, et le @persil frais{1 càc}.
 
 [Mélanger] Retirer du feu, incorporer les @oeufs{2}(durs, finement hachés) et quelques @olives vertes{}.
 
@@ -37,4 +37,4 @@ portions: 5
 
 [Façonner] Placer la &garniture sur la moitié de chaque disque. Plier en forme de demi-lune et pincer fermement les bords pour sceller la pâte. // Piquer le dessus avec un cure-dent pour créer une petite cheminée
 
-[Cuire] À ^{200°C} pendant environ ~cuisson{15 min}. // Arrêter la cuisson dès qu'elles sont bien dorées
+[Cuire] À ^{200°C} pendant environ ~_cuisson{15 min} jusqu'à ce qu'ils soient ={bien dorés}.

@@ -20,7 +20,7 @@ L'ajustement par ingrédient repère paraît simple sur le papier — il suffit 
 - Ajuster les proportions par rapport à une quantité relative (`@eau{70% @&farine}`) est circulaire : sa valeur est *dérivée* d'un autre ingrédient, elle ne peut donc pas être la référence en même temps.
 - Si un ingrédient est utilisé avec deux unités incompatibles dans la même recette, seule sa quantité "primaire" figure dans la liste de courses agrégée. En déduire un facteur d'ajustement reviendrait à ignorer le reste silencieusement.
 
-Exportée depuis `@gram-lang/kitchen`, la fonction `resolveScaleFactor()` valide tout cela en amont et lève une erreur fortement typée au lieu de renvoyer une valeur fantaisiste. Tous les consommateurs (l'option `--scale` du CLI aujourd'hui, le Playground demain) appellent cette même fonction et bénéficient de ces garanties gratuitement.
+Exportée depuis `@gram-lang/kitchen`, la fonction `resolveScaleFactor()` valide tout cela en amont et lève une erreur fortement typée au lieu de renvoyer une valeur fantaisiste. Tous les consommateurs (l'option `--scale` du CLI, l'aperçu VS Code et le Playground) appellent cette même fonction et bénéficient de ces garanties gratuitement.
 
 ## Le contrat requête/résolution
 
@@ -60,9 +60,37 @@ function resolveScaleFactor(
 La fonction qui applique réellement la multiplication sur chaque quantité, `applyScale(result, factor)`, est une fonction pure : elle clone l'entrée (`structuredClone`) avant toute modification, puis renvoie un nouveau `CompilationResult`. Cela offre deux avantages majeurs :
 
 - **Pas de cumul.** Réappliquer un facteur différent repart toujours du même original non modifié, il n'y a donc aucun risque d'appliquer un facteur deux fois sur une valeur `portions` déjà ajustée.
-- **Pas de corruption par référence partagée.** `compile()` lui-même clone défensivement l'objet `meta` de l'AST avant de le passer au résultat, donc ajuster les proportions d'une recette compilée ne modifie jamais l'AST de l'analyseur syntaxique — c'est sans danger même si un futur appelant (ex : un Playground qui met en cache l'AST analysé et ne recompile que sur un mouvement du curseur, au lieu de re-parser à chaque mouvement) réutilise le même AST à travers plusieurs appels.
+- **Pas de corruption par référence partagée.** `compile()` lui-même clone défensivement l'objet `meta` de l'AST avant de le passer au résultat, donc ajuster les proportions d'une recette compilée ne modifie jamais l'AST de l'analyseur syntaxique — c'est sans danger même lorsqu'un appelant (comme le Playground) met en cache l'AST et recompile à chaque mouvement du curseur.
 
-Le `CompilationResult` final porte un champ explicite `scaleFactor` (défini à `1` par défaut) qui consigne son ratio par rapport à l'original. C'est cette valeur que lisent les interfaces interactives (comme le widget des portions HTML du *renderer*) pour calculer leur base, évitant ainsi de s'appuyer sur des champs masqués.
+Le `CompilationResult` final porte un champ explicite `scaleFactor` (défini à `1` par défaut) qui consigne son ratio par rapport à l'original. C'est cette valeur que lisent les interfaces interactives (comme le Playground ou un sélecteur de portions) pour calculer leur base, évitant ainsi de s'appuyer sur des champs masqués.
+
+## Mettre à l'échelle une somme de quantités
+
+Une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) se met à l'échelle terme par terme : `applyScale` multiplie chacun de ses `parts`, puis recalcule le total. Le moteur de rendu conserve les sommes telles qu'écrites sans mise à l'échelle, puis les reformule en mesures pratiques une fois ajustées :
+
+| Écrit | Échelle | Affiché |
+| :--- | :--- | :--- |
+| `{1 kg + 200 g}` | × 2 | `2,4 kg` |
+| `{800 g + 200 g}` | × 1 | `1000 g` (pas `1 kg`) |
+| `{1 cup + 1 tbsp}` | × 2 | `2 cup + 2 tbsp` (jamais `2 1/8 cup`) |
+| `{1 cup - 2 tbsp}` | × 2 | `1 3/4 cup` |
+| `{1 cup - 2 tbsp}` | × 0,5 | `1/2 cup − 1 tbsp` |
+| `{1 cup + 1-2 tbsp}` | × 2 | `2 cup + 2-4 tbsp` |
+| `{1 lb + 4 oz}` | × 1,5 | `1 1/2 lb + 6 oz` |
+| `{1 cup + 50 ml}` | × 2 | `2 cup + 100 ml` |
+
+- **Unités métriques** : elles restent exprimées en décimales dans la plus grande unité écrite (`{800 g + 200 g}` donne `1000 g`, pas `1 kg`) ; seule la liste de courses convertit vers l'unité d'achat (`1500 g` → `1,5 kg`).
+- **Unités américaines et impériales** : elles ne sont recomposées qu'au besoin en fractions usuelles de tasses et cuillères doseuses (`¼`, `⅓`, `½`, `⅔`, `¾` de tasse ; `½` tbsp ; `⅛`, `¼`, `½` tsp…), sans dépasser la plus grande unité écrite et en gardant cuillères (`cup → tbsp → tsp`) et mesures liquides (`gal → qt → pt → fl oz`) séparées.
+- **Fourchettes** : la partie commune aux deux bornes est factorisée et l'écart reste sur le dernier terme.
+- **Systèmes mixtes** (`cup` et `ml`) : chaque terme reste à sa place.
+
+**L'ajustement par ingrédient repère sur une somme** (`--scale farine=500g`) s'appuie sur le total lorsque tous les termes appartiennent à une même famille ; un volume mêlé à une masse produit deux entrées dans la liste de courses et lève `AMBIGUOUS_MULTI_UNIT`.
+
+## Mettre à l'échelle les proportions et les temps proportionnels
+
+Une [proportion avec unités](/fr/docs/reference/syntax/relative-quantities/#proportions-avec-unités) n'est jamais multipliée directement par le facteur : `applyScale` ajuste d'abord les cibles, puis relance `resolveRatios` sur la formule d'origine. Ainsi, `@œufs{1 / 100 g @&farine}` suit la farine ajustée tandis qu'une cible figée (`@=poivre{2 g}`) reste immobile. La liste de courses est ensuite reconstruite depuis les sections ajustées afin de fusionner normalement usages fixes et proportionnels.
+
+Lorsqu'un [temps proportionnel](/fr/docs/reference/syntax/times/#temps-proportionnels) évolue (`~{15 min / 500 g @&rôti}` pour un rôti doublé), l'ordonnancement, le graphe de tâches, `metrics` et les `timings` dépréciés sont recalculés par les mêmes fonctions que `compile()`, comme si la source avait été réécrite. Les avertissements continuent de refléter la recette d'origine telle qu'écrite.
 
 ## Validation du pourcentage du boulanger
 

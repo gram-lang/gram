@@ -104,11 +104,6 @@
         "start": 66,
         "end": 85
       }
-    },
-    {
-      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
-      "message": "Cannot compute relative quantity for 'sugar' because the mass of target 'flour' is unknown.",
-      "item": "sugar"
     }
   ],
   "metrics": {

@@ -5,6 +5,7 @@ description: "Comment déclarer les ingrédients avec le symbole @, préciser qu
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 Les ingrédients constituent la matière première de toute recette Gram.
 
@@ -44,7 +45,7 @@ Si vous adaptez une recette de 2 à 4 portions, un `@ingrédient` avec `{100 g}`
 Cependant, certains `@ingrédients` (sel, épices, piment) ne supportent pas bien l'ajustement linéaire des proportions. Vous pouvez verrouiller leur quantité grâce au modificateur `=`.
 
 ```gram
-Assaisonner avec @=sel{1 c.à.c} au goût.
+[Assaisonner] Avec @=sel{1 c.à.c} au goût.
 ```
 Cela maintient le sel à 1 c.à.c, peu importe le nombre de portions calculé par l'utilisateur.
 
@@ -127,8 +128,16 @@ Gram prône des recettes denses et très orientées données. Au lieu de multipl
 Chaque préparation compte dans la mise en place de **sa propre section**, où elle ajoute 2 minutes. Dans la vue HTML, un libellé « Mise en place » sur la liste d'ingrédients de la section indique que sa préparation se fait à cet endroit ; survolez-le pour le détail. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 :::
 
-:::caution[L'espacement est strict]
-La parenthèse de préparation `(...)` DOIT être immédiatement collée aux accolades de quantité `{...}` (ou au nom s'il n'y a pas d'accolades). N'ajoutez pas d'espace entre les deux, sinon cela sera analysé comme du texte brut.
+:::caution[Pas d'espace avant la parenthèse]
+Seule une parenthèse collée à la `}` (ou au nom s'il n'y a pas d'accolades) est lue comme une préparation, et elle se termine sur la même ligne. Avec un espace, la parenthèse reste dans la phrase :
+
+```gram
+[Ajouter] Le @beurre{100 g}(pommade).
+
+[Ajouter] Le @beurre{100 g} (environ une plaquette).
+```
+
+Le premier beurre porte la préparation `pommade` ; le second n'en a pas, et `(environ une plaquette)` reste du texte ordinaire. La même règle vaut pour le matériel, les températures et les états attendus.
 :::
 
 ### Alias de composant (renommage)
@@ -138,10 +147,10 @@ Vous pouvez surcharger le nom d'affichage d'un `@ingrédient` en utilisant les d
 
 <CodeTabs>
 ```gram title="Code"
-Déglacer avec le @vin blanc sec:vin{100 ml}.
+[Déglacer] Avec le @vin blanc sec:vin{100 ml}.
 ```
 ```markdown title="Recette Rendu"
-1. Déglacer avec le **vin** (100 ml).
+1. **[Déglacer]** Avec le **vin** (100 ml).
 ```
 ```markdown title="Liste de Courses"
 - **vin blanc sec**: 100 ml
@@ -162,44 +171,90 @@ Attention, la syntaxe `:` ne fait que maquiller l'*affichage* de l'ingrédient d
 Vous pouvez définir des alternatives acceptables pour un `@ingrédient` en utilisant l'opérateur pipe `|`.
 
 ```gram
-Ajouter le @lait{100 ml}|@eau{95 ml}.
+[Ajouter] Le @lait{100 ml}|@eau{95 ml}.
 ```
 Cela fonctionne également avec les préparations courtes :
 ```gram
-@oignon{1}(épluché et émincé)|@échalotes{2}(hachées)
+[Ajouter] L'@oignon{1}(épluché et émincé)|@échalotes{2}(hachées)
 ```
 
 ### Plages (intervalles)
 La cuisine n'est pas toujours une science exacte. Vous pouvez spécifier une fourchette (plage de valeurs) grâce au trait d'union `-`.
 
 ```gram
-Ajouter les @œufs{2-4}.
+[Ajouter] Les @œufs{2-4}.
 
-Verser l'@eau{1.5-2 L}.
+[Verser] L'@eau{1.5-2 L}.
 ```
 
 ### Fractions
 Les quantités acceptent les fractions sous trois formes — fraction simple, nombre mixte, ou glyphe de fraction Unicode — toutes normalisées vers la même valeur décimale.
 
 ```gram
-Ajouter le @sucre{1/2 tasse}.
+[Ajouter] Le @sucre{1/2 tasse}.
 
-Ajouter la @farine{1 1/2 tasse}.
+[Ajouter] La @farine{1 1/2 tasse}.
 
-Ajouter le @beurre{1½ plaquette}.
+[Ajouter] Le @beurre{1½ plaquette}.
 ```
+
+### Nombres décimaux
+<Since v="1.5.0" />
+
+Les nombres décimaux acceptent indifféremment la virgule ou le point : `{1,5 kg}` et `{1.5 kg}` désignent la même quantité. Cela vaut pour tous les nombres entre accolades : ingrédients, fourchettes (`{0,5-0,75 l}`), quantités relatives (`{12,5% &pâte}`), ustensiles, températures (`^{37,5°C}`), minuteurs et ancres de section.
+
+```gram
+[Ajouter] La @farine{1,5 kg} et le @sel{0.125 kg}.
+
+[Verser] Le @lait{0,5-0,75 l}.
+```
+
+:::caution[Pas de séparateur de milliers]
+Gram n'a pas de séparateur de milliers : écrivez `{1500 g}`, jamais `{1,500 g}`. Une virgule suivie de trois chiffres comme `{1,000 g}` est interprétée comme une décimale (`1 g`) et déclenche un avertissement `AMBIGUOUS_NUMBER` ; le point (`{1.000 kg}`) garde toujours son sens décimal sans avertissement.
+:::
+
+### Sommes de quantités
+<Since v="1.5.0" />
+
+Quand une mesure associe plusieurs unités, écrivez-la en somme avec `+`, ou `-` pour une quantité retirée :
+
+```gram
+[Ajouter] La @farine{1 kg + 200 g} et le @sucre{1 tasse - 2 càs}.
+
+[Verser] La @crème{20 cl + 1-2 càs}.
+
+[Incorporer] Le @beurre{2 1/2 càs + ½ càc} et le @riz{1 tasse + 20 g}.
+```
+
+Chaque terme est une quantité (nombre, fourchette ou fraction) suivie de son unité. Gram conserve la somme telle qu'écrite dans la recette d'origine et la recalcule en mesures pratiques lors de la mise à l'échelle (par exemple, `{1 cup + 1 tbsp}` doublé devient `2 cup + 2 tbsp`). Le modificateur `=` fige la somme entière (`@=sel{1,5 g + 1 pincée}`).
+
+Dans la liste de courses, une somme équivaut à des mentions distinctes de l'ingrédient : les unités compatibles s'additionnent (tasses et cuillères, grammes et kilos), tandis qu'un volume et une masse (`{1 tasse + 20 g}`) ou des unités inconnues restent côte à côte.
+
+Quelques règles garantissent la cohérence d'une somme :
+
+- **Chaque terme porte son unité** : `{1 + 1 tasse}` est refusé.
+- **Uniquement des quantités simples** : pas de pourcentage (`{100 g + 10%}`) ni de multiplication (`{2 x 100 g}`).
+- **Soustraction au sein d'une même nature** : `{1 tasse - 2 càs}` est accepté, `{1 tasse - 20 g}` ne l'est pas, et le résultat doit rester positif (`{1 càs - 1 tasse}` est refusé).
+- **Pas de fourchette après `-`** : placez les fourchettes sur un terme ajouté (`{1 tasse + 1-2 càs}`), jamais sur un terme soustrait.
+
+Une somme invalide compile quand même avec un avertissement `INVALID_QUANTITY` indiquant le motif, et est exclue de la liste de courses et de la nutrition. Consultez [Mettre à l'échelle une somme de quantités](/fr/docs/explanation/scaling/#mettre-à-léchelle-une-somme-de-quantités) pour en savoir plus.
+
+:::caution[`oz` désigne une masse]
+Dans `{1 cup + 2 oz}`, `oz` est interprété comme une once de poids, et non de volume (`OZ_AFTER_VOLUME`). Écrivez `fl oz` pour une once liquide.
+:::
 
 ## Gestion des erreurs
 
-Certaines erreurs de syntaxe arrêtent la lecture de la recette avant même la compilation : une quantité entre accolades illisible (`@sel{1 g/l}`), une accolade jamais refermée. Le message indique l'endroit exact à corriger, et l'éditeur le souligne.
+Certaines erreurs de syntaxe arrêtent l'analyse avant même la compilation : une quantité illisible entre accolades (`@sel{1/2/3}`) ou une accolade non refermée. Le message pointe l'endroit exact à corriger.
 
-Le compilateur vérifie les erreurs sémantiques dans vos déclarations d'`@ingrédient` et produira des avertissements spécifiques :
+Le compilateur vérifie également la cohérence sémantique de vos déclarations d'`@ingrédient` :
 
-- **Modificateur Invalide** : Si vous combinez des modificateurs incompatibles (comme `?*`), le compilateur avertit `INVALID_MODIFIER_COMBINATION` et les ignore.
-- **Référence Non Définie** : Si vous utilisez une référence (`@&ingrédient`) mais que cet élément n'a pas été déclaré précédemment dans la recette, le compilateur avertit `UNDEFINED_REFERENCE`.
-- **Base de Données Manquante** : Si vous compilez avec une base de données et que l'`@ingrédient` est introuvable, il avertit `MISSING_INGREDIENT`.
-- **Macros Manquants** : Si la base de données ne contient pas d'informations nutritionnelles pour l'`@ingrédient`, il avertit `MISSING_MACROS`.
-- **Masse Inconnue** : S'il ne peut pas convertir un volume ou une unité en grammes pour estimer la nutrition, il avertit `UNKNOWN_MASS`.
+- **Modificateur invalide** : combiner des modificateurs incompatibles (comme `?*`) lève `INVALID_MODIFIER_COMBINATION`.
+- **Référence non définie** : utiliser une référence (`@&ingrédient`) avant sa déclaration initiale lève `UNDEFINED_REFERENCE`.
+- **Base de données manquante** : un `@ingrédient` introuvable dans la base fournie lève `MISSING_INGREDIENT`.
+- **Macros manquants** : une entrée sans données nutritionnelles lève `MISSING_MACROS`.
+- **Masse inconnue** : un volume ou une pièce impossible à convertir en grammes lève `UNKNOWN_MASS`.
+- **Quantité invalide / Nombre ambigu** : une somme incorrecte lève `INVALID_QUANTITY`, et une virgule suivie de trois chiffres (`{1,000 g}`) lève `AMBIGUOUS_NUMBER`.
 
 ## Ressources associées
 

@@ -4,6 +4,8 @@ description: "Définissez la quantité d'un ingrédient en pourcentage d'un autr
 ---
 
 import { Badge, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
+import Term from '../../../../../../components/Term.astro';
 
 En cuisine, et plus encore en pâtisserie, la précision est fondamentale. S'appuyer sur des quantités fixes mène parfois à des déséquilibres lorsque le rendement des produits bruts fluctue (par exemple, lorsqu'un agrume s'avère nettement plus juteux que la moyenne).
 
@@ -18,9 +20,9 @@ Vous pouvez cibler soit un ingrédient de base, soit une variable intermédiaire
 Préfixez le nom de l'ingrédient cible avec `@&` :
 
 ```gram
-Ajouter la @farine{100g} dans le cul-de-poule.
+[Ajouter] La @farine{100g} dans le cul-de-poule.
 
-Puis incorporer l'@eau{70% @&farine}. // 70g d'eau
+[Incorporer] L'@eau{70% @&farine}. // 70g d'eau
 ```
 
 **Schéma :** `@nom{ pourcentage% @&IngredientCible }`
@@ -29,9 +31,9 @@ Puis incorporer l'@eau{70% @&farine}. // 70g d'eau
 Faites référence à la variable intermédiaire avec le sigle `&` :
 
 ```gram
-Mélanger les ingrédients pour former la pâte. ->&pâte
+[Mélanger] Les ingrédients pour former la pâte. ->&pâte
 
-Ajouter le @sel{2% &pâte}. // 2% de la masse totale de la variable &pâte
+[Ajouter] Le @sel{2% &pâte}. // 2% de la masse totale de la variable &pâte
 ```
 
 **Schéma :** `@nom{ pourcentage% &VariableCible }`
@@ -40,13 +42,53 @@ Ajouter le @sel{2% &pâte}. // 2% de la masse totale de la variable &pâte
 
 ## Règles de résolution
 
-Lors de l'évaluation d'une quantité relative, le compilateur observe trois règles de portée et de calcul :
+Lors de l'évaluation d'une quantité relative, le compilateur observe quatre règles de portée et de calcul :
 
 | Règle | Portée | Description |
 | :--- | :--- | :--- |
 | **Portée de section** | Section courante uniquement | Il n'est pas possible de cibler directement un ingrédient brut déclaré dans une autre section. Pour traverser les sections, capturez le résultat dans une `&variable` intermédiaire globale. |
 | **Accumulation** | Somme des occurrences | Si le même `@ingrédient` cible apparaît plusieurs fois dans la section, le pourcentage est appliqué sur la **somme totale cumulée** de ces quantités. |
 | **Calcul en masse** | Évalué en grammes | Les calculs reposent invariablement sur la **masse physique en grammes**. Par exemple, 50% de « 2 œufs » (calibrés à 50g l'unité) produira **50g**, et non 1 œuf. |
+| **Alternatives** | Une option à la fois | Chaque option d'un groupe d'alternatives est calculée indépendamment (`@beurre{10% @&farine}\|@huile{8% @&farine}` donne 20 g de beurre ou 16 g d'huile pour 200 g de farine). Une option peut aussi cibler une option précédente du même groupe (`@beurre{100g}\|@huile{80% @&beurre}`). |
+
+## Proportions avec unités
+<Since v="1.5.0" />
+
+Alors qu'un pourcentage compare des grammes à des grammes, une <Term id="ratio" link={false} /> relie deux quantités dans n'importe quelles unités compatibles, comme les recettes énoncent leurs règles : 1 œuf pour 100 g de farine, 15 g de sel par litre d'eau, ou 15 minutes par 500 g de rôti.
+
+```gram
+[Mélanger] @farine{500 g} avec @œufs{1 / 100 g @&farine}. // 5 œufs
+
+[Verser] @eau{2 l} et @sel{15 g / 1 L @&eau}. // 30 g de sel
+
+[Écraser] @ail{3 gousses} avec @persil{1 càc / 2 gousses @&ail}. // 1,5 càc
+```
+
+**Schéma :** `@nom{ quantité / quantitéCible @&IngrédientCible }` (ou `&VariableCible`).
+
+- `quantité` porte son unité (`15 g`) ou aucune pour des pièces (`1` œuf), et accepte une fourchette (`15-20 g`).
+- `quantitéCible` est un nombre simple et son unité (`100 g`), une unité seule (`L`), ou rien pour une pièce (`{1 / @&côtelette}`).
+- **Espacez toujours `/`** (au moins d'un côté) et écrivez l'unité seule devant la cible : `{1/100g @&farine}` serait interprété comme la fraction `1/100`, et `{1 / 100 g de @&farine}` prendrait `g de` pour l'unité.
+
+### Garde-fou des unités
+
+Gram ne calcule une proportion que lorsque ses unités sont comparables ; il ne devine jamais :
+
+| Quantité cible | Cible écrite en | Résultat |
+| :--- | :--- | :--- |
+| Poids (`100 g`) | Poids (`1 kg`) | Calcul direct |
+| Poids | Volume ou pièces | Calculé via la densité ou le `unit_weight` de la base d'ingrédients |
+| Pièces (`2 gousses`, ou rien) | Mêmes pièces (`3 gousse`, `4`) | Calcul direct (singulier/pluriel reconnus) |
+| Pièces | Autres pièces (`2 tranches` pour des gousses) | Refusé (`RELATIVE_QUANTITY_UNKNOWN_MASS`) |
+
+Si une proportion ne peut pas être résolue, elle conserve son écriture dans les vues et la liste de courses, et déclenche `RELATIVE_QUANTITY_UNKNOWN_MASS`. Contrairement aux pourcentages, une proportion résolue conserve l'unité de sa propre quantité (`5` œufs, `15 g` de sel) et fusionne normalement dans la liste de courses.
+
+### Portée, préparations intermédiaires et mise à l'échelle
+
+- **Même portée que les pourcentages** : ciblez un `@&ingrédient` déclaré plus tôt dans la section (les mentions s'additionnent), une option précédente d'une alternative ou une `&préparation`.
+- **Préparations utilisées en entier** : si une section utilise une préparation intermédiaire sans quantité (`Étaler la &pâte`), proportions et pourcentages (`@sel{2 g / 100 g &pâte}`, `@sucre{5% &pâte}`) se calculent sur la masse totale de la section qui la produit, à condition qu'elle seule la consomme. Une préparation qui sort d'une étape (`Mélanger … ->&pâte`) n'a pas de masse propre : indiquez la quantité utilisée (`&pâte{800 g}`), ou préparez-la dans sa propre section.
+- **Références et composites** : proportions et pourcentages fonctionnent sur les références à une préparation maison (`&bouillon{250 ml / 100 g @&riz}`), mais pas encore sur un parent composite (`@œufs{1}<@boîte{1 / 100 g @&farine}`).
+- **Mise à l'échelle** : changer l'échelle d'une recette recalcule les proportions à partir des cibles mises à l'échelle (sauf si la cible est figée avec `@=`). Le modificateur `=` sur la proportion elle-même est refusé.
 
 ## Règles de calcul des masses
 

@@ -1,0 +1,715 @@
+{
+  "title": "Quantity Compound Mixed Family",
+  "slug": "quantity-compound-mixed-family",
+  "meta": {
+    "title": "Quantity Compound Mixed Family"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk"
+      },
+      "garlic": {
+        "id": "garlic",
+        "name": "garlic"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter"
+      },
+      "juice": {
+        "id": "juice",
+        "name": "juice",
+        "default_unit": "ml",
+        "is_composite": true,
+        "parent": "oranges"
+      },
+      "oranges": {
+        "id": "oranges",
+        "name": "oranges",
+        "is_composite": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 1,
+      "unit": "cup",
+      "multiUnit": true
+    },
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1",
+        "2"
+      ],
+      "qty": 70,
+      "unit": "g",
+      "multiUnit": true,
+      "normalizedMass": 70,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 1,
+      "unit": "cup",
+      "multiUnit": true
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 50,
+      "unit": "ml",
+      "multiUnit": true
+    },
+    {
+      "id": "garlic",
+      "name": "garlic",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 1,
+      "unit": "head",
+      "multiUnit": true
+    },
+    {
+      "id": "garlic",
+      "name": "garlic",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 2,
+      "unit": "cloves",
+      "multiUnit": true
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 14,
+      "unit": "tbsp",
+      "multiUnit": true
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 30,
+      "unit": "g",
+      "multiUnit": true,
+      "normalizedMass": 30,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "type": "composite",
+      "id": "oranges",
+      "name": "oranges",
+      "qty": 20,
+      "usage": [
+        {
+          "id": "juice",
+          "unit": "ml",
+          "qty": 200
+        }
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Dough",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "unit": "1 cup + 20 g",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 20,
+              "unit": "g"
+            }
+          ]
+        },
+        {
+          "id": "flour",
+          "_usageId": "2",
+          "qty": 50,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 50
+        },
+        {
+          "id": "milk",
+          "_usageId": "3",
+          "qty": 286.59,
+          "unit": "ml",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 50,
+              "unit": "ml"
+            }
+          ]
+        },
+        {
+          "id": "garlic",
+          "_usageId": "4",
+          "unit": "1 head + 2 cloves",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "head"
+            },
+            {
+              "qty": 2,
+              "unit": "cloves"
+            }
+          ]
+        },
+        {
+          "id": "butter",
+          "_usageId": "5",
+          "unit": "1 cup - 2 tbsp + 30 g",
+          "parts": [
+            {
+              "qty": 1,
+              "unit": "cup"
+            },
+            {
+              "qty": 2,
+              "unit": "tbsp",
+              "minus": true
+            },
+            {
+              "qty": 30,
+              "unit": "g"
+            }
+          ]
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "unit": "1 cup + 20 g",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 20,
+                  "unit": "g"
+                }
+              ]
+            },
+            "with ",
+            {
+              "id": "flour",
+              "_usageId": "2",
+              "qty": 50,
+              "unit": "g",
+              "normalizedMass": 50,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "milk",
+              "_usageId": "3",
+              "qty": 286.59,
+              "unit": "ml",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 50,
+                  "unit": "ml"
+                }
+              ]
+            },
+            "and ",
+            {
+              "id": "garlic",
+              "_usageId": "4",
+              "unit": "1 head + 2 cloves",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "head"
+                },
+                {
+                  "qty": 2,
+                  "unit": "cloves"
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Fold in ",
+            {
+              "id": "butter",
+              "_usageId": "5",
+              "unit": "1 cup - 2 tbsp + 30 g",
+              "parts": [
+                {
+                  "qty": 1,
+                  "unit": "cup"
+                },
+                {
+                  "qty": 2,
+                  "unit": "tbsp",
+                  "minus": true
+                },
+                {
+                  "qty": 30,
+                  "unit": "g"
+                }
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 50,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "flour",
+          "milk",
+          "garlic",
+          "butter"
+        ]
+      }
+    },
+    {
+      "title": "Juice",
+      "ingredients": [
+        {
+          "id": "juice",
+          "_usageId": "6",
+          "qty": 200,
+          "unit": "ml",
+          "composite": {
+            "parent": "oranges",
+            "quantity": 20,
+            "unit": "oz",
+            "parts": [
+              {
+                "qty": 1,
+                "unit": "lb"
+              },
+              {
+                "qty": 4,
+                "unit": "oz"
+              }
+            ]
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Squeeze ",
+            {
+              "id": "juice",
+              "_usageId": "6",
+              "qty": 200,
+              "unit": "ml",
+              "composite": {
+                "parent": "oranges",
+                "quantity": 20,
+                "unit": "oz",
+                "parts": [
+                  {
+                    "qty": 1,
+                    "unit": "lb"
+                  },
+                  {
+                    "qty": 4,
+                    "unit": "oz"
+                  }
+                ]
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "juice"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"flour\" — omitted from nutritional totals."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"garlic\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"butter\" — omitted from nutritional totals."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"juice\" — omitted from nutritional totals."
+    }
+  ],
+  "metrics": {
+    "totalTime": 14,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 6
+      },
+      {
+        "label": "section_active:Juice",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 8,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 6
+      },
+      {
+        "label": "section_active:Juice",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 6,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 6
+      }
+    ],
+    "totalMass": 50,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "flour",
+      "milk",
+      "garlic",
+      "butter",
+      "juice"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"flour\" — omitted from nutritional totals."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"garlic\" — omitted from nutritional totals."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"butter\" — omitted from nutritional totals."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"juice\" — omitted from nutritional totals."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 4,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 4
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 4,
+            "duration": 4
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s1.prep",
+        "kind": "prep",
+        "section": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 14,
+    "activeTime": 8,
+    "preparationTime": 6,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 4
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 4,
+        "end": 6
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 6,
+        "end": 8
+      },
+      {
+        "kind": "step",
+        "task": "s0.2",
+        "section": 0,
+        "step": 2,
+        "start": 8,
+        "end": 10
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep",
+        "section": 1,
+        "start": 10,
+        "end": 12
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 12,
+        "end": 14
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 14,
+        "sections": [
+          0,
+          1
+        ]
+      }
+    ]
+  }
+}

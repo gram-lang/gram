@@ -1,6 +1,6 @@
 # @gram-lang/cli
 
-[![npm version](https://badge.fury.io/js/@gram-lang%2Fcli.svg)](https://www.npmjs.com/package/@gram-lang/cli)
+[![npm](https://img.shields.io/npm/v/@gram-lang/cli?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/cli)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 *Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
@@ -11,7 +11,7 @@ The official command-line tool for the Gram recipe language. Validate, compile, 
 
 ## 📚 General Documentation
 
-For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://docs.gram-lang.org/)**.
+For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/docs/)**.
 
 ---
 
@@ -61,11 +61,27 @@ gram plan my-recipe.gram --find 2026-10-12/2026-10-15   # the serving times that
 gram export my-recipe.gram --format html
 gram print my-recipe.gram --view run-sheet --serve "2026-10-11 13:00"
 
-# Cook step by step, with live timers
+# Cook step by step, with live timers and target-state reminders
 gram cook my-recipe.gram
 
 # Aggregate the shopping list of the recipes matching a path or a glob
 gram shop "menus/*.gram"
+gram shop "menus/*.gram" --format json
+
+# Find recipes matching ingredients you have on hand
+gram suggest --with "butter, eggs"
+
+# Import a recipe from a URL, local JSON-LD file, or YouTube video via AI
+gram import https://example.com/recipe -o my-recipe.gram
+
+# Maintain your ingredients.yaml database (sync, enrich via AI, lint duplicates)
+gram db sync "**/*.gram"
+gram db enrich
+gram db lint
+
+# Watch files on save and manage project config
+gram watch
+gram config list
 ```
 
 Run `gram --help` for the full list of commands.
@@ -75,7 +91,7 @@ Run `gram --help` for the full list of commands.
 ## 🏗️ Structure
 
 *   `src/index.ts`: CLI entry point, registers all subcommands.
-*   `src/commands/`: One file per subcommand (`init`, `check`, `format`, `build`, `view`, `plan`, `export`, `print`, `cook`, `scale`, `diff`, `shop`, `import`, `db`, ...).
+*   `src/commands/`: One file per subcommand (`init`, `check`, `format`, `build`, `watch`, `view`, `plan`, `export`, `print`, `cook`, `scale`, `diff`, `shop`, `suggest`, `import`, `db`, `config`, `upgrade`).
 *   `src/core/`: Shared building blocks (config loading, ingredient database, pipeline orchestration).
 *   `src/services/`: Business logic backing the commands (formatting, scaling, importing, syncing).
 *   `src/ui/`: Terminal rendering (tables, diffs, interactive views).

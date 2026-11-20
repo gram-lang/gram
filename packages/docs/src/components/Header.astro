@@ -16,11 +16,7 @@ const { currentLang = "en" } = Astro.props;
     </div>
 
     <nav class="nav-links desktop-only">
-      <a
-        href={currentLang === "fr"
-          ? "/fr/docs/explanation/philosophy"
-          : "/docs/explanation/philosophy"}>Docs</a
-      >
+      <a href={currentLang === "fr" ? "/fr/docs/" : "/docs/"}>Docs</a>
       <a href={currentLang === "fr" ? "/fr/play" : "/play"}>Playground</a>
       <a href={currentLang === "fr" ? "/fr/blog" : "/blog"}>Blog</a>
     </nav>
@@ -76,11 +72,7 @@ const { currentLang = "en" } = Astro.props;
 
   <div class="mobile-menu-dropdown" id="mobile-menu">
     <nav class="mobile-nav-links">
-      <a
-        href={currentLang === "fr"
-          ? "/fr/docs/explanation/philosophy"
-          : "/docs/explanation/philosophy"}>Docs</a
-      >
+      <a href={currentLang === "fr" ? "/fr/docs/" : "/docs/"}>Docs</a>
       <a href={currentLang === "fr" ? "/fr/play" : "/play"}>Playground</a>
       <a href={currentLang === "fr" ? "/fr/blog" : "/blog"}>Blog</a>
     </nav>

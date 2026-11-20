@@ -112,6 +112,29 @@ describe("renderOutputs", () => {
 		expect(payloadOf(served)).not.toContain("D-2");
 	});
 
+	it("writes the times on the machine's clock, unless the setting names one", () => {
+		const sheet = (
+			patch: Partial<typeof OPTIONS> & { readerLocale?: string },
+		) =>
+			payloadOf(
+				renderOutputs(URI, parseDocument(TART), ["runSheet"], {
+					...OPTIONS,
+					serveAt: "2026-10-11T13:00",
+					...patch,
+				})[0],
+			);
+		const h12 = /\d:\d{2}[\s\u202f]PM/;
+		expect(sheet({})).not.toMatch(h12);
+		expect(sheet({ readerLocale: "en-US" })).toMatch(h12);
+		expect(sheet({ readerLocale: "en-GB" })).not.toMatch(h12);
+		expect(
+			sheet({
+				readerLocale: "en-US",
+				settings: { ...DEFAULT_VIEW_SETTINGS, clock: "24h" },
+			}),
+		).not.toMatch(h12);
+	});
+
 	it("pauses every output on a parse error, with the error to show", () => {
 		const updates = renderOutputs(
 			URI,

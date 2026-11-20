@@ -14,5 +14,6 @@ export const terminalTextStyle: TextStyle = {
 	reference: chalk.magenta,
 	cookware: chalk.cyan,
 	timer: chalk.dim,
+	checkpoint: chalk.underline,
 	action: chalk.cyan,
 };

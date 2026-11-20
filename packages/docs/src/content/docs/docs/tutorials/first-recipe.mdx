@@ -1,6 +1,6 @@
 ---
-title: "Tutorial: Your first complex recipe"
-description: "A step-by-step tutorial writing a complete Lemon Tart recipe using Gram's advanced compiler features."
+title: "Tutorial: Your first recipe"
+description: "A step-by-step tutorial writing a complete Lemon Tart recipe using Gram's core and relational features."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
@@ -19,7 +19,7 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 ```gram title="Code"
 ## Sweet Pastry Dough
 
-[Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
+[Process] In a #food processor{}, @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
 [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
@@ -34,18 +34,18 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 - **flour** (180 g)
 - **icing sugar** (55 g)
 - **salt** (1/4 tsp)
-- **butter** (115 g)
+- **butter** (115 g) — cold, cut into small cubes
 - **egg** (1)
-- **vanilla extract** (1/2 tsp)
+- **vanilla extract** (1/2 tsp) (optional)
 
-1. **[Process]** In a *food processor*, the **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
+1. **[Process]** In a *food processor*, **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
 2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1-2 min until sandy.
 3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together.
-4. **[Rest]** Wrap in plastic wrap and let it rest in the fridge for ⏲️ 1 h.
+4. **[Rest]** Wrap in *plastic wrap* and let it rest in the fridge for ⏲️ 1 h.
 ```
 </CodeTabs>
 
-Notice the `[Action]` tags at the start of each line (e.g., `[Process]`, `[Rest]`). While not strictly required, it is a highly recommended convention to start each step with its main action enclosed in brackets. This allows the <Term id="runSheet" /> and UI tools to name each wait and each problem clearly.
+Notice the `[Action]` tags at the start of each line (e.g., `[Process]`, `[Rest]`). While not strictly required, starting each step with its main action enclosed in brackets is a recommended convention that helps views, UI tools, and `gram cook` label each step clearly.
 
 Furthermore, this syntax is highly readable. The compiler will automatically extract the ingredients into a shopping list and sum the active time (assuming 2 minutes per step by default) plus the 1-hour timer.
 
@@ -59,7 +59,7 @@ This is done using an **Intermediate Declaration** (`->&name`) at the end of the
 ```gram title="Code"
 ## Sweet Pastry Dough ->&pastry dough{}
 
-[Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
+[Process] In a #food processor{}, @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
 [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
@@ -74,14 +74,14 @@ This is done using an **Intermediate Declaration** (`->&name`) at the end of the
 - **flour** (180 g)
 - **icing sugar** (55 g)
 - **salt** (1/4 tsp)
-- **butter** (115 g)
+- **butter** (115 g) — cold, cut into small cubes
 - **egg** (1)
-- **vanilla extract** (1/2 tsp)
+- **vanilla extract** (1/2 tsp) (optional)
 
-1. **[Process]** In a *food processor*, the **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
+1. **[Process]** In a *food processor*, **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
 2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1-2 min until sandy.
 3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together.
-4. **[Rest]** Wrap in plastic wrap and let it rest in the fridge for ⏲️ 1 h.
+4. **[Rest]** Wrap in *plastic wrap* and let it rest in the fridge for ⏲️ 1 h.
 ```
 </CodeTabs>
 
@@ -91,11 +91,11 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 ```gram title="Code"
 ## Baking the Tart Shell
 
-[Preheat] Preheat the #oven{} to ^{350F}.
+[Preheat] Preheat the #oven{} to ^{350°F}.
 
 [Roll] Roll out the &pastry dough{} for ~{5min} and place it in a #tart ring{}.
 
-[Bake] For ~_{20min} until golden.
+[Bake] For ~{20min} until golden.
 ```
 ```markdown title="Preview"
 ### Baking the Tart Shell
@@ -105,29 +105,49 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 
 1. **[Preheat]** Preheat the *oven* to 🌡️ 350 °F.
 2. **[Roll]** Roll out the 👉*pastry dough* for ⏲️ 5 min and place it in a *tart ring*.
-3. **[Bake]** For ⏳ 20 min (passive) until golden.
+3. **[Bake]** For ⏲️ 20 min until golden.
 ```
 </CodeTabs>
 
-## Step 3: Background timers
+## Step 3: Target states
+
+A timer estimates how long a step takes, not when it is truly ready. In Steps 1 and 2, you wrote visual and sensory cues in plain text (*"until sandy"*, *"until golden"*).
+
+A <Term id="targetState" /> marks these checkpoints with `={...}`:
+
+<CodeTabs>
+```gram title="Code"
+[Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until ={sandy}.
+
+[Bake] For ~{20min} until ={golden}.
+```
+```markdown title="Preview"
+1. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1–2 min until 🎯 sandy.
+2. **[Bake]** For ⏲️ 20 min until 🎯 golden.
+```
+</CodeTabs>
+
+You can also glue a parenthetical note `(...)` right after `}` to explain how to verify a state (for example, `={thickened}(a finger drawn across the back of the spoon leaves a clean line)`). Target states stay in the prose where the sentence flows naturally, stand out visually in every rendered view, and are highlighted directly beneath the step in `gram cook` when a timer finishes.
+
+## Step 4: Background timers
 
 In Step 1, the following was written: `[Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~{1h}`. 
 By default, timers are **active**. The compiler assumes you are actively waiting for 1 hour, and adds it to your *Active Time*.
 
-But resting dough in the fridge is a passive task. You can do other things while it rests (like making the lemon curd). To tell the compiler this is a passive task, add an underscore `~_`:
+But resting dough in the fridge (or baking the tart shell in the oven) is a passive task—you can prepare the filling while it waits. To tell the compiler a duration is passive, add an underscore `~_`:
 
 <CodeTabs>
 ```gram title="Code"
 [Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~_{1h}.
 ```
 ```markdown title="Preview"
-1. **[Rest]** Wrap in plastic wrap and let it rest in the fridge for ⏳ 1 h (passive).
+1. **[Rest]** Wrap in *plastic wrap* and let it rest in the fridge for ⏳ 1 h (passive).
 ```
 </CodeTabs>
 
-Now, the compiler will subtract 1 hour from your *Active Time* but keep it in the *Total Time*.
+Now, the compiler will subtract 1 hour from your *Active Time* (and the 20-minute bake when marked `~_{20min}` too) while keeping it in the *Total Time*.
 
-## Step 4: Composite ingredients
+## Step 5: Composite ingredients
 
 A lemon tart requires lemon zest and lemon juice. If you write `@lemon zest{1 tbsp}` and `@lemon juice{120g}`, the shopping list will treat them as two completely different products. But lemons are bought whole!
 
@@ -141,7 +161,7 @@ Here is the Lemon Curd section:
 
 [Whisk] In a #saucepan{}, whisk the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{150g}, and @eggs{3}.
 
-[Cook] Cook over ^{medium heat} for ~{8min} until thickened.
+[Cook] Cook over ^{medium heat} for ~{8min} until ={thickened}(a finger drawn across the back of the spoon leaves a clean line).
 ```
 ```markdown title="Preview"
 ### Lemon Curd
@@ -153,13 +173,13 @@ Here is the Lemon Curd section:
 - **eggs** (3)
 
 1. **[Whisk]** In a *saucepan*, whisk the **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (150 g), and **eggs** (3).
-2. **[Cook]** Cook over 🌡️ medium heat for ⏲️ 8 min until thickened.
+2. **[Cook]** Cook over 🌡️ medium heat for ⏲️ 8 min until 🎯 thickened (a finger drawn across the back of the spoon leaves a clean line).
 ```
 </CodeTabs>
 
 Because both the zest and the juice point to `<@lemon`, the compiler understands they are different parts of the same parent ingredient. Rather than relying on a database to guess yields, it applies the **MAX Rule**: it looks at the parent quantities required for each *distinct* part (`<@lemon` defaults to 1 for the zest, and `<@lemon{2}` for the juice) and takes the maximum. Here, since `max(1, 2) = 2`, the shopping list will smartly require exactly 2 whole lemons!
 
-## Step 5: Relative quantities
+## Step 6: Relative quantities
 
 In pastry, precision is key. What if your lemons are particularly juicy and yield 140g of juice instead of the expected 120g? If your sugar was a fixed amount, the curd would become too tart. To ensure the curd is perfectly balanced regardless of the real-life yield, the sugar must dynamically adjust to be exactly 125% of the weight of the juice.
 
@@ -167,18 +187,14 @@ You can use **Relative Quantities** (`% @&target`):
 
 <CodeTabs>
 ```gram title="Code"
-[Whisk] In a #saucepan{}, the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
+[Whisk] In a #saucepan{}, @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
 ```
 ```markdown title="Preview"
-1. **[Whisk]** In a *saucepan*, the **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (150 g), and **eggs** (3).
+1. **[Whisk]** In a *saucepan*, **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (150 g), and **eggs** (3).
 ```
 </CodeTabs>
 
 Now, the sugar is strictly bound to the juice. If you adjust the juice amount later based on the actual yield of your lemons, the compiler will automatically compute the exact mass of sugar needed (here, 150g) to maintain the perfect ratio.
-
-:::note
-For a deep dive into how Gram handles complex relative calculations (like using volumes or units as targets), check out the [Relative Quantities](/docs/reference/syntax/relative-quantities) reference.
-:::
 
 ## The final recipe
 
@@ -187,45 +203,45 @@ Here is the complete recipe. Notice how clean and readable it remains, despite p
 <CodeTabs>
 ```gram title="Code"
 ---
-title: Lemon Meringue Tart
+title: Lemon Tart
 portions: 8
 ---
 
 ## Sweet Pastry Dough ->&pastry dough{}
 
-[Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
+[Process] In a #food processor{}, @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
-[Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
+[Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until ={sandy}.
 
-[Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
+[Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until ={the dough comes together}.
 
 [Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~_{1h}.
 
 ## Lemon Curd ->&curd
 
-[Whisk] In a #saucepan{}, the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
+[Whisk] In a #saucepan{}, @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
 
-[Cook] Over ^{medium heat} for ~{8min} until thickened.
+[Cook] Over ^{medium heat} for ~{8min} until ={thickened}(a finger drawn across the back of the spoon leaves a clean line).
 
 ## Baking the Tart Shell ->&baked shell{}
 
-[Preheat] The #oven to ^{350F}.
+[Preheat] The #oven to ^{350°F}.
 
 [Roll out] The &pastry dough{} for ~{5min} and place it in a #tart ring{}.
 
-[Bake] For ~_{20min} until golden. Let cool.
+[Bake] For ~_{20min} until ={golden}. Let cool.
 
 ## Assembly
 
 [Pour] The &curd into the &baked shell{}. Chill in the fridge for ~_{2h}.
 ```
 ```markdown title="Preview"
-# Lemon Meringue Tart
+# Lemon Tart
 
 > **Metadata**
-> - **Total time**: 3h 41min
-> - **Active time**: 22min 30s
-> - **Prep time**: 21min (est.)
+> - **Total time**: 3 h 41 min
+> - **Active time**: 22 min 30 s
+> - **Prep time**: 21 min (est.)
 > - portions: 8
 
 ## Shopping List
@@ -233,10 +249,10 @@ portions: 8
 - **flour** (180 g)
 - **icing sugar** (55 g)
 - **salt** (1/4 tsp)
-- **butter** (115 g)
+- **butter** (115 g) — cold, cut into small cubes
 - **egg** (1)
-- **vanilla extract** (1/2 tsp)
-- **sugar** (125% of lemon juice)
+- **vanilla extract** (1/2 tsp) (optional) (optional)
+- **sugar** (150 g)
 - **eggs** (3)
 - **lemon** (2) **(Composite)**:
   - **lemon zest** (1 tbsp)
@@ -245,6 +261,7 @@ portions: 8
 ## Cookware
 
 - *food processor*
+- *plastic wrap*
 - *saucepan*
 - *oven*
 - *tart ring*
@@ -259,32 +276,32 @@ portions: 8
 - **salt** (1/4 tsp)
 - **butter** (115 g) — cold, cut into small cubes
 - **egg** (1)
-- **vanilla extract** (1/2 tsp)
+- **vanilla extract** (1/2 tsp) (optional)
 
-1. **[Process]** In a *food processor*, the **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
-2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1-2 min until sandy.
-3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together. 
-4. **[Rest]** Wrap in plastic wrap and let it rest in the fridge for ⏳ 1 h (passive).
+1. **[Process]** In a *food processor*, **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
+2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1–2 min until 🎯 sandy.
+3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until 🎯 the dough comes together.
+4. **[Rest]** Wrap in *plastic wrap* and let it rest in the fridge for ⏳ 1 h (passive).
 
 ### Lemon Curd
 
 **Ingredients**:
-- **lemon zest** (1 tbsp)
-- **lemon juice** (120 g)
-- **sugar** (125% of lemon juice)
+- **lemon zest** (lemon) (1 tbsp)
+- **lemon juice** (lemon) (120 g)
+- **sugar** (150 g)
 - **eggs** (3)
 
-1. **[Whisk]** In a *saucepan*, the **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (125% of lemon juice), and **eggs** (3).
-2. **[Cook]** Over 🌡️ medium heat for ⏲️ 8 min until thickened.
+1. **[Whisk]** In a *saucepan*, **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (150 g), and **eggs** (3).
+2. **[Cook]** Over 🌡️ medium heat for ⏲️ 8 min until 🎯 thickened (a finger drawn across the back of the spoon leaves a clean line).
 
 ### Baking the Tart Shell
 
 **Ingredients**:
 - 👉*pastry dough*
 
-1. **[Preheat]** The *oven* to 🌡️ 180 °C.
+1. **[Preheat]** The *oven* to 🌡️ 350 °F.
 2. **[Roll out]** The 👉*pastry dough* for ⏲️ 5 min and place it in a *tart ring*.
-3. **[Bake]** For ⏳ 20 min (passive) until golden. Let cool.
+3. **[Bake]** For ⏳ 20 min (passive) until 🎯 golden. Let cool.
 
 ### Assembly
 
@@ -298,10 +315,10 @@ portions: 8
 
 ### What did the compiler do?
 
-By running `gram view lemon-tart.gram`, the compiler handled all the math and output formatting for you:
-- **Active Time**: ~22.5 mins (it intelligently ignores the 3 hours of fridge time).
-- **Total Time**: ~3h 41 mins, with each section's mise en place planned right before it (the default; you can also plan it all at the start, see [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens)).
-- **Shopping List**: It aggregates all ingredients globally. It grouped the `@egg{1}` and `@eggs{3}` into `4 eggs`. It calculated the whole lemons needed for the zest and juice. It automatically converted the relative sugar proportion into exactly `150g` of sugar.
+By running `gram view lemon-tart.gram`, the compiler handled the math, dependency graph, and output formatting for you:
+- **Times and schedule**: It computed `22 min 30 s` of active time (excluding the 3 hours of passive fridge and oven time) and `3 h 41 min` total, with each section's mise en place planned right before it (the default; you can also plan it all at the start, see [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens)).
+- **Dependency graph**: It linked `&pastry dough`, `&curd`, and `&baked shell` across sections, kept them off the shopping list, and derived the execution order so `gram plan` can schedule the recipe automatically.
+- **Shopping list and cookware**: It extracted the 5 cookware items, calculated the `2` whole lemons needed for zest and juice, and resolved `@sugar{125% @&lemon juice}` into `150 g` of sugar. Notice that `egg` and `eggs` stay separate until you merge singular/plural variants as aliases in `ingredients.yaml` (see [Manage an ingredient database](/docs/how-to/manage-database/)).
 
 You've just written a highly scalable, data-driven recipe!
 
@@ -312,12 +329,22 @@ Now that you've written a complete single-file recipe, explore how to organize m
 <CardGrid>
   <LinkCard 
     title="How-to: organize modular recipes" 
-    description="Learn how to extract reusable bases with @use, manage project folders, and configure aliases." 
+    description="Extract the sweet pastry dough into a reusable base with @use and organize multi-file collections." 
     href="/docs/how-to/organize-modular-recipes" 
   />
   <LinkCard 
-    title="Language reference" 
-    description="Explore the complete grammar specification for ingredients, cookware, timers, and variables." 
-    href="/docs/reference/syntax/document-structure" 
+    title="How-to: scale recipes dynamically" 
+    description="Use relative percentages, unit ratios, and --scale to adapt any recipe on the fly." 
+    href="/docs/how-to/scale-recipes" 
+  />
+  <LinkCard 
+    title="How-to: plan a meal" 
+    description="Turn passive timers and section dependencies into a real-world run sheet and calendar." 
+    href="/docs/how-to/plan-a-meal" 
+  />
+  <LinkCard 
+    title="Syntax cheatsheet" 
+    description="Keep every core marker, modifier, and advanced expression at hand on a single page." 
+    href="/docs/reference/syntax/cheatsheet" 
   />
 </CardGrid>

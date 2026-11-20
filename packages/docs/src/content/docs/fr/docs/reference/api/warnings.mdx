@@ -19,10 +19,13 @@ interface Warning {
   item?: string;
   loc?: { start: number; end: number }; // décalages en caractères dans la source, quand disponible
   section?: string | null;
+  data?: Record<string, unknown>; // depuis la 1.5.0 : de quoi corriger (voir plus bas)
 }
 ```
 
 `compile()` les retourne dans le tableau `CompilationResult.warnings`. De son côté, `analyze()` les propage (et en ajoute potentiellement de nouveaux) dans `AnalyzedCompilationResult.warnings`. Ce ne sont jamais de simples chaînes de caractères : le champ `.message` est toujours garanti.
+
+<Since v="1.5.0" /> Certains codes fournissent aussi un champ `data` structuré permettant aux outils et aux correctifs rapides du serveur de langage d'agir sans analyser `.message`. Seuls `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`) et `INVALID_UNIT` sur un ingrédient (`{ reason, suggestion? }`) renseignent `data`.
 
 ## Sévérité & `--strict`
 
@@ -39,13 +42,22 @@ Les problèmes d'intégrité structurelle (une référence vers un élément fan
 <GeneratedTable table={warningCodesTable("fr")} />
 
 ### `VARIABLE_NOT_FOUND`
-Une quantité relative référence une variable intermédiaire (`50% of &nom`) qui n'a été déclarée nulle part dans la recette comme sortie intermédiaire (`>> nom`). **Correction** : déclarez la variable avant de la référencer, ou corrigez la faute de frappe.
+Une quantité relative référence une variable intermédiaire (`50% of &nom`) qui n'a été déclarée nulle part dans la recette comme sortie intermédiaire (`->&nom`). **Correction** : déclarez la variable avant de la référencer, ou corrigez la faute de frappe.
 
 ### `RELATIVE_QUANTITY_UNRESOLVED`
 Une quantité relative cible un ingrédient (`50% of @nom`) qui n'est pas apparu plus tôt **dans la même section**. Attention, contrairement aux variables, les cibles relatives aux ingrédients sont scopées par section. **Correction** : déplacez l'ingrédient cible plus haut dans la même section, ou passez par une variable intermédiaire (`&nom`) si la portée doit être globale.
 
 ### `RELATIVE_QUANTITY_UNKNOWN_MASS`
 Émis pendant l'analyse : la cible d'une quantité relative a bien été trouvée, mais sa propre masse est incalculable (unité/densité introuvable). Le pourcentage ne peut donc pas s'appliquer. **Correction** : attribuez à l'ingrédient cible une unité standardisable, ou renseignez sa densité / son `unit_weight` dans la base de données.
+
+Pour une [proportion avec unités](/fr/docs/reference/syntax/relative-quantities/#proportions-avec-unités) (`1 / 100 g @&farine`, `~{15 min / 500 g @&rôti}`, <Since v="1.5.0" />), il inclut une `reason` pointant sur la proportion et laisse la quantité non résolue :
+- `noTargetQuantity` : la cible n'a pas de quantité.
+- `incompatibleUnits` : pièces incompatibles (`2 tranches` face à des gousses), poids face à une pièce nommée, ou mot après l'unité (`100 g de`).
+- `missingDensity` / `missingUnitWeight` : la conversion entre poids et volume ou pièces requiert `density` ou `unit_weight` dans la base d'ingrédients.
+- `wholeUseAmbiguous` / `producerMassUnknown` : pour une préparation utilisée en entier (`&pâte`), une autre section la consomme aussi ou la masse de sa section productrice est incomplète.
+- `stepProducer` : la préparation utilisée en entier sort d'une étape (`Mélanger … ->&pâte`) et non d'une section entière, or Gram ne pèse que ce qu'une section produit. Indiquez la quantité utilisée (`&pâte{500 g}`), ou préparez-la dans sa propre section.
+
+**Correction** : écrivez la proportion dans l'unité de la cible, renseignez `density` ou `unit_weight` dans la base, ou indiquez la quantité utilisée (`&pâte{500 g}`).
 
 ### `CIRCULAR_REFERENCE`
 La quantité relative d'un ingrédient se cible elle-même (`@farine{50% of @farine}`). **Correction** : supprimez l'auto-référence (une quantité relative doit pointer vers un ingrédient ou une variable *différente*).
@@ -57,19 +69,57 @@ Une référence pure (`&nom`) ou un ingrédient référençable (`@&nom`) pointe
 Un `Timer` (minuteur) ou une `Temperature` a été écrit sans unité explicite (ex. `~{10}` au lieu de `~{10 min}`). **Correction** : ajoutez l'unité manquante.
 
 ### `INVALID_UNIT`
-Soit un `Timer` a reçu une quantité non numérique (du texte), soit une `Temperature` a reçu une unité autre que Celsius ou Fahrenheit. **Correction** : utilisez une valeur numérique couplée à une unité temporelle reconnue pour les minuteurs, et limitez-vous à `°C` ou `°F` pour les températures.
+Émis dans trois cas :
+- **Unités de temps ou de température** : le mot qui suit un nombre dans un `Timer` ou une ancre de section n'est pas une unité de temps reconnue (`~{3 bananes}`), ou une `Temperature` utilise une unité autre que Celsius ou Fahrenheit. **Correction** : utilisez une unité de temps reconnue (`h`, `min`, `heures`, `hr`…), et `°C` ou `°F` pour les températures.
+- **Quantités juxtaposées sans opérateur** <Since v="1.5.0" type="changed" /> : l'unité d'un ingrédient juxtapose deux quantités sans opérateur (`@farine{1 cup 5 tbsp}` ou `@farine{1 kg 200 g}`), sans quoi `cup 5 tbsp` passerait pour une seule unité inconnue sans masse. **Correction** : écrivez une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) (`@farine{1 kg + 200 g}`) ; `data.suggestion` fournit la forme corrigée pour les actions rapides de l'éditeur. Les mentions descriptives comme `@tomates{1 boîte de 400 g}` restent valides.
+- **Mot avant le nombre** : une unité commence par un mot qui précède la quantité (`@farine{environ 200g}`), alors que toute quantité doit débuter par son nombre. **Correction** : écrivez `@farine{200g}` et laissez « environ » dans la phrase. Les quantités textuelles sans nombre (`{une pincée}`, `{au goût}`) sont acceptées.
 
-<Since v="1.4.1" type="changed" /> L'avertissement signale aussi un ingrédient dont l'unité se lit comme deux quantités : une unité connue, un nombre puis une autre unité connue, comme dans `@farine{1 cup 5 tbsp}` ou `@farine{1 kg 200 g}`. Gram n'additionne pas les quantités : tout `cup 5 tbsp` passait donc pour une seule unité inconnue, sans masse, et une recette doublée affichait `2 cup 5 tbsp`. **Correction** : écrivez le total dans une seule unité (`@farine{1.2 kg}`). Un nombre qui ne fait que décrire l'unité, comme dans `@tomates{1 boîte de 400 g}`, ne déclenche rien : doubler le nombre de boîtes reste juste.
+### `INVALID_QUANTITY`
+<Since v="1.5.0" />
 
-Il signale enfin une unité qui cache une quantité, comme dans `@farine{environ 200g}` : une quantité commence par son nombre, donc avec des mots devant, tout le texte était lu comme une unité, sans masse, et la quantité disparaissait d'une recette mise à l'échelle. **Correction** : écrivez la quantité seule (`@farine{200g}`), et le « environ » dans l'étape s'il compte. Des mots sans nombre, comme `{une pincée}` ou `{à votre goût}`, ne déclenchent rien.
+Émis lorsqu'une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) ou une expression numérique ne peut pas être évaluée. La recette compile et s'affiche telle qu'écrite, mais la valeur est exclue de la liste de courses et de la nutrition. `data.reason` en précise la cause :
+
+| `reason` | Exemple | Correction |
+| :--- | :--- | :--- |
+| `unitlessTerm` | `{1 + 1 tasse}` | Donnez son unité à chaque terme (`{1 tasse + 1 càs}`). |
+| `percentTerm` | `{100 g + 10%}` | Écrivez le résultat (`{110 g}`, fourni dans `data.suggestion`) ou une quantité relative (`{10% &farine}`). |
+| `expressionTerm` | `{2 x 100 g + 50 g}` | Les sommes n'acceptent que `+` et `-` ; écrivez `{250 g}`. |
+| `quantityInUnit` | `{1 boîte de 400 g + 50 g}` | Exprimez la quantité dans une seule unité (`{450 g}`). |
+| `nonPositiveTotal` | `{1 càs - 1 tasse}` | La quantité retirée atteint ou dépasse ce qui est ajouté. |
+| `rangeAfterMinus` | `{1 tasse - 1-2 càs}` | Placez les fourchettes sur un terme ajouté, ou écrivez le total en fourchette. |
+| `minusAcrossFamilies` | `{1 tasse - 20 g}` | Soustrayez uniquement au sein d'une même famille d'unités (volume d'un volume, masse d'une masse). |
+| `zeroDenominator` | `{1/0 tasse}`, `{1/0% &pâte}`, `#poêle{1/0}`, `^{1/0 °C}` | Une division par zéro est ignorée ; écrivez une fraction valide (`1/2`). |
+| `zeroRatioDenominator` | `{2 g / 0 g @&farine}`, `~{15 min / 0 g @&rôti}` | Une proportion rapportée à rien est ignorée ; indiquez la quantité de référence (`/ 100 g`). |
+| `relativeNotSupported` | `@œufs{3}<@boîte{50% @&farine}`, `@œufs{1}<@boîte{1 / 100 g @&farine}` | Pourcentages et proportions ne sont pas encore pris en charge sur un parent composite ; indiquez sa quantité (`@œufs{3}<@boîte{1}`). |
+
+La soustraction est vérifiée par famille d'unités : `{1 tasse - 2 càs + 30 g}` est valide (2 càs retirées de 1 tasse), tandis que `{1 tasse - 20 g}` n'a aucune masse dont soustraire les 20 g.
+
+### `OZ_AFTER_VOLUME`
+<Since v="1.5.0" />
+
+Notice informative lorsqu'`oz` suit un volume dans une somme (`@eau{1 cup + 2 oz}`). Comme `oz` désigne une masse, Gram le garde séparé du volume. **Correction** : écrivez `fl oz` s'il s'agit d'onces liquides (`data.suggestion` propose cette correction rapide).
 
 ### `DURATION_OUT_OF_RANGE`
-<Since v="1.4.0" />
 
 Un minuteur, ou le décalage du rétroplanning d'une section, dure plus de 1000 ans. **Correction** : vérifiez le nombre, souvent un chiffre en trop ou une lettre d'unité oubliée (`~{-3000d}` fait huit ans, `~{-3000000000d}` n'est plus une recette). La durée est ramenée à 1000 ans, pour que la chronologie reste finie au lieu de donner `0`, `Infinity` ou `NaN`. Cette limite est une borne technique, pas un jugement sur les recettes : tout ce qui la respecte, une solera de plusieurs décennies comprise, est planifié tel quel et ne déclenche rien.
 
+### `AMBIGUOUS_NUMBER`
+<Since v="1.5.0" />
+
+Une virgule suivie de trois chiffres après un à trois chiffres entiers (`@farine{1,000 g}`, `@farine{12,500 g}`). Gram prenant en charge la virgule décimale sans séparateur de milliers, `{1,000 g}` est interprété comme `1 g` (et `{12,500 g}` comme `12,5 g`). Vérifié sur les quantités, minuteurs, températures, pourcentages et ancres de section (`@use` inclus). **Correction** : écrivez `{1000 g}` pour mille, ou `{1 g}` sinon. Un point (`{1.000 kg}`) reste toujours une décimale sans avertissement.
+
+### `INVALID_DURATION`
+<Since v="1.5.0" />
+
+Un minuteur ou une ancre de section emploie des nombres et unités connus de Gram, mais sous une forme ambiguë ou non prise en charge :
+- **Minuteurs ambigus ou invalides** : `~{1:30}` (heures ou minutes ?), `~{30min 1h}` (ordre inversé), `~{1h75}` (`≥ 60` après les heures), `~{1-2h30}` (borne ambiguë), `~{2-1 h}` (fourchette inversée), `~{2 * 2 min}` ou texte libre (`~{une demi-heure}`). Le minuteur est exclu du temps total tout en conservant son texte dans `raw`.
+- **Ancres non prises en charge** : fourchettes (`~{-1-2j}`), secondes (`~{-1min30}`, `~{-5'}`) ou ancres proportionnelles (`reason: "anchorRatio"`).
+- **Limites des temps proportionnels** : multiplicateurs (`~{15 min / 500 g @&rôti * 2}`, `reason: "ratioMultiplication"`) ou cibles en fourchette (`~{15 min / 1-2 kg @&rôti}`, `reason: "ratioShape"`).
+
+**Correction** : suivez l'écriture suggérée dans `.message` (`~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). Un mot inconnu après un nombre lève toujours `INVALID_UNIT`, et un nombre seul `MISSING_UNIT`.
+
 ### `SCOPE_CONFLICT`
-Deux sections déclarent un même nom de variable (`>> nom`). Les noms de variables doivent être uniques à l'échelle de toute la recette, pas juste de la section. **Correction** : renommez l'une des deux variables.
+Deux sections déclarent un même nom de variable (`->&nom`). Les noms de variables doivent être uniques à l'échelle de toute la recette, pas juste de la section. **Correction** : renommez l'une des deux variables.
 
 ### `MISSING_INGREDIENT`
 Lors de l'estimation nutritionnelle, un ingrédient (dont on connaît la masse) n'a trouvé aucune correspondance (par ID ou alias) dans la base de données. **Correction** : ajoutez l'ingrédient ou son alias dans votre base.
@@ -91,19 +141,13 @@ Le mode *Baker's Math* a été explicitement requis (via `enableBakersMath` avec
 
 ### `COMPOSITE_PARENT_CONFLICT`
 
-<Since v="1.2.0" />
-
 Un nom court d'ingrédient composite (ex : `@jus`) est extrait de deux parents différents dans la même recette (ex : `<@citron` dans une étape et `<@orange` dans une autre). **Correction** : utilisez le nom complet de l'enfant (ex : `@jus de citron` et `@jus d'orange`) pour éviter les collisions d'identité dans la base de données.
 
 ### `MODULE_NOT_FOUND`
 
-<Since v="1.2.0" />
-
 Un module importé via une directive `@use` n'a pas pu être résolu ou trouvé sur le système de fichiers. **Correction** : vérifiez le chemin du fichier, l'extension (`.gram`) ou les alias configurés dans `config.yaml`.
 
 ### `DAY_OVERFLOW`
-
-<Since v="1.4.0" />
 
 Une journée de travail (définie par l'ancre `~{-Nd}` d'une section) débute avant l'ouverture de sa fenêtre de 24 heures en raison d'un temps de repos passif prolongé. **Correction** : ancrez la section un jour plus tôt (par exemple `~{-2d}` au lieu de `~{-1d}`), ou réduisez la durée du repos.
 
@@ -116,8 +160,6 @@ Lors de la planification inverse ALAP, une tâche de production est tirée avant
 Plusieurs minuteurs passifs partagent la même piste d'équipement matériel (ex. `~_four`) et ne peuvent pas se dérouler en simultané. L'ordonnanceur les sérialise l'un après l'autre pour éviter toute collision matérielle, retardant la seconde tâche. **Correction** : il s'agit d'une notification informative ; si vous disposez de plusieurs équipements distincts, assignez-leur des noms de pistes différenciés (ex. `~_four1` et `~_four2`).
 
 ### `PASSIVE_OVERLAP_SAME_COOKWARE`
-
-<Since v="1.4.0" />
 
 Deux minuteurs passifs se recouvrent dans le temps, dans des étapes qui citent le même ustensile (`#four` dans les deux), sans piste nommée commune. Si l'un doit suivre l'autre, ils sont probablement dans un seul four : le plan les montre côte à côte. **Correction** : donnez-leur la même piste nommée (`~_four{30min}` puis `~_four{20min}`) pour qu'ils passent à tour de rôle ; si les deux tiennent dans le four en même temps, ce n'est qu'une information. Seuls les noms sont comparés (`#four` avec `#four`), donc cela marche quelle que soit la langue de la recette, et le recouvrement est lu sur la chronologie par défaut.
 

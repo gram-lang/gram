@@ -167,6 +167,106 @@ export const UNIT_CONVERSIONS: { mass: UnitMap; volume: UnitMap } = {
 };
 
 /**
+ * A run of units of one measuring system whose sizes are exact whole-number
+ * multiples of each other: what a cook can add up without rounding
+ * (`1 cup + 1 tbsp` = `17 tbsp`). Each step is the unit's size counted in the
+ * ladder's smallest unit (1 cup = 48 tsp).
+ *
+ * `UNIT_CONVERSIONS` says how much a unit weighs or holds in grams or
+ * milliliters, with its factors rounded (`cup: 236.588`); a ladder only says
+ * how units of one system relate, exactly. The two agree to 0.01%
+ * (`units-ladders.test.ts`).
+ */
+export interface UnitLadder {
+	id: "usVolume" | "imperialMass" | "metricMass" | "metricVolume";
+	family: keyof typeof UNIT_CONVERSIONS;
+	/** Canonical unit → its size in the ladder's smallest unit. */
+	steps: Readonly<Record<string, number>>;
+}
+
+export const UNIT_LADDERS: readonly UnitLadder[] = [
+	{
+		id: "usVolume",
+		family: "volume",
+		steps: { tsp: 1, tbsp: 3, "fl oz": 6, cup: 48, pt: 96, qt: 192, gal: 768 },
+	},
+	{ id: "imperialMass", family: "mass", steps: { oz: 1, lb: 16 } },
+	{
+		id: "metricMass",
+		family: "mass",
+		// The French "livre" is the metric pound: exactly 500 g.
+		steps: { mg: 1, g: 1000, livre: 500_000, kg: 1_000_000 },
+	},
+	{
+		id: "metricVolume",
+		family: "volume",
+		// The French "tasse" holds exactly 250 ml.
+		steps: { ml: 1, cl: 10, dl: 100, tasse: 250, l: 1000 },
+	},
+];
+
+/** Where a unit stands on its ladder. */
+export interface LadderStep {
+	ladder: UnitLadder;
+	/** The canonical unit (`cup` for `cups`, `tbsp` for `càs`). */
+	unit: string;
+	/** Its size in the ladder's smallest unit. */
+	size: number;
+}
+
+/**
+ * The ladder a unit belongs to (any spelling: `cups`, `càs`, `kilo`), or
+ * `null` for a unit on no ladder (`pinch`, `gousse`, no unit at all).
+ */
+export function ladderOf(
+	rawUnit: string | undefined | null,
+	lang?: string,
+): LadderStep | null {
+	const unit = normalizeUnit(rawUnit, lang);
+	if (!unit) return null;
+	for (const ladder of UNIT_LADDERS) {
+		const size = ladder.steps[unit];
+		if (size !== undefined) return { ladder, unit, size };
+	}
+	return null;
+}
+
+/**
+ * True when every unit stands on one same ladder (`cup`, `tbsp`, `tsp`), so
+ * their amounts add up exactly. False for no unit at all, for a unit on no
+ * ladder, and across systems (`cup` and `ml`, `oz` and `g`).
+ */
+export function sameLadder(
+	rawUnits: readonly (string | undefined | null)[],
+	lang?: string,
+): boolean {
+	if (rawUnits.length === 0) return false;
+	let id: UnitLadder["id"] | undefined;
+	for (const raw of rawUnits) {
+		const step = ladderOf(raw, lang);
+		if (!step) return false;
+		if (id !== undefined && step.ladder.id !== id) return false;
+		id = step.ladder.id;
+	}
+	return true;
+}
+
+/**
+ * How a reader of a language writes a canonical unit Gram brings in itself
+ * (a scaled amount recomposed into a spoon the author never wrote): `càs`
+ * for `tbsp` in French. Any other unit keeps its canonical spelling.
+ */
+const UNIT_SPELLINGS: Readonly<
+	Record<string, Readonly<Record<string, string>>>
+> = { fr: { tsp: "càc", tbsp: "càs" } };
+
+/** The spelling of a canonical unit (`tbsp`) in a language (`càs` in French). */
+export function unitSpelling(canonical: string, lang?: string): string {
+	const base = lang?.toLowerCase().split("-")[0];
+	return (base && UNIT_SPELLINGS[base]?.[canonical]) || canonical;
+}
+
+/**
  * Normalizes a raw string unit into a standard canon unit.
  * Examples: 'càs' -> 'tbsp', 'kilo' -> 'kg'.
  */
@@ -256,6 +356,75 @@ export function toLargerMetricUnit(
 		return { value: Math.round(base / 10) / 100, unit: ladder.large };
 	}
 	return { value, unit };
+}
+
+/**
+ * Converts a value between two units of the same family, mass to mass or
+ * volume to volume (`1 l` → `1000 ml`, `1 lb` → `453.59 g`), through
+ * `UNIT_CONVERSIONS` alone. The same unit, however spelled, gives the value
+ * back. Across families (mass and volume), or for a unit that is neither,
+ * `null`: crossing needs a density, which only the caller can bring.
+ */
+export function convertUnitInFamily(
+	value: number,
+	fromUnit: string | null | undefined,
+	toUnit: string | null | undefined,
+	lang?: string,
+): number | null {
+	const from = normalizeUnit(fromUnit, lang);
+	const to = normalizeUnit(toUnit, lang);
+	if (from === to) return value;
+
+	for (const family of [UNIT_CONVERSIONS.mass, UNIT_CONVERSIONS.volume]) {
+		const fromFactor = family.map[from];
+		const toFactor = family.map[to];
+		if (fromFactor !== undefined && toFactor !== undefined) {
+			return (value * fromFactor) / toFactor;
+		}
+	}
+	return null;
+}
+
+/** The spellings of "a piece": a count written with them has no unit. */
+const PIECE_UNITS = new Set([
+	"pièce",
+	"pièces",
+	"piece",
+	"pieces",
+	"pc",
+	"pcs",
+	"unité",
+	"unités",
+	"unit",
+	"units",
+]);
+
+/**
+ * True when two counting units (neither a mass nor a volume) name the same
+ * thing: the same spelling, or one is the other with a plural ending `s`,
+ * `es` or `x` (`gousse`/`gousses`, `tranche`/`tranches`, `box`/`boxes`,
+ * `chou`/`choux`). Forms are compared, never a suffix stripped (`tranches`
+ * less `es` is `tranch`), and no plural is looked for under three letters.
+ * No unit, and every spelling of "a piece" (`pièce`, `pc`, `unit`...), count
+ * as the same: no unit. For ratios only: the shopping list keeps `gousse` and
+ * `gousses` apart.
+ */
+export function sameCountUnit(
+	a: string | null | undefined,
+	b: string | null | undefined,
+	lang?: string,
+): boolean {
+	if (isMeasureUnit(a, lang) || isMeasureUnit(b, lang)) return false;
+	const countForm = (unit: string | null | undefined) => {
+		const form = normalizeUnit(unit, lang);
+		return PIECE_UNITS.has(form) ? "" : form;
+	};
+	const x = countForm(a);
+	const y = countForm(b);
+	if (x === y) return true;
+	const [short, long] = x.length <= y.length ? [x, y] : [y, x];
+	if (short.length < 3) return false;
+	return ["s", "es", "x"].some((ending) => long === short + ending);
 }
 
 /** True for a unit of mass or volume Gram knows (g, kg, cup, tbsp, c.à.s...). */

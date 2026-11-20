@@ -14,6 +14,7 @@ import {
 	runSheet,
 } from "@gram-lang/scheduler";
 import { DEFAULT_VIEW_SETTINGS, type ViewSettings } from "./settings";
+import { type HourCycle, resolveHourCycle } from "./shared/clock";
 import type { RenderableCompilationResult } from "./types";
 
 /** The cook's kitchen: where the clock is, when they are there, and the present. */
@@ -28,6 +29,12 @@ export interface KitchenContext {
 export interface PrepareViewsOptions {
 	/** The language of the words, for the surfaces that pass it on. */
 	lang?: string;
+	/**
+	 * The reader's locale, with its region ("en-US", "fr-FR"): the clock of
+	 * `clock: auto`. Not the language of the words: a recipe in English is
+	 * read in 24 hours in London. Without it, `auto` is 24 hours.
+	 */
+	locale?: string;
 	/** Needed for a plan on the calendar and for the serving time search. */
 	kitchen?: KitchenContext;
 	/**
@@ -51,6 +58,8 @@ export interface ViewInput {
 	readonly recipe: RenderableCompilationResult;
 	readonly settings: ViewSettings;
 	readonly lang: string | undefined;
+	/** The clock the times of day are written with: `clock`, resolved for the reader's locale. */
+	readonly hourCycle: HourCycle;
 	readonly kitchen: KitchenContext | undefined;
 	readonly serveAt: string | undefined;
 	/**
@@ -103,7 +112,7 @@ export function prepareViews(
 		Object.entries(settings).filter(([, value]) => value !== undefined),
 	);
 	const full: ViewSettings = { ...DEFAULT_VIEW_SETTINGS, ...given };
-	const { kitchen, serveAt, lang } = options;
+	const { kitchen, serveAt, lang, locale } = options;
 	if (serveAt !== undefined && !kitchen) {
 		throw new RangeError(
 			"prepareViews: a serving time needs a kitchen (time zone, availability)",
@@ -122,6 +131,7 @@ export function prepareViews(
 		recipe,
 		settings: full,
 		lang,
+		hourCycle: resolveHourCycle(full.clock, locale),
 		kitchen,
 		serveAt,
 		get schedule() {

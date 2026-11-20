@@ -20,6 +20,9 @@
       "name": "flour",
       "_usageIds": [
         "1"
+      ],
+      "variable_entries": [
+        "cups"
       ]
     }
   ],
@@ -56,7 +59,20 @@
       ]
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "INVALID_QUANTITY",
+      "message": "Number \"1/0\" of \"flour\" is not read: a fraction cannot have 0 below the bar (write e.g. 1/2). It is left out, as if no number had been written.",
+      "item": "flour",
+      "loc": {
+        "start": 65,
+        "end": 73
+      },
+      "data": {
+        "reason": "zeroDenominator"
+      }
+    }
+  ],
   "metrics": {
     "totalTime": 3,
     "totalBreakdown": [

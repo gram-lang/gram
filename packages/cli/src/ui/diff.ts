@@ -8,6 +8,7 @@ import type {
 	MetaDelta,
 	TemperatureDelta,
 	TimerDelta,
+	CheckpointDelta,
 	PrepDelta,
 	ModuleDelta,
 } from "@gram-lang/analyzer";
@@ -29,9 +30,13 @@ function fmtMetaValue(v: unknown): string {
 	return String(v);
 }
 
-function fmtTempValue(v?: { value: number; unit: string }): string {
+function fmtTempValue(v?: {
+	value: number;
+	unit: string;
+	note?: string;
+}): string {
 	if (!v) return "?";
-	return `${v.value}${v.unit}`;
+	return `${v.value}${v.unit}${v.note ? ` (${v.note})` : ""}`;
 }
 
 const TIMING_LABELS: Record<string, string> = {
@@ -50,16 +55,20 @@ function renderMeta(d: MetaDelta): string {
 
 function renderIngredient(d: IngredientDelta): string {
 	const name = (d.name || d.id).padEnd(18);
+	// The amount as text when there is one (a range shows its bounds, not
+	// only its middle), else the number and unit.
+	const fromAmount = d.fromText ?? fmtQty(d.fromQty, d.fromUnit);
+	const toAmount = d.toText ?? fmtQty(d.toQty, d.toUnit);
 
 	if (d.change === "added") {
-		return `  ${chalk.green("+")} ${name} ${chalk.green(fmtQty(d.toQty, d.toUnit))}`;
+		return `  ${chalk.green("+")} ${name} ${chalk.green(toAmount)}`;
 	}
 	if (d.change === "removed") {
-		return `  ${chalk.red("-")} ${name} ${chalk.red(fmtQty(d.fromQty, d.fromUnit))}`;
+		return `  ${chalk.red("-")} ${name} ${chalk.red(fromAmount)}`;
 	}
 
-	const from = chalk.dim(fmtQty(d.fromQty, d.fromUnit));
-	const to = chalk.yellow(fmtQty(d.toQty, d.toUnit));
+	const from = chalk.dim(fromAmount);
+	const to = chalk.yellow(toAmount);
 	const pct =
 		d.percentChange !== undefined
 			? chalk.dim(` (${d.percentChange > 0 ? "+" : ""}${d.percentChange}%)`)
@@ -148,6 +157,20 @@ function renderTimer(d: TimerDelta): string {
 	return `  ${chalk.yellow("~")} ${section}${label}${chalk.dim(d.from ?? "?")} → ${chalk.yellow(d.to ?? "?")}`;
 }
 
+function fmtCheckpointValue(v?: { state: string; note?: string }): string {
+	if (!v) return "?";
+	return `${v.state}${v.note ? ` (${v.note})` : ""}`;
+}
+
+function renderCheckpoint(d: CheckpointDelta): string {
+	const section = d.section ? chalk.dim(`[${d.section}] `) : "";
+	if (d.change === "added")
+		return `  ${chalk.green("+")} ${section}${chalk.green(fmtCheckpointValue(d.to))}`;
+	if (d.change === "removed")
+		return `  ${chalk.red("-")} ${section}${chalk.red(fmtCheckpointValue(d.from))}`;
+	return `  ${chalk.yellow("~")} ${section}${chalk.dim(fmtCheckpointValue(d.from))} → ${chalk.yellow(fmtCheckpointValue(d.to))}`;
+}
+
 export function renderDiffResult(result: DiffResult, label: string): void {
 	console.log();
 	console.log(`  ${chalk.bold("Semantic diff:")} ${chalk.dim(label)}`);
@@ -193,6 +216,12 @@ export function renderDiffResult(result: DiffResult, label: string): void {
 		console.log();
 		console.log(`  ${chalk.bold("TIMERS")}`);
 		for (const d of result.timers) console.log(renderTimer(d));
+	}
+
+	if (result.checkpoints.length > 0) {
+		console.log();
+		console.log(`  ${chalk.bold("TARGET STATES")}`);
+		for (const d of result.checkpoints) console.log(renderCheckpoint(d));
 	}
 
 	if (result.timings.length > 0) {

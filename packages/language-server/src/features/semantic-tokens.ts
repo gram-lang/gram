@@ -6,6 +6,7 @@ import {
 	type CookwareAST,
 	type TimerAST,
 	type TemperatureAST,
+	type CheckpointAST,
 	type ReferenceAST,
 	type IntermediateDecl,
 	type QuantityAST,
@@ -15,20 +16,25 @@ import {
 	isReference,
 	isTimer,
 	isTemperature,
+	isCheckpoint,
 	isIntermediateDecl,
 	isAlternative,
 	isComment,
 	isStep,
 	isSection,
 	isQuantity,
+	isRatioQuantity,
+	isRelativeQuantity,
 	isTextQuantity,
+	type RatioQuantityAST,
+	type RelativeQuantityAST,
 } from "@gram-lang/parser";
 import type { DocumentState } from "../document-state";
 import { offsetToPosition } from "../utils/position";
 
 export const SEMANTIC_TOKEN_TYPES = [
 	"namespace", // 0 — ## section title
-	"keyword", // 1 — sigils: @ # ~ ^ ->& & <@
+	"keyword", // 1 — sigils: @ # ~ ^ = ->& & <@
 	"parameter", // 2 — ingredient / cookware names
 	"variable", // 3 — intermediate / reference names
 	"number", // 4 — quantity amounts
@@ -73,10 +79,16 @@ function emit(
 // The number/unit content inside is intentionally left to the TextMate grammar
 // (constant.numeric.gram / string.unquoted.unit.gram), which themes reliably colour
 // differently — avoiding dependence on theme-specific semantic token rules.
-function emitQuantity(out: RawToken[], qty: QuantityAST, text: string): void {
-	if (!qty.loc) return;
-	const cStart = qty.loc.start;
-	const cEnd = qty.loc.end;
+// A quantity's `loc` holds its braces or not (a relative quantity's does
+// not): both are handled.
+function emitBraces(
+	out: RawToken[],
+	loc: { start: number; end: number } | undefined,
+	text: string,
+): void {
+	if (!loc) return;
+	const cStart = loc.start;
+	const cEnd = loc.end;
 	if (text[cStart] === "{") {
 		emit(out, cStart, 1, T.operator);
 		emit(out, cEnd - 1, 1, T.operator);
@@ -86,20 +98,48 @@ function emitQuantity(out: RawToken[], qty: QuantityAST, text: string): void {
 	}
 }
 
-function emitTextQtyWithText(
+/** The slash of a ratio: one with a space on a side, never a fraction's (`1/2`). */
+const RATIO_SLASH = /(?<=\s)\/|\/(?=\s)/;
+
+/**
+ * Inside a share or a ratio (`70% @&flour`, `1 / 100 g @&flour`,
+ * `~{15 min / 500 g @&roast}`): the ratio's slash, then the target's sigil
+ * and name, an intermediate's (`&dough`) as a reference, an ingredient's
+ * (`@&flour`) as an ingredient. Numbers and units stay TextMate's.
+ */
+function emitRelativeInside(
 	out: RawToken[],
-	qty: TextQuantityAST,
+	qty: RelativeQuantityAST | RatioQuantityAST,
 	text: string,
 ): void {
 	if (!qty.loc) return;
-	const cStart = qty.loc.start;
-	const cEnd = qty.loc.end;
-	if (text[cStart] === "{") {
-		emit(out, cStart, 1, T.operator);
-		emit(out, cEnd - 1, 1, T.operator);
-	} else {
-		if (cStart > 0) emit(out, cStart - 1, 1, T.operator);
-		emit(out, cEnd, 1, T.operator);
+	const inside = text.slice(qty.loc.start, qty.loc.end);
+	if (isRatioQuantity(qty)) {
+		const slash = inside.search(RATIO_SLASH);
+		if (slash >= 0) emit(out, qty.loc.start + slash, 1, T.operator);
+	}
+	const at = inside.lastIndexOf(qty.target);
+	if (at < 0) return;
+	const sigil = qty.referenceType === "variable" ? "&" : "@&";
+	const sigilAt = inside.lastIndexOf(sigil, at);
+	if (sigilAt >= 0) emit(out, qty.loc.start + sigilAt, sigil.length, T.keyword);
+	emit(
+		out,
+		qty.loc.start + at,
+		qty.target.length,
+		qty.referenceType === "variable" ? T.variable : T.parameter,
+	);
+}
+
+/** An element's `{…}`: its braces, and what a share or a ratio holds. */
+function emitQuantity(
+	out: RawToken[],
+	qty: QuantityAST | TextQuantityAST | RelativeQuantityAST | RatioQuantityAST,
+	text: string,
+): void {
+	emitBraces(out, qty.loc, text);
+	if (isRelativeQuantity(qty) || isRatioQuantity(qty)) {
+		emitRelativeInside(out, qty, text);
 	}
 }
 
@@ -127,10 +167,13 @@ function walkIngredient(
 	const nameTrimLen = text.slice(nameStart, pos).trimEnd().length;
 	if (nameTrimLen > 0) emit(out, nameStart, nameTrimLen, T.parameter);
 
-	if (isQuantity(ing.quantity)) {
+	if (
+		isQuantity(ing.quantity) ||
+		isTextQuantity(ing.quantity) ||
+		isRelativeQuantity(ing.quantity) ||
+		isRatioQuantity(ing.quantity)
+	) {
 		emitQuantity(out, ing.quantity, text);
-	} else if (isTextQuantity(ing.quantity)) {
-		emitTextQtyWithText(out, ing.quantity, text);
 	}
 
 	// Composite part <@name{qty} is stored in ing.composite, within the same loc span
@@ -186,10 +229,13 @@ function walkReference(out: RawToken[], ref: ReferenceAST, text: string): void {
 	const nameTrimLen = text.slice(nameStart, pos).trimEnd().length;
 	if (nameTrimLen > 0) emit(out, nameStart, nameTrimLen, T.variable);
 
-	if (isQuantity(ref.quantity)) {
+	if (
+		isQuantity(ref.quantity) ||
+		isTextQuantity(ref.quantity) ||
+		isRelativeQuantity(ref.quantity) ||
+		isRatioQuantity(ref.quantity)
+	) {
 		emitQuantity(out, ref.quantity, text);
-	} else if (isTextQuantity(ref.quantity)) {
-		emitTextQtyWithText(out, ref.quantity, text);
 	}
 }
 
@@ -214,10 +260,16 @@ function walkTimer(out: RawToken[], timer: TimerAST, text: string): void {
 		pos += timer.name.length;
 	}
 
-	if (isQuantity(timer.quantity)) {
-		emitQuantity(out, timer.quantity, text);
-	} else if (isTextQuantity(timer.quantity)) {
-		emitTextQtyWithText(out, timer.quantity, text);
+	// Only the braces: the duration inside (`1h30`, `1:30 h`, `5'30"`) is left
+	// to the TextMate grammar, like a temperature. `timer.quantity` is no guide:
+	// the grammar cuts `1h30` as 1 + unit `h30`.
+	if (text[pos] === "{" && text[timer.loc.end - 1] === "}") {
+		emit(out, pos, 1, T.operator);
+		emit(out, timer.loc.end - 1, 1, T.operator);
+	}
+	// A proportional time: its slash and its target.
+	if (isRatioQuantity(timer.quantity)) {
+		emitRelativeInside(out, timer.quantity, text);
 	}
 }
 
@@ -243,13 +295,33 @@ function walkTemperature(
 	const body = text.slice(bodyStart, temp.loc.end);
 	const braceOpen = body.indexOf("{");
 	if (braceOpen >= 0) {
-		const braceClose = body.lastIndexOf("}");
+		// The first `}` after `{`, not the last one: a note glued to the
+		// brace (`^{180°C}(mode } spécial)`) may hold one. A quantity cannot.
+		const braceClose = body.indexOf("}", braceOpen + 1);
 		const absOpen = bodyStart + braceOpen;
 		const absClose =
 			bodyStart + (braceClose >= 0 ? braceClose : body.length - 1);
 		emit(out, absOpen, 1, T.operator);
 		emit(out, absClose, 1, T.operator);
 	}
+}
+
+// A target state (`={ribbon stage}(note)`, 1.5): its `=` and its braces.
+// The state is left to the TextMate grammar (string.unquoted.checkpoint.gram),
+// and so is the note (string.other.preparation.gram), as on a temperature.
+function walkCheckpoint(
+	out: RawToken[],
+	cp: CheckpointAST,
+	text: string,
+): void {
+	if (!cp.loc || text[cp.loc.start] !== "=") return;
+	const open = cp.loc.start + 1;
+	// The first `}` after `{`: a state holds none, its note may.
+	const close = text.indexOf("}", open + 1);
+	if (text[open] !== "{" || close < 0 || close >= cp.loc.end) return;
+	emit(out, cp.loc.start, 1, T.keyword);
+	emit(out, open, 1, T.operator);
+	emit(out, close, 1, T.operator);
 }
 
 function walkIntermediate(
@@ -293,6 +365,7 @@ function walkStep(out: RawToken[], step: StepAST, text: string): void {
 		else if (isCookware(child)) walkCookware(out, child, text);
 		else if (isTimer(child)) walkTimer(out, child, text);
 		else if (isTemperature(child)) walkTemperature(out, child, text);
+		else if (isCheckpoint(child)) walkCheckpoint(out, child, text);
 		else if (isReference(child)) walkReference(out, child, text);
 		else if (isIntermediateDecl(child)) walkIntermediate(out, child, text);
 		else if (isAlternative(child)) {
