@@ -11,6 +11,7 @@
 			"packages/*/src/**",
 			"packages/*/tests/**",
 			"conformance/*.ts",
+			"fuzz/**/*.ts",
 			"!**/*.gram",
 			"!**/grammar-content.ts",
 			"!**/*.svg",

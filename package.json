@@ -51,6 +51,7 @@
     "deprecations": "bun run scripts/check-deprecations.ts",
     "deprecations:check": "bun run scripts/check-deprecations.ts --check",
     "audit": "bun run --cwd audit audit",
+    "fuzz": "bun run --cwd fuzz fuzz",
     "audit:fix": "bun audit fix",
     "audit:check": "bun audit",
     "dedupe:check": "bun dedupe --check",
@@ -60,6 +61,7 @@
   "workspaces": [
     "packages/*",
     "conformance",
-    "audit"
+    "audit",
+    "fuzz"
   ]
 }

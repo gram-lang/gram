@@ -3,6 +3,9 @@
   "version": "1.5.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./corpus": "./src/corpus.ts"
+  },
   "scripts": {
     "audit": "bun run audit.ts",
     "audit:json": "bun run audit.ts --json"

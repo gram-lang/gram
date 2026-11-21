@@ -47,6 +47,21 @@
         "@types/node": "^26.1.1",
       },
     },
+    "fuzz": {
+      "name": "@gram-lang/fuzz",
+      "version": "0.0.0",
+      "dependencies": {
+        "@gram-lang/analyzer": "workspace:*",
+        "@gram-lang/audit": "workspace:*",
+        "@gram-lang/format": "workspace:*",
+        "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "1.4.4",
+        "typescript": "^6.0.3",
+      },
+    },
     "packages/analyzer": {
       "name": "@gram-lang/analyzer",
       "version": "1.5.0",
@@ -620,6 +635,8 @@
     "@gram-lang/docs": ["@gram-lang/docs@workspace:packages/docs"],
 
     "@gram-lang/format": ["@gram-lang/format@workspace:packages/format"],
+
+    "@gram-lang/fuzz": ["@gram-lang/fuzz@workspace:fuzz"],
 
     "@gram-lang/i18n": ["@gram-lang/i18n@workspace:packages/i18n"],
 
