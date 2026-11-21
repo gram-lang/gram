@@ -1,65 +1,5 @@
 [
 	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.metrics.activeBreakdown",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "## {\n}"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.registry.ingredients",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "@m\n{g}"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].ingredients[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "@n\n{1}"
-	},
-	{
-		"signature": "format-preserves-meaning | formatted source no longer parses | parser:header_trailing",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "## {\n~{0}."
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.miseEnPlace[].duration",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "->&dough\n\n## l\n@t\n{0%&dough}"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.metrics.prepBreakdown[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "@s\n{}(n)"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.schedule.blocks[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "~{5m}{\n\n~{2m}"
-	},
-	{
-		"signature": "format-preserves-meaning | formatted source no longer parses | parser:throwBracesError",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "@r\n{"
-	},
-	{
-		"signature": "format-idempotent | second pass reported changes on an unchanged output",
-		"invariant": "format-idempotent",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "{1\n##}"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.miseEnPlace[].section",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/197",
-		"example": "## {\n## \n## n\n@r}"
-	},
-	{
 		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].title",
 		"invariant": "format-preserves-meaning",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/201",
@@ -142,5 +82,23 @@
 		"invariant": "format-preserves-meaning",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/207",
 		"example": "@use \"a\" as &a\n//"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.metrics.activeBreakdown",
+		"invariant": "format-preserves-meaning",
+		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/200",
+		"example": "## S\n﻿"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.schedule.blocks[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/200",
+		"example": "~{5\"}\n﻿\n~{7'}"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].ingredients[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/208",
+		"example": "@l<@N"
 	}
 ]

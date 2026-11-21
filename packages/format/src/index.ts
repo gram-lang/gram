@@ -239,14 +239,20 @@ export function formatGram(source: string): {
 		return lower;
 	});
 
+	// No rule below crosses a line break: a line break is syntax in gram (it
+	// ends a header, and a blank line ends a step), so `@flour` followed by
+	// `{200 g}` on the next line is an ingredient with no amount, then text.
+	// Joining them would give flour an amount; trimming a `{` whose `}` is
+	// lines below would pull a step into a header, or merge two steps.
+
 	// Rule 2: Remove space between @id and opening brace (@ing {10g} → @ing{10g})
-	body = body.replace(/@([a-zA-Z][a-zA-Z0-9_-]*)\s+\{/g, (_, id) => {
+	body = body.replace(/@([a-zA-Z][a-zA-Z0-9_-]*)[ \t]+\{/g, (_, id) => {
 		changes.spacesBeforeBrace++;
 		return `@${id}{`;
 	});
 
 	// Rule 3: Trim spaces inside braces ({ 10g } → {10g})
-	body = body.replace(/\{([^}]*)\}/g, (_, inner) => {
+	body = body.replace(/\{([^{}\n]*)\}/g, (_, inner) => {
 		const trimmed = inner.trim();
 		if (trimmed !== inner) changes.spacesInsideBraces++;
 		return `{${trimmed}}`;
@@ -256,7 +262,7 @@ export function formatGram(source: string): {
 	// Runs before rule 4, whose patterns allow no space before the unit: in
 	// the other order `{160.0 °C}` only became `{160.0°C}`, and a second run
 	// was needed to drop the zero.
-	body = body.replace(/\{([^}]*)\}/g, (match, inner, offset) => {
+	body = body.replace(/\{([^{}\n]*)\}/g, (match, inner, offset) => {
 		if (isCheckpoint(body, offset)) return match;
 		const fixed = inner.replace(/(\d+)\s+°/g, (_m: string, n: string) => {
 			changes.temperatureSpacing++;
@@ -300,7 +306,7 @@ export function formatGram(source: string): {
 
 	// Rule 7 (from language-server): normalize ->&name {} → ->&name{}
 	// (handles single and multi-word names)
-	body = body.replace(/->&([^{\n]+?)\s+\{\}/g, (_, name) => {
+	body = body.replace(/->&([^{\n]+?)[ \t]+\{\}/g, (_, name) => {
 		changes.arrowDeclarationSpacing++;
 		return `->&${name}{}`;
 	});
