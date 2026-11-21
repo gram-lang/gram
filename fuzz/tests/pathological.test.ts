@@ -67,11 +67,6 @@ const KNOWN_SLOW: Record<string, { issue: string; scale?: number }> = {
 		issue: "https://git.gram-lang.org/gram-lang/gram/issues/202",
 		scale: 1 / 4,
 	},
-	// The compound-quantity action reads `ops.children[i]` in a loop, and ohm
-	// rebuilds `children` on every access.
-	"ranges and sums in series": {
-		issue: "https://git.gram-lang.org/gram-lang/gram/issues/203",
-	},
 };
 
 function exponents(generate: (n: number) => string, scale: number): string[] {
