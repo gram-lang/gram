@@ -52,11 +52,5 @@
 		"invariant": "format-preserves-meaning",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/213",
 		"example": "^{1.0\ufeff}"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].steps[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/216",
-		"example": "[I\re]."
 	}
 ]

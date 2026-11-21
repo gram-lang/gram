@@ -1117,7 +1117,9 @@ semantics.addOperation("toAST", {
 	CommentBlock(_1, text, _2): CommentAST {
 		return {
 			type: ASTNodeType.Comment,
-			value: text.sourceString,
+			// The one element that may span lines: every line break reads as
+			// LF, the one the formatter writes (#216).
+			value: text.sourceString.replace(/\r\n?/g, "\n"),
 			kind: "block",
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
