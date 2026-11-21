@@ -1,35 +1,5 @@
 [
 	{
-		"signature": "format-idempotent | second pass changed the output (compositeSeparatorSpacing)",
-		"invariant": "format-idempotent",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/204",
-		"example": "<\t@"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.cookware[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/205",
-		"example": "## "
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.cookware[].id",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/205",
-		"example": "## \n#p"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.cookware[]._usageId",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/205",
-		"example": "## \n#p|#s"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/207",
-		"example": "@use \"a\" as &a\n//"
-	},
-	{
 		"signature": "format-preserves-meaning | compilation differs after formatting at $.registry.ingredients",
 		"invariant": "format-preserves-meaning",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/213",

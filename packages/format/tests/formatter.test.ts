@@ -91,6 +91,21 @@ describe("formatGram", () => {
 		expect(changes.compositeSeparatorSpacing).toBe(1);
 	});
 
+	// Tabs are blanks to the parser (`invalidComposite`): the repair takes
+	// them in one pass, before rule 9 turns them into spaces (#204).
+	it("normalizes tabs around the composite separator in one pass", () => {
+		for (const src of [
+			"Add @yolks{3}\t<\t@eggs{3}.\n",
+			"Add @yolks{3} \t< \t@eggs{3}.\n",
+		]) {
+			const { content, changes } = formatGram(src);
+			expect(content).toBe("Add @yolks{3}<@eggs{3}.\n");
+			expect(changes.compositeSeparatorSpacing).toBe(1);
+			expect(changes.tabsToSpaces).toBe(0);
+			expect(formatGram(content).content).toBe(content);
+		}
+	});
+
 	it("does not touch an already-normalized composite separator", () => {
 		const { content, changes } = formatGram("Add @sugar<@eggs{3}.\n");
 		expect(content).toBe("Add @sugar<@eggs{3}.\n");

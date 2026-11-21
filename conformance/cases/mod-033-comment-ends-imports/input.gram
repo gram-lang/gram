@@ -1,0 +1,6 @@
+---
+title: Comment ends imports
+---
+
+@use "./bases/pate.gram" as &pate
+// sweet crust

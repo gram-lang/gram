@@ -1,0 +1,28 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Comment ends imports"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 65,
+            "end": 70
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 37,
+        "end": 71
+      }
+    }
+  ],
+  "children": []
+}
