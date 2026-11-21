@@ -95,9 +95,9 @@ Les règles 1 à 9 ne s'appliquent qu'au corps de la recette : le frontmatter es
     - **9. Tabulations** (`tabsToSpaces`) : une tabulation devient quatre espaces.
   </Card>
   <Card title="Tout le fichier" icon="document">
-    - **10. Espaces de fin de ligne** (`trailingWhitespace`).
+    - **10. Espaces de fin de ligne** (`trailingWhitespace`) : les espaces et les tabulations qui terminent une ligne, et rien d’autre, puisque le parser ne tient aucun autre caractère pour un blanc (une espace insécable reste en place). Tous les sauts de ligne (CRLF, ou un CR isolé) deviennent des LF.
     - **11. Lignes vides** (`consecutiveBlankLines`) : deux lignes vides ou plus n’en font plus qu’une. Une ligne vide manquante n’est jamais ajoutée : entre deux lignes, elle couperait une étape en deux.
-    - **12. Saut de ligne final** (`eofNewline`).
+    - **12. Saut de ligne final** (`eofNewline`) : une fois les lignes vides de la fin retirées, le fichier se termine par un seul LF. Une marque d’ordre des octets (BOM) en tête de fichier reste en place.
   </Card>
 </CardGrid>
 

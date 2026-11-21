@@ -65,6 +65,27 @@ const grammar = ohm.grammar(grammarContent);
 const clean = (str: string) => str.trim();
 
 /**
+ * Drops the blanks (`sp`: spaces, tabs) ending a step's line: they are not
+ * content, since the formatter strips them (rule 10). Kept, `n \nS` read
+ * "n " where its formatted `n\nS` read "n" (#200).
+ */
+function trimLineEnd(nodes: StepAST["children"]): StepAST["children"] {
+	const last = nodes.at(-1);
+	if (last?.type !== ASTNodeType.Text) return nodes;
+	const value = last.value.replace(/[ \t]+$/, "");
+	if (value === last.value) return nodes;
+	if (value === "") return trimLineEnd(nodes.slice(0, -1));
+	const trimmed = { ...last, value };
+	if (last.loc) {
+		trimmed.loc = {
+			...last.loc,
+			end: last.loc.end - (last.value.length - value.length),
+		};
+	}
+	return [...nodes.slice(0, -1), trimmed];
+}
+
+/**
  * Raises the readable error for a "{...}" glued to an element that isn't a
  * valid quantity (see `malformedBraces` in grammar.ohm). Without it the element
  * silently fell back to its bare form and the braces leaked into prose.
@@ -260,7 +281,7 @@ const semantics = grammar.createSemantics();
 semantics.addOperation("toAST", {
 	// --- Structure ---
 
-	Recipe(frontmatter, useBlock, content, _trailingBlankLines): RecipeAST {
+	Recipe(_bom, frontmatter, useBlock, content, _trailingBlankLines): RecipeAST {
 		const rawMeta = getOpt(frontmatter) || {};
 		const metaResult = MetaSchema.safeParse(rawMeta);
 		let meta: Meta;
@@ -496,7 +517,8 @@ semantics.addOperation("toAST", {
 	},
 
 	line(items): StepAST["children"] {
-		return items.children.map((i) => i.toAST()) as StepAST["children"];
+		const nodes = items.children.map((i) => i.toAST()) as StepAST["children"];
+		return trimLineEnd(nodes);
 	},
 	stepContent(child): StepAST["children"][number] {
 		return child.toAST();
@@ -553,7 +575,7 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	nl(_r, _n): null {
+	nl(_break): null {
 		return null;
 	},
 	ws(s): TextAST {

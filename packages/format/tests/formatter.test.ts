@@ -551,3 +551,57 @@ describe("no rule crosses a line break (#197)", () => {
 		).toBe("Add @flour{200 g}\nand @salt{2 g}.\n");
 	});
 });
+
+// #200: the formatter only strips what the parser reads as blank: spaces
+// and tabs at the end of a line, and line breaks at the end of the file.
+// Every line break comes out as LF.
+describe("blanks and line breaks, as the parser reads them (#200)", () => {
+	for (const char of ["\u00a0", "\u3000", "\ufeff"]) {
+		it(`keeps a line of ${JSON.stringify(char)}, which is text`, () => {
+			const source = `Mix.\n${char}\nBake.\n`;
+			expect(formatGram(source).content).toBe(source);
+			expect(formatGram(`Mix ${char}\n`).content).toBe(`Mix ${char}\n`);
+		});
+	}
+
+	it("empties a line of spaces and tabs", () => {
+		const { content, changes } = formatGram("Mix.\n \t \nBake.\n");
+		expect(content).toBe("Mix.\n\nBake.\n");
+		expect(changes.trailingWhitespace).toBe(1);
+	});
+
+	it("writes CRLF and lone CR line breaks as LF", () => {
+		expect(formatGram("Mix. \r\n\r\nBake.\r\n").content).toBe(
+			"Mix.\n\nBake.\n",
+		);
+		expect(formatGram("Mix\rwell.\r\rBake.\r").content).toBe(
+			"Mix\nwell.\n\nBake.\n",
+		);
+	});
+
+	it("keeps a byte order mark opening the file, and its frontmatter", () => {
+		const { content } = formatGram(
+			"\ufeff---\nauthor: Jean@Example.com\n---\nAdd @Flour.\n",
+		);
+		expect(content).toBe(
+			"\ufeff---\nauthor: Jean@Example.com\n---\nAdd @flour.\n",
+		);
+	});
+
+	it("finds a frontmatter written with lone CRs", () => {
+		expect(
+			formatGram("---\rauthor: Jean@Example.com\r---\rAdd @Flour.").content,
+		).toBe("---\nauthor: Jean@Example.com\n---\nAdd @flour.\n");
+	});
+
+	it("keeps a closing --- followed by U+FEFF, which is no fence (#206)", () => {
+		const source = "---\ntitle: Bread\n---\ufeff\nMix.\n";
+		expect(formatGram(source).content).toBe(source);
+	});
+
+	it("leaves a no-break space inside braces", () => {
+		expect(formatGram("Add @flour{\u00a0200 g}.\n").content).toBe(
+			"Add @flour{\u00a0200 g}.\n",
+		);
+	});
+});
