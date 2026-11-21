@@ -260,7 +260,7 @@ const semantics = grammar.createSemantics();
 semantics.addOperation("toAST", {
 	// --- Structure ---
 
-	Recipe(frontmatter, useBlock, content): RecipeAST {
+	Recipe(frontmatter, useBlock, content, _trailingBlankLines): RecipeAST {
 		const rawMeta = getOpt(frontmatter) || {};
 		const metaResult = MetaSchema.safeParse(rawMeta);
 		let meta: Meta;
