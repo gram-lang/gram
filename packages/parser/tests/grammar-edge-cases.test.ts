@@ -858,3 +858,30 @@ describe("sums of quantities (since 1.5.0)", () => {
 		expect(() => getAST(`## T\n\n${src}\n`)).toThrow(fragment);
 	});
 });
+
+// #199: `formatGram("")` returns "\n", so an empty file must parse once
+// formatted; and nothing but blank lines may follow a frontmatter or the
+// last `@use`.
+describe("blank lines with nothing after them", () => {
+	for (const source of ["\n", "\n\n", " \n", "\r\n"]) {
+		it(`parses ${JSON.stringify(source)} as an empty recipe`, () => {
+			expect(getAST(source)).toMatchObject({ children: [], imports: [] });
+		});
+	}
+
+	it("parses a frontmatter followed by a blank line", () => {
+		const ast = getAST("---\ntitle: Bread\n---\n\n");
+		expect(ast.meta).toEqual({ title: "Bread" });
+		expect(ast.children).toEqual([]);
+	});
+
+	it("parses @use followed by a blank line", () => {
+		const ast = getAST('@use "./dough.gram" as &dough\n\n');
+		expect(ast.imports).toHaveLength(1);
+		expect(ast.children).toEqual([]);
+	});
+
+	it("keeps the steps before trailing blank lines", () => {
+		expect(getAST("Mix.\n\nBake.\n\n\n").children).toHaveLength(2);
+	});
+});

@@ -60,12 +60,6 @@
 		"example": "@\r"
 	},
 	{
-		"signature": "format-preserves-meaning | formatted source no longer parses | parser:getAST",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/199",
-		"example": ""
-	},
-	{
 		"signature": "format-preserves-meaning | compilation differs after formatting at $.meta",
 		"invariant": "format-preserves-meaning",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/206",

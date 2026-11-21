@@ -1,5 +1,8 @@
 GRAM {
-  Recipe = Frontmatter? UseBlock? Content?
+  // Blank lines may end the document whatever comes before them, nothing
+  // included: "\n" (an empty file once formatted), the blank line after a
+  // frontmatter or after the last `@use`.
+  Recipe = Frontmatter? UseBlock? Content? nl*
 
   Content =
     | (nl* Block)* (nl* Section)+      -- explicit

@@ -1,0 +1,36 @@
+{
+  "title": "Blank",
+  "slug": "blank",
+  "meta": {
+    "title": "Blank"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 0,
+    "idleTime": 0,
+    "activeTime": 0,
+    "preparationTime": 0
+  },
+  "miseEnPlace": [],
+  "tasks": {
+    "tasks": [],
+    "sections": []
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 0,
+    "activeTime": 0,
+    "preparationTime": 0,
+    "idleTime": 0,
+    "blocks": [],
+    "days": []
+  }
+}
