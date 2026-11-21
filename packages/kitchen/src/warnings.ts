@@ -21,6 +21,8 @@ export enum WarningCode {
 	// shared warning vocabulary that flows through CompilationResult.warnings.
 	INVALID_BAKERS_REFERENCE = "INVALID_BAKERS_REFERENCE",
 	NO_BAKERS_REFERENCE = "NO_BAKERS_REFERENCE",
+	/** A second ingredient marked `*`; the first one stays the base. Since 1.5.1. */
+	MULTIPLE_BAKERS_PERCENTAGE = "MULTIPLE_BAKERS_PERCENTAGE",
 	TIME_PARADOX = "TIME_PARADOX",
 	TRACK_CONTENTION = "TRACK_CONTENTION",
 	DAY_OVERFLOW = "DAY_OVERFLOW",
@@ -154,6 +156,7 @@ export interface WarningPayloads {
 	};
 	[WarningCode.INVALID_BAKERS_REFERENCE]: { item: string };
 	[WarningCode.NO_BAKERS_REFERENCE]: Record<string, never>;
+	[WarningCode.MULTIPLE_BAKERS_PERCENTAGE]: { item: string; reference: string };
 	[WarningCode.TIME_PARADOX]: {
 		cause: string;
 		conflict: string;
@@ -342,6 +345,8 @@ export const warningTemplates: {
 		`'${p.item}' cannot be used as the Baker's percentage reference (*).`,
 	[WarningCode.NO_BAKERS_REFERENCE]: () =>
 		`Baker's percentages (%) are used but no base flour (*) was designated.`,
+	[WarningCode.MULTIPLE_BAKERS_PERCENTAGE]: (p) =>
+		`'${p.item}' is also marked as the baker's percentage base (*), but '${p.reference}' already is: only one ingredient can be. '${p.reference}' stays the base.`,
 	[WarningCode.TIME_PARADOX]: (p) =>
 		`Timeline conflict: ${p.cause} is pulled earlier than recipe start to satisfy ${p.conflict}.`,
 	[WarningCode.TRACK_CONTENTION]: (p) =>
@@ -440,6 +445,7 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.COMPOSITE_PARENT_CONFLICT]: "error",
 	[WarningCode.INVALID_BAKERS_REFERENCE]: "warning",
 	[WarningCode.NO_BAKERS_REFERENCE]: "warning",
+	[WarningCode.MULTIPLE_BAKERS_PERCENTAGE]: "warning",
 	[WarningCode.TIME_PARADOX]: "warning",
 	[WarningCode.TRACK_CONTENTION]: "info",
 	[WarningCode.DAY_OVERFLOW]: "warning",
