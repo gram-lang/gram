@@ -722,9 +722,12 @@ semantics.addOperation("toAST", {
 	// `-` sets `minus` on the term after it; `+` leaves the term as it is.
 	compoundQuantity(first, _s1, ops, _s2, rest): CompoundQuantityAST {
 		const terms: QuantityTermAST[] = [first.toAST()];
+		// Read once: ohm rebuilds `children` on every access, and reading it
+		// per term made a sum of n terms cost n².
+		const opNodes = ops.children;
 		rest.children.forEach((node, i) => {
 			const term = node.toAST() as QuantityTermAST;
-			const minus = ops.children[i]?.sourceString === "-";
+			const minus = opNodes[i]?.sourceString === "-";
 			terms.push(minus ? { minus: true, ...term } : term);
 		});
 		return {
