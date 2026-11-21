@@ -1,0 +1,146 @@
+[
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.metrics.activeBreakdown",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "## {\n}"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.registry.ingredients",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "@m\n{g}"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].ingredients[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "@n\n{1}"
+	},
+	{
+		"signature": "format-preserves-meaning | formatted source no longer parses | parser:header_trailing",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "## {\n~{0}."
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.miseEnPlace[].duration",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "->&dough\n\n## l\n@t\n{0%&dough}"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.metrics.prepBreakdown[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "@s\n{}(n)"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.schedule.blocks[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "~{5m}{\n\n~{2m}"
+	},
+	{
+		"signature": "format-preserves-meaning | formatted source no longer parses | parser:throwBracesError",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "@r\n{"
+	},
+	{
+		"signature": "format-idempotent | second pass reported changes on an unchanged output",
+		"invariant": "format-idempotent",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "{1\n##}"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.miseEnPlace[].section",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F1: format: brace rules 2-5 match across line breaks (@r\\n{g} → @r{g})",
+		"example": "## {\n## \n## n\n@r}"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].title",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — F2: format: brace rules 3-4 rewrite braces outside quantities (titles, notes)",
+		"example": "## {1,0}"
+	},
+	{
+		"signature": "format-idempotent | second pass changed the output (compositeSeparatorSpacing)",
+		"invariant": "format-idempotent",
+		"issue": "pending — F3: format: composite rule runs before tabs → spaces, second pass differs",
+		"example": "<\t@"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.tasks.tasks[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — K1: kitchen: uppercase ids in &@X / ~@X references are not lowercased like @X",
+		"example": "&@S"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.warnings[].item",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — K1: kitchen: uppercase ids in &@X / ~@X references are not lowercased like @X",
+		"example": "~@F{}"
+	},
+	{
+		"signature": "compile-no-throw | compile threw Error: MULTIPLE_BAKERS_PERCENTAGE: Only one ingredient can be marked with the baker's percentage (*) modifier in a recipe. | kitchen:<anonymous>",
+		"invariant": "compile-no-throw",
+		"issue": "pending — K2: kitchen: MULTIPLE_BAKERS_PERCENTAGE throws instead of warning",
+		"example": "@*n @*b"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.cookware[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — P1: parser: '## ' (empty header) is a header, '##' is cookware '#' with a hash id",
+		"example": "## "
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.cookware[].id",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — P1: parser: '## ' (empty header) is a header, '##' is cookware '#' with a hash id",
+		"example": "## \n#p"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.cookware[]._usageId",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — P1: parser: '## ' (empty header) is a header, '##' is cookware '#' with a hash id",
+		"example": "## \n#p|#s"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].steps[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — P2: parser: a whitespace-only or lone \\r line is not a blank line",
+		"example": "e\r"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.metrics.activeBreakdown[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — P2: parser: a whitespace-only or lone \\r line is not a blank line",
+		"example": ".\n \n["
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.metrics.prepBreakdown",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — P2: parser: a whitespace-only or lone \\r line is not a blank line",
+		"example": "@\r"
+	},
+	{
+		"signature": "format-preserves-meaning | formatted source no longer parses | parser:getAST",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — P3: parser: a source of only '\\n' does not parse (formatGram('') gives '\\n')",
+		"example": ""
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.meta",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — P4: parser/format: frontmatter closing '---' followed by a space, \\r or BOM",
+		"example": "---\ntitle:\n---﻿"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "pending — P5: parser: a trailing // comment without final newline after @use makes a section",
+		"example": "@use \"a\" as &a\n//"
+	}
+]
