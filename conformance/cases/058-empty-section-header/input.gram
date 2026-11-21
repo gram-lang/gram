@@ -1,0 +1,11 @@
+##
+
+Whisk @eggs{2} in a #bowl{}.
+
+## Batter ->&batter ~{}
+
+Fold @flour{100 g} into the eggs.
+
+## Bake
+
+Bake &batter{} for ~{20 min}.

@@ -262,6 +262,8 @@ Complex recipes often have multiple components (e.g., dough, filling, frosting) 
 [Combine] @cheese{100g} and @spinach{50g}, then season to taste.
 ```
 
+A `##` with no title after it opens an untitled section: its steps are grouped apart from the previous ones, with no heading.
+
 ### Retro-planning (scheduling)
 You can assign a preparation timeframe to a `## Section` by adding a `~timer`-like annotation anywhere in the title.
 

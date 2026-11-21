@@ -1,0 +1,268 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whisk ",
+              "loc": {
+                "start": 4,
+                "end": 10
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "eggs",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 16,
+                  "end": 17
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 10,
+                "end": 18
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in a ",
+              "loc": {
+                "start": 19,
+                "end": 24
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "bowl",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 29,
+                  "end": 31
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 24,
+                "end": 31
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 31,
+                "end": 32
+              }
+            }
+          ],
+          "loc": {
+            "start": 4,
+            "end": 34
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 34
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Batter",
+      "retroPlanning": {
+        "raw": "",
+        "sign": 1,
+        "value": null,
+        "unit": null,
+        "loc": {
+          "start": 54,
+          "end": 57
+        }
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "batter",
+        "loc": {
+          "start": 44,
+          "end": 53
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Fold ",
+              "loc": {
+                "start": 59,
+                "end": 64
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 71,
+                  "end": 76
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 64,
+                "end": 77
+              }
+            },
+            {
+              "type": "Text",
+              "value": "into the eggs.",
+              "loc": {
+                "start": 78,
+                "end": 92
+              }
+            }
+          ],
+          "loc": {
+            "start": 59,
+            "end": 94
+          }
+        }
+      ],
+      "loc": {
+        "start": 34,
+        "end": 94
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake ",
+              "loc": {
+                "start": 103,
+                "end": 108
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "batter",
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 116,
+                  "end": 116
+                }
+              },
+              "loc": {
+                "start": 108,
+                "end": 117
+              }
+            },
+            {
+              "type": "Text",
+              "value": "for ",
+              "loc": {
+                "start": 118,
+                "end": 122
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "20 min",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 20,
+                  "text": "20"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 124,
+                  "end": 130
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 122,
+                "end": 131
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 131,
+                "end": 132
+              }
+            }
+          ],
+          "loc": {
+            "start": 103,
+            "end": 133
+          }
+        }
+      ],
+      "loc": {
+        "start": 94,
+        "end": 133
+      }
+    }
+  ]
+}

@@ -52,6 +52,10 @@ GRAM {
   header =
       | "##" sp+ title headerExtension? sp* (lineEnd | end)      -- ok
       | "##" sp+ title headerExtension sp* headerTrailing (lineEnd | end) -- trailing
+      // `##` alone is an untitled header, like `## `: the formatter strips
+      // the blank after it (rule 10), and `##` read as text + a cookware
+      // named "#" made the section vanish on format (#205).
+      | "##" sp* (lineEnd | end)                                   -- empty
   // Text left after a header's `~{...}` / `->&name` (most often the second
   // word of a multi-word intermediate written without `{}`). Without this
   // branch the whole `##` line silently fell back to a step: the section
@@ -65,8 +69,10 @@ GRAM {
   title = (~titleStop any)*
   
   // On one line, like every element but a block comment: an unclosed brace
-  // never reaches into the next line (#216).
-  retroPlanning = "~{" (~("}" | nl) any)+ "}"
+  // never reaches into the next line (#216). Empty braces too, like a
+  // timer's: the formatter trims `~{ }` to `~{}`, which used to stop being
+  // an anchor and drop the section on format (#205).
+  retroPlanning = "~{" (~("}" | nl) any)* "}"
   
   Block = 
     | Comment nl*       -- comment
@@ -119,8 +125,10 @@ GRAM {
     | CommentBlock
     | Comment
 
+  // A full name stops at `~{`, like a title: `->&dough ~{}` declares
+  // `dough` before an empty anchor, not a "dough ~" (#205).
   intermediateDecl =
-    | "->&" name "{}"      -- full
+    | "->&" declName "{}"  -- full
     | "->&" singleWordName -- bare
 
   // Ingredients
@@ -276,6 +284,7 @@ GRAM {
 
   // Primitives
   name = (~(syntaxChar | nl) any)+
+  declName = (~(syntaxChar | nl | "~{") any)+
   singleWordName = (~(syntaxChar | space | nl | sentencePunct) any)+
   sentencePunct = "," | ";" | "!" | "?" | "."
   // Like name, but also stops at element sigils so a bare &dough is not consumed
