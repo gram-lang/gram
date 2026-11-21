@@ -354,6 +354,10 @@ semantics.addOperation("toAST", {
 		);
 	},
 
+	header_empty(_1, _2, _3): HeaderResult {
+		return { title: "", retroPlanning: null, intermediateDecl: null };
+	},
+
 	header_ok(_1, _2, title, extension, _3, _4): HeaderResult {
 		let retroPlanning = null;
 		let intermediateDecl = null;
