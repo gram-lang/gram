@@ -1,29 +1,5 @@
 [
 	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].title",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/201",
-		"example": "## {1,0}"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].steps[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/201",
-		"example": "{ }"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.metrics.activeBreakdown[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/201",
-		"example": "## @S\nx"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.cookware[].preparation",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/201",
-		"example": "#p(5@L)"
-	},
-	{
 		"signature": "format-idempotent | second pass changed the output (compositeSeparatorSpacing)",
 		"invariant": "format-idempotent",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/204",
@@ -34,12 +10,6 @@
 		"invariant": "format-preserves-meaning",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/208",
 		"example": "&@S"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.warnings[].item",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/208",
-		"example": "~@F{}"
 	},
 	{
 		"signature": "format-preserves-meaning | compilation differs after formatting at $.cookware[]",
@@ -76,5 +46,11 @@
 		"invariant": "format-preserves-meaning",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/213",
 		"example": "@e{%1.0}"
+	},
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].steps[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/216",
+		"example": "[I\re]."
 	}
 ]

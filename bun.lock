@@ -157,7 +157,7 @@
     "packages/format": {
       "name": "@gram-lang/format",
       "version": "1.5.0",
-      "devDependencies": {
+      "dependencies": {
         "@gram-lang/parser": "workspace:*",
       },
     },

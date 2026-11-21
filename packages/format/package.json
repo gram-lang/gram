@@ -33,8 +33,8 @@
     "test": "bun test --only-failures",
     "prepublishOnly": "npm run build"
   },
-  "devDependencies": {
+  "type": "module",
+  "dependencies": {
     "@gram-lang/parser": "workspace:*"
-  },
-  "type": "module"
+  }
 }

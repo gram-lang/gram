@@ -79,6 +79,8 @@ Heat ^{180°C} and add @eggs{1-2}. ->&batter{}
 
 Les règles 1 à 9 ne s'appliquent qu'au corps de la recette : le frontmatter est du YAML brut, laissé tel quel. Les règles 10 à 12 s'appliquent à tout le fichier.
 
+Les règles 1 à 5 ne s’appliquent qu’aux éléments que trouve le parser (ingrédients, références, ustensiles, minuteurs, températures, états cibles) : un titre de section, une préparation, un commentaire ou du texte restent tels qu’ils sont écrits, `@` et accolades compris (`## Pâte {1.0}`, `@oeuf(battre {  } bien)`). Elles passent après les réparations (règles 6 à 8), et un fichier qui ne s’analyse toujours pas n’a droit qu’à ces réparations et aux règles 9 à 12.
+
 <CardGrid>
   <Card title="Quantités" icon="star">
     - **1. Identifiants en minuscules** (`lowercasedIds`) : `@Flour` → `@flour`.
