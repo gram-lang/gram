@@ -1,0 +1,147 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Sauce",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "[Stir",
+              "loc": {
+                "start": 12,
+                "end": 17
+              }
+            },
+            {
+              "type": "Text",
+              "value": " "
+            },
+            {
+              "type": "Text",
+              "value": "slowly] the ",
+              "loc": {
+                "start": 19,
+                "end": 31
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "cream",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 38,
+                  "end": 44
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 31,
+                "end": 45
+              }
+            },
+            {
+              "type": "Text",
+              "value": "at ",
+              "loc": {
+                "start": 46,
+                "end": 49
+              }
+            },
+            {
+              "type": "Text",
+              "value": "^",
+              "fallback": true,
+              "loc": {
+                "start": 49,
+                "end": 50
+              }
+            },
+            {
+              "type": "Text",
+              "value": "{low",
+              "loc": {
+                "start": 50,
+                "end": 54
+              }
+            },
+            {
+              "type": "Text",
+              "value": " "
+            },
+            {
+              "type": "Text",
+              "value": "heat}.",
+              "loc": {
+                "start": 56,
+                "end": 62
+              }
+            }
+          ],
+          "loc": {
+            "start": 12,
+            "end": 66
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Serve ",
+              "loc": {
+                "start": 66,
+                "end": 72
+              }
+            },
+            {
+              "type": "Comment",
+              "value": "still\nwarm,\nplease",
+              "kind": "block",
+              "loc": {
+                "start": 72,
+                "end": 97
+              }
+            },
+            {
+              "type": "Text",
+              "value": "at once.",
+              "loc": {
+                "start": 98,
+                "end": 106
+              }
+            }
+          ],
+          "loc": {
+            "start": 66,
+            "end": 108
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 108
+      }
+    }
+  ]
+}

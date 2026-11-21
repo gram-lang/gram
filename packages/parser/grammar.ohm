@@ -61,7 +61,9 @@ GRAM {
   titleStop = nl | "->&" | "~{"
   title = (~titleStop any)*
   
-  retroPlanning = "~{" (~"}" any)+ "}"
+  // On one line, like every element but a block comment: an unclosed brace
+  // never reaches into the next line (#216).
+  retroPlanning = "~{" (~("}" | nl) any)+ "}"
   
   Block = 
     | Comment nl*       -- comment
@@ -75,7 +77,9 @@ GRAM {
   // A line break and the blank lines after it, blanks included: inside a
   // section nothing between two blocks skips them (`Block*`).
   lineEnd = nl (sp* nl)*
-  startAction = "[" (~"]" any)+ "]" sp*
+  // On one line: the action's text kept the source line break (`[Mix\r\nwell]`),
+  // which formatting writes as LF, so the compiled recipe changed (#216).
+  startAction = "[" (~("]" | nl) any)+ "]" sp*
   line = stepContent+
   stepContent =
     | invalidUseDirective
@@ -167,7 +171,8 @@ GRAM {
   targetRef = ("@&" | "&") space* ratioTargetName
   ratioTargetName = (~(syntaxChar | "*" | "×" | nl) any)+
   absoluteQuantity = (range | number)? space* (unit space*)?
-  textQuantity = "{" space* (~"}" any)+ space* "}"
+  // On one line, like timerText (#216).
+  textQuantity = "{" space* (~("}" | nl) any)+ space* "}"
   fixed = "="
   // A unit is one or more words. A word may contain "." or an apostrophe after
   // its first character (c.à.s, fl. oz., d'eau) but never starts with one, so a
