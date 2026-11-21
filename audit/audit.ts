@@ -19,10 +19,7 @@ import { checkParse } from "./src/checks/parse";
 import { buildTrustedVocabulary, checkConstructVocabulary } from "./src/checks/construct-vocabulary";
 import { checkWarnings } from "./src/checks/warnings";
 import { missingConfiguredPaths, REPO_ROOT } from "./src/config";
-import { extractConformanceCases, extractPhysicalFixtures } from "./src/extract/fixtures";
-import { extractInlineTestLiterals } from "./src/extract/inline-tests";
-import { extractNonTrustedDocsFences, extractTrustedCorpusFences } from "./src/extract/markdown-fences";
-import { extractTmpfileWrites } from "./src/extract/tmpfile-writes";
+import { collectCorpusParts } from "./src/corpus";
 import { printReport } from "./src/report";
 import { runSelfTest } from "./src/self-test";
 import type { Finding, Snippet } from "./src/types";
@@ -49,20 +46,10 @@ if (missing.length > 0) {
 }
 
 // 1. Extraction
-const trustedFences = extractTrustedCorpusFences();
-const nonTrustedDocsFences = extractNonTrustedDocsFences();
-const physicalFixtures = extractPhysicalFixtures();
-const conformanceCases = extractConformanceCases();
-const { snippets: inlineLiterals, skipped } = extractInlineTestLiterals();
-const tmpfileWrites = extractTmpfileWrites();
-
-const auditTargets: Snippet[] = [
-	...nonTrustedDocsFences,
-	...physicalFixtures,
-	...conformanceCases,
-	...inlineLiterals,
-	...tmpfileWrites,
-].filter(matchesFilter);
+const corpus = collectCorpusParts();
+const trustedFences = corpus.trusted;
+const skipped = corpus.skipped;
+const auditTargets: Snippet[] = corpus.targets.filter(matchesFilter);
 
 // 2. Calibration — must run before any format-diff finding below is trusted.
 const calibration = calibrateFormatter(trustedFences);
@@ -98,7 +85,7 @@ for (const snippet of auditTargets) {
 }
 
 // 5. Self-test — validates the tool's own coverage against known mistakes.
-const selfTest = runSelfTest(trustedVocabulary);
+const selfTest = runSelfTest(trustedVocabulary, corpus.selfTest);
 
 const report = {
 	calibration,
