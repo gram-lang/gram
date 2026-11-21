@@ -519,3 +519,35 @@ describe("trailing zeros, the same rule for every quantity", () => {
 		});
 	}
 });
+
+describe("no rule crosses a line break (#197)", () => {
+	for (const source of [
+		// An ingredient with no amount, then text: not `@flour{200 g}`.
+		"Add @flour\n{200 g}.\n",
+		// A `{` left open on its line: `@r{` would no longer parse.
+		"Mix @r\n{\n",
+		// The header ends at its line; the step below stays a step.
+		"## {\n}\n",
+		// Two steps stay two steps.
+		"~{5m}{\n\n~{2m}\n",
+		"Shape ->&dough\n{}\n",
+	]) {
+		it(`leaves ${JSON.stringify(source)} as written`, () => {
+			const result = formatGram(source);
+			expect(result.content).toBe(source);
+			expect(hasChanges(result.changes)).toBe(false);
+		});
+	}
+
+	it("trims a space before the line break, not the line break", () => {
+		expect(formatGram("Add @flour \n{200 g}.\n").content).toBe(
+			"Add @flour\n{200 g}.\n",
+		);
+	});
+
+	it("still formats the braces of each line", () => {
+		expect(
+			formatGram("Add @flour {200 g}\nand @salt{ 2.0 g }.\n").content,
+		).toBe("Add @flour{200 g}\nand @salt{2 g}.\n");
+	});
+});

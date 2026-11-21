@@ -61,13 +61,7 @@ const NOISE_FLOOR_MS = 20;
  * removed from here. `scale` shrinks both sizes of a case too slow to run
  * at full size (its exponent does not depend on it).
  */
-const KNOWN_SLOW: Record<string, { issue: string; scale?: number }> = {
-	// formatGram rule 3 rescans to the end of the input from every unclosed `{`.
-	"nested opening braces": {
-		issue: "https://git.gram-lang.org/gram-lang/gram/issues/202",
-		scale: 1 / 4,
-	},
-};
+const KNOWN_SLOW: Record<string, { issue: string; scale?: number }> = {};
 
 function exponents(generate: (n: number) => string, scale: number): string[] {
 	const small = Math.round(SMALL * scale);
