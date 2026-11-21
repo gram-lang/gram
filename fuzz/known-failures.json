@@ -30,12 +30,6 @@
 		"example": "## \n#p|#s"
 	},
 	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/207",
-		"example": "@use \"a\" as &a\n//"
-	},
-	{
 		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].ingredients[]",
 		"invariant": "format-preserves-meaning",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/208",

@@ -138,6 +138,23 @@ describe("@use directive parsing", () => {
 		expect(ast.children.map((c) => c.type)).toEqual(["Step"]);
 	});
 
+	// A comment closing the file belongs to the import block with or without
+	// a final newline: without one it used to become the recipe's content,
+	// and the formatter, which adds the newline, dropped it (#207).
+	for (const src of [
+		'@use "./a.gram" as &a\n// end',
+		'@use "./a.gram" as &a\n// end\n',
+		'@use "./a.gram" as &a\n\n// end',
+		'@use "./a.gram" as &a\n// disabled\n// end',
+		'@use "./a.gram" as &a\n//',
+	]) {
+		it(`keeps a comment closing the file in the import block: ${JSON.stringify(src)}`, () => {
+			const ast = getAST(src);
+			expect(ast.imports.map((d) => d.specifier)).toEqual(["./a.gram"]);
+			expect(ast.children).toEqual([]);
+		});
+	}
+
 	it("defaults imports to an empty array when the document has none", () => {
 		const ast = getAST("## Section\nMix @flour{200g}.\n");
 		expect(ast.imports).toEqual([]);
