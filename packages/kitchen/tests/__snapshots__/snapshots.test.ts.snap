@@ -540,7 +540,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       {
         "after": [],
         "consumes": [
-          "ghost_step",
+          "ghost-step",
         ],
         "duration": {
           "nominal": 2,

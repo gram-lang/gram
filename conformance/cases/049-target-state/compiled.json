@@ -391,7 +391,7 @@
           "nominal": 2
         },
         "produces": [
-          "crème anglaise"
+          "creme-anglaise"
         ],
         "after": [
           "s0.1"
@@ -418,7 +418,7 @@
           "nominal": 2
         },
         "consumes": [
-          "crème anglaise"
+          "creme-anglaise"
         ],
         "after": [
           "s0.3",

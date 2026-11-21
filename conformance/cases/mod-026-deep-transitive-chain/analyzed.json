@@ -584,7 +584,7 @@
           "nominal": 5
         },
         "consumes": [
-          "b$c$d"
+          "b-c-d"
         ],
         "after": [
           "s0.0"
@@ -637,7 +637,7 @@
           "nominal": 5
         },
         "consumes": [
-          "b$c"
+          "b-c"
         ],
         "after": [
           "s1.0"
@@ -683,11 +683,11 @@
     "sections": [
       {
         "day": 1,
-        "intermediate": "b$c$d"
+        "intermediate": "b-c-d"
       },
       {
         "day": 1,
-        "intermediate": "b$c"
+        "intermediate": "b-c"
       },
       {
         "day": 1,

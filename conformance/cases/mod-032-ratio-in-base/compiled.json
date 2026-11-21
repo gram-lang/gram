@@ -546,7 +546,7 @@
           "nominal": 2
         },
         "produces": [
-          "dough$pate"
+          "dough-pate"
         ],
         "after": []
       },
@@ -597,7 +597,7 @@
           "nominal": 2
         },
         "consumes": [
-          "dough$pate"
+          "dough-pate"
         ],
         "after": [
           "s0.0"

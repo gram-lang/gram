@@ -63,7 +63,16 @@ export function normalize(value: unknown): unknown {
 			if (key === "message" && "code" in record) continue;
 			// Rule 1 lowercases ingredient ids (`@Farine` → `@farine`), and
 			// the displayed name follows the source's case.
-			if (key === "name" && typeof v === "string") {
+			// The same goes for a composite's parent as written (`<@Flour`,
+			// shown as is in a section's list: an id would show `citron-vert`)
+			// and for the reference a warning quotes (`&@Flour`), which
+			// follows the source's spelling like its `message` (#208).
+			if (
+				(key === "name" ||
+					key === "parent" ||
+					(key === "item" && "code" in record)) &&
+				typeof v === "string"
+			) {
 				out[key] = v.toLowerCase();
 				continue;
 			}

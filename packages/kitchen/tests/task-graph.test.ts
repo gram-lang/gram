@@ -254,3 +254,48 @@ describe("DAY_OVERFLOW", () => {
 		).toBe(true);
 	});
 });
+
+// An intermediate links by id, as a reference resolves: `&dough` uses what
+// `->&Dough` makes, and `&pate` what `->&Pâte` makes. Linked by the name as
+// written, the step no longer waited for the dough, and the plan placed the
+// two sections independently (#208).
+describe("intermediates link by id (#208)", () => {
+	const step = (source: string, id: string) =>
+		build(source).tasks.tasks.find((t) => t.id === id) as StepTask;
+
+	for (const [decl, ref, id] of [
+		["Dough", "dough", "dough"],
+		["dough", "Dough", "dough"],
+		["Pâte brisée{}", "pate brisee", "pate-brisee"],
+	]) {
+		it(`links \`&${ref}\` to \`->&${decl}\``, () => {
+			const source = `## A ->&${decl}\n\nMix @flour{500g} ~{10min}.\n\n## B\n\nBake &${ref}{} ~{20min}.\n`;
+			const bake = step(source, "s1.0");
+			expect(bake.consumes).toEqual([id]);
+			expect(bake.after).toContain("s0.0");
+			expect(build(source).tasks.sections[0]?.intermediate).toBe(id);
+		});
+	}
+
+	it("links a step's declaration to a reference written in another case", () => {
+		const source = "Mix @flour{500g} ->&Dough.\n\nBake &dough{} ~{20min}.\n";
+		expect(step(source, "s0.0").produces).toEqual(["dough"]);
+		expect(step(source, "s0.1").after).toContain("s0.0");
+	});
+
+	it("names an ingredient reference by its id", () => {
+		const source = "Add @Flour{100g}.\n\nUse &@Flour{}.\n";
+		expect(step(source, "s0.1").consumes).toEqual(["flour"]);
+	});
+
+	it("finds a cycle written in two cases, under the declared names", () => {
+		const { warnings } = build(
+			"## A ->&a\n\nUse &B{}.\n\n## B ->&b\n\nUse &A{}.\n",
+		);
+		const cycles = warnings
+			.filter((w) => w.code === WarningCode.CIRCULAR_REFERENCE)
+			.map((w) => w.item)
+			.sort();
+		expect(cycles).toEqual(["a", "b"]);
+	});
+});

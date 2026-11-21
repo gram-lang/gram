@@ -1,4 +1,5 @@
 import type { ProcessedSection } from "./types";
+import { slugify } from "./utils";
 
 /**
  * DFS cycle detection over an arbitrary "depends on" graph (node -> its
@@ -92,19 +93,24 @@ export function detectCycles(sections: ProcessedSection[]): Set<string> {
 export function detectIntermediateCycles(
 	sections: ProcessedSection[],
 ): Set<string> {
+	// Keyed by id, as references resolve (`&Dough` is `->&dough`, #208);
+	// the cycle is reported under the names the sections declare.
 	const graph = new Map<string, Set<string>>();
+	const nameOf = new Map<string, string>();
 
 	sections.forEach((sec) => {
-		const produced = sec.intermediate_preparation;
-		if (!produced) return;
+		const name = sec.intermediate_preparation;
+		if (!name) return;
+		const produced = slugify(name);
+		nameOf.set(produced, name);
 
 		if (!graph.has(produced)) graph.set(produced, new Set());
 		sec.ingredients.forEach((ing) => {
-			if (ing.type === "reference" && ing.name && ing.name !== produced) {
-				graph.get(produced)?.add(ing.name);
+			if (ing.type === "reference" && ing.id && ing.id !== produced) {
+				graph.get(produced)?.add(ing.id);
 			}
 		});
 	});
 
-	return findCycles(graph);
+	return new Set([...findCycles(graph)].map((id) => nameOf.get(id) ?? id));
 }
