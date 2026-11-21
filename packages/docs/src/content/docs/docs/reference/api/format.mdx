@@ -79,6 +79,8 @@ Heat ^{180°C} and add @eggs{1-2}. ->&batter{}
 
 Rules 1 to 9 apply to the recipe body only: the frontmatter is plain YAML and is left alone. Rules 10 to 12 apply to the whole file.
 
+Rules 1 to 5 touch the elements the parser finds (ingredients, references, cookware, timers, temperatures, target states), and only them: a section title, a preparation, a comment or plain text stays as written, `@` and braces included (`## Dough {1.0}`, `@egg(beat {  } well)`). They run after the repairs (rules 6 to 8), and a file that still does not parse only gets those repairs and rules 9 to 12.
+
 <CardGrid>
   <Card title="Quantities" icon="star">
     - **1. Lowercase ids** (`lowercasedIds`): `@Flour` → `@flour`.

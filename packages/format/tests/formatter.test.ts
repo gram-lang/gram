@@ -605,3 +605,60 @@ describe("blanks and line breaks, as the parser reads them (#200)", () => {
 		);
 	});
 });
+
+// #201: rules 1-5 touch the elements the parser finds, never text: a
+// section title, a preparation, a comment, plain text, a timer's name.
+describe("rules 1-5 touch elements only (#201)", () => {
+	for (const source of [
+		"## Dough {1.0}\n\nMix.\n",
+		"## @Dough\n\nMix.\n",
+		"Add @egg{1}(beat {  } well).\n",
+		"Heat the #pan(5@L).\n",
+		"Wait { 1.0 } and see.\n",
+		"Mix. // @Flour { 1.0 }\n",
+		"~@F{}\n",
+	]) {
+		it(`leaves ${JSON.stringify(source)} as written`, () => {
+			const result = formatGram(source);
+			expect(result.content).toBe(source);
+			expect(hasChanges(result.changes)).toBe(false);
+		});
+	}
+
+	it("still formats every element on the same line", () => {
+		expect(
+			formatGram(
+				"## Dough ~{ -1.0 d }\n\nAdd @Flour {500.0 g}(Sifted @L)<@Sugar{ 1.50 kg }, ~{ 1.50 h} at ^{ 180 °C}(fan) until @salt={ to taste }.\n",
+			).content,
+		).toBe(
+			"## Dough ~{-1 d}\n\nAdd @flour{500 g}(Sifted @L)<@sugar{1.5 kg}, ~{1.5 h} at ^{180°C}(fan) until @salt={to taste}.\n",
+		);
+	});
+
+	it("lowercases a reference's id, not the text braces after it", () => {
+		expect(formatGram("Add &@Flour{ 5.0 % }.\n").content).toBe(
+			"Add &@flour{ 5.0 % }.\n",
+		);
+	});
+
+	it("formats an @use's bindings and offset, not its specifier", () => {
+		expect(
+			formatGram('@use "./b{ 1.0 }.gram" as {  &a , &b  } ~{ -1.0 d }\n')
+				.content,
+		).toBe('@use "./b{ 1.0 }.gram" as {&a , &b} ~{-1 d}\n');
+	});
+
+	it("repairs a file the parser rejects, then formats its elements", () => {
+		expect(formatGram("Mix @Juice{ 1.0 } < @Lemon{ 2.0 }.\n").content).toBe(
+			"Mix @juice{1}<@lemon{2}.\n",
+		);
+	});
+
+	it("only repairs and cleans the blanks of a file that does not parse", () => {
+		// Text after a header's `~{…}` is a parse error (`header_trailing`).
+		expect(
+			formatGram("##Dough ~{ -1.0 d } extra\n\nAdd @Flour{ 1.0 }.\t \n")
+				.content,
+		).toBe("## Dough ~{ -1.0 d } extra\n\nAdd @Flour{ 1.0 }.\n");
+	});
+});

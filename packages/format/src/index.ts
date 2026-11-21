@@ -1,3 +1,5 @@
+import { getAST } from "@gram-lang/parser";
+
 export interface FormatterChanges {
 	lowercasedIds: number;
 	spacesBeforeBrace: number;
@@ -163,38 +165,97 @@ function trimTrailingZeros(inner: string): {
 	return { text: amount + inner.slice(end), count };
 }
 
-/** What the brace at an offset opens (see `braceOwner`). */
-type BraceOwner =
+/** What a brace belongs to, read from the AST (see `elementSpans`). */
+type ElementKind =
 	| "ingredient"
 	| "timer"
 	| "temperature"
 	| "cookware"
 	| "checkpoint"
-	| "other";
+	| "bindings";
 
-/**
- * What the brace at `offset` opens: a target state when an `=` touches it
- * (`={ribbon stage}`, 1.5), otherwise the element of the nearest sigil
- * before it on its line, an `@` (an ingredient, a composite parent) or a `&`
- * (a reference) for an ingredient's amount, a `~` for a timer, a `^` for a
- * temperature, a `#` for cookware.
- */
-function braceOwner(body: string, offset: number): BraceOwner {
-	if (body[offset - 1] === "=") return "checkpoint";
-	for (let i = offset - 1; i >= 0; i--) {
-		const c = body[i];
-		if (c === "\n" || c === "}" || c === "{") return "other";
-		if (c === "@" || c === "&") return "ingredient";
-		if (c === "~") return "timer";
-		if (c === "^") return "temperature";
-		if (c === "#") return "cookware";
-	}
-	return "other";
+/** An element of the recipe, where the parser found it in the source. */
+interface ElementSpan {
+	kind: ElementKind;
+	start: number;
+	end: number;
 }
 
-/** A target state is words: only rule 3 (spaces inside braces) touches it. */
-const isCheckpoint = (body: string, offset: number) =>
-	braceOwner(body, offset) === "checkpoint";
+interface Located {
+	type?: string;
+	loc?: { start: number; end: number };
+	[key: string]: unknown;
+}
+
+const KIND_OF: Record<string, ElementKind> = {
+	Ingredient: "ingredient",
+	Composite: "ingredient",
+	Reference: "ingredient",
+	Timer: "timer",
+	Temperature: "temperature",
+	Cookware: "cookware",
+	Checkpoint: "checkpoint",
+};
+
+/**
+ * Every element of the recipe, in source order: the spans rules 1-5 may
+ * touch, and nothing else. A section title, a preparation, a comment or
+ * plain text is no element, so a `@Word` or a `{ 1.0 }` in them stays as
+ * written (#201). An ingredient's span stops where its composite parent
+ * starts (`@a{1}<@b{2}`: two spans); the `~{…}` of a header or of an
+ * `@use` is a timer's, and the `{ &a, &b }` of an `@use` is its bindings'.
+ */
+function elementSpans(
+	node: unknown,
+	source: string,
+	spans: ElementSpan[] = [],
+): ElementSpan[] {
+	if (Array.isArray(node)) {
+		for (const child of node) elementSpans(child, source, spans);
+		return spans;
+	}
+	if (!node || typeof node !== "object") return spans;
+	const n = node as Located;
+	const kind = n.type ? KIND_OF[n.type] : undefined;
+	if (kind && n.loc) {
+		const composite = n.composite as Located | null | undefined;
+		const end = composite?.loc ? composite.loc.start : n.loc.end;
+		spans.push({ kind, start: n.loc.start, end });
+		if (composite) elementSpans(composite, source, spans);
+		return spans;
+	}
+	const retro = n.retroPlanning as Located | null | undefined;
+	if (n.type === "ImportDecl" && n.loc) {
+		// After the specifier's closing quote: the specifier may hold a `{`.
+		const line = source.slice(n.loc.start, n.loc.end);
+		const quote = line.indexOf('"', line.indexOf('"') + 1);
+		spans.push({
+			kind: "bindings",
+			start: n.loc.start + quote + 1,
+			end: retro?.loc ? retro.loc.start : n.loc.end,
+		});
+	}
+	if (retro?.loc) {
+		spans.push({ kind: "timer", start: retro.loc.start, end: retro.loc.end });
+	}
+	for (const [key, value] of Object.entries(n)) {
+		if (key !== "retroPlanning" && key !== "loc") {
+			elementSpans(value, source, spans);
+		}
+	}
+	return spans;
+}
+
+/** The elements of `source`, or null when it does not parse. */
+function parseElements(source: string): ElementSpan[] | null {
+	try {
+		return elementSpans(getAST(source), source).sort(
+			(a, b) => a.start - b.start,
+		);
+	} catch {
+		return null;
+	}
+}
 
 /**
  * One space around each operator of a sum: a `+` between an amount and a
@@ -205,6 +266,92 @@ function spaceSumOperators(inner: string): string {
 	return inner
 		.replace(/(?<=[\p{L}\d%.])[ \t]*\+[ \t]*(?=[\d\p{No}])/gu, " + ")
 		.replace(/(?<=[\p{L}%])[ \t]*-[ \t]*(?=[\d\p{No}])/gu, " - ");
+}
+
+/**
+ * Rules 1-5 on one element's span (`@Flour {500.0 g}(sifted)`, `~{1.50 h}`,
+ * `={ ribbon stage }`). Its head runs up to its braces, or to its
+ * preparation's `(` when it has no braces; only braces before any `(` are
+ * the element's own, so a `{` in a preparation stays as written. No rule
+ * crosses a line break (LF, CRLF or a lone CR, as for the parser): a brace
+ * whose `}` is on another line is left alone.
+ */
+function formatElement(
+	span: string,
+	kind: ElementKind,
+	changes: FormatterChanges,
+): string {
+	const open = span.search(/[{(]/);
+	const hasBraces = open !== -1 && span[open] === "{";
+	let head = open === -1 ? span : span.slice(0, open);
+	const rest = open === -1 ? "" : span.slice(open);
+
+	if (kind === "ingredient") {
+		// Rule 1: Lowercase ingredient IDs (@Farine → @farine)
+		head = head.replace(/(?<=@)([a-zA-Z][a-zA-Z0-9_-]*)/g, (match) => {
+			const lower = match.toLowerCase();
+			if (lower !== match) changes.lowercasedIds++;
+			return lower;
+		});
+		// Rule 2: Remove space between @id and opening brace (@ing {10g} → @ing{10g})
+		if (hasBraces) {
+			head = head.replace(/(@[a-zA-Z][a-zA-Z0-9_-]*)[ \t]+$/, (_, id) => {
+				changes.spacesBeforeBrace++;
+				return id;
+			});
+		}
+	}
+	if (!hasBraces) return head + rest;
+
+	const braces = /^\{([^{}\r\n]*)\}/.exec(rest);
+	if (!braces) return head + rest;
+	return `${head}{${formatBraces(braces[1] ?? "", kind, changes)}}${rest.slice(braces[0].length)}`;
+}
+
+/** Rules 3, 5, 4 and 4b, in that order, on an element's braces. */
+function formatBraces(
+	original: string,
+	kind: ElementKind,
+	changes: FormatterChanges,
+): string {
+	// Rule 3: Trim spaces inside braces ({ 10g } → {10g})
+	let inner = trimBlanks(original);
+	if (inner !== original) changes.spacesInsideBraces++;
+
+	// A target state is words, and an `@use`'s bindings are names: only
+	// rule 3 touches them.
+	if (kind === "checkpoint" || kind === "bindings") return inner;
+
+	// Rule 5: Remove space before ° in temperature quantities (handles
+	// multiple temps per brace). Runs before rule 4, whose patterns allow no
+	// space before the unit: in the other order `{160.0 °C}` only became
+	// `{160.0°C}`, and a second run was needed to drop the zero.
+	inner = inner.replace(/(\d+)[ \t]+°/g, (_m: string, n: string) => {
+		changes.temperatureSpacing++;
+		return `${n}°`;
+	});
+
+	// Rule 4: Remove trailing decimal zeros from every number in a quantity's
+	// braces ({500.0g} → {500g}, {1.50 kg} → {1.5 kg}), whatever follows it:
+	// a unit, a range's other bound ({1.50-2.50 cup}), a sum's next term, a
+	// ratio's slash or a timer's unit (~{1.50 h}). See `trimTrailingZeros`.
+	const zeros = trimTrailingZeros(inner);
+	changes.trailingZeros += zeros.count;
+	inner = zeros.text;
+
+	// Rule 4b: A sum of quantities, in an ingredient's braces only (`@…{`,
+	// `<@…{`, `&…{`; never a timer's `~{1h30-2h}` nor a temperature's):
+	// one space around each operator (rule 4 has trimmed its terms). A
+	// quantity relative to a target (`5% @&chocolat-70`) is never a sum:
+	// spacing the `-` of its target's name would rename the target.
+	if (kind === "ingredient" && !HAS_TARGET.test(inner)) {
+		const spaced = spaceSumOperators(inner);
+		if (SUM_OPERATOR.test(spaced) && spaced !== inner) {
+			changes.quantityOperatorSpacing++;
+			inner = spaced;
+		}
+	}
+	return inner;
 }
 
 /**
@@ -241,74 +388,10 @@ export function formatGram(source: string): {
 	// body — frontmatter is plain YAML. Running them over the whole source
 	// used to silently rewrite frontmatter values,
 	// e.g. lowercasing the domain of `author: Jean@Example.com`.
+	// Order: the repairs (rules 6-8) first, then rules 1-5 on the elements
+	// the parser finds in the repaired text, then rules 9-12.
 	const { frontmatter, body: originalBody } = splitFrontmatter(source);
 	let body = originalBody;
-
-	// Rule 1: Lowercase ingredient IDs (@Farine → @farine)
-	body = body.replace(/(?<=@)([a-zA-Z][a-zA-Z0-9_-]*)/g, (match) => {
-		const lower = match.toLowerCase();
-		if (lower !== match) changes.lowercasedIds++;
-		return lower;
-	});
-
-	// No rule below crosses a line break (LF, CRLF or a lone CR, as for the
-	// parser): a line break is syntax in gram (it
-	// ends a header, and a blank line ends a step), so `@flour` followed by
-	// `{200 g}` on the next line is an ingredient with no amount, then text.
-	// Joining them would give flour an amount; trimming a `{` whose `}` is
-	// lines below would pull a step into a header, or merge two steps.
-
-	// Rule 2: Remove space between @id and opening brace (@ing {10g} → @ing{10g})
-	body = body.replace(/@([a-zA-Z][a-zA-Z0-9_-]*)[ \t]+\{/g, (_, id) => {
-		changes.spacesBeforeBrace++;
-		return `@${id}{`;
-	});
-
-	// Rule 3: Trim spaces inside braces ({ 10g } → {10g})
-	body = body.replace(/\{([^{}\r\n]*)\}/g, (_, inner) => {
-		const trimmed = trimBlanks(inner);
-		if (trimmed !== inner) changes.spacesInsideBraces++;
-		return `{${trimmed}}`;
-	});
-
-	// Rule 5: Remove space before ° in temperature quantities (handles multiple temps per brace).
-	// Runs before rule 4, whose patterns allow no space before the unit: in
-	// the other order `{160.0 °C}` only became `{160.0°C}`, and a second run
-	// was needed to drop the zero.
-	body = body.replace(/\{([^{}\r\n]*)\}/g, (match, inner, offset) => {
-		if (isCheckpoint(body, offset)) return match;
-		const fixed = inner.replace(/(\d+)[ \t]+°/g, (_m: string, n: string) => {
-			changes.temperatureSpacing++;
-			return `${n}°`;
-		});
-		return `{${fixed}}`;
-	});
-
-	// Rule 4: Remove trailing decimal zeros from every number in a quantity's
-	// braces ({500.0g} → {500g}, {1.50 kg} → {1.5 kg}), whatever follows it:
-	// a unit, a range's other bound ({1.50-2.50 cup}), a sum's next term, a
-	// ratio's slash or a timer's unit (~{1.50 h}). See `trimTrailingZeros`.
-	body = body.replace(/\{([^{}\r\n]*)\}/g, (match, inner: string, offset) => {
-		if (isCheckpoint(body, offset)) return match;
-		const { text, count } = trimTrailingZeros(inner);
-		if (count === 0) return match;
-		changes.trailingZeros += count;
-		return `{${text}}`;
-	});
-
-	// Rule 4b: A sum of quantities, in an ingredient's braces only (`@…{`,
-	// `<@…{`, `&…{`; never a timer's `~{1h30-2h}` nor a temperature's):
-	// one space around each operator (rule 4 has trimmed its terms).
-	body = body.replace(/\{([^{}\r\n]*)\}/g, (match, inner: string, offset) => {
-		if (braceOwner(body, offset) !== "ingredient") return match;
-		// A quantity relative to a target (`5% @&chocolat-70`) is never a sum:
-		// spacing the `-` of its target's name would rename the target.
-		if (HAS_TARGET.test(inner)) return match;
-		const spaced = spaceSumOperators(inner);
-		if (!SUM_OPERATOR.test(spaced) || spaced === inner) return match;
-		changes.quantityOperatorSpacing++;
-		return `{${spaced}}`;
-	});
 
 	// Rule 6 (from language-server): normalize composite separator spacing
 	// (@ingA{} < @ingB{} → @ingA{}<@ingB{})
@@ -340,6 +423,27 @@ export function formatGram(source: string): {
 		if (match !== normalized) changes.headerSpacing++;
 		return normalized;
 	});
+
+	// Rules 1-5 below touch the elements the parser finds, and only them:
+	// they run after the repairs (rules 6-8) so that a `< @` the parser
+	// rejects is already a composite. A file that still does not parse
+	// keeps its text: the whitespace rules (9-12) are all it gets.
+	const elements = parseElements(frontmatter + body);
+	if (elements) {
+		let formatted = "";
+		let cursor = frontmatter.length;
+		for (const { kind, start, end } of elements) {
+			if (start < cursor) continue;
+			formatted += (frontmatter + body).slice(cursor, start);
+			formatted += formatElement(
+				(frontmatter + body).slice(start, end),
+				kind,
+				changes,
+			);
+			cursor = end;
+		}
+		body = formatted + (frontmatter + body).slice(cursor);
+	}
 
 	// Rule 9 (from language-server): tabs → 4 spaces
 	body = body.replace(/\t/g, () => {
