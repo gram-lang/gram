@@ -394,8 +394,10 @@ export function formatGram(source: string): {
 	let body = originalBody;
 
 	// Rule 6 (from language-server): normalize composite separator spacing
-	// (@ingA{} < @ingB{} → @ingA{}<@ingB{})
-	body = body.replace(/ *< *@/g, (match) => {
+	// (@ingA{} < @ingB{} → @ingA{}<@ingB{}). Tabs included, as in the
+	// grammar's `invalidComposite`: left to rule 9, `<\t@` became `<    @`
+	// and needed a second pass (#204).
+	body = body.replace(/[ \t]*<[ \t]*@/g, (match) => {
 		if (match !== "<@") changes.compositeSeparatorSpacing++;
 		return "<@";
 	});
