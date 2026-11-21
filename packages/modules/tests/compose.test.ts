@@ -503,9 +503,9 @@ Use &pate{200g}.
 `,
 			// Without dropping the module's own "*" at the module boundary, this
 			// composed document would carry two baker's-percentage bases (host's
-			// sugar and the module's flour) and compile() would throw
-			// MULTIPLE_BAKERS_PERCENTAGE -- the warning below is what's supposed
-			// to prevent that.
+			// sugar and the module's flour), and the module's would be dropped
+			// with a MULTIPLE_BAKERS_PERCENTAGE warning pointing nowhere in the
+			// host -- the warning below explains the drop at the import instead.
 			"/pate.gram": "## Pastry ->&paton\n\nMix @*flour{200g}.\n",
 		});
 

@@ -5,7 +5,8 @@ import { generateShoppingList } from "./shopping";
 import { KITCHEN_VERSION } from "./version";
 import { RecipeRegistry } from "./registry";
 import type { RecipeAST } from "@gram-lang/parser";
-import type { CompilationResult, Usage } from "./types";
+import type { CompilationResult, ProcessedSection, Usage } from "./types";
+import { pushWarning, WarningCode } from "./warnings";
 
 import type { z } from "zod";
 import { CompilerOptionsSchema } from "./schemas";
@@ -30,6 +31,8 @@ export function compile(
 	);
 	const sections = resultPayload.sections;
 
+	keepOneBakersReference(sections, registry);
+
 	const shopping_list = generateShoppingList(sections, registry, options);
 
 	const globalCookware: Usage[] = [];
@@ -37,20 +40,6 @@ export function compile(
 		sec.cookware.forEach((cw) => {
 			if (!cw.modifiers?.includes("reference")) {
 				globalCookware.push(cw);
-			}
-		});
-	});
-
-	let bakersRefFound = false;
-	sections.forEach((sec) => {
-		sec.ingredients.forEach((ing) => {
-			if (ing.modifiers?.includes("bakers_percentage")) {
-				if (bakersRefFound) {
-					throw new Error(
-						"MULTIPLE_BAKERS_PERCENTAGE: Only one ingredient can be marked with the baker's percentage (*) modifier in a recipe.",
-					);
-				}
-				bakersRefFound = true;
 			}
 		});
 	});
@@ -102,4 +91,36 @@ export function compile(
 	// cleanObject only prunes null/undefined fields — the shape stays
 	// CompilationResult, just with those keys absent instead of null.
 	return cleanObject(scaled) as CompilationResult;
+}
+
+/**
+ * A recipe has one baker's-percentage base (`*`). The first ingredient
+ * marked keeps it; another ingredient marked too loses its `*` with a
+ * MULTIPLE_BAKERS_PERCENTAGE warning, before the shopping list carries the
+ * marks on, so the analyzer finds a single base. The same ingredient marked
+ * again is the same base: nothing to say.
+ */
+function keepOneBakersReference(
+	sections: ProcessedSection[],
+	registry: RecipeRegistry,
+): void {
+	let referenceId: string | null = null;
+	const warned = new Set<string>();
+	for (const sec of sections) {
+		for (const ing of sec.ingredients) {
+			if (!ing.modifiers?.includes("bakers_percentage")) continue;
+			if (referenceId === null || referenceId === ing.id) {
+				referenceId = ing.id;
+				continue;
+			}
+			ing.modifiers = ing.modifiers.filter((m) => m !== "bakers_percentage");
+			if (ing.modifiers.length === 0) delete ing.modifiers;
+			if (warned.has(ing.id)) continue;
+			warned.add(ing.id);
+			pushWarning(registry, WarningCode.MULTIPLE_BAKERS_PERCENTAGE, {
+				item: ing.name ?? ing.id,
+				reference: registry.ingredients.get(referenceId)?.name ?? referenceId,
+			});
+		}
+	}
 }
