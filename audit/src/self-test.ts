@@ -1,19 +1,22 @@
 import { getAST } from "@gram-lang/parser";
-import { extractSelfTestSnippets } from "./extract/self-test-cases";
 import { checkConstructVocabulary, type TrustedVocabulary } from "./checks/construct-vocabulary";
 import { checkFormatDiff } from "./checks/format-diff";
 import { checkWarnings } from "./checks/warnings";
+import type { CorpusParts } from "./corpus";
+import { extractSelfTestSnippets } from "./extract/self-test-cases";
 import type { Finding } from "./types";
 
 // Runs checks 1-4 against every ai-generation-notes ❌/✅ pair. This
 // validates the AUDIT TOOL's own coverage, not new content: a ❌ example that
 // trips zero checks is a gap in the tool (it can't catch a known mistake); a
 // ✅ example that trips any check is a false positive on doc-sanctioned Gram.
-export function runSelfTest(trusted: TrustedVocabulary): {
+export function runSelfTest(
+	trusted: TrustedVocabulary,
+	{ bad, good, staleness }: CorpusParts["selfTest"] = extractSelfTestSnippets(),
+): {
 	findings: Finding[];
 	staleness: string | null;
 } {
-	const { bad, good, staleness } = extractSelfTestSnippets();
 	const findings: Finding[] = [];
 
 	for (const snippet of bad) {

@@ -1,0 +1,11 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`createRng produces a frozen sequence for a given seed 1`] = `
+[
+  780544,
+  78839,
+  356760,
+  892041,
+  457148,
+]
+`;
