@@ -885,3 +885,54 @@ describe("blank lines with nothing after them", () => {
 		expect(getAST("Mix.\n\nBake.\n\n\n").children).toHaveLength(2);
 	});
 });
+
+// #200: the parser and the formatter share one definition of a blank: a
+// space or a tab, and a line break is LF, CRLF or a lone CR. A line holding
+// only blanks ends a step; any other character (a no-break space, a
+// mid-file U+FEFF) is text.
+describe("blanks and line breaks (#200)", () => {
+	const stepCount = (source: string) => getAST(source).children.length;
+	const texts = (source: string) =>
+		(getAST(source).children[0] as any).children.map((c: any) => c.value);
+
+	for (const blank of [" ", "\t", " \t "]) {
+		it(`ends a step at a line of ${JSON.stringify(blank)}`, () => {
+			expect(stepCount(`Mix.\n${blank}\nBake.`)).toBe(2);
+		});
+	}
+
+	it("ends a step at a line of blanks inside a section, and after a header", () => {
+		const [section] = getAST("## Dough\n \nMix.\n\t\n \nBake.\n  ").children;
+		expect((section as any).children).toHaveLength(2);
+	});
+
+	for (const char of ["\u00a0", "\u3000", "\ufeff"]) {
+		it(`keeps a line of ${JSON.stringify(char)} inside its step`, () => {
+			expect(stepCount(`Mix.\n${char}\nBake.`)).toBe(1);
+		});
+	}
+
+	it("reads a lone CR as a line break", () => {
+		expect(texts("Mix\rwell.")).toEqual(["Mix", " ", "well."]);
+		expect(stepCount("Mix.\r\rBake.")).toBe(2);
+		expect(texts("Mix.\r")).toEqual(["Mix."]);
+	});
+
+	it("reads CRLF like LF", () => {
+		expect(stepCount("Mix.\r\n\r\nBake.\r\n")).toBe(2);
+		expect(texts("Mix\r\nwell.")).toEqual(["Mix", " ", "well."]);
+	});
+
+	it("drops the blanks ending a line of a step", () => {
+		expect(texts("Mix \t\nwell. ")).toEqual(["Mix", " ", "well."]);
+	});
+
+	it("skips a byte order mark opening the file", () => {
+		const ast = getAST("\ufeff## Dough\n\nMix.");
+		expect(ast.children).toHaveLength(1);
+		expect(ast.children[0]).toMatchObject({ type: ASTNodeType.Section });
+		expect(getAST("\ufeff---\ntitle: Bread\n---\nMix.").meta).toEqual({
+			title: "Bread",
+		});
+	});
+});

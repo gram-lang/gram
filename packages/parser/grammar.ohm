@@ -2,7 +2,9 @@ GRAM {
   // Blank lines may end the document whatever comes before them, nothing
   // included: "\n" (an empty file once formatted), the blank line after a
   // frontmatter or after the last `@use`.
-  Recipe = Frontmatter? UseBlock? Content? nl*
+  // A byte order mark opening the file is an encoding signature, not content:
+  // without `bom?`, `\uFEFF## Prep` read its header as a step.
+  Recipe = bom? Frontmatter? UseBlock? Content? nl*
 
   Content =
     | (nl* Block)* (nl* Section)+      -- explicit
@@ -45,8 +47,8 @@ GRAM {
 
   Section = header Block*
   header =
-      | "##" sp+ title headerExtension? sp* (nl+ | end)      -- ok
-      | "##" sp+ title headerExtension sp* headerTrailing (nl+ | end) -- trailing
+      | "##" sp+ title headerExtension? sp* (lineEnd | end)      -- ok
+      | "##" sp+ title headerExtension sp* headerTrailing (lineEnd | end) -- trailing
   // Text left after a header's `~{...}` / `->&name` (most often the second
   // word of a multi-word intermediate written without `{}`). Without this
   // branch the whole `##` line silently fell back to a step: the section
@@ -65,7 +67,14 @@ GRAM {
     | Comment nl*       -- comment
     | (~header step)    -- step
   
-  step = startAction? line (nl line)* (nl+ | end)
+  // A line holding only blanks (`sp`) is a blank line, so it ends the step
+  // just like an empty one: the formatter strips those blanks (rule 10), and
+  // reading the line as more step text made formatting split the step.
+  step = startAction? line (nl ~blankLine line)* (lineEnd | end)
+  blankLine = sp* (nl | end)
+  // A line break and the blank lines after it, blanks included: inside a
+  // section nothing between two blocks skips them (`Block*`).
+  lineEnd = nl (sp* nl)*
   startAction = "[" (~"]" any)+ "]" sp*
   line = stepContent+
   stepContent =
@@ -295,7 +304,13 @@ GRAM {
   // Stricter than syntaxChar: used to detect where an element starts within free text.
   elementStart = "@" | "#" | "~" | "^" | "={" | "//" | "/*" | "->&" | "&"
   
-  nl = "\r"? "\n"
+  // The blank characters of Gram are exactly these. A line break is LF, CRLF
+  // or a lone CR (old Mac files; the editor counts it as one too), and a
+  // blank is a space or a tab: no other Unicode space (a no-break space is
+  // French typography, a mid-file U+FEFF a character), so the formatter may
+  // only ever strip `sp` and line breaks (packages/format, rules 10 and 12).
+  nl = "\r\n" | "\n" | "\r"
   sp = " " | "\t"
   space := sp
+  bom = "\uFEFF"
 }

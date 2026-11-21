@@ -71,42 +71,54 @@ export function summarizeChanges(changes: FormatterChanges): string {
 	return parts.join(" · ");
 }
 
+/**
+ * Gram's blanks, the only characters the formatter ever strips: a space or a
+ * tab, as the grammar's `sp` rule says (`packages/parser/grammar.ohm`). Never
+ * `trim()`/`trimEnd()`, which also strip a no-break space, U+3000 or U+FEFF:
+ * the parser reads those as text, so a line holding only them is no blank
+ * line, and stripping them split its step in two (#200).
+ */
+const TRAILING_BLANKS = /[ \t]+$/;
+const LEADING_BLANKS = /^[ \t]+/;
+
+function trimBlanks(text: string): string {
+	return text.replace(LEADING_BLANKS, "").replace(TRAILING_BLANKS, "");
+}
+
+/** A line break, as the grammar's `nl` rule says: LF, CRLF or a lone CR. */
+const LINE_BREAK = /\r\n|\r|\n/g;
+
 // Splits `---\n...\n---\n` frontmatter from the recipe body. First line is
-// exactly "---", closed by the next line that is exactly "---". Character
-// slicing (not a lines-array rebuild) guarantees `frontmatter + body ===
-// source` always, with no reconstruction edge cases.
+// exactly "---" (after a byte order mark the parser skips), closed by the
+// next line that is exactly "---", trailing blanks aside. Character slicing
+// (not a lines-array rebuild) guarantees `frontmatter + body === source`
+// always, with no reconstruction edge cases.
 function splitFrontmatter(source: string): {
 	frontmatter: string;
 	body: string;
 } {
-	const firstLineEnd = source.indexOf("\n");
-	const firstLine =
-		firstLineEnd === -1 ? source : source.slice(0, firstLineEnd);
-	if (firstLineEnd === -1 || firstLine.trimEnd() !== "---") {
-		return { frontmatter: "", body: source };
-	}
-
-	let cursor = firstLineEnd + 1;
-	while (cursor <= source.length) {
-		const nextLineEnd = source.indexOf("\n", cursor);
-		const line =
-			nextLineEnd === -1
-				? source.slice(cursor)
-				: source.slice(cursor, nextLineEnd);
-		if (line.trimEnd() === "---") {
-			const boundary = nextLineEnd === -1 ? source.length : nextLineEnd + 1;
-			return {
-				frontmatter: source.slice(0, boundary),
-				body: source.slice(boundary),
-			};
+	const none = { frontmatter: "", body: source };
+	const lineBreak = new RegExp(LINE_BREAK);
+	let start = 0;
+	let first = true;
+	for (;;) {
+		const match = lineBreak.exec(source);
+		const end = match ? match.index : source.length;
+		const next = match ? end + match[0].length : source.length;
+		let line = source.slice(start, end).replace(TRAILING_BLANKS, "");
+		if (first) line = line.replace(/^\uFEFF/, "");
+		const isFence = line === "---";
+		if (first) {
+			if (!match || !isFence) return none;
+			first = false;
+		} else if (isFence) {
+			return { frontmatter: source.slice(0, next), body: source.slice(next) };
 		}
-		if (nextLineEnd === -1) break;
-		cursor = nextLineEnd + 1;
+		// No closing "---" found: not well-formed frontmatter, so don't
+		// swallow the rest of the file into an unterminated block.
+		if (!match) return none;
+		start = next;
 	}
-
-	// No closing "---" found: not well-formed frontmatter, so don't swallow
-	// the rest of the file into an unterminated block.
-	return { frontmatter: "", body: source };
 }
 
 /** An operator between two terms of a sum, once spaced (` + `, ` - `). */
@@ -191,8 +203,8 @@ const isCheckpoint = (body: string, offset: number) =>
  */
 function spaceSumOperators(inner: string): string {
 	return inner
-		.replace(/(?<=[\p{L}\d%.])\s*\+\s*(?=[\d\p{No}])/gu, " + ")
-		.replace(/(?<=[\p{L}%])\s*-\s*(?=[\d\p{No}])/gu, " - ");
+		.replace(/(?<=[\p{L}\d%.])[ \t]*\+[ \t]*(?=[\d\p{No}])/gu, " + ")
+		.replace(/(?<=[\p{L}%])[ \t]*-[ \t]*(?=[\d\p{No}])/gu, " - ");
 }
 
 /**
@@ -239,7 +251,8 @@ export function formatGram(source: string): {
 		return lower;
 	});
 
-	// No rule below crosses a line break: a line break is syntax in gram (it
+	// No rule below crosses a line break (LF, CRLF or a lone CR, as for the
+	// parser): a line break is syntax in gram (it
 	// ends a header, and a blank line ends a step), so `@flour` followed by
 	// `{200 g}` on the next line is an ingredient with no amount, then text.
 	// Joining them would give flour an amount; trimming a `{` whose `}` is
@@ -252,8 +265,8 @@ export function formatGram(source: string): {
 	});
 
 	// Rule 3: Trim spaces inside braces ({ 10g } → {10g})
-	body = body.replace(/\{([^{}\n]*)\}/g, (_, inner) => {
-		const trimmed = inner.trim();
+	body = body.replace(/\{([^{}\r\n]*)\}/g, (_, inner) => {
+		const trimmed = trimBlanks(inner);
 		if (trimmed !== inner) changes.spacesInsideBraces++;
 		return `{${trimmed}}`;
 	});
@@ -262,9 +275,9 @@ export function formatGram(source: string): {
 	// Runs before rule 4, whose patterns allow no space before the unit: in
 	// the other order `{160.0 °C}` only became `{160.0°C}`, and a second run
 	// was needed to drop the zero.
-	body = body.replace(/\{([^{}\n]*)\}/g, (match, inner, offset) => {
+	body = body.replace(/\{([^{}\r\n]*)\}/g, (match, inner, offset) => {
 		if (isCheckpoint(body, offset)) return match;
-		const fixed = inner.replace(/(\d+)\s+°/g, (_m: string, n: string) => {
+		const fixed = inner.replace(/(\d+)[ \t]+°/g, (_m: string, n: string) => {
 			changes.temperatureSpacing++;
 			return `${n}°`;
 		});
@@ -275,7 +288,7 @@ export function formatGram(source: string): {
 	// braces ({500.0g} → {500g}, {1.50 kg} → {1.5 kg}), whatever follows it:
 	// a unit, a range's other bound ({1.50-2.50 cup}), a sum's next term, a
 	// ratio's slash or a timer's unit (~{1.50 h}). See `trimTrailingZeros`.
-	body = body.replace(/\{([^{}\n]*)\}/g, (match, inner: string, offset) => {
+	body = body.replace(/\{([^{}\r\n]*)\}/g, (match, inner: string, offset) => {
 		if (isCheckpoint(body, offset)) return match;
 		const { text, count } = trimTrailingZeros(inner);
 		if (count === 0) return match;
@@ -286,7 +299,7 @@ export function formatGram(source: string): {
 	// Rule 4b: A sum of quantities, in an ingredient's braces only (`@…{`,
 	// `<@…{`, `&…{`; never a timer's `~{1h30-2h}` nor a temperature's):
 	// one space around each operator (rule 4 has trimmed its terms).
-	body = body.replace(/\{([^{}\n]*)\}/g, (match, inner: string, offset) => {
+	body = body.replace(/\{([^{}\r\n]*)\}/g, (match, inner: string, offset) => {
 		if (braceOwner(body, offset) !== "ingredient") return match;
 		// A quantity relative to a target (`5% @&chocolat-70`) is never a sum:
 		// spacing the `-` of its target's name would rename the target.
@@ -306,7 +319,7 @@ export function formatGram(source: string): {
 
 	// Rule 7 (from language-server): normalize ->&name {} → ->&name{}
 	// (handles single and multi-word names)
-	body = body.replace(/->&([^{\n]+?)[ \t]+\{\}/g, (_, name) => {
+	body = body.replace(/->&([^{\r\n]+?)[ \t]+\{\}/g, (_, name) => {
 		changes.arrowDeclarationSpacing++;
 		return `->&${name}{}`;
 	});
@@ -339,15 +352,12 @@ export function formatGram(source: string): {
 	// the recombined content rather than `body` alone.
 	let content = frontmatter + body;
 
-	// Rule 10: Trim trailing whitespace line by line
-	content = content
-		.split("\n")
-		.map((line) => {
-			const trimmed = line.trimEnd();
-			if (trimmed !== line) changes.trailingWhitespace++;
-			return trimmed;
-		})
-		.join("\n");
+	// Rule 10: Trim trailing blanks line by line, and write every line break
+	// as LF (a CRLF's or a lone CR's file comes out with LF only).
+	content = content.replace(/[ \t]*(?:\r\n|\r|\n)|[ \t]+$/g, (match) => {
+		if (match !== "\n") changes.trailingWhitespace++;
+		return /[\r\n]$/.test(match) ? "\n" : "";
+	});
 
 	// Rule 11: Collapse 3+ consecutive newlines to 2 (exactly one blank line,
 	// everywhere — steps, sections, headers alike). Gram's canonical style is
@@ -369,8 +379,9 @@ export function formatGram(source: string): {
 		return "\n\n";
 	});
 
-	// Rule 12: Ensure single newline at EOF
-	const trimmedEnd = content.trimEnd();
+	// Rule 12: Ensure single newline at EOF (rule 10 has left no blank at the
+	// end of a line, nor any line break but LF)
+	const trimmedEnd = content.replace(/\n+$/, "");
 	const withEof = `${trimmedEnd}\n`;
 	if (withEof !== content) changes.eofNewline = true;
 	content = withEof;

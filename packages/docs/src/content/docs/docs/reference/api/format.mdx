@@ -95,9 +95,9 @@ Rules 1 to 9 apply to the recipe body only: the frontmatter is plain YAML and is
     - **9. Tabulations** (`tabsToSpaces`): a tab becomes four spaces.
   </Card>
   <Card title="Whole file" icon="document">
-    - **10. Trailing whitespace** (`trailingWhitespace`).
+    - **10. Trailing whitespace** (`trailingWhitespace`): the spaces and tabs ending a line, and only those, since the parser treats no other character as blank (a no-break space stays). Every line break (CRLF, or a lone CR) becomes LF.
     - **11. Blank lines** (`consecutiveBlankLines`): two or more blank lines collapse to one. A missing blank line is never added: between two lines it would split one step in two.
-    - **12. Final newline** (`eofNewline`).
+    - **12. Final newline** (`eofNewline`): the file ends with exactly one LF, after the trailing blank lines are removed. A byte order mark at the start of the file is kept.
   </Card>
 </CardGrid>
 

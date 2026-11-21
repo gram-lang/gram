@@ -1,0 +1,235 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Blank characters"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 50,
+                "end": 54
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 61,
+                  "end": 66
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 54,
+                "end": 67
+              }
+            },
+            {
+              "type": "Text",
+              "value": " "
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 72,
+                "end": 76
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 300,
+                  "text": "300"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 83,
+                  "end": 88
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 76,
+                "end": 89
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 89,
+                "end": 90
+              }
+            }
+          ],
+          "loc": {
+            "start": 50,
+            "end": 98
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Knead for ",
+              "loc": {
+                "start": 98,
+                "end": 108
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "10 min",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 10,
+                  "text": "10"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 110,
+                  "end": 116
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 108,
+                "end": 117
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 117,
+                "end": 118
+              }
+            },
+            {
+              "type": "Text",
+              "value": " "
+            },
+            {
+              "type": "Text",
+              "value": " ",
+              "loc": {
+                "start": 119,
+                "end": 120
+              }
+            },
+            {
+              "type": "Text",
+              "value": " "
+            },
+            {
+              "type": "Text",
+              "value": "Rest the dough.",
+              "loc": {
+                "start": 121,
+                "end": 136
+              }
+            }
+          ],
+          "loc": {
+            "start": 98,
+            "end": 138
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake for ",
+              "loc": {
+                "start": 138,
+                "end": 147
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "30 min",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 30,
+                  "text": "30"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 149,
+                  "end": 155
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 147,
+                "end": 156
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 156,
+                "end": 157
+              }
+            }
+          ],
+          "loc": {
+            "start": 138,
+            "end": 158
+          }
+        }
+      ],
+      "loc": {
+        "start": 38,
+        "end": 158
+      }
+    }
+  ]
+}
