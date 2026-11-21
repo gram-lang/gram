@@ -64,15 +64,13 @@ const NOISE_FLOOR_MS = 20;
 const KNOWN_SLOW: Record<string, { issue: string; scale?: number }> = {
 	// formatGram rule 3 rescans to the end of the input from every unclosed `{`.
 	"nested opening braces": {
-		issue:
-			"pending — F4: formatGram brace rules are quadratic on unclosed braces",
+		issue: "https://git.gram-lang.org/gram-lang/gram/issues/202",
 		scale: 1 / 4,
 	},
 	// The compound-quantity action reads `ops.children[i]` in a loop, and ohm
 	// rebuilds `children` on every access.
 	"ranges and sums in series": {
-		issue:
-			"pending — F5: parser builds the AST of a sum of quantities in quadratic time",
+		issue: "https://git.gram-lang.org/gram-lang/gram/issues/203",
 	},
 };
 
