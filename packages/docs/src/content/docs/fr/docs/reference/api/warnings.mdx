@@ -139,6 +139,9 @@ L'ingrédient marqué comme ancre du % boulanger (via le modificateur `*` ou l'o
 ### `NO_BAKERS_REFERENCE`
 Le mode *Baker's Math* a été explicitement requis (via `enableBakersMath` avec un modificateur `*` nu, ou via un identifiant `bakersReference`), mais aucun ingrédient correspondant n'a été trouvé. **Correction** : ajoutez le modificateur `*` sur un ingrédient, ou corrigez l'ID passé à `bakersReference`.
 
+### `MULTIPLE_BAKERS_PERCENTAGE`
+<Since v="1.5.1" /> Plusieurs ingrédients sont marqués comme base des pourcentages du boulanger (`@*farine{500 g}` et `@*seigle{100 g}`). Le premier marqué reste la base, les autres perdent leur `*`, et le reste de la recette se compile normalement. Le même ingrédient marqué deux fois reste une seule base : rien n'est signalé. **Correction** : ne gardez le `*` que sur un seul ingrédient.
+
 ### `COMPOSITE_PARENT_CONFLICT`
 
 Un nom court d'ingrédient composite (ex : `@jus`) est extrait de deux parents différents dans la même recette (ex : `<@citron` dans une étape et `<@orange` dans une autre). **Correction** : utilisez le nom complet de l'enfant (ex : `@jus de citron` et `@jus d'orange`) pour éviter les collisions d'identité dans la base de données.
