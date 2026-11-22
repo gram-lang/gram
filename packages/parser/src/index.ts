@@ -951,7 +951,7 @@ semantics.addOperation("toAST", {
 
 	// --- Other Elements ---
 
-	Reference_full(_amp, _name, _qty): ReferenceAST {
+	reference_full(_amp, _name, _qty): ReferenceAST {
 		return {
 			type: ASTNodeType.Reference,
 			name: _name.sourceString,
@@ -960,7 +960,7 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	Reference_malformed(_amp, name, braces) {
+	reference_malformed(_amp, name, braces) {
 		throwMalformedQuantity(
 			"reference",
 			clean(name.sourceString),
@@ -969,7 +969,7 @@ semantics.addOperation("toAST", {
 		);
 	},
 
-	Reference_bare(_amp, _name): ReferenceAST {
+	reference_bare(_amp, _name): ReferenceAST {
 		return {
 			type: ASTNodeType.Reference,
 			name: _name.sourceString,

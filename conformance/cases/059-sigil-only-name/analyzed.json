@@ -1,0 +1,418 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "dough": {
+        "id": "dough",
+        "name": "dough"
+      }
+    },
+    "cookware": {
+      "bowl": {
+        "id": "bowl",
+        "name": "bowl"
+      }
+    }
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "dough",
+      "name": "dough",
+      "_usageIds": [
+        "3",
+        "4"
+      ],
+      "qty": 1
+    }
+  ],
+  "cookware": [
+    {
+      "id": "bowl",
+      "_usageId": "2",
+      "fixed": false
+    }
+  ],
+  "sections": [
+    {
+      "title": "Prep",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "id": "dough",
+          "_usageId": "3",
+          "qty": 1
+        },
+        {
+          "type": "reference",
+          "id": "dough",
+          "name": "dough",
+          "_usageId": "4"
+        }
+      ],
+      "cookware": [
+        {
+          "id": "bowl",
+          "_usageId": "2",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "in a ",
+            {
+              "id": "bowl",
+              "_usageId": "2",
+              "fixed": false
+            },
+            "and stir ",
+            "#",
+            "#",
+            " times, then ",
+            "@",
+            "@",
+            " again."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Season: salt ",
+            "&",
+            " pepper, rock ",
+            "&",
+            " roll."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Rest ",
+            {
+              "id": "dough",
+              "_usageId": "3",
+              "qty": 1
+            },
+            "<",
+            "@",
+            "@",
+            " under a ",
+            "#",
+            {
+              "type": "timer",
+              "raw": "1 min",
+              "quantity": {
+                "type": "single",
+                "value": 1,
+                "text": "1"
+              },
+              "unit": "min",
+              "minutes": 1
+            },
+            "cloth, then add ",
+            {
+              "type": "reference",
+              "id": "dough",
+              "name": "dough",
+              "_usageId": "4"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 5,
+            "activeDuration": 1
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "##",
+            "#"
+          ],
+          "timings": {
+            "start": 5,
+            "end": 7,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 200,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "dough"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"dough\" — omitted from nutritional totals."
+    }
+  ],
+  "metrics": {
+    "totalTime": 10,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Prep",
+        "duration": 7
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 7,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Prep",
+        "duration": 7
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 2
+      },
+      {
+        "label": "cookware_overhead",
+        "duration": 1
+      }
+    ],
+    "totalMass": 200,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "dough"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"dough\" — omitted from nutritional totals."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 3,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 3
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          },
+          {
+            "kind": "gather",
+            "target": "cookware",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+        "duration": {
+          "nominal": 1
+        },
+        "consumes": [
+          "dough"
+        ],
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s0.3",
+        "kind": "step",
+        "section": 0,
+        "step": 3,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.2"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 10,
+    "activeTime": 7,
+    "preparationTime": 3,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 3
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 3,
+        "end": 5
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 5,
+        "end": 7
+      },
+      {
+        "kind": "step",
+        "task": "s0.2",
+        "section": 0,
+        "step": 2,
+        "start": 7,
+        "end": 8
+      },
+      {
+        "kind": "step",
+        "task": "s0.3",
+        "section": 0,
+        "step": 3,
+        "start": 8,
+        "end": 10
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 10,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}
