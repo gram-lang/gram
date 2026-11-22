@@ -74,10 +74,11 @@ describe("formatGram", () => {
 		expect(changes.temperatureSpacing).toBe(1);
 	});
 
-	it("handles multiple temperatures in the same brace", () => {
-		const { content, changes } = formatGram("Range ~temp{180 °C-200 °F}.\n");
-		expect(content).toBe("Range ~temp{180°C-200°F}.\n");
-		expect(changes.temperatureSpacing).toBe(2);
+	it("leaves braces the parser reads as text alone (#213)", () => {
+		// A timer's text quantity: the compiler shows it as written.
+		const result = formatGram("Range ~temp{180 °C-200 °F}.\n");
+		expect(result.content).toBe("Range ~temp{180 °C-200 °F}.\n");
+		expect(hasChanges(result.changes)).toBe(false);
 	});
 
 	// Rules 6-9 below came from the language-server's formatter (Phase 3bis
@@ -675,5 +676,77 @@ describe("rules 1-5 touch elements only (#201)", () => {
 			formatGram("##Dough ~{ -1.0 d } extra\n\nAdd @Flour{ 1.0 }.\t \n")
 				.content,
 		).toBe("## Dough ~{ -1.0 d } extra\n\nAdd @Flour{ 1.0 }.\n");
+	});
+});
+
+// #213: rules 4 and 5 touch the numbers the parser reads, never a unit's
+// text nor a quantity read as text, which the compiler keeps as written.
+describe("rules 4 and 5 touch numbers only (#213)", () => {
+	for (const source of [
+		"Add @e{%1.0}.\n",
+		"Add @egg{%1.50}.\n",
+		"Heat ^{1.0\ufeff}.\n",
+		"Heat ^{37.\ufeff50 °C}.\n",
+		"Heat ^{160.0 °C/320.0 °F}.\n",
+		"Wait ~{1.0\ufeff min}.\n",
+	]) {
+		it(`leaves ${JSON.stringify(source)} as written`, () => {
+			const result = formatGram(source);
+			expect(result.content).toBe(source);
+			expect(hasChanges(result.changes)).toBe(false);
+		});
+	}
+
+	it("trims a number's zeros, not the unit text after it", () => {
+		expect(formatGram("Add @e{1.50-2.0 %3.0}.\n").content).toBe(
+			"Add @e{1.5-2 %3.0}.\n",
+		);
+	});
+
+	it("still trims every number the parser reads", () => {
+		expect(
+			formatGram(
+				"## T ~{-1.50 h}\n\nAdd @b{100 g}, @a{1.50 / 100.0 g @&b}, @c{5.0% @&b}, @d{1.0 g + 2.50 g} for ~{15.0 min / 500.0 g @&b} at ^{160.0-180.0 °C}.\n",
+			).content,
+		).toBe(
+			"## T ~{-1.5 h}\n\nAdd @b{100 g}, @a{1.5 / 100 g @&b}, @c{5% @&b}, @d{1 g + 2.5 g} for ~{15 min / 500 g @&b} at ^{160-180°C}.\n",
+		);
+	});
+});
+
+// #218: rules 9-11 (tabs, trailing blanks, blank lines) leave alone the
+// text the compiler keeps as written: an element, a step's action, a
+// comment, a section title, a declaration.
+describe("rules 9-11 leave an element's text alone (#218)", () => {
+	for (const source of [
+		"[a\tb] x\n",
+		"Cook ={a\tb}.\n",
+		"x /* a\tb */ y\n",
+		"x // a\tb\n",
+		"x /* a  \nb */ y\n",
+		"x /* a\n\n\n\nb */ y\n",
+		"Add @a\tb{1 g}.\n",
+		"Add &a\tb{1 g}.\n",
+		"Use #a\tb{}.\n",
+		"Add @a(b\tc).\n",
+		"## a\tb\n\nStep.\n",
+		"## T ->&a\tb{}\n\nGo.\n",
+	]) {
+		it(`leaves ${JSON.stringify(source)} as written`, () => {
+			const result = formatGram(source);
+			expect(result.content).toBe(source);
+			expect(hasChanges(result.changes)).toBe(false);
+		});
+	}
+
+	it("still cleans the blanks around them", () => {
+		expect(
+			formatGram("\t[a\tb]\tAdd @a\tb{1 g} \t\n\n\n\nx /* a  \nb */ \t\n")
+				.content,
+		).toBe("    [a\tb]    Add @a\tb{1 g}\n\nx /* a  \nb */\n");
+	});
+
+	it("writes a comment's CRLF as LF", () => {
+		expect(formatGram("x /* a\r\nb */ y\r\n").content).toBe("x /* a\nb */ y\n");
 	});
 });
