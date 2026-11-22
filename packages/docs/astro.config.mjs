@@ -37,7 +37,15 @@ export default defineConfig({
     '/docs/explanation/mise-en-place-and-planning': '/docs/explanation/planning',
     '/docs/explanation/planning-in-real-time': '/docs/explanation/planning',
     '/fr/docs/explanation/mise-en-place-and-planning': '/fr/docs/explanation/planning',
-    '/fr/docs/explanation/planning-in-real-time': '/fr/docs/explanation/planning'
+    '/fr/docs/explanation/planning-in-real-time': '/fr/docs/explanation/planning',
+    '/blog/2026-08-07-release-101': '/changelog/#101---2026-08-07',
+    '/blog/2026-08-25-release-121': '/changelog/#121---2026-08-25',
+    '/blog/2026-11-14-release-141': '/changelog/#141---2026-11-14',
+    '/blog/2026-11-17-release-142': '/changelog/#142---2026-11-17',
+    '/fr/blog/2026-08-07-release-101': '/fr/changelog/#101---2026-08-07',
+    '/fr/blog/2026-08-25-release-121': '/fr/changelog/#121---2026-08-25',
+    '/fr/blog/2026-11-14-release-141': '/fr/changelog/#141---2026-11-14',
+    '/fr/blog/2026-11-17-release-142': '/fr/changelog/#142---2026-11-17'
   },
   devToolbar: {
     enabled: false
