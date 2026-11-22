@@ -608,7 +608,7 @@ To declare an `@ingredient`, use the `@` symbol. If the `@ingredient` name conta
 ```
 
 :::note
-`@ingredient` names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `:`, `(`, `)`, `<`, `|`).
+`@ingredient` names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `:`, `(`, `)`, `<`, `|`). A name needs at least one character other than the element symbols `@`, `#`, `~`, `^` and `&`: `@@` or `##` stay plain text.
 :::
 
 ### Units
@@ -1502,7 +1502,7 @@ When placed at the end of a `## Section` title, the variable captures the cumula
 
 ## Using a variable
 
-To use a previously declared variable, prefix its name with `&`:
+To use a previously declared variable, prefix its name with `&`, with no space in between: an `&` followed by a space (`salt & pepper`) stays plain text.
 
 ```gram
 [Line] Use the &puff pastry{} to line the tart tin.
