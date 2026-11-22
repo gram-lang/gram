@@ -354,7 +354,7 @@
           "nominal": 0
         },
         "consumes": [
-          "pate$petrissage"
+          "pate-petrissage"
         ],
         "after": [
           "s0.0"
@@ -413,7 +413,7 @@
     "sections": [
       {
         "day": 1,
-        "intermediate": "pate$petrissage"
+        "intermediate": "pate-petrissage"
       },
       {
         "day": 1,

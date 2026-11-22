@@ -375,7 +375,7 @@
           "nominal": 2
         },
         "produces": [
-          "tofu$marinated$pressed"
+          "tofu-marinated-pressed"
         ],
         "after": []
       },
@@ -409,7 +409,7 @@
           "nominal": 2
         },
         "consumes": [
-          "tofu$marinated$pressed"
+          "tofu-marinated-pressed"
         ],
         "after": [
           "s0.0"
@@ -445,7 +445,7 @@
           "nominal": 2
         },
         "consumes": [
-          "tofu$marinated"
+          "tofu-marinated"
         ],
         "after": [
           "s1.0"
@@ -474,7 +474,7 @@
       {
         "day": 1,
         "deadline": 1440,
-        "intermediate": "tofu$marinated"
+        "intermediate": "tofu-marinated"
       },
       {
         "day": 0,

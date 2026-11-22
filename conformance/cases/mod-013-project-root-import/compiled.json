@@ -325,7 +325,7 @@
           "nominal": 2
         },
         "consumes": [
-          "mid$pate"
+          "mid-pate"
         ],
         "after": [
           "s0.0"
@@ -371,7 +371,7 @@
     "sections": [
       {
         "day": 0,
-        "intermediate": "mid$pate"
+        "intermediate": "mid-pate"
       },
       {
         "day": 0,

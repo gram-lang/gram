@@ -403,7 +403,7 @@
           "nominal": 2
         },
         "consumes": [
-          "meringue$blancs"
+          "meringue-blancs"
         ],
         "after": [
           "s0.0"
@@ -449,7 +449,7 @@
     "sections": [
       {
         "day": 0,
-        "intermediate": "meringue$blancs"
+        "intermediate": "meringue-blancs"
       },
       {
         "day": 0,

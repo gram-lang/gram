@@ -1,17 +1,5 @@
 [
 	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.tasks.tasks[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/208",
-		"example": "&@S"
-	},
-	{
-		"signature": "format-preserves-meaning | compilation differs after formatting at $.sections[].ingredients[]",
-		"invariant": "format-preserves-meaning",
-		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/208",
-		"example": "@l<@N"
-	},
-	{
 		"signature": "format-preserves-meaning | compilation differs after formatting at $.registry.ingredients",
 		"invariant": "format-preserves-meaning",
 		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/213",

@@ -177,7 +177,7 @@ function makersOf(
 	sections.forEach((sec, index) => {
 		const last = factsOf.get(index)?.at(-1);
 		if (sec.intermediate_preparation && last) {
-			makerOf.set(sec.intermediate_preparation, idOf(last));
+			makerOf.set(slugify(sec.intermediate_preparation), idOf(last));
 		}
 	});
 	return makerOf;
@@ -285,7 +285,7 @@ export function buildTaskGraph(
 				day: days[index]!,
 				...(minutes !== undefined && { deadline: Math.abs(minutes) }),
 				...(sec.intermediate_preparation !== undefined && {
-					intermediate: sec.intermediate_preparation,
+					intermediate: slugify(sec.intermediate_preparation),
 				}),
 			};
 		}),

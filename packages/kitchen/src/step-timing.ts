@@ -36,10 +36,12 @@ export function stepTiming(
 
 	for (const token of content) {
 		if (typeof token === "string" || !("type" in token)) continue;
+		// Intermediates link by id, as references resolve: `&Dough` uses what
+		// `->&dough` makes (#208).
 		if (token.type === "reference" && token.name) {
-			consumed.push(token.name);
+			consumed.push(token.id);
 		} else if (token.type === "declaration" && token.name) {
-			produced.push(token.name);
+			produced.push(token.id);
 		} else if (token.type === "timer" && !("id" in token) && token.quantity) {
 			const time = { value: token.quantity, unit: token.unit };
 			const duration = quantityToMinutes(time);
