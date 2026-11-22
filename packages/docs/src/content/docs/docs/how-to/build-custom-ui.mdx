@@ -109,6 +109,10 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
 
    Rendering this in your UI consists of mapping over these arrays within your front-end components.
 
+   :::caution[`_usageId` is internal]
+   `_usageId` links a mention in the steps to its entry in the section's lists. The leading underscore marks it as internal: it may be renumbered whenever the recipe changes and an upcoming version replaces it with a public identifier. Use `id` to recognize an ingredient, and don't store `_usageId`. See [Data formats](/docs/reference/api/data-formats).
+   :::
+
    #### Example: recursive component in React
 
    Here is an implementation illustrating how to render `steps` and their inline tokens with React:
