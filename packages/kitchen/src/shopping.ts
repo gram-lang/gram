@@ -18,10 +18,12 @@ import { detectCycles } from "./graph";
 import { ASTNodeType } from "@gram-lang/parser";
 import {
 	groupTerms,
+	ladderOf,
 	mergeKey,
 	normalizeUnit,
 	type Term,
 	termsTotal,
+	termValueNumber,
 } from "@gram-lang/i18n";
 import type { ProcessedSection, Registry, Usage } from "./types";
 import type { CompilerOptions } from "./core";
@@ -73,17 +75,21 @@ export interface CompositeItem {
 	// Absent while accumulating (built by generateShoppingList's step 5/6
 	// below); always set by the time this leaves generateShoppingList.
 	name?: string;
-	qty: number; // calculated max parent qty
+	qty: number; // calculated max parent qty, in `unit`
 	usage: Partial<Usage>[];
+	/** The unit of `qty`, when the parent is drawn in one (absent: pieces). Since 1.5.2. */
+	unit?: string | null;
+	/**
+	 * Set when the parent is used in several units that do not add up
+	 * (`100 g` and `2`): one composite entry per unit, each with the children
+	 * drawn in that unit, like a plain ingredient's entries. Since 1.5.2.
+	 */
+	multiUnit?: boolean;
 	// Never actually set on a composite — always undefined — but declared so
 	// `scale/engine.ts`'s uniform "is this shopping-list entry scalable?"
 	// checks (shared with ShoppingListItem/Usage) can read them without a cast.
-	// A composite parent's own total is always a valid, unfixed, single-unit
-	// scale target (see engine.ts's findStandardItem).
 	fixed?: boolean;
 	relative?: boolean;
-	multiUnit?: boolean;
-	unit?: string | null;
 	modifiers?: string[];
 	// Set by @gram-lang/analyzer's Baker's Percentage pass, generic over
 	// every shopping-list entry shape — never actually meaningful for a
@@ -164,12 +170,33 @@ export function variablePartsOf(item: Usage): string[] {
  */
 interface CompositeAccumulator {
 	id: string;
-	subUsageMap: Map<string, number>;
+	// What each child draws on the parent, as terms: they only ever hold one
+	// unit, or one ladder (the accumulator's own), so they add up.
+	subTerms: Map<string, Term[]>;
 	usageAccumulator: Map<string, Partial<Usage>>;
 	// Direct (non-composite) usage of the parent ingredient itself (e.g. "3
-	// eggs, 2 used as yolks") — set once the parent's own standardList entry
-	// is folded in, consumed when the accumulator is finalized.
-	directAddQty?: number;
+	// eggs, 2 used as yolks"), in this accumulator's unit — set once the
+	// parent's own standardList entries are folded in.
+	directTerms: Term[];
+}
+
+function newCompositeAccumulator(id: string): CompositeAccumulator {
+	return {
+		id,
+		subTerms: new Map(),
+		usageAccumulator: new Map(),
+		directTerms: [],
+	};
+}
+
+/**
+ * How much `terms` weigh within their unit or ladder, to compare two draws
+ * on one parent: their total, counted in the ladder's smallest step.
+ */
+function drawWeight(terms: Term[]): number {
+	const total = termsTotal(terms);
+	if (!total) return 0;
+	return (termValueNumber(total.qty) ?? 0) * (ladderOf(total.unit)?.size ?? 1);
 }
 
 /**
@@ -195,11 +222,16 @@ export function generateShoppingList(
 	_options?: CompilerOptions,
 ): (ShoppingListItem | CompositeItem | Usage)[] {
 	const listMap = new Map<string, ShoppingListItem>();
+	// The `listMap` key each built standard entry comes from.
+	const keyOfStandard = new Map<ShoppingListItem, string>();
 	// The terms each entry of `listMap` adds up, by the same key: one ladder
 	// (`cup` and `tbsp`), or one unit on no ladder (its spellings merged), so
 	// they always amount to a single number.
 	const termsByKey = new Map<string, Term[]>();
-	const compositeMap = new Map<string, CompositeAccumulator>();
+	// One accumulator per composite parent and per unit (one ladder: `g` and
+	// `kg` together): amounts of a parent only add up within one unit, so
+	// `100 g` and `2` of butter stay two entries, like any other ingredient.
+	const compositeMap = new Map<string, Map<string, CompositeAccumulator>>();
 	const alternatives: Usage[] = [];
 	// The usages whose share of a composite parent is already counted.
 	const sharedParent = new Set<string>();
@@ -226,30 +258,44 @@ export function generateShoppingList(
 		});
 	});
 
+	function compositeGroup(
+		parentId: string,
+		unitKey: string,
+	): CompositeAccumulator {
+		let groups = compositeMap.get(parentId);
+		if (!groups) {
+			groups = new Map();
+			compositeMap.set(parentId, groups);
+		}
+		let comp = groups.get(unitKey);
+		if (!comp) {
+			comp = newCompositeAccumulator(parentId);
+			groups.set(unitKey, comp);
+		}
+		return comp;
+	}
+
 	function addToList(item: Usage) {
 		if (item.composite) {
 			const parentId = slugify(item.composite.parent);
-			if (!compositeMap.has(parentId)) {
-				compositeMap.set(parentId, {
-					id: parentId,
-					subUsageMap: new Map(),
-					usageAccumulator: new Map(),
-				});
-			}
-			const comp = compositeMap.get(parentId)!;
 
-			let declParentQty = 1;
+			// What the child draws on its parent: one piece unless a number
+			// is written (`<@citron`, `<@beurre{une noix}`).
+			let draw: Term[] = [{ value: 1, unit: null }];
 			if (item.composite?.quantity || item.composite?.parts) {
-				const numQ = numericTotal(termsOfComposite(item.composite));
-				if (numQ !== null) declParentQty = numQ;
+				const terms = termsOfComposite(item.composite);
+				if (numericTotal(terms) !== null) draw = terms;
 			}
+			const drawUnit = termsTotal(draw)?.unit ?? null;
+			const comp = compositeGroup(parentId, mergeKey(drawUnit, "ladder"));
 
 			const subId = item.id;
 			// A child split by ladder (`byLadder`) draws on its parent once.
 			if (!item._usageId || !sharedParent.has(item._usageId)) {
 				if (item._usageId) sharedParent.add(item._usageId);
-				const currentParentTotal = comp.subUsageMap.get(subId) || 0;
-				comp.subUsageMap.set(subId, currentParentTotal + declParentQty);
+				const drawn = comp.subTerms.get(subId);
+				if (drawn) drawn.push(...draw);
+				else comp.subTerms.set(subId, [...draw]);
 			}
 
 			// Spellings of one unit (`cup` / `cups`, `c.à.s` / `tbsp`) share an
@@ -340,6 +386,12 @@ export function generateShoppingList(
 	}
 
 	const standardList = [...listMap.entries()].map(([key, item]) => {
+		const res = standardItem(key, item);
+		keyOfStandard.set(res, key);
+		return res;
+	});
+
+	function standardItem(key: string, item: ShoppingListItem): ShoppingListItem {
 		const res: ShoppingListItem = {
 			id: item.id,
 			name: item.name,
@@ -362,7 +414,7 @@ export function generateShoppingList(
 		}
 
 		return res;
-	});
+	}
 
 	// Flag ingredients split across incompatible units (e.g. 500g here, 2 cups
 	// elsewhere): since the grouping key above already includes the unit, each
@@ -381,47 +433,54 @@ export function generateShoppingList(
 
 	standardList.forEach((stdItem) => {
 		if (compositeMap.has(stdItem.id)) {
-			const comp = compositeMap.get(stdItem.id)!;
-
-			let addQty = 0;
-			if (stdItem.qty) {
-				addQty = stdItem.qty;
-			}
-
-			const directUsageKey = `__direct_${stdItem.id}`;
-			comp.usageAccumulator.set(directUsageKey, {
+			// The parent's own use joins the draws in its unit, or opens an
+			// entry of its own when none is drawn in that unit: one per unit,
+			// never one overwriting another.
+			const key = keyOfStandard.get(stdItem) as string;
+			const unit = listMap.get(key)?.unit || null;
+			const comp = compositeGroup(stdItem.id, mergeKey(unit, "ladder"));
+			comp.usageAccumulator.set(`__direct_${key}`, {
 				id: stdItem.id,
 				alias: "Direct Use",
 				qty: stdItem.qty,
 				unit: stdItem.unit,
 			});
-
-			comp.directAddQty = addQty;
+			comp.directTerms.push(...(termsByKey.get(key) ?? []));
 		} else {
 			finalStandardList.push(stdItem);
 		}
 	});
 
-	const compositeList: CompositeItem[] = [...compositeMap.values()].map((c) => {
-		let maxQ = 0;
-		for (const q of c.subUsageMap.values()) {
-			if (q > maxQ) maxQ = q;
-		}
+	const compositeList: CompositeItem[] = [...compositeMap.values()].flatMap(
+		(groups) =>
+			[...groups.values()].map((c) => {
+				// The MAX rule: the largest draw of any child, plus the
+				// parent's direct use, all in one unit.
+				let maxDraw: Term[] = [];
+				let maxWeight = 0;
+				for (const terms of c.subTerms.values()) {
+					const weight = drawWeight(terms);
+					if (weight > maxWeight) {
+						maxWeight = weight;
+						maxDraw = terms;
+					}
+				}
+				const amount = shoppingAmount(
+					termsTotal([...maxDraw, ...c.directTerms]),
+				);
 
-		if (c.directAddQty) {
-			maxQ += c.directAddQty;
-		}
-
-		const parentName = registry.ingredients.get(c.id)?.name || c.id;
-
-		return {
-			type: "composite",
-			id: c.id,
-			name: parentName,
-			qty: maxQ,
-			usage: [...c.usageAccumulator.values()],
-		};
-	});
+				const composite: CompositeItem = {
+					type: "composite",
+					id: c.id,
+					name: registry.ingredients.get(c.id)?.name || c.id,
+					qty: amount.qty,
+					usage: [...c.usageAccumulator.values()],
+				};
+				if (amount.unit) composite.unit = amount.unit;
+				if (groups.size > 1) composite.multiUnit = true;
+				return composite;
+			}),
+	);
 
 	return [...finalStandardList, ...compositeList, ...alternatives];
 }

@@ -1,0 +1,311 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Composite Mixed Units"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Prep",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Melt ",
+              "loc": {
+                "start": 47,
+                "end": 52
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 60,
+                  "end": 65
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 52,
+                "end": 66
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 67,
+                "end": 71
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 79,
+                  "end": 80
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 71,
+                "end": 81
+              }
+            },
+            {
+              "type": "Text",
+              "value": "more.",
+              "loc": {
+                "start": 82,
+                "end": 87
+              }
+            }
+          ],
+          "loc": {
+            "start": 47,
+            "end": 89
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Clarify ",
+              "loc": {
+                "start": 89,
+                "end": 97
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "clarified butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 50,
+                  "text": "50"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 115,
+                  "end": 119
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "butter",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": {
+                    "type": "single",
+                    "value": 120,
+                    "text": "120"
+                  },
+                  "unit": "g",
+                  "fixed": false,
+                  "loc": {
+                    "start": 129,
+                    "end": 134
+                  }
+                },
+                "preparation": null,
+                "loc": {
+                  "start": 120,
+                  "end": 135
+                }
+              },
+              "loc": {
+                "start": 97,
+                "end": 135
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then ",
+              "loc": {
+                "start": 135,
+                "end": 142
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "clarified butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 20,
+                  "text": "20"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 160,
+                  "end": 164
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "butter",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": {
+                    "type": "single",
+                    "value": 2,
+                    "text": "2"
+                  },
+                  "unit": null,
+                  "fixed": false,
+                  "loc": {
+                    "start": 174,
+                    "end": 175
+                  }
+                },
+                "preparation": null,
+                "loc": {
+                  "start": 165,
+                  "end": 176
+                }
+              },
+              "loc": {
+                "start": 142,
+                "end": 176
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 176,
+                "end": 177
+              }
+            }
+          ],
+          "loc": {
+            "start": 89,
+            "end": 179
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Brown ",
+              "loc": {
+                "start": 179,
+                "end": 185
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "brown butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 199,
+                  "end": 200
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "butter",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": "kg",
+                  "fixed": false,
+                  "loc": {
+                    "start": 210,
+                    "end": 214
+                  }
+                },
+                "preparation": null,
+                "loc": {
+                  "start": 201,
+                  "end": 215
+                }
+              },
+              "loc": {
+                "start": 185,
+                "end": 215
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 215,
+                "end": 216
+              }
+            }
+          ],
+          "loc": {
+            "start": 179,
+            "end": 217
+          }
+        }
+      ],
+      "loc": {
+        "start": 38,
+        "end": 217
+      }
+    }
+  ]
+}

@@ -179,6 +179,22 @@ Add @lemon juice{100ml}<@lemon{${juiceQty}}.
 		expect(zest?.toQty).toBe(1.5);
 	});
 
+	it("pairs the entries of a composite parent drawn in two units by unit", () => {
+		// One entry per unit of the parent (since 1.5.2): written in another
+		// order, `50 g` still pairs with `80 g`, and `2` with `2`.
+		const a = compileRecipe(
+			"Add @lemon zest{1}<@lemon{50 g}.\n\nAdd @lemon juice{1}<@lemon{2}.\n",
+		);
+		const b = compileRecipe(
+			"Add @lemon juice{1}<@lemon{2}.\n\nAdd @lemon zest{1}<@lemon{80 g}.\n",
+		);
+
+		const lemon = diffRecipes(a, b).ingredients.filter((d) => d.id === "lemon");
+		expect(lemon).toHaveLength(1);
+		expect(lemon[0]?.fromQty).toBe(50);
+		expect(lemon[0]?.toQty).toBe(80);
+	});
+
 	it("detects a quantity change on either option inside an alternative group", () => {
 		const a = compileRecipe("Add @egg{2}|@tofu{200g}.\n");
 		const b = compileRecipe("Add @egg{9}|@tofu{900g}.\n");

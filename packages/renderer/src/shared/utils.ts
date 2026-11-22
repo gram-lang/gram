@@ -532,13 +532,14 @@ export function isCompositeItem(item: { type?: string }): boolean {
  * single mass (e.g. missing density between "100g" and "1 cup" of the same
  * ingredient) so a backend can render them as one clustered item instead of
  * scattered duplicate lines. Entries share `multiUnit: true` and a canonical
- * `id`. Items that aren't part of such a run (including alternative/composite
- * groups, which never carry `multiUnit`) each come back as their own
- * single-item group, unchanged. Shared here so all three backends apply the
- * same grouping.
+ * `id`. Items that aren't part of such a run each come back as their own
+ * single-item group, unchanged: alternative groups, and composite entries,
+ * which carry `multiUnit` since 1.5.2 (one entry per unit of the parent) but
+ * each render as a parent line with its own parts. Shared here so all three
+ * backends apply the same grouping.
  */
 export function groupMultiUnitEntries<
-	T extends { multiUnit?: boolean; id?: string },
+	T extends { multiUnit?: boolean; id?: string; type?: string },
 >(items: T[]): T[][] {
 	const groups: T[][] = [];
 	for (const item of items) {
@@ -546,6 +547,7 @@ export function groupMultiUnitEntries<
 		const prevItem = prevGroup?.[0];
 		if (
 			prevGroup &&
+			!isCompositeItem(item) &&
 			item.multiUnit &&
 			prevItem?.multiUnit &&
 			prevItem.id === item.id

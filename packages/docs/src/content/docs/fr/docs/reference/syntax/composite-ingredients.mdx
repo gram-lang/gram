@@ -4,6 +4,7 @@ description: "Regroupez les parties d'un même ingrédient, comme le zeste et le
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 En cuisine, les recettes réclament souvent des parties spécifiques d'un même `@ingrédient` (ex : le **zeste** et le **jus** d'un citron).
 
@@ -94,6 +95,18 @@ Si vous utilisez également l'ingrédient parent entier directement (ex : couper
 ```
 > 🛒 **Liste de Courses** : 3 Citrons.
 
+### 4. Un total par unité
+<Since v="1.5.2" />
+
+Ces trois règles additionnent des quantités d'une même unité, ou d'unités qui se convertissent l'une en l'autre (`g` et `kg`, `tasse` et `c. à s.`). Si le parent sert dans des unités qui ne s'additionnent pas (`100 g` ici, `2` là), Gram ne les mélange jamais : il garde une entrée par unité, chacune avec les parties tirées dans cette unité, comme pour tout ingrédient acheté dans deux unités.
+
+```gram
+[Fondre] Le @beurre{100 g}.                  // 100 g de beurre
+
+[Colorer] Le @beurre noisette{1}<@beurre{2}. // 2 morceaux de beurre
+```
+> 🛒 **Liste de Courses** : Beurre, 2, et Beurre, 100 g.
+
 ## Sortie de la liste de courses
 
 La structure de la liste de courses générée prend nativement en charge ces ingrédients composites, ce qui permet aux applications *front-end* de les afficher sous forme de hiérarchie.
@@ -113,6 +126,8 @@ Pour l'exemple ci-dessus, la sortie JSON ressemblerait à ceci :
   ]
 }
 ```
+
+Un parent tiré dans une unité la porte dans `unit` (`"unit": "g"` ; sans `unit`, il se compte en pièces), et chaque entrée d'un parent utilisé dans plusieurs unités porte `"multiUnit": true` <Since v="1.5.2" />.
 
 ## Listes d'ingrédients de section
 
