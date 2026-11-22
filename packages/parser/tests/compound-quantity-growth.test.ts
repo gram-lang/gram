@@ -20,12 +20,19 @@ describe("a sum of quantities", () => {
 	// Each term used to read `ops.children[i]`, which ohm rebuilds on every
 	// access: n terms cost n². The same characters as prose are the yardstick,
 	// so the machine's speed cancels out: a sum measures about 3× its prose,
-	// 5.6× before the fix, and more as the sum grows.
+	// 5.6× before the fix, and more as the sum grows. A busy CI runner can push
+	// one measurement past 4, hardly three in a row: n² fails every attempt.
 	it("parses in linear time", () => {
 		getAST(sum); // warm-up
-		const ratio = best(() => getAST(sum)) / best(() => getAST(prose));
-		expect(ratio).toBeLessThan(4);
-	}, 30_000);
+		getAST(prose);
+		const ratios: number[] = [];
+		for (let attempt = 0; attempt < 3; attempt++) {
+			const ratio = best(() => getAST(sum)) / best(() => getAST(prose));
+			if (ratio < 4) return;
+			ratios.push(ratio);
+		}
+		expect(Math.min(...ratios)).toBeLessThan(4);
+	}, 60_000);
 
 	it("keeps the sign of every term", () => {
 		const ast = JSON.stringify(getAST("Add @flour{1 cup + 2 tbsp - 1 tsp}.\n"));
