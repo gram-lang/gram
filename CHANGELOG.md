@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.5.1](https://git.gram-lang.org/gram-lang/gram/compare/v.1.5.0...v.1.5.1) - 2026-11-22
+
+### Bug fixes and improvements
+- **Kitchen**: Intermediates and task-graph links now match by canonical ID, ignoring case and accents:
+  - `->&Dough` and `&dough{}` (or `->&Pâte{}` and `&pate{}`) now link reliably in the schedule, and circular references across mismatched casing (`&A` / `&B`) are properly detected.
+  - Compiled task graphs now store canonical IDs in `produces`, `consumes`, and `intermediate` so formatting no longer alters them.
+- **Kitchen & Analyzer**: Unresolved shopping list entries (shares and ratios with a missing or weightless target) are now built from parsed values rather than copied from source text, so `gram format` no longer alters them:
+  - Ratios drop trailing zeros, extra spaces, and a denominator of 1 (`15 g / L @&water`).
+  - Shares preserve the decimal separator written by the author (`12,5% of flour`).
+- **Renderer, CLI & i18n**: Displayed quantities now round by significant digits rather than a fixed decimal per unit, fixing inaccurate or zeroed amounts introduced in 1.4.0:
+  - Amounts keep three significant digits (two below 1) without truncating whole numbers (`0.15 kg` stays `0.15 kg`, `0.02 kg` no longer reads `0`), while kitchen fractions stay unchanged.
+  - Weights in grams keep one decimal from `1 g` upwards and no longer render as `0 g` below `0.05 g`.
+  - Adds `formatAmount`, `roundAmount`, and `amountDecimals` in `@gram-lang/i18n`.
+- **Kitchen, Analyzer & i18n**: Small quantities are no longer stored as zero across scaled amounts, shopping totals, resolved ratios, and standardized weights:
+  - Stored values keep two decimals as before, but never fewer than two significant digits (`0.02 kg` divided by 10 stays `0.002 kg`, and a ratio weighing `0.0047 g` keeps its weight).
+  - Adds `roundQuantity` in `@gram-lang/i18n` (re-exported by `@gram-lang/kitchen`).
+- **Parser**: Fixed syntax edge cases and parsing performance across empty files, headers, and inline elements:
+  - Empty or blank-only files, as well as a trailing comment after `@use` without a final newline, now parse cleanly instead of failing or becoming a step.
+  - Bare `##` headers now parse as untitled sections (instead of a `#` tool), empty `~{}` stays an anchor, and `->&dough ~{}` declares `dough`.
+  - Symbol-only tokens (`##`, `@@`, `#~`, `&&`) and `&` followed by a space (such as `salt & pepper`) now stay plain text instead of creating phantom tools, ingredients, or references.
+  - Actions (`[…]`), text temperatures (`^{…}`), and section anchors (`~{…}`) now end on their own line (leaving unclosed `[` or `^{` as plain text), while `/* … */` block comments still span lines.
+  - Long quantity sums (`@flour{1 cup + 2 tbsp + …}`) now parse in linear time so they no longer slow down editors on every keystroke.
+- **Parser & Format**: The parser and `gram format` now share the same rules for whitespace and line breaks:
+  - Lines containing only spaces or tabs end a step just like empty lines, and trailing spaces or tabs on step lines are ignored.
+  - Lone `\r` line breaks are recognized, a leading UTF-8 BOM is skipped by the parser and kept by the formatter, and non-ASCII spaces (such as non-breaking spaces) stay plain text.
+  - `gram format` writes line breaks as LF without stripping non-ASCII whitespace.
+- **Format**: `gram format` and format-on-save now rewrite only valid elements and preserve author text and line structure:
+  - Plain text in section titles, preparations, comments, and unparsed files stays as written (unparseable files are only repaired and trimmed).
+  - Free-text units (`@e{%1.0}`), text temperatures or durations (`^{160 °C/320 °F}`), blank lines inside `/* … */`, and tabs or trailing blanks inside names and titles are kept untouched.
+  - Formatting no longer joins text across line breaks (such as `@flour` followed by `{200 g}` on the next line or unclosed `{`) and handles many unclosed braces in linear time.
+  - Tab-spaced composite separators (`@yolks{3} < @eggs{3}`) now format cleanly in a single pass.
+- **Kitchen**: Marking more than one ingredient as the baker's-percentage base (`@*flour{500 g}` and `@*rye{100 g}`) now keeps the first base and raises a `MULTIPLE_BAKERS_PERCENTAGE` warning for the others instead of aborting compilation and hiding all diagnostics.
+
+---
+
 ## [1.5.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.4.2...v.1.5.0) - 2026-11-20
 
 ### New features

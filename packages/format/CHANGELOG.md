@@ -1,5 +1,22 @@
 # @gram-lang/format
 
+## 1.5.1
+
+### Patch Changes
+
+- **Format**: `gram format` and format-on-save now rewrite only valid elements and preserve author text and line structure:
+  - Plain text in section titles, preparations, comments, and unparsed files stays as written (unparseable files are only repaired and trimmed).
+  - Free-text units (`@e{%1.0}`), text temperatures or durations (`^{160 °C/320 °F}`), blank lines inside `/* … */`, and tabs or trailing blanks inside names and titles are kept untouched.
+  - Formatting no longer joins text across line breaks (such as `@flour` followed by `{200 g}` on the next line or unclosed `{`) and handles many unclosed braces in linear time.
+  - Tab-spaced composite separators (`@yolks{3} < @eggs{3}`) now format cleanly in a single pass.
+- **Parser & Format**: The parser and `gram format` now share the same rules for whitespace and line breaks:
+  - Lines containing only spaces or tabs end a step just like empty lines, and trailing spaces or tabs on step lines are ignored.
+  - Lone `\r` line breaks are recognized, a leading UTF-8 BOM is skipped by the parser and kept by the formatter, and non-ASCII spaces (such as non-breaking spaces) stay plain text.
+  - `gram format` writes line breaks as LF without stripping non-ASCII whitespace.
+- Updated dependencies
+- Updated dependencies
+  - @gram-lang/parser@1.5.1
+
 ## 1.5.0
 
 ### Minor Changes

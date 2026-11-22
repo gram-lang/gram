@@ -1,5 +1,27 @@
 # @gram-lang/kitchen
 
+## 1.5.1
+
+### Patch Changes
+
+- d3b2c04: **Kitchen**: Intermediates and task-graph links now match by canonical ID, ignoring case and accents:
+  - `->&Dough` and `&dough{}` (or `->&Pâte{}` and `&pate{}`) now link reliably in the schedule, and circular references across mismatched casing (`&A` / `&B`) are properly detected.
+  - Compiled task graphs now store canonical IDs in `produces`, `consumes`, and `intermediate` so formatting no longer alters them.
+- **Kitchen**: Marking more than one ingredient as the baker's-percentage base (`@*flour{500 g}` and `@*rye{100 g}`) now keeps the first base and raises a `MULTIPLE_BAKERS_PERCENTAGE` warning for the others instead of aborting compilation and hiding all diagnostics.
+- 6abae89: **Kitchen & Analyzer**: Unresolved shopping list entries (shares and ratios with a missing or weightless target) are now built from parsed values rather than copied from source text, so `gram format` no longer alters them:
+  - Ratios drop trailing zeros, extra spaces, and a denominator of 1 (`15 g / L @&water`).
+  - Shares preserve the decimal separator written by the author (`12,5% of flour`).
+- 3080adf: **Kitchen, Analyzer & i18n**: Small quantities are no longer stored as zero across scaled amounts, shopping totals, resolved ratios, and standardized weights:
+  - Stored values keep two decimals as before, but never fewer than two significant digits (`0.02 kg` divided by 10 stays `0.002 kg`, and a ratio weighing `0.0047 g` keeps its weight).
+  - Adds `roundQuantity` in `@gram-lang/i18n` (re-exported by `@gram-lang/kitchen`).
+- Updated dependencies [9af07c9]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [3080adf]
+  - @gram-lang/i18n@1.5.1
+  - @gram-lang/parser@1.5.1
+  - @gram-lang/scheduler@1.5.1
+
 ## 1.5.0
 
 ### Minor Changes

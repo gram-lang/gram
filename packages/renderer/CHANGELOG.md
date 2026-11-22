@@ -1,5 +1,26 @@
 # @gram-lang/renderer
 
+## 1.5.1
+
+### Patch Changes
+
+- 9af07c9: **Renderer, CLI & i18n**: Displayed quantities now round by significant digits rather than a fixed decimal per unit, fixing inaccurate or zeroed amounts introduced in 1.4.0:
+  - Amounts keep three significant digits (two below 1) without truncating whole numbers (`0.15 kg` stays `0.15 kg`, `0.02 kg` no longer reads `0`), while kitchen fractions stay unchanged.
+  - Weights in grams keep one decimal from `1 g` upwards and no longer render as `0 g` below `0.05 g`.
+  - Adds `formatAmount`, `roundAmount`, and `amountDecimals` in `@gram-lang/i18n`.
+- Updated dependencies [9af07c9]
+- Updated dependencies [d3b2c04]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [6abae89]
+- Updated dependencies [3080adf]
+  - @gram-lang/i18n@1.5.1
+  - @gram-lang/kitchen@1.5.1
+  - @gram-lang/parser@1.5.1
+  - @gram-lang/analyzer@1.5.1
+  - @gram-lang/scheduler@1.5.1
+
 ## 1.5.0
 
 ### Minor Changes
