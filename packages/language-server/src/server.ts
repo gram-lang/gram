@@ -35,7 +35,7 @@ import { provideSemanticTokens } from "./features/semantic-tokens";
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
 import { provideCodeLenses } from "./features/code-lens";
-import { clientProfileOf } from "./client-profile";
+import { clientProfileOf, type ViewsMode } from "./client-profile";
 import { serverCapabilities } from "./capabilities";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
@@ -171,12 +171,14 @@ async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
 	}
 }
 
-// The views protocol (`gram/viewUpdated`, `gram/setOpenViews`,
-// `gram/setSession`). A client that declares it (`initializationOptions.views`)
-// or sends `gram/setOpenViews` gets only the outputs it has open. Any other
-// client is an older one: it keeps receiving the preview and the run sheet of
-// every document through the notifications it reads.
-let viewsClient = false;
+// How the client wants the views (`client-profile.ts`). A client of the views
+// protocol (`gram/viewUpdated`, `gram/setOpenViews`, `gram/setSession`), one
+// that declares it (`initializationOptions.views: true`) or sends
+// `gram/setOpenViews`, gets only the outputs it has open. A client that
+// declares `views: false` gets none. Any other client is an older one: it
+// keeps receiving the preview and the run sheet of every document through the
+// notifications it reads.
+let viewsMode: ViewsMode = "legacy";
 // The editor's language, for the words the server writes itself (the paused
 // banner, the CodeLens): the recipe's own language is unknown when it does not
 // parse.
@@ -189,7 +191,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	);
 	locale = params.locale;
 	const profile = clientProfileOf(params);
-	if (profile.views === "protocol") viewsClient = true;
+	viewsMode = profile.views;
 	return { capabilities: serverCapabilities(profile, locale) };
 });
 
@@ -414,7 +416,8 @@ const viewStates = new Map<string, DocumentState>();
 connection.onNotification(
 	"gram/setOpenViews",
 	(params: { uri?: unknown; viewIds?: unknown }) => {
-		viewsClient = true;
+		// The notification declares the protocol itself, from any mode.
+		viewsMode = "protocol";
 		if (typeof params?.uri !== "string") return;
 		const ids = Array.isArray(params.viewIds)
 			? params.viewIds.filter((id): id is string => typeof id === "string")
@@ -508,9 +511,15 @@ connection.onRequest("gram/sessionChoices", (params: unknown) => {
 function renderViews(uri: string): void {
 	const state = viewStates.get(uri) ?? states.get(uri);
 	if (!state) return;
-	if (!viewsClient) {
-		renderLegacyViews(uri, state);
-		return;
+	switch (viewsMode) {
+		case "off":
+			return;
+		// @remove-in: 2.0.0 [lsp-legacy-view-notifications]
+		case "legacy":
+			renderLegacyViews(uri, state);
+			return;
+		case "protocol":
+			break;
 	}
 	const open = openViews.get(uri);
 	if (!open) return;
@@ -553,7 +562,7 @@ function renderLegacyViews(uri: string, state: DocumentState): void {
 			);
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
-			console.error("HTML render error", e);
+			connection.console.error(`HTML render error: ${e}`);
 		}
 
 		// Still sent until 2.0.0 for clients that read it; the VS Code extension
@@ -571,7 +580,7 @@ function renderLegacyViews(uri: string, state: DocumentState): void {
 				html: ganttHtml,
 			});
 		} catch (e) {
-			console.error("Gantt render error", e);
+			connection.console.error(`Gantt render error: ${e}`);
 		}
 	} else if (state.parseError != null || state.compileError != null) {
 		// Truthiness (`||`) would treat a thrown `Error()` with an empty
@@ -775,7 +784,10 @@ connection.languages.inlayHint.on(({ textDocument: { uri } }) => {
 	return s ? provideInlayHints(s, settings.miseEnPlace, settings.rests) : [];
 });
 
+// Only announced to a client of the views protocol (`capabilities.ts`): the
+// lens runs `gram.showPreview`, a command of the VS Code extension.
 connection.onCodeLens(({ textDocument: { uri } }) => {
+	if (viewsMode !== "protocol") return [];
 	const s = states.get(uri);
 	return s ? provideCodeLenses(s, locale) : [];
 });

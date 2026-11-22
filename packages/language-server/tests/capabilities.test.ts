@@ -40,12 +40,18 @@ describe("serverCapabilities", () => {
 		expect(legend?.tokenTypes.length).toBeGreaterThan(0);
 	});
 
-	// Unchanged behavior for now: every client gets the CodeLens and the views.
-	it("announces the CodeLens and the views to every client", () => {
-		for (const mode of MODES) {
+	it("announces the CodeLens and the views to a client of the views protocol", () => {
+		const caps = serverCapabilities(profile("protocol"), "en");
+		expect(caps.codeLensProvider).toEqual({ resolveProvider: false });
+		expect(caps.experimental).toEqual({ gramViews: describeOutputs("en") });
+	});
+
+	// The lens runs `gram.showPreview`, a command of the VS Code extension.
+	it("announces neither to a client without the views protocol", () => {
+		for (const mode of ["legacy", "off"] as const) {
 			const caps = serverCapabilities(profile(mode), "en");
-			expect(caps.codeLensProvider).toEqual({ resolveProvider: false });
-			expect(caps.experimental).toEqual({ gramViews: describeOutputs("en") });
+			expect(caps.codeLensProvider).toBeUndefined();
+			expect(caps.experimental).toBeUndefined();
 		}
 	});
 

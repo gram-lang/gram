@@ -14,10 +14,10 @@ import { describeOutputs } from "./views";
  * the editor's language. Pure: the profile is read once at `initialize`.
  */
 export function serverCapabilities(
-	_profile: ClientProfile,
+	profile: ClientProfile,
 	locale: string | undefined,
 ): ServerCapabilities {
-	return {
+	const capabilities: ServerCapabilities = {
 		textDocumentSync: TextDocumentSyncKind.Incremental,
 		documentSymbolProvider: true,
 		definitionProvider: true,
@@ -36,6 +36,12 @@ export function serverCapabilities(
 		documentFormattingProvider: true,
 		codeActionProvider: true,
 		inlayHintProvider: true,
+	};
+	if (profile.views !== "protocol") return capabilities;
+	return {
+		...capabilities,
+		// The lens runs `gram.showPreview`, a command of the VS Code
+		// extension: a client without the views protocol has nothing to run.
 		codeLensProvider: { resolveProvider: false },
 		// What a client of the views protocol can open, named in the
 		// editor's language: it builds its choice of views from this, so
