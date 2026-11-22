@@ -1,6 +1,6 @@
 import type { MassMetrics, AnalyzedUsage } from "./types";
 import { resolveContributingUsage } from "./usage_selection";
-import { round2 } from "@gram-lang/kitchen";
+import { roundQuantity } from "@gram-lang/kitchen";
 
 /**
  * Calculates mass metrics (totals, precision status, and missing data warnings)
@@ -44,7 +44,7 @@ export function calculateMassMetrics(
 	else if (!hasPrecise && !hasEstimates) status = "incomplete"; // Safe fallback for empty lists
 
 	return {
-		totalMass: round2(totalMass),
+		totalMass: roundQuantity(totalMass),
 		massStatus: status,
 		missingMassIngredients: missing,
 	};

@@ -12,6 +12,7 @@ import {
 	QuantityOverflowError,
 	resolveTimeUnit,
 	round2,
+	roundQuantity,
 	scaleTermValue,
 	termValueNumber,
 	TIME_TO_MINUTES,
@@ -365,7 +366,7 @@ export const scaleQty = (qty: Usage["qty"], factor: number): Usage["qty"] => {
  * `@gram-lang/i18n`, where the rule is documented): re-exported here, where
  * kitchen, analyzer and renderer have always imported it from.
  */
-export { round2 };
+export { round2, roundQuantity };
 
 // Lives in the scheduler, which builds the timeline breakdowns with it.
 export { addToBreakdown } from "@gram-lang/scheduler";

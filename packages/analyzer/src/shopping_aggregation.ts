@@ -1,6 +1,6 @@
 import type { IngredientData } from "./types";
 import { resolveCanonicalId } from "./ingredient_db";
-import { round2, slugify } from "@gram-lang/kitchen";
+import { roundQuantity, slugify } from "@gram-lang/kitchen";
 import type { CompilationResult, ShoppingListItem } from "@gram-lang/kitchen";
 
 type ShoppingListEntry = CompilationResult["shopping_list"][number];
@@ -56,7 +56,7 @@ function massRange(
 			max += mass;
 		}
 	}
-	return { min: round2(min), max: round2(max) };
+	return { min: roundQuantity(min), max: roundQuantity(max) };
 }
 
 /**
@@ -142,13 +142,13 @@ export function aggregateShoppingList(
 					canonicalId,
 					canonicalName,
 				),
-				qty: round2(totalMass),
+				qty: roundQuantity(totalMass),
 				unit: "g",
-				normalizedMass: round2(totalMass),
+				normalizedMass: roundQuantity(totalMass),
 				isEstimate: items.some((i) => i.isEstimate),
 			};
 			if (Math.abs(totalPurchasing - totalMass) > 0.001) {
-				merged.purchasingMass = round2(totalPurchasing);
+				merged.purchasingMass = roundQuantity(totalPurchasing);
 			}
 			const range = massRange(items);
 			if (range) merged.range = range;

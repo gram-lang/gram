@@ -62,6 +62,8 @@ function resolveScaleFactor(
 - **No compounding.** Re-applying a different factor always starts from the same untouched original, so there's no risk of a factor being applied twice onto an already-scaled `portions` value.
 - **No shared-reference corruption.** `compile()` itself defensively clones the AST's `meta` object before handing it to the result, so scaling a compiled recipe never mutates the parser's AST — safe even when a caller (such as the Playground) caches the parsed AST and recompiles on slider ticks.
 
+A scaled quantity is stored with two decimals, but never fewer than two significant digits (`roundQuantity` in `@gram-lang/i18n`): `20 g` of salt written `0.02 kg` and divided by 10 is stored as `0.002 kg`, not `0`. How many digits a reader sees is the views' choice (`formatAmount`).
+
 The resulting `CompilationResult` carries an honest `scaleFactor` field (default `1`) recording how it relates to the unscaled original — this is what interactive UIs (like the Playground or a custom portions slider) read to compute a baseline, instead of a hidden/underscored field.
 
 ## Scaling sums of quantities

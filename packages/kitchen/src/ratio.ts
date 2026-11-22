@@ -22,7 +22,7 @@ import {
 	isDurationTooLong,
 	maxDurationIn,
 	quantityToMinutes,
-	round2,
+	roundQuantity,
 } from "./utils";
 
 /**
@@ -95,12 +95,12 @@ function multiply(
 	factor: { min: number; max: number },
 ): TermValue {
 	const v = bounds(value);
-	const lo = round2(v.min * factor.min);
-	const hi = round2(v.max * factor.max);
+	const lo = roundQuantity(v.min * factor.min);
+	const hi = roundQuantity(v.max * factor.max);
 	if (lo === hi) return { type: "single", value: lo };
 	return {
 		type: "range",
-		value: round2((lo + hi) / 2),
+		value: roundQuantity((lo + hi) / 2),
 		range: { min: lo, max: hi },
 	};
 }
