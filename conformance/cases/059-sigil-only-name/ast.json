@@ -1,0 +1,377 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Prep",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 9,
+                "end": 13
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 20,
+                  "end": 25
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 13,
+                "end": 26
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in a ",
+              "loc": {
+                "start": 27,
+                "end": 32
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "bowl",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 37,
+                  "end": 39
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 32,
+                "end": 39
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and stir ",
+              "loc": {
+                "start": 40,
+                "end": 49
+              }
+            },
+            {
+              "type": "Text",
+              "value": "#",
+              "fallback": true,
+              "loc": {
+                "start": 49,
+                "end": 50
+              }
+            },
+            {
+              "type": "Text",
+              "value": "#",
+              "fallback": true,
+              "loc": {
+                "start": 50,
+                "end": 51
+              }
+            },
+            {
+              "type": "Text",
+              "value": " times, then ",
+              "loc": {
+                "start": 51,
+                "end": 64
+              }
+            },
+            {
+              "type": "Text",
+              "value": "@",
+              "fallback": true,
+              "loc": {
+                "start": 64,
+                "end": 65
+              }
+            },
+            {
+              "type": "Text",
+              "value": "@",
+              "fallback": true,
+              "loc": {
+                "start": 65,
+                "end": 66
+              }
+            },
+            {
+              "type": "Text",
+              "value": " again.",
+              "loc": {
+                "start": 66,
+                "end": 73
+              }
+            }
+          ],
+          "loc": {
+            "start": 9,
+            "end": 75
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Season: salt ",
+              "loc": {
+                "start": 75,
+                "end": 88
+              }
+            },
+            {
+              "type": "Text",
+              "value": "&",
+              "fallback": true,
+              "loc": {
+                "start": 88,
+                "end": 89
+              }
+            },
+            {
+              "type": "Text",
+              "value": " pepper, rock ",
+              "loc": {
+                "start": 89,
+                "end": 103
+              }
+            },
+            {
+              "type": "Text",
+              "value": "&",
+              "fallback": true,
+              "loc": {
+                "start": 103,
+                "end": 104
+              }
+            },
+            {
+              "type": "Text",
+              "value": " roll.",
+              "loc": {
+                "start": 104,
+                "end": 110
+              }
+            }
+          ],
+          "loc": {
+            "start": 75,
+            "end": 112
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Rest ",
+              "loc": {
+                "start": 112,
+                "end": 117
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "dough",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 124,
+                  "end": 125
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 117,
+                "end": 126
+              }
+            },
+            {
+              "type": "Text",
+              "value": "<",
+              "loc": {
+                "start": 126,
+                "end": 127
+              }
+            },
+            {
+              "type": "Text",
+              "value": "@",
+              "fallback": true,
+              "loc": {
+                "start": 127,
+                "end": 128
+              }
+            },
+            {
+              "type": "Text",
+              "value": "@",
+              "fallback": true,
+              "loc": {
+                "start": 128,
+                "end": 129
+              }
+            },
+            {
+              "type": "Text",
+              "value": " under a ",
+              "loc": {
+                "start": 129,
+                "end": 138
+              }
+            },
+            {
+              "type": "Text",
+              "value": "#",
+              "fallback": true,
+              "loc": {
+                "start": 138,
+                "end": 139
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "1 min",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 141,
+                  "end": 146
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 139,
+                "end": 147
+              }
+            },
+            {
+              "type": "Text",
+              "value": "cloth, then add ",
+              "loc": {
+                "start": 148,
+                "end": 164
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough",
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 171,
+                  "end": 171
+                }
+              },
+              "loc": {
+                "start": 164,
+                "end": 172
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 172,
+                "end": 173
+              }
+            }
+          ],
+          "loc": {
+            "start": 112,
+            "end": 175
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "##",
+              "fallback": true,
+              "loc": {
+                "start": 175,
+                "end": 177
+              }
+            },
+            {
+              "type": "Text",
+              "value": "#",
+              "fallback": true,
+              "loc": {
+                "start": 177,
+                "end": 178
+              }
+            }
+          ],
+          "loc": {
+            "start": 175,
+            "end": 179
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 179
+      }
+    }
+  ]
+}

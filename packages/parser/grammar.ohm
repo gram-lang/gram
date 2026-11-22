@@ -113,7 +113,12 @@ GRAM {
 
   ws = space+
 
-  fallback = ~nl any
+  // A run of sigils with no name falls back in one piece, but for its last
+  // sigil, which may still start an element (`@~{10 min}`: a timer). One
+  // character at a time, each `@` of `@@@…` read the whole run again to
+  // learn it has no name (singleWordName, #221): quadratic.
+  fallback = sigilRun | ~nl any
+  sigilRun = (refSigil &refSigil)+
 
   Element = 
     | Ingredient
@@ -121,7 +126,7 @@ GRAM {
     | Timer
     | temperature
     | checkpoint
-    | Reference
+    | reference
     | CommentBlock
     | Comment
 
@@ -285,7 +290,11 @@ GRAM {
   // Primitives
   name = (~(syntaxChar | nl) any)+
   declName = (~(syntaxChar | nl | "~{") any)+
-  singleWordName = (~(syntaxChar | space | nl | sentencePunct) any)+
+  // A word made only of element sigils (`##`, `@@`, `#~`, `&&`) is no name:
+  // the element falls back to text, like `@` or `#` alone, instead of
+  // registering a tool or an ingredient called `#` (#221).
+  singleWordName = ~(refSigil+ (wordStop | end)) (~wordStop any)+
+  wordStop = syntaxChar | space | nl | sentencePunct
   sentencePunct = "," | ";" | "!" | "?" | "."
   // Like name, but also stops at element sigils so a bare &dough is not consumed
   // into a Reference -- full when a sigil like # or @ appears later on the line.
@@ -306,10 +315,14 @@ GRAM {
 
   text = space* (~(elementStart | nl | "|") any)+
 
-  Reference =
-    | "&" refName ingredientAmount -- full
-    | "&" refName malformedBraces    -- malformed
-    | "&" singleWordName             -- bare
+  // Lexical, like simpleIngredient and simpleCookware: as a syntactic rule
+  // it skipped the blanks after `&`, so the `&` of prose (`Rock & roll.`,
+  // `Salt & pepper{}`) took the next word as a reference. The name starts
+  // right after the `&`, or the `&` is text.
+  reference =
+    | "&" ~space refName ingredientAmount -- full
+    | "&" ~space refName malformedBraces  -- malformed
+    | "&" singleWordName                  -- bare
 
   // Delimiters that end a name (start of quantity/alias/preparation/composite/alternative).
   // @, #, ~, !, &, ?, * are deliberately absent here, so names may contain them freely --
