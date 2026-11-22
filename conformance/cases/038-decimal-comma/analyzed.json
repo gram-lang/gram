@@ -173,7 +173,7 @@
             "flour"
           ],
           "formula": {
-            "raw": "12.5% of flour",
+            "raw": "12,5% of flour",
             "target": "flour",
             "percent": 12.5,
             "isGhost": false
@@ -252,7 +252,7 @@
                 "flour"
               ],
               "formula": {
-                "raw": "12.5% of flour",
+                "raw": "12,5% of flour",
                 "target": "flour",
                 "percent": 12.5,
                 "isGhost": false

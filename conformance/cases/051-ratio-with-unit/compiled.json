@@ -101,7 +101,7 @@
       ],
       "relative": true,
       "variable_entries": [
-        "15 g / 1 L @&water"
+        "15 g / L @&water"
       ]
     },
     {

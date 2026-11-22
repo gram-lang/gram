@@ -1,3 +1,4 @@
+import { shareText } from "./formula-text";
 import {
 	minifyQuantity,
 	createCleanUsage,
@@ -713,7 +714,7 @@ function processIngredient(
 
 		usage.dependencies = [target.targetId];
 		usage.formula = {
-			raw: `${rel.percent}% of ${shownTarget(rel)}`,
+			raw: shareText(rel.percent, rel.text, shownTarget(rel)),
 			target: shownTarget(rel),
 			percent: rel.percent,
 			isGhost: target.isGhost,
@@ -928,7 +929,7 @@ function processReference(
 			if (target.isCircular) obj.isCircular = true;
 			obj.dependencies = [target.targetId];
 			obj.formula = {
-				raw: `${rel.percent}% of ${shownTarget(rel)}`,
+				raw: shareText(rel.percent, rel.text, shownTarget(rel)),
 				target: shownTarget(rel),
 				percent: rel.percent,
 				isGhost: target.isGhost,

@@ -41,6 +41,7 @@ import {
 	pushWarning,
 	shoppingAmount,
 	variablePartsOf,
+	formulaText,
 	recomputeSchedule,
 	resolveRatios,
 	slugify,
@@ -872,7 +873,7 @@ function enrichShoppingList(
 						u.formula &&
 						"ratio" in u.formula &&
 						isTermValue(u.qty) &&
-						stdItem.variable_entries?.includes(u.formula.raw),
+						stdItem.variable_entries?.includes(formulaText(u.formula)),
 				);
 				if (resolvedHere && !hasRelativeResolved) {
 					const total = termsTotal(usages.flatMap((u) => termsOfUsage(u)));

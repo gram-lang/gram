@@ -1,5 +1,13 @@
 import { slugify } from "./utils";
 import {
+	formulaText,
+	separatorOf,
+	shareText,
+	writeValue,
+} from "./formula-text";
+
+export { formulaText } from "./formula-text";
+import {
 	numericTotal,
 	shoppingAmount,
 	termsOfComposite,
@@ -101,12 +109,14 @@ function formatQuantity(q: Usage["qty"]): string | number {
 
 	// Handle objects
 	if (q.type === "single") return q.value;
-	if (q.type === "range") return q.text || `${q.value}`;
-	if (q.type === "fraction") return q.text || `${q.value}`;
-	if (q.type === ASTNodeType.RelativeQuantity) {
-		return `${q.percent}% of ${q.target}`;
+	// Written from the values read, the author's separator kept: the
+	// formatter rewrites the source spelling (#225).
+	if (q.type === "range" || q.type === "fraction") {
+		return writeValue(q, separatorOf(q.text));
 	}
-	// A ratio still waiting for its target's amount, as written.
+	if (q.type === ASTNodeType.RelativeQuantity) {
+		return shareText(q.percent, q.text, q.target);
+	}
 	if (q.type === ASTNodeType.RatioQuantity) return q.raw;
 
 	return JSON.stringify(q);
@@ -122,7 +132,19 @@ function formatQuantity(q: Usage["qty"]): string | number {
  */
 export function variablePartsOf(item: Usage): string[] {
 	// isGhost is only ever set on a formula: a target not found.
-	if (item.formula?.isGhost === true) return [`(${item.formula.raw} ❓)`];
+	if (item.formula?.isGhost === true) {
+		return [`(${formulaText(item.formula)} ❓)`];
+	}
+	// A share or a ratio still waiting: written from its values (#225).
+	if (
+		item.formula &&
+		typeof item.qty === "object" &&
+		item.qty !== null &&
+		(item.qty.type === ASTNodeType.RelativeQuantity ||
+			item.qty.type === ASTNodeType.RatioQuantity)
+	) {
+		return [formulaText(item.formula)];
+	}
 	const unit = item.unit || "";
 	if (item.qty) {
 		const uStr = unit ? ` ${unit}` : "";
