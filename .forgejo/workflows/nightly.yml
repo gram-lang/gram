@@ -29,6 +29,11 @@ jobs:
       - name: Dependencies CVE Audit
         run: bun audit --audit-level=high
 
+      # The audit imports the pipeline packages, which resolve to their dist/:
+      # build them first (install runs with --ignore-scripts, so nothing is built).
+      - name: Build Audit Dependencies
+        run: bun run build --filter='@gram-lang/audit^...'
+
       - name: Content Vocabulary Audit
         run: bun run audit
         continue-on-error: true
