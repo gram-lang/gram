@@ -26,7 +26,7 @@ import {
 	isWrittenInMetricMass,
 	joinStepTokens,
 	nobr,
-	round1,
+	roundGrams,
 } from "../../shared/utils";
 
 /** A reference id and an intermediate's name are the same thing written two ways. */
@@ -169,7 +169,7 @@ export function kitIngredients(
 			hasTerms &&
 			line.masses.length === occurrences.length &&
 			!occurrences.every((o) => isWrittenInMetricMass(o.usage, options.lang))
-				? round1(line.masses.reduce((sum, n) => sum + n, 0))
+				? roundGrams(line.masses.reduce((sum, n) => sum + n, 0))
 				: undefined;
 		return {
 			kind: "ingredient",

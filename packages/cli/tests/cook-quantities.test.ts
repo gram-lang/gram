@@ -8,8 +8,14 @@ describe("gram cook quantities", () => {
 	});
 
 	it("rounds a computed quantity rather than showing every decimal", () => {
-		expect(fmtQty({ qty: 1.33333, unit: "g" })).toBe(" 1.3 g");
+		expect(fmtQty({ qty: 1.33333, unit: "g" })).toBe(" 1.33 g");
 		expect(fmtQty({ qty: 2, unit: null })).toBe(" 2");
+	});
+
+	it("rounds to the size of the amount, not to a decimal of its unit (#230)", () => {
+		expect(fmtQty({ qty: 0.15, unit: "kg" })).toBe(" 0.15 kg");
+		expect(fmtQty({ qty: 0.02, unit: "kg" })).toBe(" 0.02 kg");
+		expect(fmtQty({ qty: 0.003, unit: "g" })).toBe(" 0.003 g");
 	});
 
 	it("keeps a quantity written as text (a range, a fraction) as written", () => {

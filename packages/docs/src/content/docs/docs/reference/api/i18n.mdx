@@ -120,6 +120,17 @@ localizeDecimals('1.5-2', 'fr');  // "1,5-2"
 decimalSeparator('fr');           // ","
 ```
 
+A quantity is shown with `formatAmount`, which rounds it to its size rather than to a decimal of its unit: three significant digits, never fewer than its whole part, and two below 1, so a small amount is never shown as `0` (`0.15 kg` stays `0.15 kg`, not `0.2 kg`). `roundAmount` gives the rounded number, `amountDecimals` the number of decimals kept.
+
+```typescript
+import { formatAmount } from '@gram-lang/i18n';
+
+formatAmount(0.15, 'fr');   // "0,15"
+formatAmount(0.0047);       // "0.0047"
+formatAmount(15.24);        // "15.2"
+formatAmount(152.37);       // "152"
+```
+
 Spoons, cups and imperial measures (tsp, tbsp, cup, tasse, oz, lb, pt...) are read in fractions: `toKitchenFraction` writes such a quantity as a whole number and a common fraction, as a cook writes it, so `1.75 cup` and `1 3/4 cup` both show `1 3/4 cup`. It returns `undefined` when no common fraction is near (`1.6`) and for any other unit: metric units and counts keep decimals. `isFractionUnit` tells whether a unit is one of them, `commonFraction` gives the fraction of a value below 1.
 
 ```typescript

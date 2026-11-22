@@ -16,13 +16,13 @@ import {
 	joinStepTokens,
 	nobr,
 	groupMultiUnitEntries,
-	round1,
 	largerAmount,
 	getQty,
 	formatGrams,
 	isWrittenInMetricMass,
 	type NumberStyle,
 	trimBeforeComments,
+	roundGrams,
 } from "../../shared/utils";
 import {
 	formatUsageQuantity,
@@ -162,7 +162,7 @@ function kitQtyHtml(
 	const mass = isWrittenInMetricMass(item as QuantityHolder, lang)
 		? undefined
 		: item.normalizedMass;
-	if (mass && shown && (round1(mass) !== qty || extra.length > 0)) {
+	if (mass && shown && (roundGrams(mass) !== qty || extra.length > 0)) {
 		html += `<span class="kit-orig">${amountHtml(shown)}</span>`;
 	}
 	if (mass) {

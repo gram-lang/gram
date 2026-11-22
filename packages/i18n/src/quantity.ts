@@ -7,7 +7,7 @@
  * recipe. `@gram-lang/kitchen` reads its usages and AST nodes into terms
  * (`termsOfUsage`, `termsOfAst`) and writes them back (`usageFromTerms`).
  */
-import { formatNumber, toKitchenFraction } from "./numbers";
+import { formatAmount, toKitchenFraction } from "./numbers";
 import {
 	type LadderStep,
 	ladderOf,
@@ -707,7 +707,7 @@ function computedGroup(
 		// A larger unit reads as `toLargerMetricUnit` writes it (`2.25 l`), as
 		// every surface writes a shopping list.
 		const num = (n: number) =>
-			larger === written ? w.number(n, unit) : formatNumber(round2(n), lang);
+			larger === written ? w.number(n, unit) : formatAmount(n, lang);
 		const lo = num(total.min / unitSize);
 		const hi = num(total.max / unitSize);
 		return [{ text: span(lo, hi, unit) }];
@@ -821,12 +821,14 @@ function computedGroup(
 /** The default number of `"computed"` mode: whole, kitchen fraction, or decimal. */
 function computedNumber(lang?: string) {
 	return (value: number, unit: string | null): string => {
-		if (Math.abs(value - Math.round(value)) < TOLERANCE) {
+		// Never 0 for an amount that is not (`0.004 g`, #230).
+		if (
+			Math.abs(value - Math.round(value)) < TOLERANCE &&
+			(Math.round(value) !== 0 || value === 0)
+		) {
 			return String(Math.round(value));
 		}
-		return (
-			toKitchenFraction(value, unit, lang) ?? formatNumber(round2(value), lang)
-		);
+		return toKitchenFraction(value, unit, lang) ?? formatAmount(value, lang);
 	};
 }
 

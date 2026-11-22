@@ -44,7 +44,7 @@ describe("buildShoppingList", () => {
 		const b = await tmp("## Prep\n[Mix] Add @flour{1950g} and @milk{1.25l}.\n");
 		const fr = await buildShoppingList([a, b], { lang: "fr" });
 		expect(fr.items.find((i) => i.id === "flour")?.displayQty).toBe("3,9 kg");
-		expect(fr.items.find((i) => i.id === "milk")?.displayQty).toBe("2,8 l");
+		expect(fr.items.find((i) => i.id === "milk")?.displayQty).toBe("2,75 l");
 		const en = await buildShoppingList([a, b], { lang: "en" });
 		expect(en.items.find((i) => i.id === "flour")?.displayQty).toBe("3.9 kg");
 	});

@@ -93,7 +93,7 @@ The same amount is formatted differently depending on how you use it:
 Formatting rules:
 
 - Explicit units in steps stay as authored (`@flour{2kg}` shows as `2 kg`, and `@milk{1500ml}` stays `1500 ml`).
-- Only metric units move up (g and mg to kg, ml, cl and dl to l), never cups or ounces. Kilograms and liters are rounded to two decimals.
+- Only metric units move up (g and mg to kg, ml, cl and dl to l), never cups or ounces. Kilograms and liters keep three significant digits (`1.23 kg`, `12.3 kg`).
 - A quantity already in metric mass (`mg`, `g`, `kg`) is its own weight, so its standardized mass is not repeated.
 
 Every surface follows this rule via `toLargerMetricUnit` (`@gram-lang/i18n`): the Playground recipe view, `gram view`, `gram export`, and `gram shop`, while `gram cook` keeps masses in grams.

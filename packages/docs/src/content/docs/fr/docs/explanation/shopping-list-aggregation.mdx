@@ -93,7 +93,7 @@ Une même quantité ne s'affiche pas partout de la même façon, selon l'usage q
 Règles de formatage :
 
 - Les unités explicites dans les étapes restent telles qu'elles ont été écrites (`@farine{2kg}` s'affiche `2 kg`, et `@lait{1500ml}` reste `1500 ml`).
-- Seules les unités métriques changent d'échelle (g et mg vers kg ; ml, cl et dl vers l), jamais les tasses ni les onces. Kilos et litres sont arrondis à deux décimales.
+- Seules les unités métriques changent d'échelle (g et mg vers kg ; ml, cl et dl vers l), jamais les tasses ni les onces. Kilos et litres gardent trois chiffres significatifs (`1,23 kg`, `12,3 kg`).
 - Une quantité déjà exprimée en masse métrique (`mg`, `g`, `kg`) constitue son propre poids : sa masse standardisée n'est pas répétée à côté.
 
 Toutes les surfaces appliquent cette règle via `toLargerMetricUnit` (`@gram-lang/i18n`) : la vue recette du Playground, `gram view`, `gram export` et `gram shop`, tandis que `gram cook` conserve ses masses en grammes.

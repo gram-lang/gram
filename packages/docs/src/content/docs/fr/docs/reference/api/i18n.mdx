@@ -121,6 +121,17 @@ localizeDecimals('1.5-2', 'fr');  // "1,5-2"
 decimalSeparator('fr');           // ","
 ```
 
+Une quantité s'affiche avec `formatAmount`, qui l'arrondit selon sa taille et non à une décimale de son unité : trois chiffres significatifs, jamais moins que sa partie entière, et deux sous 1. Une petite quantité ne s'affiche donc jamais `0`, et `0,15 kg` reste `0,15 kg` au lieu de devenir `0,2 kg`. `roundAmount` renvoie le nombre arrondi, `amountDecimals` le nombre de décimales gardées.
+
+```typescript
+import { formatAmount } from '@gram-lang/i18n';
+
+formatAmount(0.15, 'fr');   // "0,15"
+formatAmount(0.0047);       // "0.0047"
+formatAmount(15.24);        // "15.2"
+formatAmount(152.37);       // "152"
+```
+
 Les cuillères, les tasses et les mesures impériales (tsp, tbsp, cup, tasse, oz, lb, pt...) se lisent en fractions : `toKitchenFraction` écrit une telle quantité sous la forme d'un entier suivi d'une fraction courante, comme l'écrit un cuisinier, si bien que `1.75 cup` et `1 3/4 cup` s'affichent tous deux `1 3/4 cup`. La fonction renvoie `undefined` quand aucune fraction courante n'est proche (`1.6`) et pour toute autre unité : les unités métriques et les quantités sans unité gardent leurs décimales. `isFractionUnit` indique si une unité en fait partie, `commonFraction` donne la fraction d'une valeur inférieure à 1.
 
 ```typescript
