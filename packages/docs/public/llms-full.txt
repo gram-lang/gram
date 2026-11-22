@@ -2477,6 +2477,10 @@ The compiled recipe exposes `generator` (which compiler generated it), `miseEnPl
 
 Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a bare `string`; ingredients, cookware, and intermediate references share the `Usage` structure (no `type` field, identified by the presence of an `id`); timers, temperatures, target states (`checkpoint`, since 1.5.0: `{ type, state, note? }`), comments, and declarations each carry an explicit lowercase `type`. This distinction from the parser's PascalCase `ASTNodeType` is intentional: it describes compiled *output*, not parsed source syntax. See [How to build a custom UI](/docs/how-to/build-custom-ui) for a tutorial on consuming this structure in frontend frameworks.
 
+:::caution[Internal fields: `_usageId` and `_usageIds`]
+`_usageId` identifies one mention of an ingredient or piece of cookware: the token in a step's `content` and its entry in the section's `ingredients` or `cookware` share it. `_usageIds`, on an entry that merges several mentions (the shopping list, the analyzed ingredient lists), lists the mentions it gathers. The leading underscore marks them as internal: they may be renumbered whenever the recipe changes, their shape may change, and an upcoming version replaces them with a public identifier. Don't store them or rely on their values.
+:::
+
 *(since v1.5.0)* A timer token carries `raw` (the duration as written inside the braces) and `minutes` (the scheduled duration, or the midpoint of a range). `quantity` and `unit` remain populated in the smallest written unit (`1h20` produces `80` `min`) for backwards compatibility, while pre-1.5 single-unit formats (`1.5h`) stay unchanged. Unrecognized timers keep only `raw` (plus `name` and `isPassive`) so views can display them as written.
 
 ```json

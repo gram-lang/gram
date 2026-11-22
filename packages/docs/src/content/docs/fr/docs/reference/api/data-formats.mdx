@@ -287,6 +287,10 @@ La recette compilée expose `generator` (version du compilateur), `miseEnPlace` 
 
 Remarquez le vocabulaire `StepToken` généré par le compilateur au sein de `content` : le texte narratif pur est une simple `string` ; les ingrédients, le matériel et les références partagent la forme `Usage` (sans champ `type`, identifiés par la présence d'un `id`) ; les minuteurs, températures, états attendus (`checkpoint`, depuis la 1.5.0 : `{ type, state, note? }`), commentaires et déclarations portent chacun un discriminant `type` explicite en minuscules. Cette distinction avec l'énumération `ASTNodeType` (en PascalCase) du parseur est délibérée : elle caractérise la charge utile *compilée*, non la syntaxe d'entrée. Consultez le guide [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui) pour un exemple d'intégration dans un framework front-end.
 
+:::caution[Champs internes : `_usageId` et `_usageIds`]
+`_usageId` désigne une mention d'un ingrédient ou d'un ustensile : le jeton dans le `content` d'une étape et son entrée dans les `ingredients` ou le `cookware` de la section portent le même. `_usageIds`, sur une entrée qui regroupe plusieurs mentions (la liste de courses, les listes d'ingrédients analysées), donne les mentions qu'elle rassemble. Le tiret bas les signale comme internes : leur numérotation peut changer dès que la recette change, leur forme peut évoluer, et une prochaine version les remplacera par un identifiant public. Ne les stockez pas et ne comptez pas sur leurs valeurs.
+:::
+
 <Since v="1.5.0" /> Un jeton minuteur comporte `raw` (la durée telle qu'écrite entre accolades) et `minutes` (la durée retenue pour l'ordonnancement, ou le milieu d'une fourchette). `quantity` et `unit` restent renseignés dans la plus petite unité écrite (`1h20` donne `80` `min`) pour la compatibilité ascendante, tandis que les formats antérieurs à la 1.5 (`1.5h`) restent inchangés. Un minuteur non reconnu ne conserve que `raw` (ainsi que `name` et `isPassive`) afin de pouvoir s'afficher tel qu'écrit.
 
 ```json

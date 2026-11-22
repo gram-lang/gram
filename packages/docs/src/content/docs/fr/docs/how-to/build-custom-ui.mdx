@@ -109,6 +109,10 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
 
    La génération de votre vue consiste simplement à itérer sur ces tableaux au sein de vos composants front-end.
 
+   :::caution[`_usageId` est interne]
+   `_usageId` relie une mention dans les étapes à son entrée dans les listes de la section. Le tiret bas le signale comme interne : sa numérotation peut changer dès que la recette change, et une prochaine version le remplacera par un identifiant public. Pour reconnaître un ingrédient, utilisez `id`, et ne stockez pas `_usageId`. Voir [Formats de données](/fr/docs/reference/api/data-formats).
+   :::
+
    #### Exemple : composant récursif en React
 
    Voici une implémentation illustrant le rendu du tableau `steps` et de ses jetons inline avec React :
