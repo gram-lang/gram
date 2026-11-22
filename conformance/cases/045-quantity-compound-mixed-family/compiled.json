@@ -131,7 +131,8 @@
           "unit": "ml",
           "qty": 200
         }
-      ]
+      ],
+      "unit": "oz"
     }
   ],
   "cookware": [],
