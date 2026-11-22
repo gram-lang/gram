@@ -1,7 +1,11 @@
 import chalk from "chalk";
 import { log } from "@clack/prompts";
 import { fmtNumber } from "../core/format";
-import { isCoarseUnit, toKitchenFraction } from "@gram-lang/i18n";
+import {
+	amountDecimals,
+	roundAmount,
+	toKitchenFraction,
+} from "@gram-lang/i18n";
 import type { ScaledItem } from "../services/scaler";
 
 function fmtQty(qty: number, unit: string | null, lang?: string): string {
@@ -11,11 +15,12 @@ function fmtQty(qty: number, unit: string | null, lang?: string): string {
 			? undefined
 			: toKitchenFraction(qty, unit, lang);
 	if (fraction) return `${fraction}${unit}`;
-	const decimals = isCoarseUnit(unit) ? 1 : 2;
+	// Rounded to the size of the amount, never 0 for one that is not (#230).
+	const decimals = amountDecimals(qty);
 	const rounded =
-		Math.abs(qty - Math.round(qty)) < 0.005
+		Math.abs(qty - Math.round(qty)) < 0.005 && Math.round(qty) !== 0
 			? Math.round(qty)
-			: parseFloat(qty.toFixed(decimals));
+			: roundAmount(qty);
 	return unit
 		? `${fmtNumber(rounded, decimals, lang)}${unit}`
 		: fmtNumber(rounded, 1, lang);

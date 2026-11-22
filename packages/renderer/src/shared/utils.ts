@@ -1,12 +1,13 @@
 import { ASTNodeType } from "@gram-lang/parser";
-import { type QuantityHolder, round2, termsOfUsage } from "@gram-lang/kitchen";
+import { type QuantityHolder, termsOfUsage } from "@gram-lang/kitchen";
 import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
 import {
 	commonFraction,
 	fillTemplate,
+	amountDecimals,
+	formatAmount,
 	formatNumber,
 	getDictionary,
-	isCoarseUnit,
 	isMetricMassUnit,
 	localizeDecimals,
 	resolveTimeUnit,
@@ -33,7 +34,7 @@ export interface NumberStyle {
  * (`147,5 g` in French).
  */
 export function formatGrams(grams: number, lang?: string): string {
-	return `${formatNumber(grams, lang, 1)} g`;
+	return `${formatNumber(grams, lang, gramDecimals(grams))} g`;
 }
 
 /**
@@ -81,11 +82,18 @@ export function aggToRendererItem(
 	return base;
 }
 
-// Shared "round to 1 decimal" display precision for mass/volume quantities —
-// used for normalizedMass/purchasingMass (already always grams) and, via
-// formatDecimalToFraction below, for raw qty+unit display.
-export function round1(value: number): number {
-	return Math.round(value * 10) / 10;
+/**
+ * The decimals of a weight in grams, as a kitchen scale shows it: one from
+ * 1 g upwards, and below 1 g as many as an amount needs (`0.03 g`), so a
+ * pinch of saffron is not shown as `0 g` (#230).
+ */
+export function gramDecimals(grams: number): number {
+	return Math.abs(grams) >= 1 ? 1 : amountDecimals(grams);
+}
+
+/** A weight in grams rounded as it is shown (see `gramDecimals`). */
+export function roundGrams(grams: number): number {
+	return Number(grams.toFixed(gramDecimals(grams)));
 }
 
 /**
@@ -124,8 +132,11 @@ export function formatDecimalToFraction(
 	if (typeof value !== "number") return String(value);
 	if (style.formatFraction) return style.formatFraction(value);
 
-	// Exact integers
-	if (Math.abs(value - Math.round(value)) < 0.01) {
+	// Exact integers, never 0 for an amount that is not (`0.004 g`, #230)
+	if (
+		Math.abs(value - Math.round(value)) < 0.01 &&
+		(Math.round(value) !== 0 || value === 0)
+	) {
 		return String(Math.round(value));
 	}
 
@@ -136,11 +147,9 @@ export function formatDecimalToFraction(
 	const fraction = toCommonFraction(value);
 	if (fraction) return fraction;
 
-	if (unit && isCoarseUnit(unit)) {
-		return formatNumber(round1(value), style.lang, 1);
-	}
-
-	return formatNumber(round2(value), style.lang);
+	// Rounded to the size of the amount, not to a decimal of its unit:
+	// `0.15 kg`, not `0.2 kg` (#230).
+	return formatAmount(value, style.lang);
 }
 
 export interface ExtractedQuantity {

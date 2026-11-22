@@ -41,6 +41,32 @@ export function formatNumber(
 	return formatter(lang, maxDecimals).format(value);
 }
 
+/**
+ * How many decimals an amount keeps when it is shown: 3 significant digits,
+ * never fewer than its whole part (`152.37` → `152`, `15.24` → `15.2`,
+ * `1.15` → `1.15`), and 2 significant digits below 1 (`0.15`, `0.03`,
+ * `0.0047`), so a small amount is never shown as `0`. The precision follows
+ * the size of the amount, not its unit: rounded to a fixed decimal in the
+ * author's unit, `0.15 kg` read `0.2 kg` and `0.02 kg` read `0 kg` (#230).
+ */
+export function amountDecimals(value: number): number {
+	const size = Math.abs(value);
+	if (size === 0 || !Number.isFinite(size)) return 0;
+	const magnitude = Math.floor(Math.log10(size));
+	if (magnitude >= 0) return Math.max(0, 2 - magnitude);
+	return Math.min(1 - magnitude, 6);
+}
+
+/** An amount rounded as it is shown (see `amountDecimals`). */
+export function roundAmount(value: number): number {
+	return Number(value.toFixed(amountDecimals(value)));
+}
+
+/** An amount as it is shown, in the reader's language (see `amountDecimals`). */
+export function formatAmount(value: number, lang?: string): string {
+	return formatNumber(value, lang, amountDecimals(value));
+}
+
 /** The decimal separator of a language: `"."` in English, `","` in French. */
 export function decimalSeparator(lang?: string): string {
 	return (

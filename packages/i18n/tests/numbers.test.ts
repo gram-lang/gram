@@ -1,11 +1,14 @@
 import { describe, expect, it } from "bun:test";
 import {
+	amountDecimals,
 	commonFraction,
 	decimalSeparator,
+	formatAmount,
 	formatNumber,
 	localizeDecimals,
 	looksLikeThousands,
 	toKitchenFraction,
+	roundAmount,
 } from "../src/numbers";
 
 describe("formatNumber", () => {
@@ -106,5 +109,33 @@ describe("commonFraction", () => {
 		expect(commonFraction(0.3)).toBeUndefined();
 		expect(commonFraction(0)).toBeUndefined();
 		expect(commonFraction(1)).toBeUndefined();
+	});
+});
+
+// #230: an amount is rounded to its size, not to a decimal of its unit:
+// `0.15 kg` read `0.2 kg`, `0.02 kg` read `0 kg`.
+describe("formatAmount", () => {
+	for (const [value, en, fr] of [
+		[0.15, "0.15", "0,15"],
+		[0.02, "0.02", "0,02"],
+		[0.0047, "0.0047", "0,0047"],
+		[0.333, "0.33", "0,33"],
+		[1.15, "1.15", "1,15"],
+		[15.24, "15.2", "15,2"],
+		[152.37, "152", "152"],
+		[1234.5, "1235", "1235"],
+		[0, "0", "0"],
+	] as const) {
+		it(`writes ${value} as ${en} (${fr} in French)`, () => {
+			expect(formatAmount(value)).toBe(en);
+			expect(formatAmount(value, "fr")).toBe(fr);
+			expect(roundAmount(value)).toBe(Number(en));
+		});
+	}
+
+	it("keeps 2 significant digits below 1, 3 from 1 upwards", () => {
+		expect([0.5, 0.05, 0.005, 5, 50, 500].map(amountDecimals)).toEqual([
+			2, 3, 4, 2, 1, 0,
+		]);
 	});
 });

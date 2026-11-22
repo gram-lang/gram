@@ -7,8 +7,10 @@ import {
 	formatTimerDuration,
 	largerAmount,
 	isWrittenInMetricMass,
-	round1,
 	formatRelative,
+	formatGrams,
+	gramDecimals,
+	roundGrams,
 } from "./utils";
 import { formatUsageQuantity, quantityContext } from "./quantity";
 import { formatNumber, getDictionary, isTermValue } from "@gram-lang/i18n";
@@ -123,7 +125,7 @@ function ingredientTooltip(
 			const absolute =
 				f.originalQtyStr ||
 				(f.normalizedMass !== null
-					? `${formatNumber(f.normalizedMass, context.lang, 1)} g`
+					? formatGrams(f.normalizedMass, context.lang)
 					: "");
 			if (!context.bakersMathOnly && absolute) {
 				rows.push({ label: t.renderer.quantity, value: absolute });
@@ -136,7 +138,7 @@ function ingredientTooltip(
 	if (f.massAddsInfo && f.normalizedMass !== null && (hidden || f.isEstimate)) {
 		rows.push({
 			label: t.renderer.tooltipMass,
-			value: `${f.isEstimate ? "~" : ""}${formatNumber(f.normalizedMass, context.lang, 1)} g`,
+			value: `${f.isEstimate ? "~" : ""}${formatGrams(f.normalizedMass, context.lang)}`,
 			detail: f.isEstimate ? massMethodLabel(f.conversionMethod, t) : undefined,
 		});
 	}
@@ -246,14 +248,18 @@ const strategies: Record<
 		let isEstimate = false;
 		let conversionMethod = "";
 		if (item.normalizedMass) {
-			normalizedMass = round1(item.normalizedMass);
+			normalizedMass = roundGrams(item.normalizedMass);
 			isEstimate = !!item.isEstimate;
 			conversionMethod = item.conversionMethod || "";
 		}
 		// The standardized mass as shown: one decimal, in the reader's language.
 		const grams =
 			normalizedMass !== null
-				? formatNumber(normalizedMass, context.lang, 1)
+				? formatNumber(
+						normalizedMass,
+						context.lang,
+						gramDecimals(normalizedMass),
+					)
 				: "";
 
 		// A shopping list is what you buy: 1000 g or more in kg, 1000 ml or
