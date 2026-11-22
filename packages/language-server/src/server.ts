@@ -4,7 +4,6 @@ import {
 	TextDocuments,
 	type InitializeParams,
 	type InitializeResult,
-	TextDocumentSyncKind,
 	DidChangeWatchedFilesNotification,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -32,14 +31,12 @@ import { provideReferences } from "./features/references";
 import { prepareName, provideRename } from "./features/rename";
 import { provideFormatting } from "./features/formatting";
 import { provideCodeActions } from "./features/code-actions";
-import {
-	provideSemanticTokens,
-	SEMANTIC_TOKEN_TYPES,
-	SEMANTIC_TOKEN_MODIFIERS,
-} from "./features/semantic-tokens";
+import { provideSemanticTokens } from "./features/semantic-tokens";
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
 import { provideCodeLenses } from "./features/code-lens";
+import { clientProfileOf } from "./client-profile";
+import { serverCapabilities } from "./capabilities";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
@@ -65,12 +62,7 @@ import {
 	parseSession,
 	type Session,
 } from "./session";
-import {
-	describeOutputs,
-	renderOutputs,
-	serveTimesOf,
-	sessionChoicesOf,
-} from "./views";
+import { renderOutputs, serveTimesOf, sessionChoicesOf } from "./views";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -196,35 +188,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 		params.rootUri,
 	);
 	locale = params.locale;
-	const init = params.initializationOptions as { views?: unknown } | undefined;
-	if (init?.views === true) viewsClient = true;
-	return {
-		capabilities: {
-			textDocumentSync: TextDocumentSyncKind.Incremental,
-			documentSymbolProvider: true,
-			definitionProvider: true,
-			hoverProvider: true,
-			foldingRangeProvider: true,
-			completionProvider: { triggerCharacters: ["&", "@", '"'] },
-			semanticTokensProvider: {
-				full: true,
-				legend: {
-					tokenTypes: SEMANTIC_TOKEN_TYPES as unknown as string[],
-					tokenModifiers: SEMANTIC_TOKEN_MODIFIERS,
-				},
-			},
-			referencesProvider: true,
-			renameProvider: { prepareProvider: true },
-			documentFormattingProvider: true,
-			codeActionProvider: true,
-			inlayHintProvider: true,
-			codeLensProvider: { resolveProvider: false },
-			// What a client of the views protocol can open, named in the
-			// editor's language: it builds its choice of views from this, so
-			// a view added to the renderer appears there with no edit.
-			experimental: { gramViews: describeOutputs(locale) },
-		},
-	};
+	const profile = clientProfileOf(params);
+	if (profile.views === "protocol") viewsClient = true;
+	return { capabilities: serverCapabilities(profile, locale) };
 });
 
 // The view settings (`gram.miseEnPlace`, `gram.rests`, `gram.comments`, ...):

@@ -172,6 +172,7 @@ deprecations:
     replacement: "Declare initializationOptions.views, say which outputs are open with gram/setOpenViews and read gram/viewUpdated (outputId recipe; state paused when the recipe has an error)"
     files:
       - "packages/language-server/src/server.ts"
+      - "packages/language-server/src/client-profile.ts"
 
   - id: vscode-show-gantt
     layer: cli

@@ -25,6 +25,24 @@ export type ServingStrings = GramLocale["renderer"]["serving"];
 export type SessionStrings = GramLocale["renderer"]["session"];
 
 /**
+ * What a client sends in `initialize`'s `initializationOptions`.
+ */
+export interface GramInitializationOptions {
+	/**
+	 * How the client wants the views of a document:
+	 *
+	 * - `true`: the views protocol. It receives `gramViews` in the result and
+	 *   only the outputs it has open (`gram/setOpenViews`), in
+	 *   `gram/viewUpdated`.
+	 * - `false`: no view at all, for an editor with no panel.
+	 * - absent (or any other value): an older client. It keeps receiving the
+	 *   preview and the run sheet of every document (`gram/previewUpdated`,
+	 *   `gram/ganttUpdated`), a contract deprecated until 2.0.
+	 */
+	views?: boolean;
+}
+
+/**
  * What a client of the views protocol can show, sent in the `initialize`
  * result (`capabilities.experimental.gramViews`): every output with its name,
  * and the few words a client writes around them, in the editor's language.
