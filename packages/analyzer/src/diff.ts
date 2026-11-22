@@ -219,6 +219,9 @@ function flattenShoppingItems(items: ShoppingItem[]): SimpleShoppingItem[] {
 				id: item.id,
 				name: (item as { name?: string }).name ?? item.id,
 				qty: item.qty,
+				// One entry per unit of the parent (`100 g` and `2`, since
+				// 1.5.2): paired by unit like a plain ingredient's entries.
+				unit: item.unit,
 			} as SimpleShoppingItem);
 			result.push(...flattenShoppingItems(item.usage as ShoppingItem[]));
 		} else {

@@ -4,6 +4,7 @@ description: "Group related ingredient parts like zest and juice under one paren
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 In real-world cooking, recipes often require specific parts of an `@ingredient`—like the **zest** and **juice** of a lemon. 
 
@@ -94,6 +95,18 @@ If you also use the whole parent ingredient directly (e.g., cutting a whole lemo
 ```
 > 🛒 **Shopping List**: 3 Lemons.
 
+### 4. One total per unit
+<Since v="1.5.2" />
+
+The three rules above add up amounts of one unit, or of units that convert into each other (`g` and `kg`, `cup` and `tbsp`). When the parent is used in units that don't (`100 g` here, `2` there), Gram never mixes them: it keeps one entry per unit, each with the parts drawn in that unit, like any ingredient bought in two units.
+
+```gram
+[Melt] @butter{100 g}.                // 100 g of butter
+
+[Brown] @brown butter{1}<@butter{2}.  // 2 pieces of butter
+```
+> 🛒 **Shopping List**: Butter, 2, and Butter, 100 g.
+
 ## Shopping list output
 
 The resulting shopping list structure handles composite ingredients gracefully, allowing front-end applications to display them hierarchically.
@@ -113,6 +126,8 @@ For the example above, the JSON output would look like this:
   ]
 }
 ```
+
+A parent drawn in a unit carries it in `unit` (`"unit": "g"`; no `unit` means pieces), and each entry of a parent used in several units carries `"multiUnit": true` <Since v="1.5.2" />.
 
 ## Section ingredient lists
 
