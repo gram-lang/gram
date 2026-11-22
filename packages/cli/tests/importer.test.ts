@@ -61,9 +61,52 @@ describe("parseRecipeResponse", () => {
 			),
 		).toThrow(GramCLIError);
 	});
+
+	// #92: an article page with no Recipe block said "Import failed." under the
+	// model line, and the reporter retried with other models. The message now
+	// names the stage, what the page does describe, and that no model ran.
+	it("names the stage and the types found when the page has no Recipe", () => {
+		const html = `<script type="application/ld+json">${JSON.stringify({
+			"@context": "https://schema.org",
+			"@graph": [{ "@type": "Article" }, { "@type": "Organization" }],
+		})}</script>`;
+		expect(() => parseRecipeResponse(html, "text/html")).toThrow(
+			/^No recipe found in the source: .*only describes Article, Organization\b.*no AI model was called/,
+		);
+	});
+
+	it("says so when the page has no JSON-LD at all", () => {
+		expect(() => parseRecipeResponse("<html></html>", "text/html")).toThrow(
+			/no JSON-LD structured data at all/,
+		);
+	});
+
+	it("finds a Recipe whose @type is an array", () => {
+		const html = `<script type="application/ld+json">${JSON.stringify({
+			"@graph": [
+				{ "@type": "WebPage" },
+				{ ...RECIPE_JSON_LD, "@type": ["Recipe", "NewsArticle"] },
+			],
+		})}</script>`;
+		expect(parseRecipeResponse(html, "text/html").jsonLd.name).toBe(
+			"Test Pancakes",
+		);
+	});
+
+	it("names the stage when a JSON response is not valid JSON", () => {
+		expect(() => parseRecipeResponse("{oops", "application/json")).toThrow(
+			/^No recipe found in the source: the response is not valid JSON/,
+		);
+	});
 });
 
 describe("fetchRecipe", () => {
+	it("names the read stage when a local file is missing", async () => {
+		await expect(
+			fetchRecipe(join(tmpdir(), "gram-no-such-recipe.json")),
+		).rejects.toThrow(/^Could not read the source: /);
+	});
+
 	it("reads and parses a local JSON-LD file when given a filesystem path", async () => {
 		const path = join(tmpdir(), `gram-test-recipe-${Date.now()}.json`);
 		await writeFile(path, JSON.stringify(RECIPE_JSON_LD), "utf-8");

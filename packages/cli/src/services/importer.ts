@@ -25,6 +25,23 @@ import type { YoutubeMetadata } from "./youtube";
 
 // ── JSON-LD extraction ────────────────────────────────────────────────────────
 
+/**
+ * Where an import stopped. Every error the pipeline raises names its stage:
+ * "Import failed." on its own read as a model failure, and the reporter of
+ * #92 tried three Gemini models on a page that never reached any of them.
+ */
+function stageError(
+	stage: "fetch" | "extract" | "model",
+	detail: string,
+): GramCLIError {
+	const prefix = {
+		fetch: "Could not read the source",
+		extract: "No recipe found in the source",
+		model: "The AI model call failed",
+	}[stage];
+	return new GramCLIError(`${prefix}: ${detail}`, ExitCode.Error);
+}
+
 function extractRecipeJsonLd(html: string): object {
 	const blocks: object[] = [];
 	const re =
@@ -45,25 +62,50 @@ function extractRecipeJsonLd(html: string): object {
 		if (recipe) return recipe;
 	}
 
-	throw new GramCLIError(
-		"No schema.org/Recipe JSON-LD found on this page. Try downloading the page and passing the JSON-LD directly.",
-		ExitCode.Error,
+	const types = [...new Set(blocks.flatMap(jsonLdTypes))];
+	const found =
+		types.length > 0
+			? `its structured data only describes ${types.join(", ")}`
+			: "it has no JSON-LD structured data at all";
+	throw stageError(
+		"extract",
+		`the page has no schema.org/Recipe JSON-LD (${found}). gram import reads that structured data, not the page text, so no AI model was called. Recipe sites usually publish it; importing pages without it is not supported yet.`,
 	);
 }
 
-function findRecipe(obj: any): object | null {
-	if (!obj) return null;
-	if (obj["@type"] === "Recipe") return obj;
-	if (Array.isArray(obj["@graph"])) {
-		for (const node of obj["@graph"]) {
-			if (node["@type"] === "Recipe") return node;
-		}
-	}
-	if (Array.isArray(obj)) {
-		for (const item of obj) {
-			const r = findRecipe(item);
-			if (r) return r;
-		}
+type JsonLdNode = Record<string, unknown>;
+
+/** A JSON object (not an array): the only shape that can carry `@type`. */
+function isJsonLdNode(value: unknown): value is JsonLdNode {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** `@type` as a list: schema.org allows `["Recipe", "NewsArticle"]`, and many sites use it. */
+function typesOf(node: JsonLdNode): string[] {
+	const t = node["@type"];
+	const list: unknown[] = Array.isArray(t) ? t : [t];
+	return list.filter((x): x is string => typeof x === "string");
+}
+
+/** The nodes a block nests: an array's items, or a node's `@graph`. */
+function childrenOf(value: unknown): unknown[] {
+	if (Array.isArray(value)) return value;
+	if (isJsonLdNode(value) && Array.isArray(value["@graph"]))
+		return value["@graph"];
+	return [];
+}
+
+/** Every `@type` named in a block, for the "nothing found" message. */
+function jsonLdTypes(value: unknown): string[] {
+	const own = isJsonLdNode(value) ? typesOf(value) : [];
+	return [...own, ...childrenOf(value).flatMap(jsonLdTypes)];
+}
+
+function findRecipe(value: unknown): JsonLdNode | null {
+	if (isJsonLdNode(value) && typesOf(value).includes("Recipe")) return value;
+	for (const item of childrenOf(value)) {
+		const r = findRecipe(item);
+		if (r) return r;
 	}
 	return null;
 }
@@ -101,25 +143,42 @@ export function parseRecipeResponse(
 	contentType: string,
 ): RecipeFetchResult {
 	if (contentType.includes("json")) {
-		return { jsonLd: JSON.parse(body) };
+		return { jsonLd: parseJson(body, "the response") };
 	}
 	return { jsonLd: extractRecipeJsonLd(body) };
 }
 
+function parseJson(text: string, what: string): unknown {
+	try {
+		return JSON.parse(text);
+	} catch (err) {
+		throw stageError(
+			"extract",
+			`${what} is not valid JSON (${getErrorMessage(err)}).`,
+		);
+	}
+}
+
 export async function fetchRecipe(source: string): Promise<RecipeFetchResult> {
 	if (source.startsWith("http://") || source.startsWith("https://")) {
-		const { body, contentType } = await fetchTextWithSsrfGuard(source);
-		return parseRecipeResponse(body, contentType);
+		let fetched: { body: string; contentType: string };
+		try {
+			fetched = await fetchTextWithSsrfGuard(source);
+		} catch (err) {
+			throw stageError("fetch", getErrorMessage(err));
+		}
+		return parseRecipeResponse(fetched.body, fetched.contentType);
 	}
 
-	const content = await readFile(source, "utf-8");
-	const parsed = JSON.parse(content);
-	const recipe = findRecipe(parsed);
+	let content: string;
+	try {
+		content = await readFile(source, "utf-8");
+	} catch (err) {
+		throw stageError("fetch", getErrorMessage(err));
+	}
+	const recipe = findRecipe(parseJson(content, source));
 	if (!recipe)
-		throw new GramCLIError(
-			"No schema.org/Recipe found in the provided JSON file.",
-			ExitCode.Error,
-		);
+		throw stageError("extract", `${source} has no schema.org/Recipe object.`);
 	return { jsonLd: recipe };
 }
 
@@ -489,9 +548,11 @@ export async function importWithAI(
 		lang?: string;
 		/** Enables the analyzer report — without it there is nothing to check quantities against. */
 		db?: Record<string, IngredientData> | null;
+		/** Called once the recipe is read, right before the first model call. */
+		onConvert?: () => void;
 	} = {},
 ): Promise<ImportResult> {
-	const { lang = "en", db = null } = opts;
+	const { lang = "en", db = null, onConvert } = opts;
 	const { jsonLd } = await fetchRecipe(source);
 	const recipe: any = findRecipe(jsonLd) ?? jsonLd;
 
@@ -505,6 +566,7 @@ export async function importWithAI(
 		instructions,
 	);
 	const system = buildSystemPrompt(lang);
+	onConvert?.();
 
 	const gramContent = await generateAndFinalize({
 		model,
@@ -576,45 +638,65 @@ function buildSystemPrompt(
 async function generateAndFinalize(opts: {
 	model: LanguageModel;
 	system: SystemModelMessage;
-	firstCall: () => Promise<{ text: string }>;
+	firstCall: () => Promise<{ text: string; finishReason?: string }>;
 	lang: string;
 	sourceUrl?: string;
 	author?: string | string[];
 }): Promise<string> {
 	const { model, system, firstCall, lang, sourceUrl, author } = opts;
 
-	try {
-		let gramContent = stripFences((await firstCall()).text);
+	let gramContent = stripFences(await callModel(firstCall));
 
-		for (let attempt = 0; attempt < AI_MAX_RETRIES; attempt++) {
-			const errors = validateGram(gramContent);
-			if (errors.length === 0) break;
+	for (let attempt = 0; attempt < AI_MAX_RETRIES; attempt++) {
+		const errors = validateGram(gramContent);
+		if (errors.length === 0) break;
 
-			const errorList = errors.map((e, i) => `${i + 1}. ${e}`).join("\n");
-			const { text: fixed } = await generateText({
+		const errorList = errors.map((e, i) => `${i + 1}. ${e}`).join("\n");
+		const fixed = await callModel(() =>
+			generateText({
 				model,
 				temperature: 0,
 				system,
 				prompt: `The following .gram file has validation errors. Fix them and output only the corrected .gram content.\n\nErrors:\n${errorList}\n\nFile:\n${gramContent}`,
-			});
-			gramContent = stripFences(fixed);
-		}
+			}),
+		);
+		gramContent = stripFences(fixed);
+	}
 
-		gramContent = injectLanguage(gramContent, lang);
-		// Provenance comes from the source data, never from the model — see
-		// injectProvenance. Runs before formatGram so the result is formatted.
-		gramContent = injectProvenance(gramContent, { sourceUrl, author });
+	gramContent = injectLanguage(gramContent, lang);
+	// Provenance comes from the source data, never from the model — see
+	// injectProvenance. Runs before formatGram so the result is formatted.
+	gramContent = injectProvenance(gramContent, { sourceUrl, author });
 
-		// Formatting (spacing, trailing zeros, blank lines...) is deterministic —
-		// no need to spend another AI call asking the model to fix it when
-		// `@gram-lang/format` already does this exactly and for free.
-		return formatGram(gramContent).content;
+	// Formatting (spacing, trailing zeros, blank lines...) is deterministic —
+	// no need to spend another AI call asking the model to fix it when
+	// `@gram-lang/format` already does this exactly and for free.
+	return formatGram(gramContent).content;
+}
+
+/**
+ * One model call, its failures named as such. The AI SDK's own message (the
+ * provider's status and reason, or "Failed after 3 attempts…") is kept: it is
+ * the only part that says *why*. An empty answer is a failure too — a model
+ * that spent its whole budget thinking returns "" with finishReason "length",
+ * which used to surface later as a baffling list of .gram validation errors.
+ */
+async function callModel(
+	call: () => Promise<{ text: string; finishReason?: string }>,
+): Promise<string> {
+	let result: { text: string; finishReason?: string };
+	try {
+		result = await call();
 	} catch (err) {
-		throw new GramCLIError(
-			`AI import failed: ${getErrorMessage(err)}`,
-			ExitCode.Error,
+		throw stageError("model", getErrorMessage(err));
+	}
+	if (result.text.trim() === "") {
+		throw stageError(
+			"model",
+			`the model returned an empty answer (finish reason: ${result.finishReason ?? "unknown"}). Try again or with another --model.`,
 		);
 	}
+	return result.text;
 }
 
 // ── Video import ──────────────────────────────────────────────────────────────
