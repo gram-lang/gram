@@ -42,8 +42,8 @@ function stageError(
 	return new GramCLIError(`${prefix}: ${detail}`, ExitCode.Error);
 }
 
-function extractRecipeJsonLd(html: string): object {
-	const blocks: object[] = [];
+function extractRecipeJsonLd(html: string): JsonLdNode {
+	const blocks: unknown[] = [];
 	const re =
 		/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
 	let match = re.exec(html);
@@ -110,28 +110,85 @@ function findRecipe(value: unknown): JsonLdNode | null {
 	return null;
 }
 
-function flattenInstructions(
-	instructions: any[],
-): Array<{ text: string; name?: string }> {
-	const steps: Array<{ text: string; name?: string }> = [];
-	for (const ins of instructions) {
-		if (typeof ins === "string") {
-			steps.push({ text: ins });
-		} else if (ins["@type"] === "HowToStep") {
-			steps.push({ text: ins.text ?? ins.name ?? "", name: ins.name });
-		} else if (
-			ins["@type"] === "HowToSection" &&
-			Array.isArray(ins.itemListElement)
-		) {
-			steps.push(...flattenInstructions(ins.itemListElement));
+// ── Recipe fields ─────────────────────────────────────────────────────────────
+//
+// schema.org lets a site write most fields several ways: one string or a list,
+// a `Person` object or a name, `HowToStep`s grouped in `HowToSection`s. Each
+// field is normalized once, here, so the rest of the import only ever sees
+// strings. Anything else a page puts there is dropped rather than trusted:
+// `recipeIngredient: "200 g flour"` used to crash on `.map`, and an ingredient
+// written as an object on `.replace`.
+
+type InstructionStep = { text: string; name?: string };
+
+function str(value: unknown): string | undefined {
+	return typeof value === "string" ? value : undefined;
+}
+
+/** One string or a list of them; the only shapes a text list may take. */
+function stringList(value: unknown): string[] {
+	const list: unknown[] = Array.isArray(value) ? value : [value];
+	return list.filter((x): x is string => typeof x === "string");
+}
+
+/** `recipeInstructions`: one text, or steps nested in sections, flattened in order. */
+export function readInstructions(value: unknown): InstructionStep[] {
+	if (typeof value === "string") return [{ text: value }];
+	if (!Array.isArray(value)) return [];
+	return value.flatMap((item): InstructionStep[] => {
+		if (typeof item === "string") return [{ text: item }];
+		if (!isJsonLdNode(item)) return [];
+		const types = typesOf(item);
+		if (types.includes("HowToSection"))
+			return readInstructions(item.itemListElement);
+		if (types.includes("HowToStep")) {
+			const name = str(item.name);
+			const text = str(item.text) ?? name;
+			return text ? [{ text, name }] : [];
 		}
-	}
-	return steps;
+		return [];
+	});
+}
+
+/** The recipe fields the import reads, each in the one shape the rest expects. */
+type RecipeFields = {
+	name?: string;
+	description?: string;
+	author: unknown;
+	category?: string;
+	keywords?: string;
+	recipeYield: unknown;
+	prepTime?: string;
+	cookTime?: string;
+	totalTime?: string;
+	ingredients: string[];
+	instructions: InstructionStep[];
+};
+
+function readRecipe(node: JsonLdNode): RecipeFields {
+	return {
+		name: str(node.name),
+		description: str(node.description),
+		author: node.author,
+		category: str(node.recipeCategory),
+		keywords: str(node.keywords),
+		recipeYield: node.recipeYield,
+		prepTime: str(node.prepTime),
+		cookTime: str(node.cookTime),
+		totalTime: str(node.totalTime),
+		ingredients: stringList(node.recipeIngredient),
+		instructions: readInstructions(node.recipeInstructions),
+	};
 }
 
 // ── Source fetching ───────────────────────────────────────────────────────────
 
-type RecipeFetchResult = { jsonLd: any };
+/**
+ * The recipe node, or for a JSON source with no `Recipe` in it, the top-level
+ * object itself: a bare `{ name, recipeIngredient, … }` file has always been
+ * accepted, and an untyped one still is.
+ */
+type RecipeFetchResult = { jsonLd: JsonLdNode };
 
 // Split out from fetchRecipe so the response-parsing logic (content-type
 // dispatch, HTML scraping) is testable with plain fixture strings, without
@@ -143,7 +200,10 @@ export function parseRecipeResponse(
 	contentType: string,
 ): RecipeFetchResult {
 	if (contentType.includes("json")) {
-		return { jsonLd: parseJson(body, "the response") };
+		const parsed = parseJson(body, "the response");
+		return {
+			jsonLd: findRecipe(parsed) ?? (isJsonLdNode(parsed) ? parsed : {}),
+		};
 	}
 	return { jsonLd: extractRecipeJsonLd(body) };
 }
@@ -225,14 +285,13 @@ export function cleanText(text: string): string {
 // schema.org allows `author` to be a string, a Person/Organization object, or
 // an array of either — normalize all three shapes to what the spec prompt
 // actually asks for (a plain name or array of names).
-function extractAuthor(author: any): string | string[] | undefined {
-	if (!author) return undefined;
+function extractAuthor(author: unknown): string | string[] | undefined {
 	if (typeof author === "string") return cleanText(author);
 	if (Array.isArray(author)) {
 		const names = author.map(extractAuthor).filter((n): n is string => !!n);
 		return names.length > 0 ? names : undefined;
 	}
-	if (typeof author === "object" && typeof author.name === "string") {
+	if (isJsonLdNode(author) && typeof author.name === "string") {
 		return cleanText(author.name);
 	}
 	return undefined;
@@ -245,33 +304,28 @@ function extractAuthor(author: any): string | string[] | undefined {
 // None of it helps write .gram. This keeps only what SECTION 1 (FRONTMATTER)
 // and SECTION 2/3 of the spec actually use, pre-cleaned of markup noise.
 export function buildImportPayload(
-	recipe: any,
+	recipe: JsonLdNode,
 	sourceUrl: string | undefined,
-	rawIngredients: string[],
-	instructions: Array<{ text: string; name?: string }>,
 ): Record<string, unknown> {
+	const r = readRecipe(recipe);
 	const payload: Record<string, unknown> = {
-		recipeIngredient: rawIngredients.map(cleanText),
-		recipeInstructions: instructions.map((i) => ({
+		recipeIngredient: r.ingredients.map(cleanText),
+		recipeInstructions: r.instructions.map((i) => ({
 			text: cleanText(i.text),
 			...(i.name ? { name: cleanText(i.name) } : {}),
 		})),
 	};
-	if (typeof recipe.name === "string") payload.name = cleanText(recipe.name);
-	if (typeof recipe.description === "string")
-		payload.description = cleanText(recipe.description);
-	const author = extractAuthor(recipe.author);
+	if (r.name) payload.name = cleanText(r.name);
+	if (r.description) payload.description = cleanText(r.description);
+	const author = extractAuthor(r.author);
 	if (author) payload.author = author;
 	if (sourceUrl) payload.url = sourceUrl;
-	if (typeof recipe.recipeCategory === "string")
-		payload.recipeCategory = cleanText(recipe.recipeCategory);
-	if (typeof recipe.keywords === "string")
-		payload.keywords = cleanText(recipe.keywords);
-	if (recipe.recipeYield != null) payload.recipeYield = recipe.recipeYield;
-	if (typeof recipe.prepTime === "string") payload.prepTime = recipe.prepTime;
-	if (typeof recipe.cookTime === "string") payload.cookTime = recipe.cookTime;
-	if (typeof recipe.totalTime === "string")
-		payload.totalTime = recipe.totalTime;
+	if (r.category) payload.recipeCategory = cleanText(r.category);
+	if (r.keywords) payload.keywords = cleanText(r.keywords);
+	if (r.recipeYield != null) payload.recipeYield = r.recipeYield;
+	if (r.prepTime) payload.prepTime = r.prepTime;
+	if (r.cookTime) payload.cookTime = r.cookTime;
+	if (r.totalTime) payload.totalTime = r.totalTime;
 	return payload;
 }
 
@@ -553,18 +607,10 @@ export async function importWithAI(
 	} = {},
 ): Promise<ImportResult> {
 	const { lang = "en", db = null, onConvert } = opts;
-	const { jsonLd } = await fetchRecipe(source);
-	const recipe: any = findRecipe(jsonLd) ?? jsonLd;
-
-	const rawIngredients: string[] = recipe.recipeIngredient ?? [];
-	const instructions = flattenInstructions(recipe.recipeInstructions ?? []);
+	const { jsonLd: recipe } = await fetchRecipe(source);
+	const fields = readRecipe(recipe);
 	const sourceUrl = /^https?:\/\//.test(source) ? source : undefined;
-	const payload = buildImportPayload(
-		recipe,
-		sourceUrl,
-		rawIngredients,
-		instructions,
-	);
+	const payload = buildImportPayload(recipe, sourceUrl);
 	const system = buildSystemPrompt(lang);
 	onConvert?.();
 
@@ -580,14 +626,14 @@ export async function importWithAI(
 			}),
 		lang,
 		sourceUrl,
-		author: extractAuthor(recipe.author),
+		author: extractAuthor(fields.author),
 	});
 
 	return {
 		gramContent,
-		title: recipe.name ?? "Untitled",
-		ingredientCount: rawIngredients.length,
-		stepCount: instructions.length,
+		title: fields.name ?? "Untitled",
+		ingredientCount: fields.ingredients.length,
+		stepCount: fields.instructions.length,
 		...inspectImport(gramContent, db),
 	};
 }

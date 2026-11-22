@@ -10,6 +10,7 @@ import {
 	collectAllWarnings,
 	injectLanguage,
 	cleanText,
+	readInstructions,
 } from "../src/services/importer";
 import { GramCLIError } from "../src/errors";
 
@@ -215,10 +216,12 @@ describe("buildImportPayload", () => {
 				image: ["https://example.com/a.jpg", "https://example.com/b.jpg"],
 				aggregateRating: { ratingValue: 4.8, ratingCount: 312 },
 				review: [{ author: "Someone", reviewBody: "Loved it!" }],
+				recipeIngredient: ["200g <b>flour</b>", "1 egg"],
+				recipeInstructions: [
+					{ "@type": "HowToStep", text: "Mix &nbsp;everything." },
+				],
 			},
 			"https://example.com/pancakes",
-			["200g <b>flour</b>", "1 egg"],
-			[{ text: "Mix &nbsp;everything." }],
 		);
 
 		expect(payload.name).toBe("Pancakes");
@@ -240,15 +243,74 @@ describe("buildImportPayload", () => {
 		const payload = buildImportPayload(
 			{ author: [{ name: "Jane" }, "John"] },
 			undefined,
-			[],
-			[],
 		);
 		expect(payload.author).toEqual(["Jane", "John"]);
 	});
 
 	it("omits the url field for a local file source", () => {
-		const payload = buildImportPayload({}, undefined, [], []);
+		const payload = buildImportPayload({}, undefined);
 		expect(payload).not.toHaveProperty("url");
+	});
+
+	// schema.org allows a single text where a list is expected; a string
+	// ingredient used to crash on `.map`, an object one on `.replace`.
+	it("reads a single-string ingredient list and drops non-string entries", () => {
+		expect(
+			buildImportPayload({ recipeIngredient: "200g flour" }, undefined)
+				.recipeIngredient,
+		).toEqual(["200g flour"]);
+		expect(
+			buildImportPayload(
+				{ recipeIngredient: ["1 egg", { name: "milk" }, 3] },
+				undefined,
+			).recipeIngredient,
+		).toEqual(["1 egg"]);
+	});
+
+	it("ignores a non-string name or time instead of passing it to the model", () => {
+		const payload = buildImportPayload(
+			{ name: { "@value": "Pancakes" }, prepTime: 10 },
+			undefined,
+		);
+		expect(payload).not.toHaveProperty("name");
+		expect(payload).not.toHaveProperty("prepTime");
+	});
+});
+
+describe("readInstructions", () => {
+	it("reads a single text as one step", () => {
+		expect(readInstructions("Mix everything.")).toEqual([
+			{ text: "Mix everything." },
+		]);
+	});
+
+	it("flattens sections in order, whatever form their @type takes", () => {
+		expect(
+			readInstructions([
+				{
+					"@type": ["HowToSection"],
+					name: "Dough",
+					itemListElement: [{ "@type": "HowToStep", text: "Mix." }, "Rest."],
+				},
+				{ "@type": "HowToStep", name: "Bake" },
+			]),
+		).toEqual([
+			{ text: "Mix." },
+			{ text: "Rest." },
+			{ text: "Bake", name: "Bake" },
+		]);
+	});
+
+	it("drops entries it cannot read", () => {
+		expect(
+			readInstructions([
+				42,
+				null,
+				{ text: "untyped" },
+				{ "@type": "HowToStep", text: { "@value": "Mix." } },
+			]),
+		).toEqual([]);
+		expect(readInstructions(undefined)).toEqual([]);
 	});
 });
 
