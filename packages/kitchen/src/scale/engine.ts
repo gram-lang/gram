@@ -49,7 +49,14 @@ function findNestedParent(
 	id: string,
 ): string | undefined {
 	for (const item of shoppingList) {
-		if (item && item.type === "composite" && "usage" in item) {
+		// A parent's own direct use sits in its `usage` under its own id
+		// ("Direct Use"): that is the parent itself, not a nested child.
+		if (
+			item &&
+			item.type === "composite" &&
+			"usage" in item &&
+			item.id !== id
+		) {
 			const sub = item.usage.find((u) => u && u.id === id);
 			if (sub) return item.id;
 		}

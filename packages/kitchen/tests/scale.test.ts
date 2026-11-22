@@ -230,6 +230,21 @@ Add @lemon juice{100ml}<@lemon{2}.
 		).not.toThrow();
 	});
 
+	it("scales on a composite parent also used directly (its own Direct Use entry is not a nesting)", () => {
+		// 2 eggs for the yolks + 1 used whole = 3 eggs; the parent's own
+		// direct use sits in its `usage` under the parent's id.
+		const withDirect = compileRecipe(
+			"## Prep\n\nCrack @eggs{1}.\n\nWhisk @egg yolks{2}<@eggs{2}.\n",
+		);
+		const res = resolveScaleFactor(withDirect, {
+			type: "target",
+			id: "eggs",
+			qty: 6,
+			unit: null,
+		});
+		expect(res.factor).toBe(2);
+	});
+
 	it("throws AlternativeTargetError for an ingredient inside an alternative group", () => {
 		try {
 			resolveScaleFactor(recipe, {
