@@ -8,13 +8,23 @@ import { fileURLToPath } from "node:url";
  * `fileURLToPath` throws on any non-`file:`
  * URI, which used to crash server initialization for the whole session
  * before it could even respond to the client.
+ *
+ * A client that sends no workspace folders (an older or minimal client, or
+ * one opened on a single directory) may still send `rootUri`: it stands for
+ * the one folder, so `.gram/ingredients.yaml` is found there too.
  */
 export function resolveWorkspaceFolders(
 	folders: ReadonlyArray<{ uri: string }> | null | undefined,
+	rootUri?: string | null,
 ): string[] {
-	return (folders ?? []).flatMap((f) => {
+	const uris = folders?.length
+		? folders.map((f) => f.uri)
+		: rootUri
+			? [rootUri]
+			: [];
+	return uris.flatMap((uri) => {
 		try {
-			return f.uri.startsWith("file:") ? [fileURLToPath(f.uri)] : [];
+			return uri.startsWith("file:") ? [fileURLToPath(uri)] : [];
 		} catch {
 			return [];
 		}

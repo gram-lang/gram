@@ -42,4 +42,36 @@ describe("resolveWorkspaceFolders", () => {
 		expect(resolveWorkspaceFolders(undefined)).toEqual([]);
 		expect(resolveWorkspaceFolders(null)).toEqual([]);
 	});
+
+	// A client that only sends `rootUri` (no workspaceFolders) used to get no
+	// folder at all, so `.gram/` project files were never found.
+	describe("falls back to rootUri", () => {
+		it("when the client sends no workspace folders", () => {
+			expect(
+				resolveWorkspaceFolders(undefined, "file:///home/user/recipes"),
+			).toEqual(["/home/user/recipes"]);
+			expect(
+				resolveWorkspaceFolders(null, "file:///home/user/recipes"),
+			).toEqual(["/home/user/recipes"]);
+			expect(resolveWorkspaceFolders([], "file:///home/user/recipes")).toEqual([
+				"/home/user/recipes",
+			]);
+		});
+
+		it("never when workspace folders are there", () => {
+			expect(
+				resolveWorkspaceFolders(
+					[{ uri: "file:///home/user/a" }],
+					"file:///home/user/b",
+				),
+			).toEqual(["/home/user/a"]);
+		});
+
+		it("skipping a non-file rootUri", () => {
+			expect(
+				resolveWorkspaceFolders(null, "vscode-vfs://github/owner/repo"),
+			).toEqual([]);
+			expect(resolveWorkspaceFolders(null, null)).toEqual([]);
+		});
+	});
 });

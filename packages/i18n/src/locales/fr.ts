@@ -505,5 +505,6 @@ export const fr: GramLocale = {
 		anchorInDays: "En jours : ouvre sa propre journée de travail.",
 		anchorInHours:
 			"En heures ou en minutes : une échéance dans la journée, sans journée de travail à part.",
+		showPreview: "Aperçu",
 	},
 };

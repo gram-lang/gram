@@ -546,6 +546,8 @@ export const en = {
 		anchorInDays: "In days: opens a working day of its own.",
 		anchorInHours:
 			"In hours or minutes: a deadline within the day, no working day of its own.",
+		/** CodeLens at the top of a recipe, in the editor's language: opens the preview. */
+		showPreview: "Preview",
 	},
 };
 

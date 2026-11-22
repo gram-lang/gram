@@ -186,11 +186,15 @@ async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
 // every document through the notifications it reads.
 let viewsClient = false;
 // The editor's language, for the words the server writes itself (the paused
-// banner): the recipe's own language is unknown when it does not parse.
+// banner, the CodeLens): the recipe's own language is unknown when it does not
+// parse.
 let locale: string | undefined;
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
-	workspaceFolders = resolveWorkspaceFolders(params.workspaceFolders);
+	workspaceFolders = resolveWorkspaceFolders(
+		params.workspaceFolders,
+		params.rootUri,
+	);
 	locale = params.locale;
 	const init = params.initializationOptions as { views?: unknown } | undefined;
 	if (init?.views === true) viewsClient = true;
@@ -807,7 +811,7 @@ connection.languages.inlayHint.on(({ textDocument: { uri } }) => {
 
 connection.onCodeLens(({ textDocument: { uri } }) => {
 	const s = states.get(uri);
-	return s ? provideCodeLenses(s) : [];
+	return s ? provideCodeLenses(s, locale) : [];
 });
 
 documents.listen(connection);
