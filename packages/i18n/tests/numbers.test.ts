@@ -10,6 +10,7 @@ import {
 	toKitchenFraction,
 	roundAmount,
 } from "../src/numbers";
+import { round2, roundQuantity } from "../src/quantity";
 
 describe("formatNumber", () => {
 	it("writes the decimal separator of the reader's language", () => {
@@ -137,5 +138,30 @@ describe("formatAmount", () => {
 		expect([0.5, 0.05, 0.005, 5, 50, 500].map(amountDecimals)).toEqual([
 			2, 3, 4, 2, 1, 0,
 		]);
+	});
+});
+
+// #230: a stored quantity keeps 2 decimals, like round2, but never fewer
+// than 2 significant digits, so a small amount is not stored as 0.
+describe("roundQuantity", () => {
+	for (const [value, stored] of [
+		[1.234, 1.23],
+		[152.375, 152.38],
+		[0.333, 0.33],
+		[0.05, 0.05],
+		[0.0046875, 0.0047],
+		[0.002, 0.002],
+		[0, 0],
+		[-0.0046875, -0.0047],
+	] as const) {
+		it(`stores ${value} as ${stored}`, () => {
+			expect(roundQuantity(value)).toBe(stored);
+		});
+	}
+
+	it("is round2 whenever 2 significant digits are left", () => {
+		for (const value of [0.12345, 0.5, 3.14159, 1234.5678]) {
+			expect(roundQuantity(value)).toBe(round2(value));
+		}
 	});
 });

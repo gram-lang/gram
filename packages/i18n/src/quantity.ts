@@ -95,6 +95,21 @@ export class QuantityOverflowError extends RangeError {
  */
 export const round2 = (value: number): number => parseFloat(value.toFixed(2));
 
+/**
+ * Rounds a stored quantity or mass like `round2`, but never to fewer than 2
+ * significant digits: `1.234` → `1.23` and `0.333` → `0.33` as before, but
+ * `0.0047` stays `0.0047` instead of becoming `0`. Rounded to 2 decimals in
+ * the author's unit, a recipe divided by 10 lost its `0.02 kg` of salt, and
+ * a ratio of a pinch weighed `0 g` (#230). The views round what they show
+ * (`formatAmount`).
+ */
+export const roundQuantity = (value: number): number => {
+	const size = Math.abs(value);
+	if (size >= 1 || size === 0 || !Number.isFinite(size)) return round2(value);
+	const decimals = Math.min(1 - Math.floor(Math.log10(size)), 15);
+	return parseFloat(value.toFixed(Math.max(2, decimals)));
+};
+
 /** True for a value a term can hold (a number, or a single / fraction / range). */
 export function isTermValue(value: unknown): value is TermValue {
 	if (typeof value === "number") return true;
@@ -174,7 +189,7 @@ function commonUnit(ordered: readonly Term[]): CommonUnit | null {
 				unit: family.base,
 				weight: (t) => family.map[normalizeUnit(t.unit)] as number,
 				divisor: 1,
-				round: round2,
+				round: roundQuantity,
 			};
 		}
 	}
@@ -357,7 +372,7 @@ export function scaleTermValue<T extends TermValue>(
 	const scale = (n: number): number => {
 		const scaled = n * factor;
 		if (!Number.isFinite(scaled)) throw new QuantityOverflowError(factor);
-		return round2(scaled);
+		return roundQuantity(scaled);
 	};
 
 	if (typeof value === "number") return scale(value);

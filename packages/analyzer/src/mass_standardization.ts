@@ -1,6 +1,6 @@
 import {
 	slugify,
-	round2,
+	roundQuantity,
 	termsByFamily,
 	type TargetConverter,
 } from "@gram-lang/kitchen";
@@ -306,13 +306,13 @@ export function applyYield(
 	}
 	if (method === "unit_weight") {
 		return {
-			normalizedMass: round2(mass * yieldFactor),
+			normalizedMass: roundQuantity(mass * yieldFactor),
 			purchasingMass: mass,
 		};
 	}
 	return {
 		normalizedMass: mass,
-		purchasingMass: round2(mass / yieldFactor),
+		purchasingMass: roundQuantity(mass / yieldFactor),
 	};
 }
 

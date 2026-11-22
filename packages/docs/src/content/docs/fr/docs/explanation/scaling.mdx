@@ -62,6 +62,8 @@ La fonction qui applique réellement la multiplication sur chaque quantité, `ap
 - **Pas de cumul.** Réappliquer un facteur différent repart toujours du même original non modifié, il n'y a donc aucun risque d'appliquer un facteur deux fois sur une valeur `portions` déjà ajustée.
 - **Pas de corruption par référence partagée.** `compile()` lui-même clone défensivement l'objet `meta` de l'AST avant de le passer au résultat, donc ajuster les proportions d'une recette compilée ne modifie jamais l'AST de l'analyseur syntaxique — c'est sans danger même lorsqu'un appelant (comme le Playground) met en cache l'AST et recompile à chaque mouvement du curseur.
 
+Une quantité mise à l'échelle est stockée avec deux décimales, mais jamais moins de deux chiffres significatifs (`roundQuantity` dans `@gram-lang/i18n`) : `20 g` de sel écrits `0,02 kg` puis divisés par 10 sont stockés `0,002 kg`, et non `0`. Le nombre de chiffres que voit le lecteur, lui, relève des vues (`formatAmount`).
+
 Le `CompilationResult` final porte un champ explicite `scaleFactor` (défini à `1` par défaut) qui consigne son ratio par rapport à l'original. C'est cette valeur que lisent les interfaces interactives (comme le Playground ou un sélecteur de portions) pour calculer leur base, évitant ainsi de s'appuyer sur des champs masqués.
 
 ## Mettre à l'échelle une somme de quantités

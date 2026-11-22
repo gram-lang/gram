@@ -36,6 +36,7 @@ import {
 	termsOfUsage,
 	WarningCode,
 	round2,
+	roundQuantity,
 	isPurchasableReference,
 	pushRatioWarnings,
 	pushWarning,
@@ -142,9 +143,9 @@ function standardizeUsageMass(
 
 	usage.conversionMethod = weighed.method;
 	usage.isEstimate = weighed.isEstimate;
-	usage.normalizedMass = round2(weighed.normalizedMass);
+	usage.normalizedMass = roundQuantity(weighed.normalizedMass);
 	if (weighed.purchasingMass !== undefined) {
-		usage.purchasingMass = round2(weighed.purchasingMass);
+		usage.purchasingMass = roundQuantity(weighed.purchasingMass);
 	}
 }
 
@@ -245,7 +246,7 @@ function standardizeSectionMasses(
 			// Perform physical mass normalization if enabled. Audit
 			// 2026-07-22, analyzer finding B6/I10: this used to duplicate
 			// standardizeUsageMass()'s sequence inline, but without its
-			// round2() calls — the same usage ended up with an unrounded
+			// roundQuantity() calls — the same usage ended up with an unrounded
 			// normalizedMass here (e.g. 250.78328000000002) and a rounded
 			// one once aggregated into the shopping list (250.78). Calling
 			// the one shared function both places removes the divergence,
@@ -593,7 +594,7 @@ function resolveShare(
 	}
 
 	if (targetMass > 0) {
-		item.normalizedMass = round2((formula.percent / 100) * targetMass);
+		item.normalizedMass = roundQuantity((formula.percent / 100) * targetMass);
 		// `Usage.qty` accepts QuantityValueAST's "single"/"fraction"/"range"
 		// variants, never a raw QuantityAST — the renderer's getQty() happened
 		// to read `.value` off any shape. `unit` is the one place read from.
@@ -718,10 +719,10 @@ function shareOfEntry(
 		: null;
 	if (!weighed) return {};
 	return {
-		normalizedMass: round2(weighed.normalizedMass),
+		normalizedMass: roundQuantity(weighed.normalizedMass),
 		purchasingMass:
 			weighed.purchasingMass !== undefined
-				? round2(weighed.purchasingMass)
+				? roundQuantity(weighed.purchasingMass)
 				: undefined,
 		isEstimate: weighed.isEstimate,
 		conversionMethod: weighed.method,
@@ -787,11 +788,11 @@ function enrichShoppingList(
 					}
 				}
 				if (totalMass > 0) {
-					item.normalizedMass = round2(totalMass);
+					item.normalizedMass = roundQuantity(totalMass);
 					item.isEstimate = hasEstimate;
 					item.conversionMethod = hasEstimate ? "estimate" : "physical";
 					if (Math.abs(totalPurchasing - totalMass) > 0.001) {
-						item.purchasingMass = round2(totalPurchasing);
+						item.purchasingMass = roundQuantity(totalPurchasing);
 					}
 				}
 			} else if (
@@ -886,7 +887,7 @@ function enrichShoppingList(
 				}
 
 				if (totalMass > 0) {
-					stdItem.normalizedMass = round2(totalMass);
+					stdItem.normalizedMass = roundQuantity(totalMass);
 					stdItem.isEstimate = hasEstimate;
 					// Preserve 'relative' provenance even if only some contributing
 					// usages were formula-derived: a mass partly built from another
@@ -898,7 +899,7 @@ function enrichShoppingList(
 							? "estimate"
 							: "physical";
 					if (Math.abs(totalPurchasing - totalMass) > 0.001) {
-						stdItem.purchasingMass = round2(totalPurchasing);
+						stdItem.purchasingMass = roundQuantity(totalPurchasing);
 					}
 
 					if (hasRelativeResolved) {

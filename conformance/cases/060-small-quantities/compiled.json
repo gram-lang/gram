@@ -1,0 +1,347 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "saffron": {
+        "id": "saffron",
+        "name": "saffron",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "pinch"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt"
+      },
+      "pepper": {
+        "id": "pepper",
+        "name": "pepper",
+        "default_unit": "kg"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "saffron",
+      "name": "saffron",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 0.004,
+      "unit": "g"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 1,
+      "unit": "pinch"
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "3"
+      ],
+      "relative": true,
+      "qty": 0.0047,
+      "unit": "g"
+    },
+    {
+      "id": "pepper",
+      "name": "pepper",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 0.002,
+      "unit": "kg"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Prep",
+      "ingredients": [
+        {
+          "id": "saffron",
+          "_usageId": "1",
+          "qty": 0.004,
+          "unit": "g"
+        },
+        {
+          "id": "milk",
+          "_usageId": "2",
+          "qty": 1,
+          "unit": "pinch"
+        },
+        {
+          "id": "salt",
+          "_usageId": "3",
+          "qty": {
+            "type": "single",
+            "value": 0.0047
+          },
+          "dependencies": [
+            "milk"
+          ],
+          "formula": {
+            "raw": "15 g / L @&milk",
+            "target": "milk",
+            "ratio": {
+              "numerator": {
+                "value": {
+                  "type": "single",
+                  "value": 15,
+                  "text": "15"
+                },
+                "unit": "g"
+              },
+              "denominator": {
+                "value": 1,
+                "unit": "L"
+              },
+              "target": "milk",
+              "targetId": "milk",
+              "referenceType": "ingredient",
+              "raw": "15 g / L @&milk",
+              "loc": {
+                "start": 71,
+                "end": 86
+              }
+            },
+            "isGhost": false
+          },
+          "unit": "g"
+        },
+        {
+          "id": "pepper",
+          "_usageId": "4",
+          "qty": 0.002,
+          "unit": "kg"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Steep ",
+            {
+              "id": "saffron",
+              "_usageId": "1",
+              "qty": 0.004,
+              "unit": "g"
+            },
+            "in ",
+            {
+              "id": "milk",
+              "_usageId": "2",
+              "qty": 1,
+              "unit": "pinch"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Season with ",
+            {
+              "id": "salt",
+              "_usageId": "3",
+              "qty": {
+                "type": "single",
+                "value": 0.0047
+              },
+              "dependencies": [
+                "milk"
+              ],
+              "formula": {
+                "raw": "15 g / L @&milk",
+                "target": "milk",
+                "ratio": {
+                  "numerator": {
+                    "value": {
+                      "type": "single",
+                      "value": 15,
+                      "text": "15"
+                    },
+                    "unit": "g"
+                  },
+                  "denominator": {
+                    "value": 1,
+                    "unit": "L"
+                  },
+                  "target": "milk",
+                  "targetId": "milk",
+                  "referenceType": "ingredient",
+                  "raw": "15 g / L @&milk",
+                  "loc": {
+                    "start": 71,
+                    "end": 86
+                  }
+                },
+                "isGhost": false
+              },
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "pepper",
+              "_usageId": "4",
+              "qty": 0.002,
+              "unit": "kg"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 8,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Prep",
+        "duration": 4
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Prep",
+        "duration": 4
+      }
+    ],
+    "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      }
+    ]
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 4,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 4
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 4,
+            "duration": 4
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 2
+        },
+        "after": [
+          "s0.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 8,
+    "activeTime": 4,
+    "preparationTime": 4,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 4
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 4,
+        "end": 6
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 6,
+        "end": 8
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 8,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}

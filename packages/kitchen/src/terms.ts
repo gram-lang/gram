@@ -19,7 +19,7 @@ import {
 	QuantityOverflowError,
 	scaleTerms,
 	type Term,
-	round2,
+	roundQuantity,
 	type TermValue,
 	type TermsTotal,
 	termsTotal,
@@ -131,12 +131,15 @@ export function shoppingAmount(
 ): { qty: number; unit: string | null; range?: { min: number; max: number } } {
 	if (!total) return { qty: 0, unit: fallbackUnit };
 	const { qty, unit } = total;
-	const middle = round2(termValueNumber(qty) ?? 0);
+	const middle = roundQuantity(termValueNumber(qty) ?? 0);
 	if (typeof qty === "object" && qty.type === "range" && qty.range) {
 		return {
 			qty: middle,
 			unit,
-			range: { min: round2(qty.range.min), max: round2(qty.range.max) },
+			range: {
+				min: roundQuantity(qty.range.min),
+				max: roundQuantity(qty.range.max),
+			},
 		};
 	}
 	return { qty: middle, unit };

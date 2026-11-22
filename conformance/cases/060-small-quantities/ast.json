@@ -1,0 +1,199 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Prep",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Steep ",
+              "loc": {
+                "start": 9,
+                "end": 15
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "saffron",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 0.004,
+                  "text": "0.004"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 24,
+                  "end": 31
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 15,
+                "end": 32
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in ",
+              "loc": {
+                "start": 33,
+                "end": 36
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "pinch",
+                "fixed": false,
+                "loc": {
+                  "start": 42,
+                  "end": 49
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 36,
+                "end": 50
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 50,
+                "end": 51
+              }
+            }
+          ],
+          "loc": {
+            "start": 9,
+            "end": 53
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Season with ",
+              "loc": {
+                "start": 53,
+                "end": 65
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt",
+              "modifiers": [],
+              "quantity": {
+                "type": "RatioQuantity",
+                "numerator": {
+                  "value": {
+                    "type": "single",
+                    "value": 15,
+                    "text": "15"
+                  },
+                  "unit": "g"
+                },
+                "denominator": {
+                  "value": null,
+                  "unit": "L"
+                },
+                "target": "milk",
+                "referenceType": "ingredient",
+                "raw": "15 g / L @&milk",
+                "loc": {
+                  "start": 71,
+                  "end": 86
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 65,
+                "end": 87
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 88,
+                "end": 92
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "pepper",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 0.002,
+                  "text": "0.002"
+                },
+                "unit": "kg",
+                "fixed": false,
+                "loc": {
+                  "start": 100,
+                  "end": 108
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 92,
+                "end": 109
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 109,
+                "end": 110
+              }
+            }
+          ],
+          "loc": {
+            "start": 53,
+            "end": 111
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 111
+      }
+    }
+  ]
+}
