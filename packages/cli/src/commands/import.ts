@@ -118,9 +118,7 @@ export default defineCommand({
 		]);
 
 		const s = spinner({ output: chrome });
-		s.start(
-			videoMeta ? "Watching the video via AI…" : "Importing recipe via AI…",
-		);
+		s.start(videoMeta ? "Watching the video via AI…" : "Reading the recipe…");
 
 		let result;
 		try {
@@ -132,6 +130,7 @@ export default defineCommand({
 				: await importWithAI(source, model, {
 						lang: config.language,
 						db,
+						onConvert: () => s.message("Converting the recipe via AI…"),
 					});
 			s.stop("Import complete.");
 		} catch (err) {
