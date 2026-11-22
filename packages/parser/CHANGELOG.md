@@ -1,5 +1,20 @@
 # @gram-lang/parser
 
+## 1.5.1
+
+### Patch Changes
+
+- **Parser**: Fixed syntax edge cases and parsing performance across empty files, headers, and inline elements:
+  - Empty or blank-only files, as well as a trailing comment after `@use` without a final newline, now parse cleanly instead of failing or becoming a step.
+  - Bare `##` headers now parse as untitled sections (instead of a `#` tool), empty `~{}` stays an anchor, and `->&dough ~{}` declares `dough`.
+  - Symbol-only tokens (`##`, `@@`, `#~`, `&&`) and `&` followed by a space (such as `salt & pepper`) now stay plain text instead of creating phantom tools, ingredients, or references.
+  - Actions (`[…]`), text temperatures (`^{…}`), and section anchors (`~{…}`) now end on their own line (leaving unclosed `[` or `^{` as plain text), while `/* … */` block comments still span lines.
+  - Long quantity sums (`@flour{1 cup + 2 tbsp + …}`) now parse in linear time so they no longer slow down editors on every keystroke.
+- **Parser & Format**: The parser and `gram format` now share the same rules for whitespace and line breaks:
+  - Lines containing only spaces or tabs end a step just like empty lines, and trailing spaces or tabs on step lines are ignored.
+  - Lone `\r` line breaks are recognized, a leading UTF-8 BOM is skipped by the parser and kept by the formatter, and non-ASCII spaces (such as non-breaking spaces) stay plain text.
+  - `gram format` writes line breaks as LF without stripping non-ASCII whitespace.
+
 ## 1.5.0
 
 ### Minor Changes

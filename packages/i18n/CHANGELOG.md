@@ -1,5 +1,17 @@
 # @gram-lang/i18n
 
+## 1.5.1
+
+### Patch Changes
+
+- 9af07c9: **Renderer, CLI & i18n**: Displayed quantities now round by significant digits rather than a fixed decimal per unit, fixing inaccurate or zeroed amounts introduced in 1.4.0:
+  - Amounts keep three significant digits (two below 1) without truncating whole numbers (`0.15 kg` stays `0.15 kg`, `0.02 kg` no longer reads `0`), while kitchen fractions stay unchanged.
+  - Weights in grams keep one decimal from `1 g` upwards and no longer render as `0 g` below `0.05 g`.
+  - Adds `formatAmount`, `roundAmount`, and `amountDecimals` in `@gram-lang/i18n`.
+- 3080adf: **Kitchen, Analyzer & i18n**: Small quantities are no longer stored as zero across scaled amounts, shopping totals, resolved ratios, and standardized weights:
+  - Stored values keep two decimals as before, but never fewer than two significant digits (`0.02 kg` divided by 10 stays `0.002 kg`, and a ratio weighing `0.0047 g` keeps its weight).
+  - Adds `roundQuantity` in `@gram-lang/i18n` (re-exported by `@gram-lang/kitchen`).
+
 ## 1.5.0
 
 ### Minor Changes
