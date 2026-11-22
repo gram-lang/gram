@@ -78,6 +78,7 @@ jobs:
 
       - name: Lint, Typecheck & Ratchet
         run: |
+          bun run dedupe:check
           bun run lint
           bun run typecheck
           bun run any-ratchet
