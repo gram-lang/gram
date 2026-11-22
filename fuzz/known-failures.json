@@ -1,1 +1,8 @@
-[]
+[
+	{
+		"signature": "format-preserves-meaning | compilation differs after formatting at $.shopping_list[].variable_entries[]",
+		"invariant": "format-preserves-meaning",
+		"issue": "https://git.gram-lang.org/gram-lang/gram/issues/225",
+		"example": "@a{1.0/&b}"
+	}
+]
