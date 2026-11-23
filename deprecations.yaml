@@ -169,7 +169,7 @@ deprecations:
     targetRemoval: "2.0.0"
     status: active
     description: "The language server sends gram/previewUpdated (the preview as HTML, or an error card) to a client that does not declare the views protocol, rendering every view of every open document whether it is shown or not"
-    replacement: "Declare initializationOptions.views, say which outputs are open with gram/setOpenViews and read gram/viewUpdated (outputId recipe; state paused when the recipe has an error)"
+    replacement: "Declare initializationOptions.views: true, say which outputs are open with gram/setOpenViews and read gram/viewUpdated (outputId recipe; state paused when the recipe has an error); or, for a client with no view panel, send initializationOptions.views: false to receive no view at all"
     files:
       - "packages/language-server/src/server.ts"
       - "packages/language-server/src/client-profile.ts"

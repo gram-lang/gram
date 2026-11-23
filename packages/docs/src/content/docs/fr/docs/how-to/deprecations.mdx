@@ -161,7 +161,7 @@ Si vous souhaitez concevoir une chronologie graphique sur mesure, la structure `
 
 <Since v="1.4.0" type="deprecated" />
 
-**Déprécié :** la notification `gram/previewUpdated`, transmise aux clients d'éditeurs qui n'activent pas le protocole des vues. **Remplacement conseillé :** adopter le [protocole des vues](/fr/docs/reference/tooling/language-server/#protocole-des-vues) (`gram/setOpenViews` et `gram/viewUpdated`).
+**Déprécié :** la notification `gram/previewUpdated`, transmise aux clients d'éditeurs qui n'activent pas le protocole des vues. **Remplacement conseillé :** adopter le [protocole des vues](/fr/docs/reference/tooling/language-server/#protocole-des-vues) (`initializationOptions: { views: true }`, puis `gram/setOpenViews` et `gram/viewUpdated`).
 
 Jusqu'à la version 2.0.0, un client qui n'active pas le protocole continue de recevoir l'aperçu HTML de chaque recette ouverte — que le volet soit visible ou masqué —, remplacé par un panneau d'erreur lorsque la compilation échoue. Le serveur consigne un avertissement unique dans son journal d'exécution. Avec le nouveau protocole, le client déclare explicitement quelles sorties sont ouvertes et le serveur ne calcule que ces vues actives. Lorsqu'une recette contient une erreur, le client conserve son dernier état d'affichage valide : le détail de l'erreur est quant à lui consigné dans les diagnostics standard du LSP.
 
@@ -187,6 +187,8 @@ client.onNotification('gram/viewUpdated', (update) => {
   else pause(update.uri, update.error.title);
 });
 ```
+
+Si votre éditeur n'a aucun volet pour afficher des vues (un éditeur en terminal, par exemple), inutile d'adopter le protocole des vues : envoyez simplement `initializationOptions: { views: false }` <Since v="1.6.0" />. Le serveur cesse aussitôt de calculer les vues et d'émettre ces notifications, tandis que diagnostics, complétion, survol et formatage continuent de fonctionner. Voir [Utiliser le serveur dans n'importe quel éditeur](/fr/docs/reference/tooling/language-server/#utiliser-le-serveur-dans-nimporte-quel-éditeur).
 
 ### Libellés des vues du playground
 

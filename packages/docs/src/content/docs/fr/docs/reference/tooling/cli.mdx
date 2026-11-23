@@ -359,6 +359,17 @@ Compte-rendu par fichier : `✔ brioche.gram  2 IDs lowercased · 1 trailing zer
 Le formateur est strictement idempotent : l'exécuter plusieurs fois de suite ne modifiera jamais le code après la première passe.
 - Options : `--check`.
 
+#### `gram lsp` <Since v="1.6.0" />
+Lance le [serveur de langage Gram](/fr/docs/reference/tooling/language-server/) sur stdio, pour qu'un éditeur le démarre.
+```bash
+gram lsp
+gram lsp --stdio                         # Identique : stdio est le seul transport
+```
+- Fait tourner le même serveur que le binaire `gram-language-server` de `@gram-lang/language-server`, dans le processus même de la CLI : rien de plus à installer une fois la CLI en place.
+- La sortie standard est réservée au flux LSP : la vérification des mises à jour n'y écrit jamais rien pour cette commande.
+- `--stdio` est accepté pour les éditeurs qui l'ajoutent d'office, sans rien changer.
+- Un éditeur sans volet d'affichage gagne à envoyer `initializationOptions: { views: false }` : voir [Utiliser le serveur dans n'importe quel éditeur](/fr/docs/reference/tooling/language-server/#utiliser-le-serveur-dans-nimporte-quel-éditeur).
+
 ### Configuration
 
 Commandes associées à `gram config` pour inspecter et modifier la configuration locale du projet ou la configuration globale de l'utilisateur.
