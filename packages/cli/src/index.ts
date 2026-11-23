@@ -37,7 +37,8 @@ const filteredArgs = rawArgs.filter((a) => !verboseFlags.has(a));
 if (filteredArgs.length !== rawArgs.length) setVerbose(true);
 
 // The passive "update available" notice: `upgrade` already does its own
-// explicit check, CI/non-TTY runs shouldn't get interactive-looking noise,
+// explicit check, `lsp` owns stdout for the JSON-RPC stream (a single stray
+// byte would corrupt it), CI/non-TTY runs shouldn't get interactive-looking noise,
 // and `GRAM_NO_UPDATE_CHECK`/`updateCheck: false` are the escape hatches.
 // A broken/invalid config here shouldn't block the CLI from starting — the
 // command itself will report that more usefully — so default to enabled.
@@ -52,8 +53,10 @@ async function isUpdateCheckEnabled(): Promise<boolean> {
 	}
 }
 
+const SILENT_UPDATE_COMMANDS = new Set(["upgrade", "lsp"]);
 const updateCheckEnabled =
-	filteredArgs[0] !== "upgrade" && (await isUpdateCheckEnabled());
+	!SILENT_UPDATE_COMMANDS.has(filteredArgs[0] ?? "") &&
+	(await isUpdateCheckEnabled());
 if (updateCheckEnabled) void checkForUpdateInBackground();
 
 const main = defineCommand({
@@ -82,6 +85,7 @@ const main = defineCommand({
 		plan: () => import("./commands/plan").then((m) => m.default),
 		suggest: () => import("./commands/suggest").then((m) => m.default),
 		upgrade: () => import("./commands/upgrade").then((m) => m.default),
+		lsp: () => import("./commands/lsp").then((m) => m.default),
 	},
 });
 
