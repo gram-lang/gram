@@ -1,0 +1,15 @@
+# Gram recipes in Helix: add this to ~/.config/helix/languages.toml
+[[language]]
+name = "gram"
+scope = "source.gram"
+file-types = ["gram"]
+roots = [".gram"]
+comment-tokens = ["//"]
+block-comment-tokens = { start = "/*", end = "*/" }
+language-servers = ["gram-language-server"]
+
+[language-server.gram-language-server]
+command = "gram-language-server"
+args = ["--stdio"]
+# No preview panel in Helix: ask the server for no view.
+config = { views = false }
