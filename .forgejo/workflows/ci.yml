@@ -93,7 +93,7 @@ jobs:
       - name: Pack CLI Packages
         run: |
           mkdir -p .smoke
-          for p in i18n format parser modules scheduler kitchen analyzer renderer cli; do (cd packages/$p && bun pm pack --destination ../../.smoke); done
+          for p in i18n format parser modules scheduler kitchen analyzer renderer language-server cli; do (cd packages/$p && bun pm pack --destination ../../.smoke); done
 
       - name: Node.js Smoke Tests
         run: |
@@ -108,6 +108,11 @@ jobs:
           echo "broken: {physical: {density: not-a-number}}" > /tmp/bad-db.yaml
           node_modules/.bin/gram build $REPO_DIR/packages/kitchen/tests/fixtures/valid/simple_recipe.gram --db /tmp/bad-db.yaml 2>/tmp/bad-db-stderr.txt | node -e 'JSON.parse(require("fs").readFileSync(0, "utf-8"))' > /dev/null
           grep -q "Ignoring 1 invalid ingredient" /tmp/bad-db-stderr.txt
+          # gram lsp: a framed initialize must get a framed answer, first byte included
+          # (no update notice or usage on stdout). stdin stays open: the server stops
+          # as soon as it closes, before answering.
+          (node -e 'const f=(o)=>{const b=JSON.stringify(o);return `Content-Length: ${Buffer.byteLength(b)}\r\n\r\n${b}`};process.stdout.write(f({jsonrpc:"2.0",id:1,method:"initialize",params:{processId:null,rootUri:null,capabilities:{}}})+f({jsonrpc:"2.0",id:2,method:"shutdown"})+f({jsonrpc:"2.0",method:"exit"}))'; sleep 5) | timeout 30 node_modules/.bin/gram lsp --stdio > /tmp/lsp-out.txt
+          head -c 16 /tmp/lsp-out.txt | grep -q '^Content-Length: '
           export GRAM_BIN=$(pwd)/node_modules/.bin/gram
           mkdir -p /tmp/env-smoke && cd /tmp/env-smoke
           echo "GEMINI_API_KEY=fake-key-for-smoke-test" > .env

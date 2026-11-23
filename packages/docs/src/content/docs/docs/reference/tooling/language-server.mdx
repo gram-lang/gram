@@ -24,6 +24,46 @@ The server acts as a persistent background process that analyzes your `.gram` fi
 4. **Language Server** ➔ Translates these results into standard LSP payloads (Diagnostics, Semantic Tokens, Inlay Hints) and pushes them back to the editor.
 </Steps>
 
+## Use the server in any editor
+
+<Since v="1.6.0" />
+
+Any editor that speaks the LSP over stdio can run the server: Neovim, Helix, Emacs (eglot or lsp-mode), Zed, Sublime Text… Install it, then point the editor to one of these two commands for `.gram` files:
+
+```bash
+npm install -g @gram-lang/language-server
+gram-language-server --stdio
+
+# or, with the CLI already installed:
+gram lsp
+```
+
+Both start the same server. Stdio is the default transport, so `--stdio` can be left out; it is accepted for editors that always pass it.
+
+In the `initialize` request, send `initializationOptions: { views: false }`. The editor then gets every standard feature listed below (diagnostics, completion, hover, formatting, rename, semantic tokens…) and nothing it could not display: no HTML rendered on every keystroke, no `gram/*` notification, no Code Lens.
+
+The server only sends a request the client declared it understands:
+
+- it registers its file watcher (`.gram/config.yaml`, `.gram/ingredients.yaml` and the `.gram` files) only if the client declares `workspace.didChangeWatchedFiles.dynamicRegistration`; a client that watches these files on its own can still send `workspace/didChangeWatchedFiles`;
+- it reads the `gram` settings only if the client declares `workspace.configuration`, and otherwise uses their defaults;
+- it refreshes inlay hints only if the client declares `workspace.inlayHint.refreshSupport`.
+
+An editor that sends only `rootUri`, without workspace folders, finds the project's ingredient database all the same.
+
+To stop the server, send `shutdown`, wait for its response, then send `exit`: the server quits as soon as `exit` arrives or stdin closes, without finishing the responses still pending.
+
+### The three views modes
+
+The `views` option decides what the server renders, beyond the standard features:
+
+| `initializationOptions.views` | What the server renders | For |
+|---|---|---|
+| `true` | Only the outputs the client says are open, through the [views protocol](#views-protocol). The `initialize` result lists them in `gramViews` and announces the Code Lens. | An editor with view panels, like the VS Code extension. |
+| `false` | Nothing: the standard features only. | An editor without view panels. |
+| absent (or anything other than `true` or `false`) | <Since type="deprecated" v="1.4.0" /> The preview of every open document, shown or not, in [legacy notifications](#notifications-for-legacy-clients), until version 2.0.0. | Clients written before the views protocol. |
+
+A client that started with `views: false` and later sends `gram/setOpenViews` switches to the views protocol for the outputs it names.
+
 ## Supported LSP features
 
 The Gram Language Server implements the following standard capabilities:
@@ -40,7 +80,7 @@ The Gram Language Server implements the following standard capabilities:
 | **Code Actions** | Quick fixes (declaring missing intermediate variables, converting volume to mass, inserting missing `+` or applying suggested totals in sums, or changing `oz` after a volume to `fl oz`). |
 | **Document Formatting** | Normalizes syntax in-place via `@gram-lang/format`. |
 | **Inlay Hints** | Displays the recipe's total time on the `title:` line (following `gram.miseEnPlace` and `gram.rests`), and shows resolved values (`= 5`, `= 16 g`, `= 24 min`) inline after unit ratios and proportional times. |
-| **Code Lens** | Injects an action button above the document to open the live preview (`▶ Preview`). |
+| **Code Lens** | VS Code (`views: true`) only: a button above the document opens the live preview (`▶ Preview`, in the editor's language). |
 | **Document Symbol** | Populates the editor's Outline view for clean structural navigation across recipe sections. |
 | **Folding Range** | Enables folding of YAML frontmatter blocks and `##` section headings. |
 
@@ -77,12 +117,14 @@ Session state is maintained per document strictly in memory: it is discarded whe
 
 ### Notifications for legacy clients
 
-Clients that do not declare the views protocol and never send `gram/setOpenViews` continue to receive document views via legacy notifications as `{ uri, html }` payloads, regardless of whether the views are actively displayed in the editor.
+Clients that send no `views` option and never send `gram/setOpenViews` continue to receive document views via legacy notifications as `{ uri, html }` payloads, regardless of whether the views are actively displayed in the editor. The server logs a one-time deprecation notice in its trace.
 
 | Notification | Content |
 |---|---|
 | `gram/previewUpdated` | <Since type="deprecated" v="1.4.0" /> HTML rendering of the live recipe preview, or an error panel when compilation fails. Removed in version 2.0.0: migrate to `gram/viewUpdated` with the `recipe` output. |
 | `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> HTML rendering of the legacy Gantt chart. Emitted until version 2.0.0 for third-party client compatibility (the official VS Code extension no longer listens to it). |
+
+To leave this mode without adopting the views protocol, send `initializationOptions: { views: false }`: the server stops rendering these views and sending these notifications, and logs no notice.
 
 ## Related resources
 

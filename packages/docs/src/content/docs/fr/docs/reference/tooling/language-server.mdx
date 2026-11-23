@@ -24,6 +24,46 @@ Le serveur s'exécute comme un processus persistant en arrière-plan qui analyse
 4. **Serveur de langage** ➔ Traduit ces données en charges utiles LSP standardisées (Diagnostics, Jetons sémantiques, Inlay Hints) et les renvoie à l'éditeur.
 </Steps>
 
+## Utiliser le serveur dans n'importe quel éditeur
+
+<Since v="1.6.0" />
+
+Tout éditeur qui parle le LSP sur stdio peut faire tourner le serveur : Neovim, Helix, Emacs (eglot ou lsp-mode), Zed, Sublime Text… Installez-le, puis indiquez à l'éditeur l'une de ces deux commandes pour les fichiers `.gram` :
+
+```bash
+npm install -g @gram-lang/language-server
+gram-language-server --stdio
+
+# ou, si la CLI est déjà installée :
+gram lsp
+```
+
+Les deux lancent le même serveur. Stdio étant le transport par défaut, `--stdio` est facultatif ; il reste accepté pour les éditeurs qui l'ajoutent d'office.
+
+Dans la requête `initialize`, envoyez `initializationOptions: { views: false }`. L'éditeur profite alors de toutes les fonctionnalités standard décrites plus bas (diagnostics, complétion, survol, formatage, renommage, coloration sémantique…), sans rien recevoir qu'il ne saurait afficher : pas de rendu HTML à chaque frappe, pas de notification `gram/*`, pas de Code Lens.
+
+Le serveur n'envoie au client que les requêtes que celui-ci a déclaré comprendre :
+
+- il n'enregistre sa surveillance de fichiers (`.gram/config.yaml`, `.gram/ingredients.yaml` et les fichiers `.gram`) que si le client annonce `workspace.didChangeWatchedFiles.dynamicRegistration` ; un client qui surveille lui-même ces fichiers peut toujours envoyer `workspace/didChangeWatchedFiles` ;
+- il ne lit les réglages `gram` que si le client annonce `workspace.configuration`, et s'en tient sinon aux valeurs par défaut ;
+- il ne rafraîchit les annotations en ligne (*inlay hints*) que si le client annonce `workspace.inlayHint.refreshSupport`.
+
+Un éditeur qui ne transmet que `rootUri`, sans dossiers d'espace de travail, trouve malgré tout la base d'ingrédients du projet.
+
+Pour arrêter le serveur, envoyez `shutdown`, attendez sa réponse, puis seulement `exit` : le serveur s'arrête dès qu'il reçoit `exit` ou que son entrée standard se ferme, sans terminer les réponses en cours.
+
+### Les trois modes de vues
+
+L'option `views` détermine ce que le serveur calcule en plus des fonctionnalités standard :
+
+| `initializationOptions.views` | Ce que le serveur rend | Pour qui |
+|---|---|---|
+| `true` | Uniquement les sorties que le client déclare ouvertes, via le [protocole des vues](#protocole-des-vues). La réponse à `initialize` les liste dans `gramViews` et annonce le Code Lens. | Un éditeur doté de volets d'affichage, comme l'extension VS Code. |
+| `false` | Rien : seulement les fonctionnalités standard. | Un éditeur sans volet d'affichage. |
+| absente (ou toute autre valeur que `true` ou `false`) | <Since type="deprecated" v="1.4.0" /> L'aperçu de chaque document ouvert, affiché ou non, via les [notifications historiques](#notifications-pour-les-clients-antérieurs), jusqu'à la version 2.0.0. | Les clients écrits avant le protocole des vues. |
+
+Un client lancé avec `views: false` qui envoie ensuite `gram/setOpenViews` bascule sur le protocole des vues pour les sorties qu'il désigne.
+
 ## Fonctionnalités LSP supportées
 
 Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
@@ -40,7 +80,7 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 | **Code Actions** | Corrections rapides (*quick fixes* : déclaration d'une variable manquante, conversion volume-masse, insertion du `+` manquant ou application du total suggéré dans une somme, remplacement de `oz` après un volume par `fl oz`). |
 | **Document Formatting** | Normalisation syntaxique via `@gram-lang/format`. |
 | **Inlay Hints** | Affiche la durée totale sur la ligne `title:` (selon `gram.miseEnPlace` et `gram.rests`), ainsi que les valeurs résolues (`= 5`, `= 16 g`, `= 24 min`) après chaque proportion avec unités ou temps proportionnel. |
-| **Code Lens** | Injecte un bouton d'action au-dessus du document pour ouvrir l'aperçu en direct (`▶ Preview`). |
+| **Code Lens** | VS Code (`views: true`) uniquement : un bouton au-dessus du document ouvre l'aperçu en direct (`▶ Aperçu`, dans la langue de l'éditeur). |
 | **Document Symbol** | Alimente la vue Plan (*Outline*) pour naviguer entre les sections. |
 | **Folding Range** | Permet de replier le frontmatter YAML et les sections `##`. |
 
@@ -77,12 +117,14 @@ La session est gérée par document en mémoire vive : elle est réinitialisée 
 
 ### Notifications pour les clients antérieurs
 
-Les clients qui n'activent pas le protocole des vues continuent de recevoir les aperçus de chaque document ouvert via les notifications historiques ci-dessous sous la forme d'un objet `{ uri, html }`, que les volets soient affichés ou non dans l'éditeur.
+Les clients qui ne transmettent aucune option `views` et n'envoient jamais `gram/setOpenViews` continuent de recevoir les aperçus de chaque document ouvert via les notifications historiques ci-dessous sous la forme d'un objet `{ uri, html }`, que les volets soient affichés ou non dans l'éditeur. Le serveur consigne une seule fois un avertissement de dépréciation dans son journal.
 
 | Notification | Contenu |
 |---|---|
 | `gram/previewUpdated` | <Since type="deprecated" v="1.4.0" /> Rendu HTML de l'aperçu en direct, ou panneau d'erreur lorsque la recette ne compile pas. Supprimée en version 2.0.0 : migrez vers `gram/viewUpdated` avec la sortie `recipe`. |
 | `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> Rendu HTML du diagramme de Gantt historique. Émis jusqu'en version 2.0.0 pour préserver la compatibilité avec les clients tiers (l'extension officielle VS Code ne l'écoute plus). |
+
+Pour sortir de ce mode sans adopter le protocole des vues, il suffit d'envoyer `initializationOptions: { views: false }` : le serveur cesse alors de calculer ces vues et d'émettre ces notifications, sans plus aucun avertissement.
 
 ## Ressources associées
 

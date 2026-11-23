@@ -91,6 +91,7 @@
         "@gram-lang/format": "workspace:*",
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/language-server": "workspace:*",
         "@gram-lang/modules": "workspace:*",
         "@gram-lang/parser": "workspace:*",
         "@gram-lang/renderer": "workspace:*",
@@ -181,6 +182,9 @@
     "packages/language-server": {
       "name": "@gram-lang/language-server",
       "version": "1.5.1",
+      "bin": {
+        "gram-language-server": "./dist/server.cjs",
+      },
       "devDependencies": {
         "@gram-lang/analyzer": "workspace:*",
         "@gram-lang/format": "workspace:*",

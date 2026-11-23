@@ -359,6 +359,17 @@ Output per file: `✔ brioche.gram  2 IDs lowercased · 1 trailing zero removed`
 The formatter is strictly idempotent: running it repeatedly produces no further alterations after the first run.
 - Options: `--check`.
 
+#### `gram lsp` <Since v="1.6.0" />
+Starts the [Gram language server](/docs/reference/tooling/language-server/) over stdio, for an editor to launch.
+```bash
+gram lsp
+gram lsp --stdio                         # Same: stdio is the only transport
+```
+- Runs the same server as the `gram-language-server` binary of `@gram-lang/language-server`, in the CLI's own process: no separate install once the CLI is there.
+- Stdout carries the LSP stream only: the update check never prints anything for this command.
+- `--stdio` is accepted for editors that always pass it, and changes nothing.
+- Editors without view panels should send `initializationOptions: { views: false }`: see [Use the server in any editor](/docs/reference/tooling/language-server/#use-the-server-in-any-editor).
+
 ### Configuration
 
 Commands nested under `gram config` to inspect and modify local project settings or global user configuration.
