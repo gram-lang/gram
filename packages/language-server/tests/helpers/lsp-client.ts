@@ -24,6 +24,8 @@ export class Client {
 	private nextId = 1;
 	private pending = new Map<number, (result: unknown) => void>();
 	readonly notes: Note[] = [];
+	/** Every request the server sent to the client, in order. */
+	readonly requests: { id: number; method: string; params?: unknown }[] = [];
 	/** What the client answers to `workspace/configuration`. */
 	setting: unknown = "perSection";
 	/** And to `gram.rests`. */
@@ -72,6 +74,13 @@ export class Client {
 		params?: { items?: unknown[] } & Note["params"];
 		result?: unknown;
 	}) {
+		if (message.method && message.id !== undefined) {
+			this.requests.push({
+				id: message.id,
+				method: message.method,
+				params: message.params,
+			});
+		}
 		if (message.method === "workspace/configuration") {
 			const items = message.params?.items ?? [];
 			// Read at the moment of answering: a setting changed meanwhile wins.
@@ -117,13 +126,22 @@ export class Client {
 		});
 	}
 
-	/** `initializationOptions`: `{ views: true }` for a client of the views protocol. */
-	async start(initializationOptions?: object): Promise<unknown> {
+	/**
+	 * `initializationOptions`: `{ views: true }` for a client of the views
+	 * protocol. `capabilities`: what the client declares (by default, only
+	 * `workspace/configuration`).
+	 */
+	async start(
+		initializationOptions?: object,
+		{
+			capabilities = { workspace: { configuration: true } },
+		}: { capabilities?: object } = {},
+	): Promise<unknown> {
 		const result = await this.request("initialize", {
 			processId: null,
 			...(initializationOptions && { initializationOptions }),
 			rootUri: ROOT,
-			capabilities: { workspace: { configuration: true } },
+			capabilities,
 			workspaceFolders: [{ uri: ROOT, name: "gram" }],
 		});
 		this.notify("initialized", {});

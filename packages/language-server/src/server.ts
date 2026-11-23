@@ -35,7 +35,11 @@ import { provideSemanticTokens } from "./features/semantic-tokens";
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
 import { provideCodeLenses } from "./features/code-lens";
-import { clientProfileOf, type ViewsMode } from "./client-profile";
+import {
+	type ClientProfile,
+	clientProfileOf,
+	type ViewsMode,
+} from "./client-profile";
 import { serverCapabilities } from "./capabilities";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
@@ -179,6 +183,15 @@ async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
 // keeps receiving the preview and the run sheet of every document through the
 // notifications it reads.
 let viewsMode: ViewsMode = "legacy";
+// What the client declared at `initialize`: the server sends it no request it
+// did not declare support for (`workspace/configuration`, the file watcher
+// registration, `workspace/inlayHint/refresh`). Until then, nothing.
+let profile: ClientProfile = {
+	views: "legacy",
+	configuration: false,
+	watchedFiles: false,
+	inlayHintRefresh: false,
+};
 // The editor's language, for the words the server writes itself (the paused
 // banner, the CodeLens): the recipe's own language is unknown when it does not
 // parse.
@@ -190,7 +203,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 		params.rootUri,
 	);
 	locale = params.locale;
-	const profile = clientProfileOf(params);
+	profile = clientProfileOf(params);
 	viewsMode = profile.views;
 	return { capabilities: serverCapabilities(profile, locale) };
 });
@@ -208,11 +221,25 @@ function differs<T extends object>(a: T, b: T): boolean {
 	return (Object.keys(a) as (keyof T)[]).some((key) => a[key] !== b[key]);
 }
 
+// The client's `gram.*` settings, or `undefined` when it has none to give: it
+// did not declare `workspace/configuration` (it is not even asked) or the
+// request failed. Never rejects; every reader falls back to its defaults.
+async function readGramConfiguration(): Promise<
+	{ ingredientDatabase?: { path?: string } } | undefined
+> {
+	if (!profile.configuration) return undefined;
+	try {
+		return await connection.workspace.getConfiguration("gram");
+	} catch {
+		return undefined;
+	}
+}
+
 // Never rejects (same rule as reloadDbAndRefreshDiagnostics below): a client
 // without workspace configuration just keeps the defaults.
 async function loadSettings(): Promise<{ view: boolean; recipe: boolean }> {
 	try {
-		const config = await connection.workspace.getConfiguration("gram");
+		const config = await readGramConfiguration();
 		const nextView = parseViewSettings(config);
 		const nextRecipe = parseRecipeSettings(config);
 		const changed = {
@@ -237,7 +264,7 @@ async function loadSettings(): Promise<{ view: boolean; recipe: boolean }> {
 async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 	const outcome = await computeDbReload({
 		getConfiguredDbPath: async () => {
-			const config = await connection.workspace.getConfiguration("gram");
+			const config = await readGramConfiguration();
 			return config?.ingredientDatabase?.path;
 		},
 		workspaceFolders,
@@ -269,8 +296,10 @@ async function reloadSettingsAndRefresh(): Promise<void> {
 	} else {
 		return;
 	}
+	// Client without inlay hint refresh: the hint updates on next edit.
+	if (!profile.inlayHintRefresh) return;
 	await connection.languages.inlayHint.refresh().catch(() => {
-		// Client without inlay hint refresh: the hint updates on next edit.
+		// Declared but failed: same fallback.
 	});
 }
 
@@ -304,19 +333,23 @@ connection.onInitialized(async () => {
 	// another tool, a save from a *different* editor window — still reaches
 	// any open importer, not just edits made through this document's own
 	// buffer.
-	try {
-		await connection.client.register(DidChangeWatchedFilesNotification.type, {
-			watchers: [
-				{ globPattern: "**/.gram/ingredients.yaml" },
-				{ globPattern: "**/.gram/config.yaml" },
-				{ globPattern: "**/*.gram" },
-			],
-		});
-	} catch {
-		// Client doesn't support dynamic file watching — degrade silently,
-		// the DB still (re)loads on init/config-change as before, and an open
-		// document still resyncs to an on-disk dependency change the next
-		// time it's itself edited.
+	// A client without dynamic file watching is not asked: the DB still
+	// (re)loads on init/config-change as before, and an open document still
+	// resyncs to an on-disk dependency change the next time it's itself
+	// edited. The handler below stays unconditional: such a client may still
+	// send these notifications through its own static registration.
+	if (profile.watchedFiles) {
+		try {
+			await connection.client.register(DidChangeWatchedFilesNotification.type, {
+				watchers: [
+					{ globPattern: "**/.gram/ingredients.yaml" },
+					{ globPattern: "**/.gram/config.yaml" },
+					{ globPattern: "**/*.gram" },
+				],
+			});
+		} catch {
+			// Declared but refused: degrade silently, as above.
+		}
 	}
 	connection.onDidChangeWatchedFiles((params) => {
 		let dbChanged = false;
