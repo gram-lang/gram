@@ -1,13 +1,28 @@
+const { chmodSync } = require('node:fs');
 const esbuild = require('esbuild');
 const isWatch = process.argv.includes('--watch');
+
+const OUTFILE = 'dist/server.cjs';
 
 const config = {
     entryPoints: ['src/server.ts'],
     bundle: true,
-    outfile: 'dist/server.cjs',
+    outfile: OUTFILE,
     format: 'cjs',
     platform: 'node',
     target: 'node18',
+    // The bundle is also the `gram-language-server` binary.
+    banner: { js: '#!/usr/bin/env node' },
+    plugins: [
+        {
+            name: 'executable',
+            setup(build) {
+                build.onEnd((result) => {
+                    if (result.errors.length === 0) chmodSync(OUTFILE, 0o755);
+                });
+            },
+        },
+    ],
 };
 
 if (isWatch) {

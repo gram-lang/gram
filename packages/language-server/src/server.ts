@@ -66,8 +66,14 @@ import {
 	parseSession,
 	type Session,
 } from "./session";
+import { hasTransportFlag } from "./transport";
 import { renderOutputs, serveTimesOf, sessionChoicesOf } from "./views";
 
+// stdio by default, so an editor can start `gram-language-server` with no
+// argument. Added to the command line rather than passed as streams to
+// `createConnection`: the library only redirects `console.*` away from stdout
+// when it sees `--stdio` itself. VS Code (`--node-ipc`) is unaffected.
+if (!hasTransportFlag(process.argv.slice(2))) process.argv.push("--stdio");
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 const states = new Map<string, DocumentState>();
