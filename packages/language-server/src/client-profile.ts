@@ -24,6 +24,8 @@ export interface ClientProfile {
 	watchedFiles: boolean;
 	/** `workspace.inlayHint.refreshSupport`: it accepts `workspace/inlayHint/refresh`. */
 	inlayHintRefresh: boolean;
+	/** `textDocument.completion.completionItem.snippetSupport`: it expands snippet completions. */
+	snippets: boolean;
 }
 
 function viewsModeOf(options: unknown): ViewsMode {
@@ -45,5 +47,8 @@ export function clientProfileOf(params: InitializeParams): ClientProfile {
 		watchedFiles:
 			workspace?.didChangeWatchedFiles?.dynamicRegistration === true,
 		inlayHintRefresh: workspace?.inlayHint?.refreshSupport === true,
+		snippets:
+			params.capabilities?.textDocument?.completion?.completionItem
+				?.snippetSupport === true,
 	};
 }

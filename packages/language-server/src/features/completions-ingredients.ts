@@ -1,6 +1,7 @@
 import {
 	type CompletionItem,
 	CompletionItemKind,
+	InsertTextFormat,
 	MarkupKind,
 } from "vscode-languageserver";
 import {
@@ -16,8 +17,27 @@ export function isAfterAt(prefix: string): boolean {
 	return !after.includes("{") && !after.includes("\n");
 }
 
+/**
+ * The text that completes a name. A multi-word name needs braces to end it
+ * (`@wheat flour{}`, `&pizza dough{}`): a client that expands snippets gets
+ * the cursor between them, ready for the quantity; any other gets them as
+ * plain text, the cursor after.
+ */
+export function nameInsertion(
+	name: string,
+	snippets: boolean,
+): Pick<CompletionItem, "insertText" | "insertTextFormat"> {
+	if (!name.includes(" ")) return { insertText: name };
+	if (!snippets) return { insertText: `${name}{}` };
+	return {
+		insertText: `${name.replace(/[\\$}]/g, "\\$&")}{$0}`,
+		insertTextFormat: InsertTextFormat.Snippet,
+	};
+}
+
 export function provideIngredientCompletions(
 	db: IngredientDB,
+	snippets = false,
 ): CompletionItem[] {
 	if (Object.keys(db).length === 0) return [];
 
@@ -39,8 +59,7 @@ export function provideIngredientCompletions(
 					lines.length > 0
 						? { kind: MarkupKind.Markdown, value: lines.join("\n\n") }
 						: undefined,
-				// Multi-word names require {} to delimit the name in Gram syntax (@name{qty})
-				insertText: label.includes(" ") ? `${label}{}` : label,
+				...nameInsertion(label, snippets),
 			};
 		},
 	);
