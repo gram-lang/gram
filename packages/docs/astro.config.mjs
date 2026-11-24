@@ -161,8 +161,8 @@ export default defineConfig({
               items: [
                 { label: 'CLI commands', translations: { fr: 'Commandes CLI' }, slug: 'docs/reference/tooling/cli' },
                 { label: 'VS Code extension', translations: { fr: 'Extension VS Code' }, slug: 'docs/reference/tooling/vscode-extension' },
-                { label: 'Language server', slug: 'docs/reference/tooling/language-server' },
-                { label: 'Supported editors', translations: { fr: 'Éditeurs supportés' }, slug: 'docs/reference/tooling/editors', badge: { text: 'v1.6.0', variant: 'default' } }
+                { label: 'Language server', translations: { fr: 'Serveur de langage' }, slug: 'docs/reference/tooling/language-server' },
+                { label: 'Supported editors', translations: { fr: 'Éditeurs pris en charge' }, slug: 'docs/reference/tooling/editors', badge: { text: 'v1.6.0', variant: 'default' } }
               ]
             },
             {
