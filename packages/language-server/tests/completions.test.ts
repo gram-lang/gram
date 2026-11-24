@@ -1,7 +1,9 @@
 import { describe, it, expect } from "bun:test";
 import { pathToFileURL } from "node:url";
 import { parseDocument } from "../src/document-state";
+import { type CompletionItem, InsertTextFormat } from "vscode-languageserver";
 import { provideCompletions } from "../src/features/completions";
+import { nameInsertion } from "../src/features/completions-ingredients";
 import type { IngredientDB } from "../src/ingredient-loader";
 
 const db: IngredientDB = { flour: { name: "Flour" } };
@@ -48,6 +50,65 @@ describe("provideCompletions — Phase 1.2 debounce fix", () => {
 		expect(completions).toEqual([]);
 		expect(completions).not.toEqual(
 			expect.arrayContaining([expect.objectContaining({ label: "Flour" })]),
+		);
+	});
+});
+
+describe("completing a multi-word name", () => {
+	const words: IngredientDB = {
+		flour: { name: "Wheat flour" },
+		salt: { name: "Salt" },
+	};
+	const recipe = parseDocument(
+		"## Dough ->&pizza dough{}\n\nMix @flour{200 g}.\n\n## Bake\n\nBake.\n",
+	);
+	const item = (items: CompletionItem[], label: string) =>
+		items.find((i) => i.label === label);
+
+	it("puts the cursor between the braces for a client that expands snippets", () => {
+		const items = provideCompletions(recipe, words, "Add @", "", true);
+		expect(item(items, "Wheat flour")).toMatchObject({
+			insertText: "Wheat flour{$0}",
+			insertTextFormat: InsertTextFormat.Snippet,
+		});
+		const ref = provideCompletions(recipe, words, "Bake the &", "", true);
+		expect(item(ref, "pizza dough")).toMatchObject({
+			insertText: "pizza dough{$0}",
+			insertTextFormat: InsertTextFormat.Snippet,
+		});
+	});
+
+	it("gives the braces as plain text to any other client", () => {
+		for (const snippets of [false, undefined]) {
+			const items = provideCompletions(recipe, words, "Add @", "", snippets);
+			const flour = item(items, "Wheat flour");
+			expect(flour?.insertText).toBe("Wheat flour{}");
+			expect(flour?.insertTextFormat).toBeUndefined();
+		}
+	});
+
+	it("leaves a single-word name and a target inside braces bare", () => {
+		const items = provideCompletions(recipe, words, "Add @", "", true);
+		expect(item(items, "Salt")).toEqual(
+			expect.objectContaining({ insertText: "Salt" }),
+		);
+		expect(item(items, "Salt")?.insertTextFormat).toBeUndefined();
+		const target = provideCompletions(
+			recipe,
+			words,
+			"Add @salt{1 / 100 g &",
+			"",
+			true,
+		);
+		expect(item(target, "pizza dough")).toEqual(
+			expect.objectContaining({ insertText: "pizza dough" }),
+		);
+		expect(item(target, "pizza dough")?.insertTextFormat).toBeUndefined();
+	});
+
+	it("escapes what a snippet would read as syntax", () => {
+		expect(nameInsertion("pâte $1 {x} \\ y", true).insertText).toBe(
+			"pâte \\$1 {x\\} \\\\ y{$0}",
 		);
 	});
 });

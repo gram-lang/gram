@@ -197,6 +197,7 @@ let profile: ClientProfile = {
 	configuration: false,
 	watchedFiles: false,
 	inlayHintRefresh: false,
+	snippets: false,
 };
 // The editor's language, for the words the server writes itself (the paused
 // banner, the CodeLens): the recipe's own language is unknown when it does not
@@ -782,7 +783,7 @@ connection.onCompletion(({ textDocument: { uri }, position }) => {
 				s.lineStarts[position.line] ?? 0,
 				positionToOffset(s.lineStarts, position),
 			);
-	return provideCompletions(s, ingredientDB, prefix, uri);
+	return provideCompletions(s, ingredientDB, prefix, uri, profile.snippets);
 });
 
 connection.onReferences(({ textDocument: { uri }, position }) => {
