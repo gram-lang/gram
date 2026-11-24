@@ -5,7 +5,7 @@ const isWatch = process.argv.includes('--watch');
 const OUTFILE = 'dist/server.cjs';
 
 const config = {
-    entryPoints: ['src/server.ts'],
+    entryPoints: ['src/main.ts'],
     bundle: true,
     outfile: OUTFILE,
     format: 'cjs',
@@ -13,6 +13,7 @@ const config = {
     target: 'node18',
     // The bundle is also the `gram-language-server` binary.
     banner: { js: '#!/usr/bin/env node' },
+    define: { __GRAM_LS_VERSION__: JSON.stringify(require('./package.json').version) },
     plugins: [
         {
             name: 'executable',
