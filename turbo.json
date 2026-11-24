@@ -16,6 +16,10 @@
       "outputs": ["src/grammar-content.ts"],
       "outputLogs": "errors-only"
     },
+    "@gram-lang/parser#prebuild": {
+      "outputs": ["src/grammar-content.ts", "syntaxes/gram.tmLanguage"],
+      "outputLogs": "errors-only"
+    },
     "@gram-lang/kitchen#prebuild": {
       "outputs": ["src/version.ts"],
       "outputLogs": "errors-only"

@@ -70,7 +70,7 @@ jobs:
       - name: Build Core Packages
         run: |
           bun run build --filter='!@gram-lang/docs'
-          git diff --exit-code packages/parser/src/grammar-content.ts
+          git diff --exit-code packages/parser/src/grammar-content.ts packages/parser/syntaxes/gram.tmLanguage
 
       - name: Build Docs
         if: steps.filter.outputs.docs == 'true'

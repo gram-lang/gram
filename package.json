@@ -56,7 +56,7 @@
     "audit:check": "bun audit",
     "dedupe:check": "bun dedupe --check",
     "tidy": "bun dedupe && bun prune",
-    "ci": "bun run build && git diff --exit-code packages/parser/src/grammar-content.ts && bun run --parallel --no-exit-on-error lint typecheck any-ratchet deprecations:check test"
+    "ci": "bun run build && git diff --exit-code packages/parser/src/grammar-content.ts packages/parser/syntaxes/gram.tmLanguage && bun run --parallel --no-exit-on-error lint typecheck any-ratchet deprecations:check test"
   },
   "workspaces": [
     "packages/*",
