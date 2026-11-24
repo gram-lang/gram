@@ -40,7 +40,7 @@ gram lsp
 
 Les deux lancent le même serveur. Stdio étant le transport par défaut, `--stdio` est facultatif ; il reste accepté pour les éditeurs qui l'ajoutent d'office.
 
-Dans la requête `initialize`, envoyez `initializationOptions: { views: false }`. L'éditeur profite alors de toutes les fonctionnalités standard décrites plus bas (diagnostics, complétion, survol, formatage, renommage, coloration sémantique…), sans rien recevoir qu'il ne saurait afficher : pas de rendu HTML à chaque frappe, pas de notification `gram/*`, pas de Code Lens.
+Dans la requête `initialize`, envoyez `initializationOptions: { views: false }`. L'éditeur profite alors de toutes les fonctionnalités standard décrites plus bas (diagnostics, complétion, survol, formatage, renommage, coloration sémantique…), sans rien recevoir qu'il ne saurait afficher : pas de rendu HTML à chaque frappe, pas de notification `gram/*`, pas de Code Lens. La page [Éditeurs supportés](/fr/docs/reference/tooling/editors/) donne la configuration toute prête pour Neovim, Helix, Emacs, Sublime Text et les IDE JetBrains.
 
 Le serveur n'envoie au client que les requêtes que celui-ci a déclaré comprendre :
 

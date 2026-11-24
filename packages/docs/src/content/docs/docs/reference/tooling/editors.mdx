@@ -1,0 +1,154 @@
+---
+title: "Supported editors"
+description: "Use Gram in VS Code, Neovim, Helix, Emacs, Sublime Text or a JetBrains IDE: what each editor gets, and the configuration to copy."
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { Code } from 'astro:components';
+import Since from '../../../../../components/Since.astro';
+import Term from '../../../../../components/Term.astro';
+import neovim from '@editors/neovim/gram.lua?raw';
+import helix from '@editors/helix/languages.toml?raw';
+import emacs from '@editors/emacs/gram.el?raw';
+import sublimeLsp from '@editors/sublime/LSP.sublime-settings?raw';
+import sublimeComments from '@editors/sublime/Comments.tmPreferences?raw';
+import jetbrains from '@editors/jetbrains/init-options.json?raw';
+
+<Since v="1.6.0" />
+
+Gram works in any editor that speaks the Language Server Protocol. VS Code has a dedicated extension; every other editor below runs the same [language server](/docs/reference/tooling/language-server/) from a few lines of configuration, given here as they are tested.
+
+## What each editor gets
+
+| Editor | Highlighting | Diagnostics | Completion | Hover | Formatting | Rename | Preview |
+|---|---|---|---|---|---|---|---|
+| [VS Code and its forks](#vs-code-and-its-forks) | Full (TextMate grammar and semantic tokens) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [Neovim](#neovim) | Partial (semantic tokens) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Helix](#helix) | None yet | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Emacs](#emacs) | Comments only | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Sublime Text](#sublime-text) | Full (TextMate grammar) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [JetBrains IDEs](#jetbrains-ides) | Partial (semantic tokens), full with the TextMate bundle | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+
+- **Partial highlighting** comes from the server's semantic tokens: sigils and names (`@flour`, `#bowl`, `&dough`), braces, modifiers, actions and comments are colored, the inside of braces (quantities, durations, temperatures) is not. It also waits for the server to answer, a moment after the file opens.
+- **The preview** of the recipe and the <Term id="runSheet" /> is only in VS Code for now.
+- A Zed extension is planned.
+
+## Install the server
+
+Every editor except VS Code starts the server as a command. Install it once:
+
+```bash
+npm install -g @gram-lang/language-server
+```
+
+The configurations below start `gram-language-server --stdio`. With the CLI already installed, `gram lsp` starts the same server: replace the command with it if you prefer.
+
+Every configuration also sends `views: false`: these editors have no preview panel, so the server renders no view and sends only the standard LSP features.
+
+An editor started from a desktop menu does not always see the `PATH` of your shell. If it does not find `gram-language-server`, give it the full path printed by `which gram-language-server` (`where gram-language-server` on Windows).
+
+## VS Code and its forks
+
+Install the **Gram - Recipe Language** extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang), or from [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang) for VSCodium, Cursor, Windsurf or Positron. It bundles the server: nothing else to install. See [VS Code extension](/docs/reference/tooling/vscode-extension/).
+
+## Neovim
+
+For Neovim 0.11 or later. Save this file as `~/.config/nvim/plugin/gram.lua`:
+
+<Code code={neovim} lang="lua" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+- Completion is Neovim's own: <kbd>Ctrl</kbd>+<kbd>x</kbd> <kbd>Ctrl</kbd>+<kbd>o</kbd>, then <kbd>Ctrl</kbd>+<kbd>y</kbd> to accept. An ingredient whose name has several words comes with its braces, the cursor between them (`@Wheat flour{}`).
+- The other features use Neovim's default mappings: <kbd>K</kbd> for hover, `grn` to rename a reference, `gra` for code actions, `:lua vim.lsp.buf.format()` to format, `gc` to comment out with `//`.
+- The last block gives colors to the token types the default color scheme leaves in the text color; your own color scheme takes over if it sets them.
+- `:checkhealth vim.lsp` shows whether the server started.
+
+With Neovim 0.10, the same settings go through [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig), which has no entry for Gram: this configuration is not maintained for it.
+
+Tested with Neovim 0.11.6 and 0.12.6.
+
+## Helix
+
+Add this block to `~/.config/helix/languages.toml`:
+
+<Code code={helix} lang="toml" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+`hx --health gram` checks that Helix reads the configuration and finds the server. Completion shows on its own as you type; <kbd>Space</kbd> <kbd>k</kbd> shows hover, <kbd>Space</kbd> <kbd>r</kbd> renames, `:format` formats and <kbd>Ctrl</kbd>+<kbd>c</kbd> comments out with `//`.
+
+Helix does not use semantic tokens: the text stays uncolored until a Tree-sitter grammar for Gram is available.
+
+Tested with Helix 25.07 (configuration and server checked by `hx --health`).
+
+## Emacs
+
+For Emacs 29 or later, with eglot, which ships with Emacs. Add this to your init file:
+
+<Code code={emacs} lang="elisp" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+- `gram-mode` opens `.gram` files, colors comments and comments out with `//` (<kbd>M-;</kbd>). It colors nothing else: eglot does not use semantic tokens.
+- <kbd>M-x</kbd> `eglot` starts the server in a recipe; add `(add-hook 'gram-mode-hook #'eglot-ensure)` to start it on every `.gram` file.
+- Then diagnostics show through Flymake, hover in the echo area, completion with <kbd>C-M-i</kbd> (or Corfu, Company), and <kbd>M-x</kbd> `eglot-format-buffer` and `eglot-rename` format and rename.
+- With yasnippet installed, an ingredient whose name has several words comes with its braces and the cursor between them; without it, the braces come empty and the cursor after them.
+
+Tested with Emacs 30.2.
+
+## Sublime Text
+
+Sublime Text needs three things: the Gram syntax, the comment settings and the [LSP](https://packagecontrol.io/packages/LSP) package.
+
+1. Install the **LSP** package with Package Control.
+2. Open your `User` folder (**Preferences › Browse Packages…**, then `User`) and save in it:
+   - the Gram syntax, `gram.tmLanguage`, shipped by the `@gram-lang/parser` package: [download it from jsDelivr](https://cdn.jsdelivr.net/npm/@gram-lang/parser/syntaxes/gram.tmLanguage). Sublime Text picks it for `.gram` files on its own;
+   - this file, so that **Edit › Comment › Toggle Comment** writes `//`:
+
+<Code code={sublimeComments} lang="xml" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+3. Open **Preferences › Package Settings › LSP › Settings** and add the `gram` client:
+
+<Code code={sublimeLsp} lang="json" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+Then check, in a project that has a `.gram/ingredients.yaml`:
+
+- [ ] a `.gram` file opens with the **Gram** syntax (bottom right) and its colors;
+- [ ] <kbd>Ctrl</kbd>+<kbd>/</kbd> comments a line out with `//`;
+- [ ] an error in the recipe shows as a diagnostic;
+- [ ] typing `@` offers the ingredients of the database;
+- [ ] hovering an ingredient shows its details;
+- [ ] **LSP: Format File** and **LSP: Rename** work on a reference (`&dough`).
+
+## JetBrains IDEs
+
+IntelliJ IDEA, WebStorm, PyCharm and the other JetBrains IDEs run the server through the [LSP4IJ](https://plugins.jetbrains.com/plugin/23257-lsp4ij) plugin.
+
+1. Install **LSP4IJ** from the plugin marketplace.
+2. In **Settings › Languages & Frameworks › Language Servers**, add a server (**+**):
+   - **Server** tab: name `Gram`, command `gram-language-server --stdio`;
+   - **Mappings** tab, **File name patterns**: the pattern `*.gram`, language id `gram`;
+   - **Configuration** tab, **Initialization Options**:
+
+<Code code={jetbrains} lang="json" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+3. Recommended: add the TextMate bundle, without which quantities, durations and temperatures stay uncolored. Download the extension's `.vsix` from [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang), unzip it (it is a zip archive), then in **Settings › Editor › TextMate Bundles**, add (**+**) its `extension` folder.
+
+Then check, in a project that has a `.gram/ingredients.yaml`:
+
+- [ ] a `.gram` file opens with the server started (**Language Servers** tool window);
+- [ ] sigils, names and references are colored, and quantities too with the TextMate bundle;
+- [ ] an error in the recipe shows as a diagnostic;
+- [ ] typing `@` offers the ingredients of the database;
+- [ ] hovering an ingredient shows its details;
+- [ ] **Reformat Code** and **Rename** work on a reference (`&dough`).
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Language server"
+    description="The LSP features, the views modes and what the server sends to an editor."
+    href="/docs/reference/tooling/language-server/"
+  />
+  <LinkCard
+    title="VS Code extension"
+    description="The live preview, the run sheet panel and the editor settings."
+    href="/docs/reference/tooling/vscode-extension/"
+  />
+</CardGrid>

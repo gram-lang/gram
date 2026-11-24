@@ -6,6 +6,7 @@ description: "Référence de getAST, structure d'erreur GramParseError, types de
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
 import { astNodeTypesTable } from '../../../../../../data/api-reference';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 Transforme le code source `.gram` en un Arbre Syntaxique Abstrait (AST) constitué de simples objets JSON. C'est la seule étape du *pipeline* qui échoue en levant une exception sur une entrée malformée : tous les packages en aval partent du principe que s'ils reçoivent un AST, c'est qu'il est structurellement valide.
 
@@ -161,6 +162,8 @@ import gramGrammar from '@gram-lang/parser/textmate' with { type: 'json' };
 ```
 
 Il résout vers un fichier `.tmLanguage.json` — passez-le directement à n'importe quel colorateur syntaxique compatible avec les grammaires TextMate (Shiki, Monaco, VS Code).
+
+<Since v="1.6.0" /> La même grammaire existe en liste de propriétés, `syntaxes/gram.tmLanguage`, pour les hôtes qui ne lisent que ce format, comme Sublime Text (voir [Éditeurs supportés](/fr/docs/reference/tooling/editors/#sublime-text)). Elle est générée depuis le fichier JSON à la construction : les deux restent toujours identiques.
 
 ## Ressources associées
 
