@@ -42,6 +42,9 @@ const EDITORS: EditorFile[] = [
 		contains: [
 			/extension\s*=\s*\{\s*gram\s*=\s*"gram"/,
 			/commentstring\s*=\s*"\/\/ %s"/,
+			// Snippet completions: `@Wheat flour{}`, cursor between the braces.
+			/vim\.lsp\.completion\.enable\(true,\s*client\.id/,
+			/completeopt\s*=\s*"menu,menuone,noinsert"/,
 		],
 	},
 	{

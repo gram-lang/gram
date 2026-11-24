@@ -11,6 +11,11 @@ end
 local buf = vim.api.nvim_get_current_buf()
 check(vim.bo[buf].filetype == "gram", "filetype gram")
 check(vim.bo[buf].commentstring == "// %s", "commentstring // %s")
+check(vim.bo[buf].completeopt == "menu,menuone,noinsert", "completeopt menu,menuone,noinsert")
+for group, target in pairs({ parameter = "Identifier", variable = "Special", namespace = "Title" }) do
+  local link = vim.api.nvim_get_hl(0, { name = "@lsp.type." .. group .. ".gram" }).link
+  check(link == target, "@lsp.type." .. group .. ".gram -> " .. tostring(link))
+end
 
 local client
 vim.wait(10000, function()
