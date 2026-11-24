@@ -38,7 +38,7 @@ gram-language-server --stdio
 gram lsp
 ```
 
-Les deux lancent le même serveur. Stdio étant le transport par défaut, `--stdio` est facultatif ; il reste accepté pour les éditeurs qui l'ajoutent d'office.
+Les deux lancent le même serveur. Stdio étant le transport par défaut, `--stdio` est facultatif ; il reste accepté pour les éditeurs qui l'ajoutent d'office. `gram-language-server --version` affiche la version et `--help` la liste des options, sans démarrer le serveur.
 
 Dans la requête `initialize`, envoyez `initializationOptions: { views: false }`. L'éditeur profite alors de toutes les fonctionnalités standard décrites plus bas (diagnostics, complétion, survol, formatage, renommage, coloration sémantique…), sans rien recevoir qu'il ne saurait afficher : pas de rendu HTML à chaque frappe, pas de notification `gram/*`, pas de Code Lens.
 

@@ -43,7 +43,24 @@ describe("clientProfileOf", () => {
 			configuration: false,
 			watchedFiles: false,
 			inlayHintRefresh: false,
+			snippets: false,
 		});
+	});
+
+	it("reads snippet support from the completion capability", () => {
+		const completion = (snippetSupport: unknown) =>
+			clientProfileOf(
+				params({
+					capabilities: {
+						textDocument: {
+							completion: { completionItem: { snippetSupport } },
+						},
+					} as InitializeParams["capabilities"],
+				}),
+			).snippets;
+		expect(completion(true)).toBe(true);
+		expect(completion(false)).toBe(false);
+		expect(completion("true")).toBe(false);
 	});
 
 	it("reads the three workspace capabilities", () => {

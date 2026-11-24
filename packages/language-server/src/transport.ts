@@ -17,3 +17,32 @@ export function hasTransportFlag(args: readonly string[]): boolean {
 		return arg.includes("=") && (name === "--socket" || name === "--pipe");
 	});
 }
+
+/**
+ * What `gram-language-server` prints instead of starting, for `--version`
+ * (`-v`) or `--help` (`-h`), or `undefined` to start the server. Read before
+ * anything else, so these never open a connection that would wait on stdin.
+ */
+export function commandLineAnswer(
+	args: readonly string[],
+	version: string,
+): string | undefined {
+	if (args.includes("--version") || args.includes("-v")) return `${version}\n`;
+	if (args.includes("--help") || args.includes("-h")) {
+		return [
+			`gram-language-server ${version}`,
+			"Language server for the Gram recipe language.",
+			"",
+			"Usage: gram-language-server [--stdio | --node-ipc | --socket=<port> | --pipe=<name>]",
+			"",
+			"  --stdio       talk over stdin/stdout (the default)",
+			"  --node-ipc    talk over a Node IPC channel (VS Code)",
+			"  --socket=<port>, --pipe=<name>",
+			"                talk over a socket or a named pipe",
+			"  -v, --version print the version and exit",
+			"  -h, --help    print this help and exit",
+			"",
+		].join("\n");
+	}
+	return undefined;
+}

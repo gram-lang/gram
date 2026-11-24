@@ -5,6 +5,7 @@ import type { IngredientDB } from "../ingredient-loader";
 import { isInsideBraces, provideUnitCompletions } from "./completions-units";
 import {
 	isAfterAt,
+	nameInsertion,
 	provideIngredientCompletions,
 } from "./completions-ingredients";
 import {
@@ -35,6 +36,7 @@ export function provideCompletions(
 	db: IngredientDB,
 	prefix: string,
 	uri = "",
+	snippets = false,
 ): CompletionItem[] {
 	if (!state.ast) return [];
 
@@ -56,16 +58,17 @@ export function provideCompletions(
 				kind: CompletionItemKind.Field,
 			}));
 		}
-		if (target) return intermediateCompletions(state, false);
+		if (target) return intermediateCompletions(state, false, snippets);
 		return provideUnitCompletions(prefix);
 	}
 
 	// isAfterAt also matches optional modifiers: @?, @-, @*, @&, @=
 	if (isAfterAt(prefix)) {
-		return provideIngredientCompletions(db);
+		return provideIngredientCompletions(db, snippets);
 	}
 
-	if (isAfterReference(prefix)) return intermediateCompletions(state, true);
+	if (isAfterReference(prefix))
+		return intermediateCompletions(state, true, snippets);
 
 	return [];
 }
@@ -77,13 +80,15 @@ export function provideCompletions(
 function intermediateCompletions(
 	state: DocumentState,
 	asReference: boolean,
+	snippets: boolean,
 ): CompletionItem[] {
 	if (!state.ast) return [];
 	return collectIntermediates(state.ast).map(({ decl }) => ({
 		label: decl.name,
 		kind: CompletionItemKind.Variable,
 		detail: `intermediate: ->&${decl.name}`,
-		insertText:
-			asReference && decl.name.includes(" ") ? `${decl.name}{}` : decl.name,
+		...(asReference
+			? nameInsertion(decl.name, snippets)
+			: { insertText: decl.name }),
 	}));
 }
