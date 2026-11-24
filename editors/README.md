@@ -32,7 +32,7 @@ editors/smoke/run.sh neovim     # neovim | helix | emacs
 Neovim and Emacs go through hover, completion, formatting, rename,
 semantic tokens and diagnostics with their own LSP client; Helix has no
 headless mode, so `hx --health gram` only checks that the config is read and
-the server is found. Sublime Text and JetBrains are tested by hand (checklist
-on the docs page).
+the server is found. Sublime Text and JetBrains are tested by hand by the
+maintainer.
 
 This folder is not a workspace and is not published.

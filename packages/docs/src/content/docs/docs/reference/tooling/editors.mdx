@@ -106,15 +106,6 @@ Sublime Text needs three things: the Gram syntax, the comment settings and the [
 
 <Code code={sublimeLsp} lang="json" themes={{ light: 'github-light', dark: 'github-dark' }} />
 
-Then check, in a project that has a `.gram/ingredients.yaml`:
-
-- [ ] a `.gram` file opens with the **Gram** syntax (bottom right) and its colors;
-- [ ] <kbd>Ctrl</kbd>+<kbd>/</kbd> comments a line out with `//`;
-- [ ] an error in the recipe shows as a diagnostic;
-- [ ] typing `@` offers the ingredients of the database;
-- [ ] hovering an ingredient shows its details;
-- [ ] **LSP: Format File** and **LSP: Rename** work on a reference (`&dough`).
-
 ## JetBrains IDEs
 
 IntelliJ IDEA, WebStorm, PyCharm and the other JetBrains IDEs run the server through the [LSP4IJ](https://plugins.jetbrains.com/plugin/23257-lsp4ij) plugin.
@@ -128,15 +119,6 @@ IntelliJ IDEA, WebStorm, PyCharm and the other JetBrains IDEs run the server thr
 <Code code={jetbrains} lang="json" themes={{ light: 'github-light', dark: 'github-dark' }} />
 
 3. Recommended: add the TextMate bundle, without which quantities, durations and temperatures stay uncolored. Download the extension's `.vsix` from [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang), unzip it (it is a zip archive), then in **Settings › Editor › TextMate Bundles**, add (**+**) its `extension` folder.
-
-Then check, in a project that has a `.gram/ingredients.yaml`:
-
-- [ ] a `.gram` file opens with the server started (**Language Servers** tool window);
-- [ ] sigils, names and references are colored, and quantities too with the TextMate bundle;
-- [ ] an error in the recipe shows as a diagnostic;
-- [ ] typing `@` offers the ingredients of the database;
-- [ ] hovering an ingredient shows its details;
-- [ ] **Reformat Code** and **Rename** work on a reference (`&dough`).
 
 ## Related resources
 

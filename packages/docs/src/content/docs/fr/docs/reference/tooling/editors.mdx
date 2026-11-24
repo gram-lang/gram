@@ -106,15 +106,6 @@ Il faut trois choses à Sublime Text : la syntaxe Gram, les réglages de comment
 
 <Code code={sublimeLsp} lang="json" themes={{ light: 'github-light', dark: 'github-dark' }} />
 
-Vérifiez ensuite, dans un projet qui a un `.gram/ingredients.yaml` :
-
-- [ ] un fichier `.gram` s'ouvre avec la syntaxe **Gram** (en bas à droite) et ses couleurs ;
-- [ ] <kbd>Ctrl</kbd>+<kbd>/</kbd> commente une ligne avec `//` ;
-- [ ] une erreur dans la recette apparaît en diagnostic ;
-- [ ] taper `@` propose les ingrédients de la base ;
-- [ ] le survol d'un ingrédient affiche son détail ;
-- [ ] **LSP: Format File** et **LSP: Rename** fonctionnent sur une référence (`&pâte`).
-
 ## IDE JetBrains
 
 IntelliJ IDEA, WebStorm, PyCharm et les autres IDE JetBrains font tourner le serveur grâce au plugin [LSP4IJ](https://plugins.jetbrains.com/plugin/23257-lsp4ij).
@@ -128,15 +119,6 @@ IntelliJ IDEA, WebStorm, PyCharm et les autres IDE JetBrains font tourner le ser
 <Code code={jetbrains} lang="json" themes={{ light: 'github-light', dark: 'github-dark' }} />
 
 3. Conseillé : ajoutez le bundle TextMate, sans lequel quantités, durées et températures restent sans couleur. Téléchargez le `.vsix` de l'extension sur [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang), décompressez-le (c'est une archive zip), puis dans **Settings › Editor › TextMate Bundles**, ajoutez (**+**) son dossier `extension`.
-
-Vérifiez ensuite, dans un projet qui a un `.gram/ingredients.yaml` :
-
-- [ ] un fichier `.gram` s'ouvre avec le serveur démarré (fenêtre **Language Servers**) ;
-- [ ] sigles, noms et références sont colorés, et les quantités aussi avec le bundle TextMate ;
-- [ ] une erreur dans la recette apparaît en diagnostic ;
-- [ ] taper `@` propose les ingrédients de la base ;
-- [ ] le survol d'un ingrédient affiche son détail ;
-- [ ] **Reformat Code** et **Rename** fonctionnent sur une référence (`&pâte`).
 
 ## Ressources associées
 
