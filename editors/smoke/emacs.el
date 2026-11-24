@@ -1,0 +1,51 @@
+;;; Run by emacs.sh after gram.el: the mode, then the LSP through eglot.
+(require 'eglot)
+(defvar smoke-failures 0)
+(defun smoke-check (ok what)
+  (princ (format "%s %s\n" (if ok "ok  " "FAIL") what))
+  (unless ok (setq smoke-failures (1+ smoke-failures))))
+(defun smoke-wait (pred &optional seconds)
+  (let ((deadline (+ (float-time) (or seconds 10))))
+    (while (and (not (funcall pred)) (< (float-time) deadline))
+      (accept-process-output nil 0.05))
+    (funcall pred)))
+
+(find-file "bread.gram")
+(smoke-check (eq major-mode 'gram-mode) "gram-mode on .gram")
+(smoke-check (equal comment-start "// ") "comment-start //")
+(goto-char (point-min))
+(forward-line 4)
+(forward-char 3)
+(smoke-check (nth 4 (syntax-ppss)) "// line read as a comment")
+(font-lock-ensure)
+(smoke-check (eq (get-text-property (point) 'face) 'font-lock-comment-face)
+             "comment colored")
+
+(apply #'eglot (eglot--guess-contact))
+(smoke-check (smoke-wait #'eglot-current-server) "eglot connected")
+(let* ((server (eglot-current-server)))
+  (smoke-check (equal (plist-get (eglot-initialization-options server) :views)
+                      :json-false)
+               "initializationOptions views false")
+  (goto-char (point-min))
+  (search-forward "@flour")
+  (backward-char 2)
+  (let (hover)
+    (smoke-wait (lambda ()
+                  (setq hover (jsonrpc-request server :textDocument/hover
+                                               (eglot--TextDocumentPositionParams)))
+                  (string-match-p "Wheat flour" (format "%S" hover))))
+    (smoke-check (string-match-p "Wheat flour" (format "%S" hover))
+                 "hover shows the database name")))
+
+(find-file "broken.gram")
+;; Opened in a project eglot already serves: managed at once.
+(smoke-check (eglot-managed-p) "second buffer managed by eglot")
+;; Interactively flymake starts on its own when idle; batch mode has no idle time.
+(flymake-start)
+(smoke-check (smoke-wait (lambda () (flymake-diagnostics)))
+             (format "diagnostics: %s"
+                     (let ((d (car (flymake-diagnostics))))
+                       (if d (car (split-string (flymake-diagnostic-text d) "\n")) "none"))))
+
+(kill-emacs (if (zerop smoke-failures) 0 1))

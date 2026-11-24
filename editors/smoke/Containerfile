@@ -1,0 +1,5 @@
+# Throwaway image to smoke-test the reference configs of editors/ for real.
+FROM registry.fedoraproject.org/fedora:43
+RUN dnf -y install --setopt=install_weak_deps=False neovim helix emacs-nw nodejs git \
+	&& dnf clean all
+WORKDIR /work

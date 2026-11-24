@@ -92,7 +92,10 @@ const EDITORS: EditorFile[] = [
 	},
 ];
 
-/** Every file under `editors/` but the README, relative and with `/`. */
+/**
+ * Every configuration under `editors/`, relative and with `/`: neither the
+ * README nor the smoke tests of `smoke/`, which no docs page shows.
+ */
 function editorFiles(): string[] {
 	const files: string[] = [];
 	const walk = (dir: string) => {
@@ -103,7 +106,9 @@ function editorFiles(): string[] {
 		}
 	};
 	walk(EDITORS_DIR);
-	return files.filter((file) => file !== "README.md").sort();
+	return files
+		.filter((file) => file !== "README.md" && !file.startsWith("smoke/"))
+		.sort();
 }
 
 const read = (path: string) => readFileSync(join(EDITORS_DIR, path), "utf8");

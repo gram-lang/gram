@@ -1,0 +1,13 @@
+---
+title: Bread
+---
+
+// Line 5 is a comment: the editors color it as one.
+
+## Dough ->&dough
+
+Mix @flour{ 200 g } with @water{120 g}.
+
+## Bake
+
+Bake the &dough for ~{30 min}.
