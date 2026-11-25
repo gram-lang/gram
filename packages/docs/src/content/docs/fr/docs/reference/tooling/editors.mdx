@@ -1,6 +1,6 @@
 ---
 title: "Éditeurs pris en charge"
-description: "Utiliser Gram dans VS Code, Neovim, Helix, Emacs, Sublime Text ou un IDE JetBrains : ce que chaque éditeur sait faire, et la configuration à copier."
+description: "Support officiel (VS Code, Open VSX) et configurations LSP communautaires pour Neovim, Helix, Emacs, Sublime Text et les IDE JetBrains."
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
@@ -16,42 +16,60 @@ import jetbrains from '@editors/jetbrains/init-options.json?raw';
 
 <Since v="1.6.0" />
 
-Gram fonctionne dans tout éditeur qui parle le Language Server Protocol. VS Code a son extension ; tous les autres éditeurs de cette page font tourner le même [serveur de langage](/fr/docs/reference/tooling/language-server/) avec quelques lignes de configuration, données ici telles qu'elles ont été testées.
+Gram fonctionne dans tout éditeur qui parle le Language Server Protocol, avec deux niveaux de prise en charge.
+
+## Deux niveaux de prise en charge
+
+- **Support officiel** : [VS Code et ses dérivés](#vs-code-et-ses-dérivés), avec l'extension publiée sur le VS Code Marketplace et sur Open VSX. Une extension pour Zed viendra s'y ajouter. Ces intégrations sont maintenues et vérifiées par le projet.
+- **Configurations LSP communautaires** : [Neovim](#neovim), [Helix](#helix), [Emacs](#emacs), [Sublime Text](#sublime-text) et les [IDE JetBrains](#ide-jetbrains). Elles ne reposent que sur le protocole standard : l'éditeur lance `gram-language-server --stdio` et envoie `views: false`. Chacune est une base qui fonctionne, d'où partir, sans maintenance propre à chaque éditeur. Retours et pull requests de celles et ceux qui utilisent ces éditeurs sont les bienvenus, sur le [suivi des tickets](https://git.gram-lang.org/gram-lang/gram/issues) ou directement dans le dossier `editors/` du dépôt.
+
+Les configurations communautaires ne sont pas toutes vérifiées de la même façon :
+
+- chacune passe un test de contrat à chaque modification (`editors.test.ts` : la commande, `views: false`, l'extension `.gram` et les commentaires), et le serveur lui-même est testé tel que le voit n'importe quel client LSP ;
+- **Neovim et Emacs** sont en plus pilotés par leur propre client LSP dans un conteneur (`editors/smoke/run.sh` : diagnostics, complétion, survol, formatage, renommage), et **Helix** y vérifie qu'il lit la configuration et trouve le serveur ;
+- **Sublime Text et les IDE JetBrains** sont fournis tels quels, sans banc d'essai dans l'éditeur lui-même. Leurs écrans de réglages changent d'une version à l'autre : c'est leur propre documentation qui fait foi pour l'emplacement de chaque champ.
 
 ## Ce que chaque éditeur sait faire
 
-| Éditeur | Coloration | Diagnostics | Complétion | Survol | Formatage | Renommage | Aperçu |
-|---|---|---|---|---|---|---|---|
-| [VS Code et ses dérivés](#vs-code-et-ses-dérivés) | Complète (grammaire TextMate et jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| [Neovim](#neovim) | Partielle (jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [Helix](#helix) | Pas encore | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [Emacs](#emacs) | Commentaires seulement | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [Sublime Text](#sublime-text) | Complète (grammaire TextMate) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [IDE JetBrains](#ide-jetbrains) | Partielle (jetons sémantiques), complète avec le bundle TextMate | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Éditeur | Prise en charge | Coloration | Diagnostics | Complétion | Survol | Formatage | Renommage | Aperçu |
+|---|---|---|---|---|---|---|---|---|
+| [VS Code et ses dérivés](#vs-code-et-ses-dérivés) | Officielle | Complète (grammaire TextMate et jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [Neovim](#neovim) | Communautaire, testée en conteneur | Partielle (jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Helix](#helix) | Communautaire, configuration vérifiée en conteneur | Pas encore | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Emacs](#emacs) | Communautaire, testée en conteneur | Commentaires seulement | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Sublime Text](#sublime-text) | Communautaire, telle quelle | Complète (grammaire TextMate) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [IDE JetBrains](#ide-jetbrains) | Communautaire, telle quelle | Partielle (jetons sémantiques), complète avec le bundle TextMate | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+
+Les colonnes de fonctionnalités disent ce que le serveur envoie ; pour Sublime Text et les IDE JetBrains, elles ne sont pas vérifiées dans l'éditeur.
 
 - **La coloration partielle** vient des jetons sémantiques du serveur : sigles et noms (`@farine`, `#bol`, `&pâte`), accolades, modificateurs, actions et commentaires prennent une couleur, mais pas le contenu des accolades (quantités, durées, températures). Elle attend aussi la réponse du serveur, un instant après l'ouverture du fichier.
 - **L'aperçu** de la recette et du <Term id="runSheet" /> n'existe pour l'instant que dans VS Code.
-- Une extension pour Zed est prévue.
 
-## Installer le serveur
+## Support officiel
 
-Hors VS Code, chaque éditeur lance le serveur comme une commande. Installez-le une fois pour toutes :
+### VS Code et ses dérivés
+
+Installez l'extension **Gram - Recipe Language** depuis le [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang), ou depuis [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang) pour VSCodium, Cursor, Windsurf ou Positron. Elle embarque le serveur : rien d'autre à installer. Voir [Extension VS Code](/fr/docs/reference/tooling/vscode-extension/).
+
+## Configurations LSP communautaires
+
+Ces configurations sont des points de départ : adaptez-les à votre installation, et partagez ce que vous améliorez.
+
+### Installer le serveur
+
+Chaque éditeur ci-dessous lance le serveur comme une commande. Installez-le une fois pour toutes :
 
 ```bash
 npm install -g @gram-lang/language-server
 ```
 
-Les configurations ci-dessous lancent `gram-language-server --stdio`. Si la CLI est déjà installée, `gram lsp` lance le même serveur : remplacez la commande par celle-ci si vous préférez.
+Ces configurations lancent `gram-language-server --stdio`. Si la CLI est déjà installée, `gram lsp` lance le même serveur : remplacez la commande par celle-ci si vous préférez.
 
 Toutes envoient aussi `views: false` : ces éditeurs n'ont pas de panneau d'aperçu, le serveur ne calcule donc aucune vue et s'en tient aux fonctionnalités standard du LSP.
 
 Un éditeur lancé depuis un menu ne voit pas toujours le `PATH` de votre terminal. S'il ne trouve pas `gram-language-server`, donnez-lui le chemin complet qu'affiche `which gram-language-server` (`where gram-language-server` sous Windows).
 
-## VS Code et ses dérivés
-
-Installez l'extension **Gram - Recipe Language** depuis le [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang), ou depuis [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang) pour VSCodium, Cursor, Windsurf ou Positron. Elle embarque le serveur : rien d'autre à installer. Voir [Extension VS Code](/fr/docs/reference/tooling/vscode-extension/).
-
-## Neovim
+### Neovim
 
 À partir de Neovim 0.11. Enregistrez ce fichier sous `~/.config/nvim/plugin/gram.lua` :
 
@@ -66,7 +84,7 @@ Avec Neovim 0.10, les mêmes réglages passent par [nvim-lspconfig](https://gith
 
 Testé avec Neovim 0.11.6 et 0.12.6.
 
-## Helix
+### Helix
 
 Ajoutez ce bloc à `~/.config/helix/languages.toml` :
 
@@ -78,7 +96,7 @@ Helix ne se sert pas des jetons sémantiques : le texte reste sans couleur tant 
 
 Testé avec Helix 25.07 (configuration et serveur vérifiés par `hx --health`).
 
-## Emacs
+### Emacs
 
 À partir d'Emacs 29, avec eglot, livré avec Emacs. Ajoutez ceci à votre fichier d'initialisation :
 
@@ -91,34 +109,34 @@ Testé avec Helix 25.07 (configuration et serveur vérifiés par `hx --health`).
 
 Testé avec Emacs 30.2.
 
-## Sublime Text
+### Sublime Text
 
-Il faut trois choses à Sublime Text : la syntaxe Gram, les réglages de commentaires et le paquet [LSP](https://packagecontrol.io/packages/LSP).
+Fourni tel quel, sans test dans l'éditeur. Il faut trois choses à Sublime Text : la syntaxe Gram, les réglages de commentaires et le paquet [LSP](https://packagecontrol.io/packages/LSP).
 
 1. Installez le paquet **LSP** avec Package Control.
 2. Ouvrez votre dossier `User` (**Preferences › Browse Packages…**, puis `User`) et enregistrez-y :
    - la syntaxe Gram, `gram.tmLanguage`, fournie par le paquet `@gram-lang/parser` : [téléchargez-la depuis jsDelivr](https://cdn.jsdelivr.net/npm/@gram-lang/parser/syntaxes/gram.tmLanguage). Sublime Text l'associe de lui-même aux fichiers `.gram` ;
-   - ce fichier, pour que **Edit › Comment › Toggle Comment** écrive `//` :
+   - ce fichier, pour que la mise en commentaire d'une ligne écrive `//` :
 
 <Code code={sublimeComments} lang="xml" themes={{ light: 'github-light', dark: 'github-dark' }} />
 
-3. Ouvrez **Preferences › Package Settings › LSP › Settings** et ajoutez le client `gram` :
+3. Dans les réglages utilisateur du paquet LSP, ajoutez le client `gram` (sa [documentation](https://lsp.sublimetext.io/) indique où les trouver et le rôle de chaque clé) :
 
 <Code code={sublimeLsp} lang="json" themes={{ light: 'github-light', dark: 'github-dark' }} />
 
-## IDE JetBrains
+### IDE JetBrains
 
-IntelliJ IDEA, WebStorm, PyCharm et les autres IDE JetBrains font tourner le serveur grâce au plugin [LSP4IJ](https://plugins.jetbrains.com/plugin/23257-lsp4ij).
+Fourni tel quel, sans test dans l'IDE. IntelliJ IDEA, WebStorm, PyCharm et les autres IDE JetBrains peuvent faire tourner le serveur grâce au plugin [LSP4IJ](https://plugins.jetbrains.com/plugin/23257-lsp4ij).
 
-1. Installez **LSP4IJ** depuis le catalogue de plugins.
-2. Dans **Settings › Languages & Frameworks › Language Servers**, ajoutez un serveur (**+**) :
-   - onglet **Server** : le nom `Gram`, la commande `gram-language-server --stdio` ;
-   - onglet **Mappings**, **File name patterns** : le motif `*.gram`, l'identifiant de langage `gram` ;
-   - onglet **Configuration**, **Initialization Options** :
+1. Installez **LSP4IJ** depuis le catalogue de plugins JetBrains.
+2. Déclarez dans LSP4IJ un serveur de langage défini par l'utilisateur (sa [documentation](https://github.com/redhat-developer/lsp4ij/blob/main/docs/UserDefinedLanguageServer.md) montre où se trouve chaque champ), avec :
+   - la commande `gram-language-server --stdio` ;
+   - le motif de nom de fichier `*.gram`, associé à l'identifiant de langage `gram` ;
+   - ces options d'initialisation :
 
 <Code code={jetbrains} lang="json" themes={{ light: 'github-light', dark: 'github-dark' }} />
 
-3. Conseillé : ajoutez le bundle TextMate, sans lequel quantités, durées et températures restent sans couleur. Téléchargez le `.vsix` de l'extension sur [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang), décompressez-le (c'est une archive zip), puis dans **Settings › Editor › TextMate Bundles**, ajoutez (**+**) son dossier `extension`.
+3. Conseillé : ajoutez le bundle TextMate, sans lequel quantités, durées et températures restent sans couleur. Téléchargez le `.vsix` de l'extension sur [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang), décompressez-le (c'est une archive zip), puis ajoutez son dossier `extension` aux bundles TextMate, dans les réglages de l'IDE.
 
 ## Ressources associées
 
