@@ -1,6 +1,6 @@
 ---
 title: "Supported editors"
-description: "Official editor support (VS Code, Open VSX) and community LSP configurations for Neovim, Helix, Emacs, Sublime Text and JetBrains IDEs."
+description: "Official editor support (VS Code and Open VSX, Zed soon) and community configurations for Neovim, Helix, Emacs, Sublime Text and JetBrains IDEs."
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
@@ -22,7 +22,7 @@ Gram works in any editor that speaks the Language Server Protocol, at two levels
 
 ## Two levels of support
 
-- **Official support**: [VS Code and its forks](#vs-code-and-its-forks), through the extension on the VS Code Marketplace and Open VSX. A Zed extension will join it later. These integrations are maintained and checked by the project.
+- **Official support**: [VS Code and its forks](#vs-code-and-its-forks), through the extension on the VS Code Marketplace and Open VSX. The [Zed](#zed) extension will join it soon. These integrations are maintained and checked by the project.
 - **Community LSP configurations**: [Neovim](#neovim), [Helix](#helix), [Emacs](#emacs), [Sublime Text](#sublime-text) and [JetBrains IDEs](#jetbrains-ides). They rely only on the standard protocol: the editor starts `gram-language-server --stdio` and sends `views: false`. Each one is a working base to start from, with no dedicated maintenance per editor. Feedback and pull requests from the people who use these editors are welcome, on the [issue tracker](https://git.gram-lang.org/gram-lang/gram/issues) or as changes to the `editors/` folder of the repository.
 
 The community configurations are not all checked the same way:
@@ -36,6 +36,7 @@ The community configurations are not all checked the same way:
 | Editor | Support | Highlighting | Diagnostics | Completion | Hover | Formatting | Rename | Preview |
 |---|---|---|---|---|---|---|---|---|
 | [VS Code and its forks](#vs-code-and-its-forks) | Official | Full (TextMate grammar and semantic tokens) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| [Zed](#zed) | Official, coming soon | Full (Tree-sitter) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | [Neovim](#neovim) | Community, tested in a container | Full with Tree-sitter, partial with the server alone (semantic tokens) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | [Helix](#helix) | Community, configuration checked in a container | Full (Tree-sitter) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | [Emacs](#emacs) | Community, tested in a container | Comments only | ✓ | ✓ | ✓ | ✓ | ✓ | — |
@@ -53,6 +54,15 @@ The feature columns describe what the server sends; for Sublime Text and JetBrai
 ### VS Code and its forks
 
 Install the **Gram - Recipe Language** extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang), or from [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang) for VSCodium, Cursor, Windsurf or Positron. It bundles the server: nothing else to install. See [VS Code extension](/docs/reference/tooling/vscode-extension/).
+
+### Zed
+
+Coming soon: the **Gram** extension is waiting for its place in Zed's extension catalog. Once it is there, install it from Zed's extensions page, and open a recipe:
+
+- colors and the outline of the sections come from the [tree-sitter-gram](https://github.com/gram-lang/tree-sitter-gram) grammar, built by Zed;
+- diagnostics, completion, hover, formatting and rename come from the language server. The extension uses the `gram-language-server` of your `PATH` if there is one; otherwise it downloads `@gram-lang/language-server` from npm on its own, and runs it with Zed's Node. It needs version 1.6.0 or later.
+
+The extension's source is the [zed-gram](https://github.com/gram-lang/zed-gram) repository.
 
 ## Community LSP configurations
 
