@@ -4,7 +4,7 @@ import {
 	type RecipeSettings,
 	type ViewSettings,
 } from "@gram-lang/renderer";
-import { runPipeline } from "../core/pipeline";
+import { type PipelineResult, runPipeline } from "../core/pipeline";
 import { cliViewName } from "../core/cli-views";
 import { ExitCode, GramCLIError } from "../errors";
 import { getView } from "@gram-lang/renderer";
@@ -28,6 +28,23 @@ export interface ExportOptions {
 	stock?: Set<string>;
 	/** Told which `stock` entries a `@use` of the recipe matched, once known. */
 	onUsedStock?: (used: Set<string>) => void;
+	/**
+	 * Told what the pipeline produced, before the view is written: the
+	 * recipe's title, the files it was read from, the stock it used.
+	 */
+	onPipeline?: (result: PipelineResult) => void;
+}
+
+/**
+ * The view asked for has nothing to show for this recipe (a run sheet with
+ * nothing to plan). A surface that can show an empty view (the live preview)
+ * catches it by its class, never by its message.
+ */
+export class NothingToShowError extends GramCLIError {
+	constructor(message: string) {
+		super(message, ExitCode.Error);
+		this.name = "NothingToShowError";
+	}
 }
 
 /**
@@ -42,7 +59,7 @@ export async function exportRecipe(
 	scaleFactor?: number,
 	options: ExportOptions = {},
 ): Promise<string> {
-	const { compiled, analyzed, usedStock } = await runPipeline(filePath, {
+	const result = await runPipeline(filePath, {
 		db,
 		scaleFactor,
 		bakersReference: options.bakersReference,
@@ -51,6 +68,8 @@ export async function exportRecipe(
 		paths: options.paths,
 		stock: options.stock,
 	});
+	const { compiled, analyzed, usedStock } = result;
+	options.onPipeline?.(result);
 	options.onUsedStock?.(usedStock);
 
 	const view = options.view?.view ?? getView("recipe");
@@ -75,11 +94,10 @@ export async function exportRecipe(
 		...(options.lang !== undefined && { lang: options.lang }),
 	});
 	if (written === null) {
-		throw new GramCLIError(
+		throw new NothingToShowError(
 			planned
 				? "This recipe has nothing to plan."
 				: `This recipe has nothing to show in the ${cliViewName(view.id)} view.`,
-			ExitCode.Error,
 		);
 	}
 	return written;
