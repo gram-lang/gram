@@ -622,7 +622,7 @@
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>constant.numeric.temperature.gram</string>
+					<string>support.type.temperature.gram</string>
 				</dict>
 				<key>3</key>
 				<dict>
