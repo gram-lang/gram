@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "bun:test";
 import { readFile, unlink } from "node:fs/promises";
-import { generatePrintHTML } from "../src/services/printer";
+import { generatePrintHTML, openInBrowser } from "../src/services/printer";
 import { writeTmpFile, cleanupTmpFile } from "./helpers";
 
 describe("generatePrintHTML", () => {
@@ -26,5 +26,17 @@ describe("generatePrintHTML", () => {
 		const content = await readFile(outPath, "utf-8");
 		expect(content).toContain("flour");
 		expect(content.toLowerCase()).toContain("<html");
+	});
+});
+
+describe("openInBrowser", () => {
+	it("resolves to false when the opener is missing, without crashing", async () => {
+		const path = process.env.PATH;
+		process.env.PATH = "/nonexistent";
+		try {
+			expect(await openInBrowser("/tmp/nothing.html", "linux")).toBe(false);
+		} finally {
+			process.env.PATH = path;
+		}
 	});
 });
