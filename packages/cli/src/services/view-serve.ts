@@ -145,34 +145,6 @@ export function previewStrings(lang?: string): PreviewStrings {
 	};
 }
 
-/**
- * A syntax error of the recipe file itself. The module graph turns it into a
- * diagnostic rather than an exception (`gram view` in the terminal then shows
- * an empty recipe); the preview keeps the last good render instead.
- */
-export function entryParseError(
-	result: PipelineResult,
-	file: string,
-): DescribableDiagnostic | null {
-	const entry = resolve(file);
-	const warning = result.compiled.warnings?.find(
-		(w) =>
-			w.code === "MODULE_PARSE_ERROR" &&
-			(w.uri ?? w.loc?.uri) !== undefined &&
-			resolve((w.uri ?? w.loc?.uri) as string) === entry,
-	);
-	if (!warning) return null;
-	return {
-		code: "PARSE_ERROR",
-		message: warning.message,
-		severity: "error",
-		blocking: true,
-		...(warning.loc && {
-			loc: { start: warning.loc.start, end: warning.loc.end },
-		}),
-	};
-}
-
 /** An error of the pipeline, as the blocking diagnostic the banner describes. */
 export function errorDiagnostic(err: unknown): DescribableDiagnostic {
 	if (err instanceof GramParseError) {
@@ -271,10 +243,6 @@ export function createPreviewRender(options: PreviewRenderOptions) {
 				html = null;
 			}
 			if (pipeline) watch.push(...pipeline.dependencies);
-			const parseError = pipeline ? entryParseError(pipeline, file) : null;
-			if (parseError) {
-				return { html: null, error: describeError([parseError], lang), watch };
-			}
 			if (pipeline) options.onPipeline?.(pipeline);
 			return {
 				...(pipeline?.compiled.title && { title: pipeline.compiled.title }),
