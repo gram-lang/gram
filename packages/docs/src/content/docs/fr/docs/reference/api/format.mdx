@@ -6,7 +6,7 @@ description: "Le formateur canonique des fichiers .gram : une passe déterminist
 import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
 import Since from '../../../../../../components/Since.astro';
 
-Le formateur canonique des fichiers `.gram`. Il sert la commande `gram format` du CLI, le formatage du serveur de langage (et donc de l'extension VS Code), et la sortie de l'importeur IA. Chaque règle ne touche que des espaces ou des graphies, jamais le sens d'une recette, et le relancer une seconde fois ne change plus rien.
+Le formateur canonique des fichiers `.gram`. Il sert la commande `gram format` du CLI, le formatage du serveur de langage (et donc de l'extension VS Code), et la sortie de l'importeur IA. Chaque règle ne touche que des espaces ou des graphies, et le relancer une seconde fois ne change plus rien. Trois d'entre elles (6, 7 et 8) peuvent aller plus loin, à dessein : elles réparent une étourderie courante pour retrouver la syntaxe voulue, si bien que la recette peut se lire autrement ensuite. Le compilateur signale la première avant tout formatage (`SPACED_COMPOSITE`).
 
 ## API
 
@@ -91,9 +91,9 @@ Les règles 1 à 5 ne s’appliquent qu’aux éléments que trouve le parser (i
   </Card>
   <Card title="Autres jetons" icon="list-format">
     - **5. Températures** (`temperatureSpacing`) : `^{180 °C}` → `^{180°C}`.
-    - **6. Composites** (`compositeSeparatorSpacing`) : `@juice{} < @lemon{}` → `@juice{}<@lemon{}`.
+    - **6. Composites** (`compositeSeparatorSpacing`) : `@juice{} < @lemon{}` → `@juice{}<@lemon{}`. Une réparation : deux ingrédients distincts deviennent un composite.
     - **7. Déclarations** (`arrowDeclarationSpacing`) : `->&batter {}` → `->&batter{}`.
-    - **8. Titres de section** (`headerSpacing`) : `##Batter` → `## Batter`.
+    - **8. Titres de section** (`headerSpacing`) : `##Batter` → `## Batter`. Une réparation : une étape qui contenait un ustensile `#Batter` devient un en-tête de section.
     - **9. Tabulations** (`tabsToSpaces`) : une tabulation devient quatre espaces.
   </Card>
   <Card title="Tout le fichier" icon="document">

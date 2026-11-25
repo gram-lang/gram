@@ -25,7 +25,7 @@ interface Warning {
 
 `compile()` les retourne dans le tableau `CompilationResult.warnings`. De son côté, `analyze()` les propage (et en ajoute potentiellement de nouveaux) dans `AnalyzedCompilationResult.warnings`. Ce ne sont jamais de simples chaînes de caractères : le champ `.message` est toujours garanti.
 
-<Since v="1.5.0" /> Certains codes fournissent aussi un champ `data` structuré permettant aux outils et aux correctifs rapides du serveur de langage d'agir sans analyser `.message`. Seuls `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`) et `INVALID_UNIT` sur un ingrédient (`{ reason, suggestion? }`) renseignent `data`.
+<Since v="1.5.0" /> Certains codes fournissent aussi un champ `data` structuré permettant aux outils et aux correctifs rapides du serveur de langage d'agir sans analyser `.message`. Seuls `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, depuis la 1.5.2) et `INVALID_UNIT` sur un ingrédient (`{ reason, suggestion? }`) renseignent `data`.
 
 ## Sévérité & `--strict`
 
@@ -98,6 +98,11 @@ La soustraction est vérifiée par famille d'unités : `{1 tasse - 2 càs + 30 g
 <Since v="1.5.0" />
 
 Notice informative lorsqu'`oz` suit un volume dans une somme (`@eau{1 cup + 2 oz}`). Comme `oz` désigne une masse, Gram le garde séparé du volume. **Correction** : écrivez `fl oz` s'il s'agit d'onces liquides (`data.suggestion` propose cette correction rapide).
+
+### `SPACED_COMPOSITE`
+<Since v="1.5.2" />
+
+Des espaces autour de l'opérateur composite (`@zeste de citron{1} < @citron{2}`, ou un espace d'un seul côté). Avec eux, la ligne se lit comme deux ingrédients distincts séparés par un `<` dans le texte : le citron s'achète en plus de l'entrée du zeste, soit deux citrons de trop sur la liste de courses. La recette compile quand même, telle qu'elle est écrite. **Correction** : collez `<` aux deux ingrédients (`@zeste de citron{1}<@citron{2}`) ; `data.suggestion` contient l'opérateur collé au parent (`<@citron`), que la correction rapide du serveur de langage écrit à la place de l'écart, et `gram format` fait la même réparation.
 
 ### `DURATION_OUT_OF_RANGE`
 

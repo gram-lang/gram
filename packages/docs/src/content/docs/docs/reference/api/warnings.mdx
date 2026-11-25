@@ -25,7 +25,7 @@ interface Warning {
 
 `compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
 
-<Since v="1.5.0" /> Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
+<Since v="1.5.0" /> Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, since 1.5.2), and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
 
 ## Severity & `--strict`
 
@@ -97,6 +97,11 @@ Subtraction is checked per unit family: `{1 cup - 2 tbsp + 30 g}` is valid (2 tb
 <Since v="1.5.0" />
 
 Informational notice when `oz` follows a volume in a sum (`@water{1 cup + 2 oz}`). Because `oz` denotes weight, Gram keeps it separate from the volume. **Fix**: change to `fl oz` if fluid ounces were intended (`data.suggestion` offers this quick fix).
+
+### `SPACED_COMPOSITE`
+<Since v="1.5.2" />
+
+Spaces around the composite operator (`@lemon zest{1} < @lemon{2}`, or a space on one side only). With them, the line reads as two separate ingredients with a `<` in the prose between them: the lemon is bought on top of the zest's own entry, two lemons too many on the shopping list. The recipe still compiles as written. **Fix**: glue `<` to both ingredients (`@lemon zest{1}<@lemon{2}`); `data.suggestion` holds the operator glued to the parent (`<@lemon`), which the language server's quick fix writes in place of the gap, and `gram format` makes the same repair.
 
 ### `DURATION_OUT_OF_RANGE`
 

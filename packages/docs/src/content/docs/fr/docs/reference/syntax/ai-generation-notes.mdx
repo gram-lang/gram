@@ -154,6 +154,8 @@ Toute étape dont l'unique but se résume à « prendre X et lui faire subir Y a
 ❌  le jus de @citron{1/2}   →   ✅  @jus de citron{}<@citron{1/2}
 ❌  le zeste de @citron{2}    →   ✅  @zeste de citron{1}<@citron{2}
 ```
+
+Avec des espaces, le zeste et le citron deviennent deux ingrédients distincts, et le citron est compté deux fois. Gram le signale désormais (`SPACED_COMPOSITE`) : `gram check` l'attrape dans une recette générée.
 Les [ingrédients composites](/fr/docs/reference/syntax/composite-ingredients) gardent la liste de courses exacte (la règle de chevauchement : zeste + jus du même citron s'agrègent toujours en un seul citron) et suppriment le besoin d'une étape de préparation autonome. Donnez toujours à l'enfant son **nom complet** (mot du parent inclus), jamais un mot générique isolé comme `@jus` — un nom d'enfant isolé devient sa propre entrée dans la base de données d'ingrédients partagée, sans aucune mémoire du parent d'où il provient : le « jus » d'un citron et le « jus » d'une orange ailleurs entreraient alors à tort en collision dans une seule entrée. Voir [Nommer l'enfant](/fr/docs/reference/syntax/composite-ingredients#nommer-lenfant) pour le raisonnement complet.
 
 ### Des espaces autour de l'opérateur composite

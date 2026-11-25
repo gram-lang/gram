@@ -154,6 +154,8 @@ Any step whose entire purpose is "take X and do Y to it before the real step" sh
 ❌  the juice from @lemon{1/2}    →   ✅  @lemon juice{}<@lemon{1/2}
 ❌  the zest of @lemon{2}         →   ✅  @lemon zest{1}<@lemon{2}
 ```
+
+With spaces, the zest and the lemon are two separate ingredients and the lemon is counted twice. Gram now warns about it (`SPACED_COMPOSITE`), so `gram check` catches it in a generated recipe.
 [Composite ingredients](/docs/reference/syntax/composite-ingredients) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step. Always give the child its **full name** (parent word included), not a bare generic word like `@juice` — a bare child name becomes its own entry in the shared ingredient database with no memory of which parent it came from, so "juice" from a lemon and "juice" from an orange elsewhere would wrongly collide into one database entry. See [Naming the child](/docs/reference/syntax/composite-ingredients#naming-the-child) for the full reasoning.
 
 ### Spaces around the composite operator
