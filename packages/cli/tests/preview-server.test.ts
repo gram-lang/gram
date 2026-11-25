@@ -60,7 +60,7 @@ interface SseEvent {
 	event: string;
 	data: {
 		html: string | null;
-		error: { message: string } | null;
+		error: { message: string; code: string | null } | null;
 		title: string | null;
 	};
 }
@@ -308,6 +308,8 @@ describe("preview server", () => {
 		await writeFile(file, "## Section\n@ <@parent\n", "utf-8");
 		const broken = await stream.until((e) => e.data.error !== null);
 		expect(broken.data.error?.message.length).toBeGreaterThan(0);
+		// The parser's own error, as thrown by the pipeline.
+		expect(broken.data.error?.code).toBe("PARSE_ERROR");
 
 		await writeFile(file, RECIPE.replace("flour", "rye"), "utf-8");
 		const fixed = await stream.until(
