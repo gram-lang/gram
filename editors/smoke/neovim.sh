@@ -1,4 +1,5 @@
-# Inside the container: Neovim with editors/neovim/gram.lua as its config.
+# Inside the container: Neovim with editors/neovim/gram.lua as its config,
+# then gram-treesitter.lua and the parser of build-parser.sh.
 set -euo pipefail
 cp -r /editors/smoke/project /tmp/project
 mkdir -p ~/.config/nvim/plugin
@@ -47,3 +48,8 @@ else
 	echo "FAIL completion inserts $line (expected @Wheat flour{200 g})"
 	exit 1
 fi
+
+# Tree-sitter colors and folds: the parser built by build-parser.sh.
+sh /editors/neovim/build-parser.sh
+cp /editors/neovim/gram-treesitter.lua ~/.config/nvim/plugin/gram-treesitter.lua
+nvim --headless -c 'luafile /editors/smoke/neovim-treesitter.lua' bread.gram

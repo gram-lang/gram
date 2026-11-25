@@ -8,6 +8,8 @@ import { Code } from 'astro:components';
 import Since from '../../../../../components/Since.astro';
 import Term from '../../../../../components/Term.astro';
 import neovim from '@editors/neovim/gram.lua?raw';
+import neovimTreeSitter from '@editors/neovim/gram-treesitter.lua?raw';
+import neovimBuildParser from '@editors/neovim/build-parser.sh?raw';
 import helix from '@editors/helix/languages.toml?raw';
 import emacs from '@editors/emacs/gram.el?raw';
 import sublimeLsp from '@editors/sublime/LSP.sublime-settings?raw';
@@ -25,8 +27,8 @@ Gram works in any editor that speaks the Language Server Protocol, at two levels
 
 The community configurations are not all checked the same way:
 
-- every configuration is checked by a contract test on each change (`editors.test.ts`: the command, `views: false`, the `.gram` extension and comments), and the server itself is tested as any LSP client sees it;
-- **Neovim and Emacs** are also driven by their own LSP client in a container (`editors/smoke/run.sh`: diagnostics, completion, hover, formatting, rename), and **Helix** checks there that it reads the configuration and finds the server;
+- every configuration is checked by a contract test on each change (`editors.test.ts`: the command, `views: false`, the `.gram` extension and comments, the same commit of the Tree-sitter grammar for Helix and Neovim), and the server itself is tested as any LSP client sees it;
+- **Neovim and Emacs** are also driven by their own LSP client in a container (`editors/smoke/run.sh`: diagnostics, completion, hover, formatting, rename), and **Helix** checks there that it reads the configuration and finds the server. Helix and Neovim also build the Tree-sitter grammar there, and Neovim checks the colors and folds it gives;
 - **Sublime Text and JetBrains IDEs** are given as they are, with no test bench in the editor itself. Their settings screens change from one version to the next: their own documentation is the reference for where each field lives.
 
 ## What each editor gets
@@ -34,8 +36,8 @@ The community configurations are not all checked the same way:
 | Editor | Support | Highlighting | Diagnostics | Completion | Hover | Formatting | Rename | Preview |
 |---|---|---|---|---|---|---|---|---|
 | [VS Code and its forks](#vs-code-and-its-forks) | Official | Full (TextMate grammar and semantic tokens) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| [Neovim](#neovim) | Community, tested in a container | Partial (semantic tokens) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [Helix](#helix) | Community, configuration checked in a container | None yet | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Neovim](#neovim) | Community, tested in a container | Full with Tree-sitter, partial with the server alone (semantic tokens) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Helix](#helix) | Community, configuration checked in a container | Full (Tree-sitter) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | [Emacs](#emacs) | Community, tested in a container | Comments only | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | [Sublime Text](#sublime-text) | Community, as is | Full (TextMate grammar) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | [JetBrains IDEs](#jetbrains-ides) | Community, as is | Partial (semantic tokens), full with the TextMate bundle | ✓ | ✓ | ✓ | ✓ | ✓ | — |
@@ -43,6 +45,7 @@ The community configurations are not all checked the same way:
 The feature columns describe what the server sends; for Sublime Text and JetBrains IDEs, they are not checked in the editor.
 
 - **Partial highlighting** comes from the server's semantic tokens: sigils and names (`@flour`, `#bowl`, `&dough`), braces, modifiers, actions and comments are colored, the inside of braces (quantities, durations, temperatures) is not. It also waits for the server to answer, a moment after the file opens.
+- **Tree-sitter highlighting** comes from [tree-sitter-gram](https://github.com/gram-lang/tree-sitter-gram), a grammar built once on your machine: everything is colored, inside braces too, as soon as the file opens. Each element gets the same role as in the VS Code grammar, so the colors match with a similar theme.
 - **The preview** of the recipe and the <Term id="runSheet" /> is only in VS Code for now.
 
 ## Official support
@@ -82,7 +85,26 @@ For Neovim 0.11 or later. Save this file as `~/.config/nvim/plugin/gram.lua`:
 
 With Neovim 0.10, the same settings go through [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig), which has no entry for Gram: this configuration is not maintained for it.
 
-Tested with Neovim 0.11.6 and 0.12.6.
+Tested with Neovim 0.11.6 and 0.12.6, Tree-sitter colors and folds included.
+
+#### Tree-sitter colors and section folds
+
+With the server alone, quantities, durations and temperatures stay uncolored. The tree-sitter-gram grammar colors them, from the moment the file opens, and lets you fold the frontmatter and each section. No plugin is needed: Neovim loads the grammar from your config folder. You need `git` and a C compiler.
+
+1. Save this script and run it once (`sh build-parser.sh`). It builds the grammar at a pinned commit and installs it, with its queries, in `~/.config/nvim/parser/` and `~/.config/nvim/queries/gram/`. Run it again when this page pins a newer commit.
+
+<Code code={neovimBuildParser} lang="sh" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+2. Save this file next to the first one, as `~/.config/nvim/plugin/gram-treesitter.lua`:
+
+<Code code={neovimTreeSitter} lang="lua" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+- Sections then fold with Neovim's usual commands: `za` toggles the fold under the cursor, `zM` and `zR` close and open them all. They are all open when the file opens.
+- The server's semantic tokens still apply on top of these colors, and win where both color the same text.
+- `:InspectTree` shows how the grammar reads the recipe.
+- With [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter), the same repository and commit can be declared as a custom parser instead of running the script; that setup is not maintained here.
+
+The script is tested on Linux. On macOS it should work with the compiler of the Xcode command line tools (not tested); on Windows, build the grammar by hand with the same compiler command.
 
 ### Helix
 
@@ -92,9 +114,20 @@ Add this block to `~/.config/helix/languages.toml`:
 
 `hx --health gram` checks that Helix reads the configuration and finds the server. Completion shows on its own as you type; <kbd>Space</kbd> <kbd>k</kbd> shows hover, <kbd>Space</kbd> <kbd>r</kbd> renames, `:format` formats and <kbd>Ctrl</kbd>+<kbd>c</kbd> comments out with `//`.
 
-Helix does not use semantic tokens: the text stays uncolored until a Tree-sitter grammar for Gram is available.
+Helix does not use semantic tokens: the colors come from the tree-sitter-gram grammar, declared by the `[[grammar]]` block at a pinned commit. Helix builds it but does not install its queries, which say what to color. Once, and again when this page pins a newer commit:
 
-Tested with Helix 25.07 (configuration and server checked by `hx --health`).
+```bash
+hx --grammar fetch
+hx --grammar build
+mkdir -p ~/.config/helix/runtime/queries/gram
+cp ~/.config/helix/runtime/grammars/sources/gram/queries/helix/*.scm ~/.config/helix/runtime/queries/gram/
+```
+
+- Building the grammar needs `git` and a C and C++ compiler: Helix 25.07 looks for `c++` even for a grammar written in C.
+- `hx --grammar fetch` also fetches every other grammar Helix knows. To fetch and build only Gram's, put `use-grammars = { only = ["gram"] }` at the very top of `languages.toml`: the other grammars then stay as they are.
+- `hx --health gram` then shows `Highlight queries: ✓`. It also shows `Tree-sitter parser: ✓` before the grammar is built: `~/.config/helix/runtime/grammars/gram.so` is the file to look for.
+
+Tested with Helix 25.07 (configuration, server and queries checked by `hx --health`, grammar built in a container).
 
 ### Emacs
 

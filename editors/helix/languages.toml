@@ -13,3 +13,12 @@ command = "gram-language-server"
 args = ["--stdio"]
 # No preview panel in Helix: ask the server for no view.
 config = { views = false }
+
+# Tree-sitter colors. Then build the grammar (needs git and a C/C++ compiler)
+# and copy its queries, which Helix does not install:
+#   hx --grammar fetch && hx --grammar build
+#   mkdir -p ~/.config/helix/runtime/queries/gram
+#   cp ~/.config/helix/runtime/grammars/sources/gram/queries/helix/*.scm ~/.config/helix/runtime/queries/gram/
+[[grammar]]
+name = "gram"
+source = { git = "https://github.com/gram-lang/tree-sitter-gram", rev = "854cfed0205a5b893aea8b8e27a238cfe7d9d716" } # v0.1.0
