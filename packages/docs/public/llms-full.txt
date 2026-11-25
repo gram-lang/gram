@@ -2732,6 +2732,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `INVALID_DURATION` | warning | `Timer duration "{value}" on "{item}" is not read: {reason} It is not counted in the total time.` |
 | `INVALID_QUANTITY` | warning | `Quantity "{value}" of "{item}" is not read: {reason} Did you mean {{suggestion}}? It is not counted in the shopping list or the nutrition.` |
 | `OZ_AFTER_VOLUME` | info | `"{value}" of "{item}" is a weight: oz weighs, {suggestion} measures a volume. Write {suggestion} if a volume is meant.` |
+| `SPACED_COMPOSITE` | warning | `"{item}" and "{parent}" are read as two separate ingredients: a composite takes "<" with no space around it. Write {suggestion} right after "{item}" if "{item}" comes from "{parent}"; as written, both are counted in the shopping list.` |
 | `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
 | `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
 | `MODULE_CYCLE` | error | `Circular module import detected: {chain}.` |

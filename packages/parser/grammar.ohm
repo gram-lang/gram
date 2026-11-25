@@ -107,6 +107,10 @@ GRAM {
   // ingredient named "use" followed by unrelated quoted text is unaffected.
   invalidUseDirective = "@use" sp+ "\""
 
+  // Only reached when nothing before the blanks took them: a continuation line
+  // opening on ` <@b`, or a lone `@` before ` <@parent`. After an ingredient
+  // (`@zest{1} < @lemon{2}`) the blanks are already read, the line parses as
+  // two ingredients and kitchen raises SPACED_COMPOSITE instead.
   invalidComposite = space+ "<" space* "@" name
 
   invalidAlternativeBar = "|"

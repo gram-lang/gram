@@ -20,7 +20,7 @@ flowchart LR
 
 Gram's syntax rules are defined using [Ohm.js](https://ohmjs.org/), an object-oriented parsing toolkit built around Parsing Expression Grammars (PEGs).
 
-Ohm makes it straightforward to build modular grammars. Because of this, `@gram-lang/parser` is fast and strictly enforces the structural rules of the language. For example, whitespace is forbidden immediately around the composite marker `<@` (`invalidComposite` in the grammar), so `pastry < @dough` fails to parse while `<@dough` succeeds.
+Ohm makes it straightforward to build modular grammars. Because of this, `@gram-lang/parser` is fast and strictly enforces the structural rules of the language. For example, a composite is written `@child<@parent` with no space: `@pastry{1} < @dough{1}` parses, but as two separate ingredients, so the compiler flags it (`SPACED_COMPOSITE`) rather than guessing what was meant.
 
 ## The abstract syntax tree (AST)
 

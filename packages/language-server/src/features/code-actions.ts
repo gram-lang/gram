@@ -300,7 +300,9 @@ const escapeRegExp = (text: string) =>
  *   between them;
  * - a sum refused with a result to write (`INVALID_QUANTITY`,
  *   `{100 g + 10%}`): the braces hold that result (`{110 g}`);
- * - `oz` after a volume (`OZ_AFTER_VOLUME`, `{1 cup + 2 oz}`): `fl oz`.
+ * - `oz` after a volume (`OZ_AFTER_VOLUME`, `{1 cup + 2 oz}`): `fl oz`;
+ * - a composite split by spaces (`SPACED_COMPOSITE`,
+ *   `@lemon zest{1} < @lemon{2}`): `<` glued to the parent (`<@lemon`).
  */
 function quantityQuickFix(
 	state: DocumentState,
@@ -347,6 +349,19 @@ function quantityQuickFix(
 		return {
 			title: `Replace with {${suggestion}}`,
 			edit: edit(open + 1, close, suggestion),
+		};
+	}
+
+	if (diag.code === "SPACED_COMPOSITE") {
+		// The range runs from the child to the parent: the gap is the last
+		// `<` there with only blanks between it and the parent's `@`.
+		const gaps = [...text.matchAll(/\s*<\s*(?=@)/g)];
+		const gap = gaps.at(-1);
+		if (gap?.index === undefined) return null;
+		const at = start + gap.index;
+		return {
+			title: `Write ${suggestion} with no spaces`,
+			edit: edit(at, at + gap[0].length, "<"),
 		};
 	}
 
