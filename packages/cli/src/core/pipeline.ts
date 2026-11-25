@@ -11,6 +11,7 @@ import {
 	loadModuleGraph,
 	composeRecipe,
 	finalizeComposed,
+	ModuleWarningCode,
 } from "@gram-lang/modules";
 import type { CompilationResult } from "@gram-lang/kitchen";
 import type { AnalysisResult } from "@gram-lang/analyzer";
@@ -63,6 +64,20 @@ export async function runPipeline(
 	const projectRoot = await findProjectRoot(dirname(entryUri));
 	const host = createCliModuleHost(projectRoot, opts.paths);
 	const graph = await loadModuleGraph(entryUri, host);
+	// A syntax error in an imported module is a diagnostic: the recipe still
+	// compiles around it. One in the recipe itself leaves nothing to compile,
+	// and the graph would hand back an empty document every command shows as
+	// an empty recipe. Parse it again to throw the parser's own error, as
+	// `runPipelineFromSource` does (error path only).
+	if (
+		graph.diagnostics.some(
+			(d) =>
+				d.code === ModuleWarningCode.MODULE_PARSE_ERROR &&
+				(d.uri ?? d.loc?.uri) === entryUri,
+		)
+	) {
+		getAST(content);
+	}
 	const composed = composeRecipe(graph, {
 		db: opts.db ?? {},
 		lang: opts.lang,
