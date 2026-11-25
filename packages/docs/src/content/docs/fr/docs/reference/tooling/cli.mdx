@@ -92,7 +92,7 @@ Valide vos fichiers `.gram` afin de vérifier la syntaxe, l'intégrité structur
 - Exécute l'analyseur syntaxique Ohm.js pour intercepter les erreurs de syntaxe.
 - Exécute le compilateur Kitchen pour détecter les erreurs structurelles (ex. dépendances circulaires).
 - Interroge votre base `ingredients.yaml` pour signaler les ingrédients non documentés.
-- Les simples avertissements (estimations nutritionnelles, annotations incomplètes) ne font pas échouer la commande par défaut — seules les erreurs structurelles bloquantes (références introuvables, conflits de portée) déclenchent un code de sortie non nul. Spécifiez `--strict` pour traiter le moindre avertissement comme une erreur (particulièrement adapté aux pipelines d'intégration continue).
+- Les simples avertissements (estimations nutritionnelles, annotations incomplètes) ne font pas échouer la commande par défaut — seules les erreurs structurelles bloquantes (références introuvables, conflits de portée) déclenchent un code de sortie non nul. Spécifiez `--strict` pour traiter le moindre avertissement comme une erreur (particulièrement adapté aux pipelines d'intégration continue). Les ingrédients absents de la base en font partie <Since v="1.6.0" /> ; ajoutez `--skip-db` pour laisser la base hors d'une vérification stricte.
 - Options : `--db <chemin>`, `--skip-db`, `--strict`.
 
 #### `gram build [motif]`
