@@ -1,4 +1,5 @@
 import { shareText } from "./formula-text";
+import { warnSpacedComposites } from "./spaced-composite";
 import {
 	minifyQuantity,
 	createCleanUsage,
@@ -1450,6 +1451,7 @@ export function processSections(
 					);
 					if (processed) stepContentObjects.push(processed);
 				});
+				warnSpacedComposites(block.children, ctx);
 
 				// `timings` and `backgroundTasks` are written by the legacy pass
 				// (`planLegacy`), once every step is known.
