@@ -23,15 +23,19 @@ export async function generatePrintHTML(
 	return outPath;
 }
 
-export function openInBrowser(htmlPath: string): boolean {
+/** Opens a file or an address in the default browser. */
+export function openInBrowser(target: string): boolean {
 	const cmds: Record<string, string[]> = {
-		darwin: ["open", htmlPath],
-		win32: ["cmd", "/c", "start", "", htmlPath],
-		linux: ["xdg-open", htmlPath],
+		darwin: ["open", target],
+		win32: ["cmd", "/c", "start", "", target],
+		linux: ["xdg-open", target],
 	};
-	const [cmd, ...args] = cmds[process.platform] ?? ["xdg-open", htmlPath];
+	const [cmd, ...args] = cmds[process.platform] ?? ["xdg-open", target];
 	try {
 		const child = spawn(cmd!, args, { stdio: "ignore", detached: true });
+		// A missing opener fails after the spawn, as an event: without a
+		// listener it would end the process (the live preview's server too).
+		child.on("error", () => {});
 		child.unref();
 		return true;
 	} catch {

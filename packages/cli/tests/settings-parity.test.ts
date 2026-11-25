@@ -42,13 +42,9 @@ const EXPOSED: Record<
 	// The recipe, printed or exported: every setting.
 	print: { command: print, view: ALL_VIEW, recipe: ALL_RECIPE },
 	export: { command: exportCommand, view: ALL_VIEW, recipe: ALL_RECIPE },
-	// The recipe in the terminal: the recipe view of the renderer, every
-	// setting but the clock (the recipe writes no time of day).
-	view: {
-		command: view,
-		view: ALL_VIEW.filter((key) => key !== "clock"),
-		recipe: ALL_RECIPE,
-	},
+	// The recipe in the terminal, and with --serve every view of the live
+	// preview (the run sheet takes the clock): every setting.
+	view: { command: view, view: ALL_VIEW, recipe: ALL_RECIPE },
 	// The run sheet: no nutrition, no quantities in steps, no analysis.
 	plan: {
 		command: plan,
