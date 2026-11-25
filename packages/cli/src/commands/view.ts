@@ -239,7 +239,7 @@ async function servePreview(
 	log.success(`Live preview at ${chalk.cyan(url)}`);
 	log.info(chalk.dim("Ctrl+C to stop"));
 	if (serve.open) {
-		if (!openInBrowser(url)) {
+		if (!(await openInBrowser(url))) {
 			log.warn(
 				`Could not open browser automatically. Open this address manually:\n${url}`,
 			);

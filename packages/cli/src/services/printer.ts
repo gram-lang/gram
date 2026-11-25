@@ -23,22 +23,31 @@ export async function generatePrintHTML(
 	return outPath;
 }
 
-/** Opens a file or an address in the default browser. */
-export function openInBrowser(target: string): boolean {
-	const cmds: Record<string, string[]> = {
+/**
+ * Opens a file or an address in the default browser. Resolves to whether the
+ * opener could be started: a missing one (no `xdg-open`) fails after the
+ * spawn, as an event, which would otherwise end the process.
+ */
+export function openInBrowser(
+	target: string,
+	platform: NodeJS.Platform = process.platform,
+): Promise<boolean> {
+	const cmds: Partial<Record<NodeJS.Platform, string[]>> = {
 		darwin: ["open", target],
 		win32: ["cmd", "/c", "start", "", target],
 		linux: ["xdg-open", target],
 	};
-	const [cmd, ...args] = cmds[process.platform] ?? ["xdg-open", target];
-	try {
-		const child = spawn(cmd!, args, { stdio: "ignore", detached: true });
-		// A missing opener fails after the spawn, as an event: without a
-		// listener it would end the process (the live preview's server too).
-		child.on("error", () => {});
-		child.unref();
-		return true;
-	} catch {
-		return false;
-	}
+	const [cmd, ...args] = cmds[platform] ?? ["xdg-open", target];
+	return new Promise((resolve) => {
+		try {
+			const child = spawn(cmd!, args, { stdio: "ignore", detached: true });
+			child.once("error", () => resolve(false));
+			child.once("spawn", () => {
+				child.unref();
+				resolve(true);
+			});
+		} catch {
+			resolve(false);
+		}
+	});
 }
