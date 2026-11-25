@@ -48,7 +48,7 @@ jobs:
           # No usable base (first push to a branch, force-push, shallow edge case): run docs build to be safe.
           if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
             echo "docs=true" >> "$GITHUB_OUTPUT"
-          elif git diff --name-only "$BASE" HEAD | grep -qE '^packages/(docs|renderer)/'; then
+          elif git diff --name-only "$BASE" HEAD | grep -qE '^(packages/(docs|renderer)/|editors/)'; then
             echo "docs=true" >> "$GITHUB_OUTPUT"
           else
             echo "docs=false" >> "$GITHUB_OUTPUT"
@@ -70,7 +70,7 @@ jobs:
       - name: Build Core Packages
         run: |
           bun run build --filter='!@gram-lang/docs'
-          git diff --exit-code packages/parser/src/grammar-content.ts
+          git diff --exit-code packages/parser/src/grammar-content.ts packages/parser/syntaxes/gram.tmLanguage
 
       - name: Build Docs
         if: steps.filter.outputs.docs == 'true'

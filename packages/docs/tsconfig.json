@@ -1,5 +1,8 @@
 {
   "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "paths": { "@editors/*": ["../../editors/*"] }
+  },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist", "**/*.test.ts"]
 }

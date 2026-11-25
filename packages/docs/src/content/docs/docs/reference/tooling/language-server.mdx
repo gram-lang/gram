@@ -40,7 +40,7 @@ gram lsp
 
 Both start the same server. Stdio is the default transport, so `--stdio` can be left out; it is accepted for editors that always pass it. `gram-language-server --version` prints the version and `--help` lists the options, without starting the server.
 
-In the `initialize` request, send `initializationOptions: { views: false }`. The editor then gets every standard feature listed below (diagnostics, completion, hover, formatting, rename, semantic tokens…) and nothing it could not display: no HTML rendered on every keystroke, no `gram/*` notification, no Code Lens.
+In the `initialize` request, send `initializationOptions: { views: false }`. The editor then gets every standard feature listed below (diagnostics, completion, hover, formatting, rename, semantic tokens…) and nothing it could not display: no HTML rendered on every keystroke, no `gram/*` notification, no Code Lens. [Supported editors](/docs/reference/tooling/editors/) gives the ready-made configuration for Neovim, Helix, Emacs, Sublime Text and JetBrains IDEs.
 
 The server only sends a request the client declared it understands:
 

@@ -1,4 +1,5 @@
 // @ts-check
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 
 import starlight from '@astrojs/starlight';
@@ -160,7 +161,8 @@ export default defineConfig({
               items: [
                 { label: 'CLI commands', translations: { fr: 'Commandes CLI' }, slug: 'docs/reference/tooling/cli' },
                 { label: 'VS Code extension', translations: { fr: 'Extension VS Code' }, slug: 'docs/reference/tooling/vscode-extension' },
-                { label: 'Language server', slug: 'docs/reference/tooling/language-server' }
+                { label: 'Language server', translations: { fr: 'Serveur de langage' }, slug: 'docs/reference/tooling/language-server' },
+                { label: 'Supported editors', translations: { fr: 'Éditeurs pris en charge' }, slug: 'docs/reference/tooling/editors', badge: { text: 'v1.6.0', variant: 'default' } }
               ]
             },
             {
@@ -283,6 +285,11 @@ export default defineConfig({
   ],
   vite: {
     plugins: [yamlData()],
+    resolve: {
+      // The editor configurations of `editors/` (repo root), shown as-is on
+      // the supported editors page: `import nvim from '@editors/neovim/gram.lua?raw'`.
+      alias: { '@editors': fileURLToPath(new URL('../../editors', import.meta.url)) }
+    },
     build: {
       target: 'esnext'
     },

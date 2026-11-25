@@ -1,0 +1,10 @@
+{
+	"clients": {
+		"gram": {
+			"enabled": true,
+			"command": ["gram-language-server", "--stdio"],
+			"selector": "source.gram",
+			"initializationOptions": { "views": false }
+		}
+	}
+}
