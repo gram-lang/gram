@@ -13,6 +13,7 @@ import {
 	collectIntermediates,
 	collectReferences,
 	collectIngredients,
+	collectRelativeTargets,
 } from "../utils/ast-walker";
 import {
 	WarningCode,
@@ -169,21 +170,28 @@ export function provideDiagnostics(
 		}
 	}
 
+	// An intermediate is used when a step names it, either as a reference
+	// (`&dough`) or as the target of a share, a ratio or a proportional timer
+	// (`@salt{2% &dough}`, `~{15 min / 500 g &dough}`). One declared on a
+	// section heading is never flagged: it is a module's export surface
+	// (`computeExports`) or the name of a standalone recipe's final dish.
 	const declared = collectIntermediates(state.ast);
 	const usedNames = new Set(collectReferences(state.ast).map((r) => r.name));
-	for (const { decl } of declared) {
-		if (!usedNames.has(decl.name)) {
-			const range = decl.loc
-				? locToRange(state.lineStarts, decl.loc)
-				: ZERO_RANGE;
-			diagnostics.push({
-				severity: DiagnosticSeverity.Warning,
-				range,
-				message: `Intermediate '->&${decl.name}' is declared but never used.`,
-				code: "UNUSED_INTERMEDIATE",
-				source: "gram",
-			});
-		}
+	for (const t of collectRelativeTargets(state.ast, state.text)) {
+		if (t.referenceType === "variable") usedNames.add(t.name);
+	}
+	for (const { decl, step } of declared) {
+		if (step === null || usedNames.has(decl.name)) continue;
+		const range = decl.loc
+			? locToRange(state.lineStarts, decl.loc)
+			: ZERO_RANGE;
+		diagnostics.push({
+			severity: DiagnosticSeverity.Warning,
+			range,
+			message: `Intermediate '->&${decl.name}' is declared but never used.`,
+			code: "UNUSED_INTERMEDIATE",
+			source: "gram",
+		});
 	}
 
 	if (ingredientLookupSet.size > 0) {

@@ -6,7 +6,7 @@ description: "The canonical code formatter for .gram files: one deterministic pa
 import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
 import Since from '../../../../../components/Since.astro';
 
-The canonical code formatter for `.gram` files. It powers the `gram format` CLI command, the language server's formatting (and so the VS Code extension), and the AI importer's output. Every rule only changes whitespace or spelling, never the meaning of a recipe, and running it twice changes nothing more.
+The canonical code formatter for `.gram` files. It powers the `gram format` CLI command, the language server's formatting (and so the VS Code extension), and the AI importer's output. Every rule only changes whitespace or spelling, and running it twice changes nothing more. Three of them (6, 7 and 8) can go further, on purpose: they repair a common slip into the syntax the author meant, so the recipe may read differently afterwards. The compiler flags the first one before formatting (`SPACED_COMPOSITE`).
 
 ## API
 
@@ -91,9 +91,9 @@ Rules 1 to 5 touch the elements the parser finds (ingredients, references, cookw
   </Card>
   <Card title="Other tokens" icon="list-format">
     - **5. Temperatures** (`temperatureSpacing`): `^{180 °C}` → `^{180°C}`.
-    - **6. Composites** (`compositeSeparatorSpacing`): `@juice{} < @lemon{}` → `@juice{}<@lemon{}`.
+    - **6. Composites** (`compositeSeparatorSpacing`): `@juice{} < @lemon{}` → `@juice{}<@lemon{}`. A repair: two separate ingredients become a composite.
     - **7. Declarations** (`arrowDeclarationSpacing`): `->&batter {}` → `->&batter{}`.
-    - **8. Section headers** (`headerSpacing`): `##Batter` → `## Batter`.
+    - **8. Section headers** (`headerSpacing`): `##Batter` → `## Batter`. A repair: a step holding a tool `#Batter` becomes a section header.
     - **9. Tabulations** (`tabsToSpaces`): a tab becomes four spaces.
   </Card>
   <Card title="Whole file" icon="document">

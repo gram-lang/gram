@@ -42,3 +42,50 @@ describe("DAY_OVERFLOW", () => {
 		).toBe(false);
 	});
 });
+
+describe("UNUSED_INTERMEDIATE", () => {
+	const unused = (text: string) =>
+		provideDiagnostics(parseDocument(text))
+			.filter((d) => d.code === "UNUSED_INTERMEDIATE")
+			.map((d) => d.message);
+
+	it("flags a step intermediate that nothing uses", () => {
+		expect(
+			unused(
+				"---\ntitle: T\n---\n\n## Prep\n\nMix @flour{500g} ->&dough.\n\nBake @butter{20g}.\n",
+			),
+		).toEqual(["Intermediate '->&dough' is declared but never used."]);
+	});
+
+	it("counts the target of a share as a use", () => {
+		expect(
+			unused(
+				"---\ntitle: T\n---\n\n## Prep\n\nMix @flour{500g} ->&dough.\n\nSalt with @salt{2% &dough}.\n",
+			),
+		).toEqual([]);
+	});
+
+	it("counts the target of a ratio as a use", () => {
+		expect(
+			unused(
+				"---\ntitle: T\n---\n\n## Prep\n\nMix @flour{500g} ->&dough.\n\nSalt with @salt{2 g / 100 g &dough}.\n",
+			),
+		).toEqual([]);
+	});
+
+	it("counts the target of a proportional timer as a use", () => {
+		expect(
+			unused(
+				"---\ntitle: T\n---\n\n## Prep\n\nMix @flour{500g} ->&dough.\n\nBake ~{15 min / 500 g &dough}.\n",
+			),
+		).toEqual([]);
+	});
+
+	it("never flags an intermediate declared on a section heading", () => {
+		expect(
+			unused(
+				"---\ntitle: Base\n---\n\n## Dough ->&dough\n\nMix @flour{500g}.\n\n## Sauce ->&sauce\n\nSimmer @tomato{400g}.\n",
+			),
+		).toEqual([]);
+	});
+});

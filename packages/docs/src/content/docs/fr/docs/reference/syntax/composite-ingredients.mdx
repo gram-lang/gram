@@ -57,6 +57,8 @@ Voici comment déclarer que 100 ml de jus nécessitent 2 citrons, mais que le ze
 Les espaces sont **strictement interdits** autour de l'opérateur `<`.
 - ❌ `@zeste de citron{1} < @citron`
 - ✅ `@zeste de citron{1}<@citron`
+
+Avec des espaces, Gram lit deux ingrédients distincts et achète le citron en plus du zeste. Il le signale par un avertissement [`SPACED_COMPOSITE`](/fr/docs/reference/api/warnings#spaced_composite) <Since v="1.5.2" />, que l'éditeur corrige en un clic.
 :::
 
 ## Règles de calcul

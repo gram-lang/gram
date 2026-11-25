@@ -32,6 +32,8 @@ export enum WarningCode {
 	INVALID_DURATION = "INVALID_DURATION",
 	INVALID_QUANTITY = "INVALID_QUANTITY",
 	OZ_AFTER_VOLUME = "OZ_AFTER_VOLUME",
+	/** `@lemon zest{1} < @lemon{2}`: spaces around `<` split a composite in two. Since 1.5.2. */
+	SPACED_COMPOSITE = "SPACED_COMPOSITE",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
 	// Phase E). The only module-related code kitchen raises itself, in the
 	// no-resolution-happened degraded path (§C.4) — every other module-only
@@ -123,6 +125,15 @@ export interface WarningPayloads {
 		/** The unit to write for a volume: `fl oz`. */
 		suggestion: string;
 		item: string;
+		loc?: Location;
+	};
+	[WarningCode.SPACED_COMPOSITE]: {
+		/** The ingredient before `<`, meant as the composite's child. */
+		item: string;
+		/** The ingredient after `<`, meant as its parent. */
+		parent: string;
+		/** What replaces ` < @parent`: the operator glued to the parent, `<@lemon`. */
+		suggestion: string;
 		loc?: Location;
 	};
 	[WarningCode.AMBIGUOUS_NUMBER]: {
@@ -324,6 +335,8 @@ export const warningTemplates: {
 					: `Quantity "${p.value}" of "${p.item}" is not read: ${QUANTITY_HINTS[p.reason] ?? p.reason}${p.suggestion ? ` Did you mean {${p.suggestion}}?` : ""} It is not counted in the shopping list or the nutrition.`,
 	[WarningCode.OZ_AFTER_VOLUME]: (p) =>
 		`"${p.value}" of "${p.item}" is a weight: oz weighs, ${p.suggestion} measures a volume. Write ${p.suggestion} if a volume is meant.`,
+	[WarningCode.SPACED_COMPOSITE]: (p) =>
+		`"${p.item}" and "${p.parent}" are read as two separate ingredients: a composite takes "<" with no space around it. Write ${p.suggestion} right after "${p.item}" if "${p.item}" comes from "${p.parent}"; as written, both are counted in the shopping list.`,
 	[WarningCode.AMBIGUOUS_NUMBER]: (p) =>
 		`"${p.value}" on "${p.item}" was read as ${p.read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write ${p.suggestion} if that is the number you meant.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
@@ -402,6 +415,7 @@ const warningData: {
 			? { reason: p.reason, suggestion: p.suggestion }
 			: { reason: p.reason },
 	[WarningCode.OZ_AFTER_VOLUME]: (p) => ({ suggestion: p.suggestion }),
+	[WarningCode.SPACED_COMPOSITE]: (p) => ({ suggestion: p.suggestion }),
 	[WarningCode.INVALID_UNIT]: (p) => {
 		if (p.type !== "Ingredient" || !p.reason) return undefined;
 		const parts =
@@ -437,6 +451,7 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.INVALID_DURATION]: "warning",
 	[WarningCode.INVALID_QUANTITY]: "warning",
 	[WarningCode.OZ_AFTER_VOLUME]: "info",
+	[WarningCode.SPACED_COMPOSITE]: "warning",
 	[WarningCode.SCOPE_CONFLICT]: "error",
 	[WarningCode.MISSING_INGREDIENT]: "warning",
 	[WarningCode.MISSING_MACROS]: "info",

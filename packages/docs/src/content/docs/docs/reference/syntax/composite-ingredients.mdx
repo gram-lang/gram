@@ -57,6 +57,8 @@ Here is how you would declare that 100ml of juice requires 2 lemons, but the zes
 Spaces are **strictly forbidden** around the `<` operator.
 - ❌ `@lemon zest{1} < @lemon`
 - ✅ `@lemon zest{1}<@lemon`
+
+With spaces, Gram reads two separate ingredients and buys the lemon on top of the zest. It says so with a [`SPACED_COMPOSITE`](/docs/reference/api/warnings#spaced_composite) warning <Since v="1.5.2" />, which the editor fixes in one click.
 :::
 
 ## Calculation rules

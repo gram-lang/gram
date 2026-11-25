@@ -20,7 +20,7 @@ flowchart LR
 
 Les règles syntaxiques de Gram sont définies avec [Ohm.js](https://ohmjs.org/), une boîte à outils d'analyse orientée objet fondée sur les grammaires d'analyse en expressions (*Parsing Expression Grammars*, ou PEG).
 
-Ohm facilite la construction de grammaires modulaires et composables. Grâce à cette architecture, `@gram-lang/parser` est rapide et applique rigoureusement les contraintes de forme du langage. Par exemple, aucun espace n'est toléré immédiatement autour du marqueur composite `<@` (`invalidComposite` dans la grammaire) : ainsi, `pâte < @pâtefeuilletée` échoue à l'analyse alors que `<@pâtefeuilletée` est reconnu avec succès.
+Ohm facilite la construction de grammaires modulaires et composables. Grâce à cette architecture, `@gram-lang/parser` est rapide et applique rigoureusement les contraintes de forme du langage. Par exemple, un composite s'écrit `@enfant<@parent`, sans espace : `@pâte{1} < @pâtefeuilletée{1}` s'analyse bien, mais comme deux ingrédients distincts, et le compilateur le signale (`SPACED_COMPOSITE`) plutôt que de deviner l'intention.
 
 ## L'arbre syntaxique abstrait (AST)
 
