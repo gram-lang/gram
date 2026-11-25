@@ -7,6 +7,8 @@ import { join, relative } from "node:path";
  * "Supported editors" docs page) honor the contract of a non-VS Code client:
  * the `gram-language-server --stdio` binary (or `gram lsp`), `views: false`,
  * and the `.gram` extension and `//` comments wherever the format carries them.
+ * The Tree-sitter colors of Helix and Neovim build tree-sitter-gram at one
+ * pinned commit, the same in both.
  */
 
 const REPO = join(import.meta.dir, "../../..");
@@ -16,6 +18,8 @@ const PAGES = {
 	en: join(DOCS, "docs/reference/tooling/editors.mdx"),
 	fr: join(DOCS, "fr/docs/reference/tooling/editors.mdx"),
 };
+
+const TREE_SITTER_GRAM = "https://github.com/gram-lang/tree-sitter-gram";
 
 // `"gram-language-server", "--stdio"` in a list, Helix's `command` + `args`, or `gram lsp`.
 const COMMAND =
@@ -48,12 +52,35 @@ const EDITORS: EditorFile[] = [
 		],
 	},
 	{
+		path: "neovim/gram-treesitter.lua",
+		command: false,
+		contains: [
+			/vim\.treesitter\.language\.add\("gram"\)/,
+			/vim\.treesitter\.start\(ev\.buf,\s*"gram"\)/,
+			/foldexpr\s*=\s*"v:lua\.vim\.treesitter\.foldexpr\(\)"/,
+		],
+	},
+	{
+		path: "neovim/build-parser.sh",
+		command: false,
+		contains: [
+			/REV="[0-9a-f]{40}"/,
+			/\$NVIM\/parser\/gram\.so/,
+			// Neovim's own queries, not those of helix/ or zed/.
+			/cp "\$src"\/queries\/\*\.scm "\$NVIM\/queries\/gram\/"/,
+		],
+	},
+	{
 		path: "helix/languages.toml",
 		command: true,
 		viewsOff: /config\s*=\s*\{[^}]*\bviews\s*=\s*false/,
 		contains: [
 			/file-types\s*=\s*\["gram"\]/,
 			/comment-tokens\s*=\s*\["\/\/"\]/,
+			/\[\[grammar\]\]\s*\nname\s*=\s*"gram"/,
+			/rev\s*=\s*"[0-9a-f]{40}"/,
+			// Helix does not install the queries: the comment copies them.
+			/grammars\/sources\/gram\/queries\/helix\/\*\.scm ~\/\.config\/helix\/runtime\/queries\/gram\//,
 		],
 	},
 	{
@@ -157,6 +184,17 @@ describe("editor configurations", () => {
 				/views["']?\s*[=:]\s*true|:views\s+(t|:json-true)\b/,
 			);
 		}
+	});
+
+	it("Helix and Neovim build tree-sitter-gram at the same commit", () => {
+		const helix = read("helix/languages.toml");
+		const neovim = read("neovim/build-parser.sh");
+		expect(helix).toContain(`git = "${TREE_SITTER_GRAM}"`);
+		expect(neovim).toContain(`REPO="${TREE_SITTER_GRAM}"`);
+		const helixRev = helix.match(/rev\s*=\s*"([0-9a-f]{40})"/)?.[1];
+		const neovimRev = neovim.match(/REV="([0-9a-f]{40})"/)?.[1];
+		expect(helixRev).toBeDefined();
+		expect(neovimRev).toBe(helixRev as string);
 	});
 
 	for (const [lang, page] of Object.entries(PAGES)) {

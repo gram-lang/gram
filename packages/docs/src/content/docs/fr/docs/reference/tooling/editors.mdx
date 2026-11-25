@@ -1,6 +1,6 @@
 ---
 title: "Éditeurs pris en charge"
-description: "Support officiel (VS Code, Open VSX) et configurations LSP communautaires pour Neovim, Helix, Emacs, Sublime Text et les IDE JetBrains."
+description: "Support officiel (VS Code et Open VSX, bientôt Zed) et configurations communautaires pour Neovim, Helix, Emacs, Sublime Text et les IDE JetBrains."
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
@@ -8,6 +8,8 @@ import { Code } from 'astro:components';
 import Since from '../../../../../../components/Since.astro';
 import Term from '../../../../../../components/Term.astro';
 import neovim from '@editors/neovim/gram.lua?raw';
+import neovimTreeSitter from '@editors/neovim/gram-treesitter.lua?raw';
+import neovimBuildParser from '@editors/neovim/build-parser.sh?raw';
 import helix from '@editors/helix/languages.toml?raw';
 import emacs from '@editors/emacs/gram.el?raw';
 import sublimeLsp from '@editors/sublime/LSP.sublime-settings?raw';
@@ -20,13 +22,13 @@ Gram fonctionne dans tout éditeur qui parle le Language Server Protocol, avec d
 
 ## Deux niveaux de prise en charge
 
-- **Support officiel** : [VS Code et ses dérivés](#vs-code-et-ses-dérivés), avec l'extension publiée sur le VS Code Marketplace et sur Open VSX. Une extension pour Zed viendra s'y ajouter. Ces intégrations sont maintenues et vérifiées par le projet.
+- **Support officiel** : [VS Code et ses dérivés](#vs-code-et-ses-dérivés), avec l'extension publiée sur le VS Code Marketplace et sur Open VSX. L'extension pour [Zed](#zed) va bientôt s'y ajouter. Ces intégrations sont maintenues et vérifiées par le projet.
 - **Configurations LSP communautaires** : [Neovim](#neovim), [Helix](#helix), [Emacs](#emacs), [Sublime Text](#sublime-text) et les [IDE JetBrains](#ide-jetbrains). Elles ne reposent que sur le protocole standard : l'éditeur lance `gram-language-server --stdio` et envoie `views: false`. Chacune est une base qui fonctionne, d'où partir, sans maintenance propre à chaque éditeur. Retours et pull requests de celles et ceux qui utilisent ces éditeurs sont les bienvenus, sur le [suivi des tickets](https://git.gram-lang.org/gram-lang/gram/issues) ou directement dans le dossier `editors/` du dépôt.
 
 Les configurations communautaires ne sont pas toutes vérifiées de la même façon :
 
-- chacune passe un test de contrat à chaque modification (`editors.test.ts` : la commande, `views: false`, l'extension `.gram` et les commentaires), et le serveur lui-même est testé tel que le voit n'importe quel client LSP ;
-- **Neovim et Emacs** sont en plus pilotés par leur propre client LSP dans un conteneur (`editors/smoke/run.sh` : diagnostics, complétion, survol, formatage, renommage), et **Helix** y vérifie qu'il lit la configuration et trouve le serveur ;
+- chacune passe un test de contrat à chaque modification (`editors.test.ts` : la commande, `views: false`, l'extension `.gram` et les commentaires, le même commit de la grammaire Tree-sitter pour Helix et Neovim), et le serveur lui-même est testé tel que le voit n'importe quel client LSP ;
+- **Neovim et Emacs** sont en plus pilotés par leur propre client LSP dans un conteneur (`editors/smoke/run.sh` : diagnostics, complétion, survol, formatage, renommage), et **Helix** y vérifie qu'il lit la configuration et trouve le serveur. Helix et Neovim y compilent aussi la grammaire Tree-sitter, et Neovim vérifie les couleurs et les replis qu'elle donne ;
 - **Sublime Text et les IDE JetBrains** sont fournis tels quels, sans banc d'essai dans l'éditeur lui-même. Leurs écrans de réglages changent d'une version à l'autre : c'est leur propre documentation qui fait foi pour l'emplacement de chaque champ.
 
 ## Ce que chaque éditeur sait faire
@@ -34,8 +36,9 @@ Les configurations communautaires ne sont pas toutes vérifiées de la même fa�
 | Éditeur | Prise en charge | Coloration | Diagnostics | Complétion | Survol | Formatage | Renommage | Aperçu |
 |---|---|---|---|---|---|---|---|---|
 | [VS Code et ses dérivés](#vs-code-et-ses-dérivés) | Officielle | Complète (grammaire TextMate et jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| [Neovim](#neovim) | Communautaire, testée en conteneur | Partielle (jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [Helix](#helix) | Communautaire, configuration vérifiée en conteneur | Pas encore | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Zed](#zed) | Officielle, bientôt disponible | Complète (Tree-sitter) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Neovim](#neovim) | Communautaire, testée en conteneur | Complète avec Tree-sitter, partielle avec le serveur seul (jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Helix](#helix) | Communautaire, configuration vérifiée en conteneur | Complète (Tree-sitter) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | [Emacs](#emacs) | Communautaire, testée en conteneur | Commentaires seulement | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | [Sublime Text](#sublime-text) | Communautaire, telle quelle | Complète (grammaire TextMate) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | [IDE JetBrains](#ide-jetbrains) | Communautaire, telle quelle | Partielle (jetons sémantiques), complète avec le bundle TextMate | ✓ | ✓ | ✓ | ✓ | ✓ | — |
@@ -43,6 +46,7 @@ Les configurations communautaires ne sont pas toutes vérifiées de la même fa�
 Les colonnes de fonctionnalités disent ce que le serveur envoie ; pour Sublime Text et les IDE JetBrains, elles ne sont pas vérifiées dans l'éditeur.
 
 - **La coloration partielle** vient des jetons sémantiques du serveur : sigles et noms (`@farine`, `#bol`, `&pâte`), accolades, modificateurs, actions et commentaires prennent une couleur, mais pas le contenu des accolades (quantités, durées, températures). Elle attend aussi la réponse du serveur, un instant après l'ouverture du fichier.
+- **La coloration Tree-sitter** vient de [tree-sitter-gram](https://github.com/gram-lang/tree-sitter-gram), une grammaire qu'on compile une fois sur sa machine : tout prend une couleur, l'intérieur des accolades compris, dès l'ouverture du fichier. Chaque élément y joue le même rôle que dans la grammaire de VS Code : avec un thème proche, les couleurs sont les mêmes.
 - **L'aperçu** de la recette et du <Term id="runSheet" /> n'existe pour l'instant que dans VS Code.
 
 ## Support officiel
@@ -50,6 +54,15 @@ Les colonnes de fonctionnalités disent ce que le serveur envoie ; pour Sublime 
 ### VS Code et ses dérivés
 
 Installez l'extension **Gram - Recipe Language** depuis le [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang), ou depuis [Open VSX](https://open-vsx.org/extension/gram-lang/gram-lang) pour VSCodium, Cursor, Windsurf ou Positron. Elle embarque le serveur : rien d'autre à installer. Voir [Extension VS Code](/fr/docs/reference/tooling/vscode-extension/).
+
+### Zed
+
+Bientôt disponible : l'extension **Gram** attend sa place dans le catalogue d'extensions de Zed. Une fois qu'elle y sera, installez-la depuis la page des extensions de Zed, puis ouvrez une recette :
+
+- les couleurs et le plan des sections viennent de la grammaire [tree-sitter-gram](https://github.com/gram-lang/tree-sitter-gram), que Zed compile lui-même ;
+- diagnostics, complétion, survol, formatage et renommage viennent du serveur de langage. L'extension prend le `gram-language-server` de votre `PATH` s'il y en a un ; sinon, elle télécharge d'elle-même `@gram-lang/language-server` depuis npm et le lance avec le Node de Zed. Il lui faut la version 1.6.0 ou plus récente.
+
+Le code de l'extension se trouve dans le dépôt [zed-gram](https://github.com/gram-lang/zed-gram).
 
 ## Configurations LSP communautaires
 
@@ -82,7 +95,26 @@ Un éditeur lancé depuis un menu ne voit pas toujours le `PATH` de votre termin
 
 Avec Neovim 0.10, les mêmes réglages passent par [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig), qui n'a pas d'entrée pour Gram : cette configuration n'est pas maintenue pour lui.
 
-Testé avec Neovim 0.11.6 et 0.12.6.
+Testé avec Neovim 0.11.6 et 0.12.6, couleurs Tree-sitter et replis compris.
+
+#### Couleurs Tree-sitter et repli des sections
+
+Avec le serveur seul, quantités, durées et températures restent sans couleur. La grammaire tree-sitter-gram les colore dès l'ouverture du fichier, et permet de replier le frontmatter et chaque section. Pas besoin de plugin : Neovim charge la grammaire depuis votre dossier de configuration. Il faut `git` et un compilateur C.
+
+1. Enregistrez ce script et lancez-le une fois (`sh build-parser.sh`). Il compile la grammaire à un commit précis et l'installe, avec ses requêtes, dans `~/.config/nvim/parser/` et `~/.config/nvim/queries/gram/`. Relancez-le quand cette page passe à un commit plus récent.
+
+<Code code={neovimBuildParser} lang="sh" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+2. Enregistrez ce fichier à côté du premier, sous `~/.config/nvim/plugin/gram-treesitter.lua` :
+
+<Code code={neovimTreeSitter} lang="lua" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+- Les sections se replient alors avec les commandes habituelles de Neovim : `za` ouvre ou ferme le repli sous le curseur, `zM` et `zR` les ferment et les ouvrent tous. À l'ouverture du fichier, tout est déplié.
+- Les jetons sémantiques du serveur s'appliquent toujours par-dessus ces couleurs, et l'emportent quand les deux colorent le même texte.
+- `:InspectTree` montre comment la grammaire lit la recette.
+- Avec [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter), on peut déclarer le même dépôt et le même commit comme parseur personnalisé au lieu de lancer le script ; cette configuration n'est pas maintenue ici.
+
+Le script est testé sous Linux. Sous macOS, il devrait fonctionner avec le compilateur des outils en ligne de commande de Xcode (non testé) ; sous Windows, compilez la grammaire à la main avec la même commande.
 
 ### Helix
 
@@ -92,9 +124,20 @@ Ajoutez ce bloc à `~/.config/helix/languages.toml` :
 
 `hx --health gram` vérifie que Helix lit la configuration et trouve le serveur. La complétion s'affiche d'elle-même pendant la frappe ; <kbd>Espace</kbd> <kbd>k</kbd> affiche le survol, <kbd>Espace</kbd> <kbd>r</kbd> renomme, `:format` formate et <kbd>Ctrl</kbd>+<kbd>c</kbd> commente avec `//`.
 
-Helix ne se sert pas des jetons sémantiques : le texte reste sans couleur tant qu'il n'existe pas de grammaire Tree-sitter pour Gram.
+Helix ne se sert pas des jetons sémantiques : ses couleurs viennent de la grammaire tree-sitter-gram, déclarée à un commit précis par le bloc `[[grammar]]`. Helix la compile, mais n'installe pas ses requêtes, qui disent quoi colorer. Une fois, puis à chaque fois que cette page passe à un commit plus récent :
 
-Testé avec Helix 25.07 (configuration et serveur vérifiés par `hx --health`).
+```bash
+hx --grammar fetch
+hx --grammar build
+mkdir -p ~/.config/helix/runtime/queries/gram
+cp ~/.config/helix/runtime/grammars/sources/gram/queries/helix/*.scm ~/.config/helix/runtime/queries/gram/
+```
+
+- La compilation demande `git` et un compilateur C et C++ : Helix 25.07 cherche `c++`, même pour une grammaire écrite en C.
+- `hx --grammar fetch` récupère aussi toutes les autres grammaires que Helix connaît. Pour ne récupérer et compiler que celle de Gram, placez `use-grammars = { only = ["gram"] }` tout en haut de `languages.toml` : les autres grammaires restent alors telles quelles.
+- `hx --health gram` affiche ensuite `Highlight queries: ✓`. Il affiche aussi `Tree-sitter parser: ✓` avant même la compilation : c'est la présence de `~/.config/helix/runtime/grammars/gram.so` qui compte.
+
+Testé avec Helix 25.07 (configuration, serveur et requêtes vérifiés par `hx --health`, grammaire compilée en conteneur).
 
 ### Emacs
 
