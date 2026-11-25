@@ -43,12 +43,24 @@ export function mergeConfigLayers(
 	return merged;
 }
 
-export async function loadConfig(): Promise<GramConfig> {
+/** The config files `loadConfig` reads: the global one, then the project's. */
+export async function configPaths(): Promise<{
+	projectRoot: string;
+	global: string;
+	project: string;
+}> {
 	const projectRoot = await findProjectRoot();
-	const global = await readYaml(
-		join(homedir(), ".config", "gram", "config.yaml"),
-	);
-	const project = await readYaml(join(projectRoot, ".gram", "config.yaml"));
+	return {
+		projectRoot,
+		global: join(homedir(), ".config", "gram", "config.yaml"),
+		project: join(projectRoot, ".gram", "config.yaml"),
+	};
+}
+
+export async function loadConfig(): Promise<GramConfig> {
+	const { projectRoot, ...paths } = await configPaths();
+	const global = await readYaml(paths.global);
+	const project = await readYaml(paths.project);
 
 	const result = GramConfigFileSchema.safeParse(
 		mergeConfigLayers(project, global),

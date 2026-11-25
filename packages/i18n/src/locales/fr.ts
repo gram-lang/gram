@@ -14,6 +14,8 @@ export const fr: GramLocale = {
 		viewsPausedDescription: VIEWS_PAUSED.description,
 		showError: "Voir l'erreur",
 		outputEmpty: "Rien à afficher pour cette recette.",
+		print: "Imprimer",
+		disconnected: "Déconnecté, en attente du serveur…",
 		serving: {
 			label: "Service le",
 			clear: "Effacer",
