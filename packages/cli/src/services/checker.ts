@@ -94,10 +94,12 @@ export async function checkFiles(
 						});
 					}
 
+					// Ingredients the database does not resolve: a warning, which
+					// --strict promotes like any other (--skip-db keeps them out).
 					if (analyzed) {
 						for (const id of analyzed.missingIngredients) {
 							diagnostics.push({
-								level: "warning",
+								level: diagnosticLevel("warning", opts.strict),
 								category: "Database",
 								file,
 								message: `"${id}" not found in ingredient database.`,

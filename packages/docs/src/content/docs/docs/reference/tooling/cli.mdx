@@ -92,7 +92,7 @@ Validates your `.gram` files for syntax errors, structural integrity, and undefi
 - Runs the Ohm.js parser to catch syntax errors.
 - Runs the Kitchen compiler to catch structural errors (e.g. cyclic dependencies).
 - Connects to your `ingredients.yaml` database to flag undocumented ingredients.
-- Warnings (nutritional estimation gaps, incomplete-but-valid annotations) do not fail the command by default — only structural errors (undefined references, scope conflicts) trigger a non-zero exit code. Pass `--strict` to treat every warning as a hard error (ideal for CI pipelines).
+- Warnings (nutritional estimation gaps, incomplete-but-valid annotations) do not fail the command by default — only structural errors (undefined references, scope conflicts) trigger a non-zero exit code. Pass `--strict` to treat every warning as a hard error (ideal for CI pipelines). That includes ingredients missing from the database <Since v="1.6.0" />; add `--skip-db` to keep the database out of a strict run.
 - Options: `--db <path>`, `--skip-db`, `--strict`.
 
 #### `gram build [pattern]`
