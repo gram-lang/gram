@@ -225,7 +225,7 @@
       "begin": "(\\^)([\\w\\s]+)?(\\{)",
       "beginCaptures": {
         "1": { "name": "keyword.control.temperature.gram" },
-        "2": { "name": "constant.numeric.temperature.gram" },
+        "2": { "name": "support.type.temperature.gram" },
         "3": { "name": "punctuation.section.embedded.begin.gram" }
       },
       "end": "(\\})(?:\\(([^)\\n]+)\\))?",
