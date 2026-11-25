@@ -36,18 +36,18 @@ Les configurations communautaires ne sont pas toutes vérifiées de la même fa�
 | Éditeur | Prise en charge | Coloration | Diagnostics | Complétion | Survol | Formatage | Renommage | Aperçu |
 |---|---|---|---|---|---|---|---|---|
 | [VS Code et ses dérivés](#vs-code-et-ses-dérivés) | Officielle | Complète (grammaire TextMate et jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| [Zed](#zed) | Officielle, bientôt disponible | Complète (Tree-sitter) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [Neovim](#neovim) | Communautaire, testée en conteneur | Complète avec Tree-sitter, partielle avec le serveur seul (jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [Helix](#helix) | Communautaire, configuration vérifiée en conteneur | Complète (Tree-sitter) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [Emacs](#emacs) | Communautaire, testée en conteneur | Commentaires seulement | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [Sublime Text](#sublime-text) | Communautaire, telle quelle | Complète (grammaire TextMate) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| [IDE JetBrains](#ide-jetbrains) | Communautaire, telle quelle | Partielle (jetons sémantiques), complète avec le bundle TextMate | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| [Zed](#zed) | Officielle, bientôt disponible | Complète (Tree-sitter) | ✓ | ✓ | ✓ | ✓ | ✓ | Dans le navigateur (`gram view --serve`) |
+| [Neovim](#neovim) | Communautaire, testée en conteneur | Complète avec Tree-sitter, partielle avec le serveur seul (jetons sémantiques) | ✓ | ✓ | ✓ | ✓ | ✓ | Dans le navigateur (`gram view --serve`) |
+| [Helix](#helix) | Communautaire, configuration vérifiée en conteneur | Complète (Tree-sitter) | ✓ | ✓ | ✓ | ✓ | ✓ | Dans le navigateur (`gram view --serve`) |
+| [Emacs](#emacs) | Communautaire, testée en conteneur | Commentaires seulement | ✓ | ✓ | ✓ | ✓ | ✓ | Dans le navigateur (`gram view --serve`) |
+| [Sublime Text](#sublime-text) | Communautaire, telle quelle | Complète (grammaire TextMate) | ✓ | ✓ | ✓ | ✓ | ✓ | Dans le navigateur (`gram view --serve`) |
+| [IDE JetBrains](#ide-jetbrains) | Communautaire, telle quelle | Partielle (jetons sémantiques), complète avec le bundle TextMate | ✓ | ✓ | ✓ | ✓ | ✓ | Dans le navigateur (`gram view --serve`) |
 
 Les colonnes de fonctionnalités disent ce que le serveur envoie ; pour Sublime Text et les IDE JetBrains, elles ne sont pas vérifiées dans l'éditeur.
 
 - **La coloration partielle** vient des jetons sémantiques du serveur : sigles et noms (`@farine`, `#bol`, `&pâte`), accolades, modificateurs, actions et commentaires prennent une couleur, mais pas le contenu des accolades (quantités, durées, températures). Elle attend aussi la réponse du serveur, un instant après l'ouverture du fichier.
 - **La coloration Tree-sitter** vient de [tree-sitter-gram](https://github.com/gram-lang/tree-sitter-gram), une grammaire qu'on compile une fois sur sa machine : tout prend une couleur, l'intérieur des accolades compris, dès l'ouverture du fichier. Chaque élément y joue le même rôle que dans la grammaire de VS Code : avec un thème proche, les couleurs sont les mêmes.
-- **L'aperçu** de la recette et du <Term id="runSheet" /> n'existe pour l'instant que dans VS Code.
+- **L'aperçu** de la recette et du <Term id="runSheet" /> s'affiche à côté du code dans VS Code. Dans tous les autres éditeurs, [`gram view --serve`](/fr/docs/reference/tooling/cli/#aperçu-en-direct-dans-le-navigateur) l'ouvre dans le navigateur et le rafraîchit à chaque sauvegarde, avec les mêmes infobulles et la même mise en page à l'impression.
 
 ## Support officiel
 

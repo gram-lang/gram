@@ -29,6 +29,12 @@ export interface PipelineResult {
 	// against the full requested `--stock` set once at the end of the whole
 	// invocation to warn about a leftover entry that never matched anything.
 	usedStock: Set<string>;
+	// Every file the recipe was read from, or tried to be: the entry file and
+	// each `@use` import, transitive ones included, a missing one too (it is a
+	// diagnostic, not an error), as absolute paths. Empty for
+	// `runPipelineFromSource`. What a live preview watches: an import written
+	// before its file resolves as soon as the file is created.
+	dependencies: string[];
 }
 
 /**
@@ -61,7 +67,11 @@ export async function runPipeline(
 	}
 
 	const projectRoot = await findProjectRoot(dirname(entryUri));
-	const host = createCliModuleHost(projectRoot, opts.paths);
+	const dependencies = new Set<string>([entryUri]);
+	const host = createCliModuleHost(projectRoot, opts.paths, (uri) => {
+		dependencies.add(uri);
+		return readFile(uri, "utf-8");
+	});
 	const graph = await loadModuleGraph(entryUri, host);
 	const composed = composeRecipe(graph, {
 		db: opts.db ?? {},
@@ -97,7 +107,13 @@ export async function runPipeline(
 				)
 			: null;
 
-	return { content, compiled: tagged, analyzed, usedStock: composed.usedStock };
+	return {
+		content,
+		compiled: tagged,
+		analyzed,
+		usedStock: composed.usedStock,
+		dependencies: [...dependencies],
+	};
 }
 
 /**
@@ -135,5 +151,11 @@ export function runPipelineFromSource(
 				})
 			: null;
 
-	return { content, compiled, analyzed, usedStock: new Set() };
+	return {
+		content,
+		compiled,
+		analyzed,
+		usedStock: new Set(),
+		dependencies: [],
+	};
 }

@@ -45,7 +45,7 @@ View presentation settings:
 | `--nutrition-basis` | `auto`, `total`, `per-portion`, `per-100g` | `auto` | `view`, `print`, `export` |
 | `--bakers-math-only` | on or off | off | `view`, `print`, `export` |
 | `--step-quantities` | `show`, `hide` | `show` | `view`, `print`, `export` |
-| `--clock` <Since v="1.5.0" /> | `auto`, `12h`, `24h` | `auto` | `print`, `export`, `plan` |
+| `--clock` <Since v="1.5.0" /> | `auto`, `12h`, `24h` | `auto` | `view --serve`, `print`, `export`, `plan` |
 
 Analyzer computation settings (all enabled by default; use `--no-<flag>` to disable):
 
@@ -119,7 +119,28 @@ gram view brioche.gram --scale flour=300g   # Scaled to flour = 300g
 - Displays calculated nutrition, timings, and ingredient checklists; common fractions such as `1/4 tsp` remain fractions in the shopping list.
 - Passing `--scale` adjusts all ingredient quantities (both in the shopping list and in-step references).
 - The recipe view shows no schedule: it reads the same at any time. For when to come and what to take out, see `gram plan` below.
-- Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, plus all [settings flags](#settings-flags).
+- Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, `--stock`, plus all [settings flags](#settings-flags).
+
+##### Live preview in the browser
+
+<Since v="1.6.0" /> With `--serve`, `gram view` opens the recipe in your browser instead of the terminal, and updates the page every time you save: a live preview for any editor, not only VS Code.
+
+```bash
+gram view brioche.gram --serve                    # Opens http://127.0.0.1:4173
+gram view brioche.gram --serve --view run-sheet   # Opens on the run sheet
+gram view brioche.gram --serve --scale 2 --port 8080 --no-open
+```
+
+- The page has a tab for each view with a screen layout (the recipe and its run sheet), and a button that prints the view shown, exactly as `gram print` would.
+- It updates in place, keeping your scroll position, whenever the recipe, one of its `@use` imports, the config or the ingredient database is saved, including by editors that save through a temporary file (Neovim, Helix, Zed). Checked steps are unchecked by an update.
+- A syntax error keeps the last valid page on screen, dimmed under a banner, until the file is valid again.
+- Every flag of `gram view` applies to the page (`--scale`, `--stock`, `--bakers-math`, the [settings flags](#settings-flags)…); `--mise-en-place`, `--rests` and `--clock` shape the run sheet tab, which is laid out in days before the service (`D-1`, `Day D`), with your `timezone` and `availability` settings.
+- The server listens on `127.0.0.1` only and refuses any request for another host name. It uses port 4173, or a free one when 4173 is taken; a port given with `--port` must be free. `Ctrl+C` stops it.
+- Options: `--serve`, `--port <n>`, `--no-open`, `--view <recipe|run-sheet>`. `--port` and `--view` need `--serve`.
+
+:::caution[`--serve` takes no value here]
+In `gram plan`, `gram print` and `gram export`, `--serve "<date> <time>"` is the serving time. In `gram view`, `--serve` only starts the live preview: `gram view brioche.gram --serve "2026-10-11 13:00"` is refused. To put a recipe on the calendar, use `gram plan --serve`.
+:::
 
 #### `gram import <source>`
 Imports a recipe from a web page URL, a local JSON-LD file, or a YouTube video / Short, and converts it into valid Gram syntax using AI.

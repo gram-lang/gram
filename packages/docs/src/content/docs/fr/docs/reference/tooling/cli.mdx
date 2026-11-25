@@ -45,7 +45,7 @@ Réglages d'affichage (pilotant la présentation visuelle) :
 | `--nutrition-basis` | `auto`, `total`, `per-portion`, `per-100g` | `auto` | `view`, `print`, `export` |
 | `--bakers-math-only` | activé ou non | non | `view`, `print`, `export` |
 | `--step-quantities` | `show`, `hide` | `show` | `view`, `print`, `export` |
-| `--clock` <Since v="1.5.0" /> | `auto`, `12h`, `24h` | `auto` | `print`, `export`, `plan` |
+| `--clock` <Since v="1.5.0" /> | `auto`, `12h`, `24h` | `auto` | `view --serve`, `print`, `export`, `plan` |
 
 Réglages de l'analyseur (pilotant les calculs, tous activés par défaut ; utilisez `--no-<flag>` pour en désactiver un) :
 
@@ -119,7 +119,28 @@ gram view brioche.gram --scale farine=300g  # Proportions ajustées pour farine 
 - Affiche la synthèse nutritionnelle, les durées et la liste d'ingrédients à cocher ; les fractions courantes telles que `1/4 c.à.c` restent sous forme fractionnaire dans la liste de courses.
 - Le drapeau `--scale` ajuste l'intégralité des quantités d'ingrédients (liste de courses et rappels au sein des étapes).
 - La vue Recette ne montre aucun ordonnancement : elle se lit pareil à toute heure. Pour savoir quand venir et quoi sortir, voir `gram plan` plus bas.
-- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
+- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-reference <id>`, `--stock`, ainsi que tous les [réglages](#les-réglages-en-ligne-de-commande).
+
+##### Aperçu en direct dans le navigateur
+
+<Since v="1.6.0" /> Avec `--serve`, `gram view` ouvre la recette dans le navigateur plutôt que dans le terminal, et rafraîchit la page à chaque sauvegarde : un aperçu en direct pour n'importe quel éditeur, pas seulement VS Code.
+
+```bash
+gram view brioche.gram --serve                    # Ouvre http://127.0.0.1:4173
+gram view brioche.gram --serve --view run-sheet   # Ouvre directement le plan de marche
+gram view brioche.gram --serve --scale 2 --port 8080 --no-open
+```
+
+- La page propose un onglet par vue affichable à l'écran (la recette et son plan de marche), et un bouton qui imprime la vue affichée, exactement comme `gram print`.
+- Elle se met à jour sur place, sans perdre le défilement, dès que la recette, l'un de ses imports `@use`, la configuration ou la base d'ingrédients est enregistré, y compris par les éditeurs qui passent par un fichier temporaire (Neovim, Helix, Zed). Une mise à jour décoche en revanche les étapes cochées.
+- En cas d'erreur de syntaxe, la dernière page valide reste lisible, atténuée sous un bandeau, jusqu'à ce que le fichier redevienne valide.
+- Tous les drapeaux de `gram view` s'appliquent à la page (`--scale`, `--stock`, `--bakers-math`, les [réglages](#les-réglages-en-ligne-de-commande)…) ; `--mise-en-place`, `--rests` et `--clock` agissent sur l'onglet du plan de marche, présenté en jours avant le service (`J-1`, `Jour J`), selon vos réglages `timezone` et `availability`.
+- Le serveur n'écoute que sur `127.0.0.1` et refuse toute requête adressée à un autre nom d'hôte. Il prend le port 4173, ou un port libre si celui-ci est déjà occupé ; un port imposé avec `--port` doit être libre. `Ctrl+C` l'arrête.
+- Options : `--serve`, `--port <n>`, `--no-open`, `--view <recipe|run-sheet>`. `--port` et `--view` ne vont pas sans `--serve`.
+
+:::caution[Ici, `--serve` ne prend pas de valeur]
+Dans `gram plan`, `gram print` et `gram export`, `--serve "<date> <heure>"` fixe l'heure de service. Dans `gram view`, `--serve` lance seulement l'aperçu : `gram view brioche.gram --serve "2026-10-11 13:00"` est refusé. Pour caler une recette sur le calendrier, passez par `gram plan --serve`.
+:::
 
 #### `gram import <source>`
 Importe une recette depuis une page web, un fichier JSON-LD local ou une vidéo / Short YouTube, et la convertit en syntaxe `.gram` à l'aide de l'IA.

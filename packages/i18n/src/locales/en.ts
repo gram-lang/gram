@@ -14,6 +14,10 @@ export const en = {
 		showError: "Show the error",
 		/** An output the recipe has nothing for (a run sheet with nothing to schedule). */
 		outputEmpty: "Nothing to show for this recipe.",
+		/** A button that prints the view shown (the live preview of `gram view --serve`). */
+		print: "Print",
+		/** The live preview lost its server; it reconnects on its own. */
+		disconnected: "Disconnected, waiting for the server…",
 		/** The serving time controls of a view laid out in time (the editor's panel). */
 		serving: {
 			label: "Served at",

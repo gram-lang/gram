@@ -132,7 +132,7 @@ export default defineCommand({
 		log.success(`HTML generated: ${chalk.dim(htmlPath)}`);
 
 		if (args.open !== false) {
-			const opened = openInBrowser(htmlPath);
+			const opened = await openInBrowser(htmlPath);
 			if (opened) {
 				log.info("Opening in browser…");
 			} else {
