@@ -13,13 +13,17 @@ Un fichier de recette Gram (`.gram`) se découpe en plusieurs blocs distincts : 
 
 Le *frontmatter* est un bloc de configuration **YAML** situé tout en haut du fichier et délimité par `---`.
 
+:::caution[Des lignes à plat, rien d'autre]
+Ça ressemble à du YAML, mais Gram ne lit que des lignes `clé: valeur` à plat (les lignes vides passent), avec les listes écrites sur une ligne (`tags: ['brownie', 'matcha']`). Une ligne de commentaire (`# …`) ou une ligne indentée rend tout le bloc illisible : il est alors lu comme une étape de texte, sans aucune métadonnée. Un `#` en fin de ligne fait partie de la valeur.
+:::
+
 Le *parser* Gram accepte **absolument n'importe quelle** paire clé-valeur dans ce bloc. Vous êtes libre d'y injecter des champs sur-mesure pour les besoins spécifiques de votre application. Cela dit, le compilateur Gram reconnaît nativement deux catégories de clés : les **Fonctionnelles** et les **Informatives**.
 
 ### Clés fonctionnelles
 Ces clés modifient concrètement la façon dont le compilateur va interpréter la recette :
 
 *   `portions` : (Entier) Le nombre de portions de base. Divise l'[Estimation Nutritionnelle](/fr/docs/explanation/nutrition) en valeurs par portion, et est ajusté en même temps que les quantités lors d'un *scaling* — les valeurs par portion restent donc identiques quel que soit le facteur appliqué. Un libellé accolé (`portions: 4 personnes`) est toléré ; un nombre nul ou négatif est ignoré.
-*   `densities` : (Objet) Surcharges personnalisées de la densité pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](/fr/docs/explanation/engine/kitchen).
+*   `densities` : (Liste en ligne) Surcharges personnalisées de la densité (g/ml) pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](/fr/docs/explanation/engine/kitchen). Elles s'écrivent en paires `nom:valeur` dans une liste sur une ligne : `densities: [farine:0.55, lait:1.03]`.
 
 ### Clés informatives
 Ces clés sont recommandées pour assurer un affichage propre et une gestion saine des métadonnées :
@@ -45,10 +49,8 @@ category: 'Dessert'
 source: ['https://example.com/matcha-brownie']
 makes: 'moule de 20x20 cm'
 
-# Champs fonctionnels
 portions: 4
-densities:
-  - farine: 0.55
+densities: [farine:0.55, lait:1.03]
 ---
 ```
 </CodeTabs>

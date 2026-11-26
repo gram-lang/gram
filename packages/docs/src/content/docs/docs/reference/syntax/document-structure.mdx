@@ -13,13 +13,17 @@ A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata
 
 The frontmatter is a **YAML** block at the very start of the file, enclosed by `---`.
 
+:::caution[Flat lines only]
+It looks like YAML, but Gram only reads flat `key: value` lines (blank lines are fine), with lists written inline (`tags: ['brownie', 'matcha']`). A comment line (`# …`) or an indented line makes the whole block unreadable: it is then read as a step of text, with no metadata. A `#` at the end of a line is part of the value.
+:::
+
 The Gram parser accepts **any** key-value pair in this block. You can add custom fields for your own application's needs. However, the Gram Compiler recognizes two types of keys: **Functional** and **Informational**.
 
 ### Functional keys
 These keys directly alter how the Gram Compiler processes the recipe:
 
 *   `portions`: (Integer) The baseline number of portions. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
-*   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
+*   `densities`: (Inline list) Custom density overrides (g/mL) for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm. Write them as `name:value` pairs in an inline list: `densities: [flour:0.55, milk:1.03]`.
 
 ### Informational keys
 These keys are recommended for proper display and metadata management:
@@ -45,10 +49,8 @@ category: 'Dessert'
 source: ['https://example.com/matcha-brownie']
 makes: '20x20cm mold'
 
-# Functional Fields
 portions: 4
-densities:
-  - flour: 0.55
+densities: [flour:0.55, milk:1.03]
 ---
 ```
 </CodeTabs>
