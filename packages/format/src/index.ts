@@ -123,23 +123,6 @@ function splitFrontmatter(source: string): {
 	}
 }
 
-/**
- * `splitFrontmatter`, kept only when the parser reads the fenced block as
- * frontmatter too. Its grammar takes `key: value` lines only: a block holding
- * anything else (`/* a comment *\/`, `lan@guage:` on its own line) is read as
- * a step, with its elements and comments. Handled as frontmatter here, it got
- * rule 10, which stripped a blank inside such a comment and changed the
- * recipe. Any span the parser finds inside the block says it is body. A file
- * that does not parse keeps the textual split: it gets whitespace rules only.
- */
-function frontmatterOf(source: string): { frontmatter: string; body: string } {
-	const split = splitFrontmatter(source);
-	if (!split.frontmatter) return split;
-	const spans = parseSpans(source);
-	const inside = spans?.some((span) => span.start < split.frontmatter.length);
-	return inside ? { frontmatter: "", body: source } : split;
-}
-
 /** An operator between two terms of a sum, once spaced (` + `, ` - `). */
 const SUM_OPERATOR = / [+-] /;
 
@@ -567,6 +550,52 @@ function formatBraces(
 }
 
 /**
+ * Rules 6-8, the repairs: textual, line by line, run before the parser reads
+ * the text, so that a `< @` it would reject is already a composite.
+ */
+function repair(text: string, changes: FormatterChanges): string {
+	let out = text;
+	// Rule 6 (from language-server): normalize composite separator spacing
+	// (@ingA{} < @ingB{} → @ingA{}<@ingB{}). Tabs included: left to rule 9,
+	// `<\t@` became `<    @` and needed a second pass (#204). Unlike
+	// `trimBlanks` (#200), which strips only the grammar's blanks so as not to
+	// turn a line of text into a blank line, this repair takes every Unicode
+	// horizontal blank (a no-break space, U+3000…): kitchen flags
+	// SPACED_COMPOSITE whatever blank surrounds `<`, so the repair must glue
+	// what it flags. Never `\s`: the rule runs before the parser finds the
+	// steps, and a line break taken here would merge two steps or a comment.
+	out = out.replace(/[^\S\r\n]*<[^\S\r\n]*@/g, (match) => {
+		if (match !== "<@") changes.compositeSeparatorSpacing++;
+		return "<@";
+	});
+
+	// Rule 7 (from language-server): normalize ->&name {} → ->&name{}
+	// (handles single and multi-word names)
+	out = out.replace(/->&([^{\r\n]+?)[ \t]+\{\}/g, (_, name) => {
+		changes.arrowDeclarationSpacing++;
+		return `->&${name}{}`;
+	});
+
+	// Rule 8 (from language-server): ensure exactly one space after a section
+	// header's hashes (##Title, ##  Title → ## Title). Distinct from Rule 12
+	// below (blank lines *before* a header) — this is the space *within* the
+	// header line itself. Must match exactly "##" and not "###" (grammar.ohm's
+	// `header = "##" sp+ title ...` — there is no single- or triple-hash
+	// header form; Rule 12 below draws the same "##, not ###" line) — a
+	// `{1,3}` quantifier here previously also matched a bare `#cookware`
+	// reference at the start of a line (e.g. `#pan(20cm)`) and corrupted it
+	// into `# pan(20cm)`, which the parser no longer recognizes as cookware
+	// at all (found via the audit/ tool's calibration check against the
+	// human-verified docs corpus, see cookware.md's `#pan`/`#ramekins` examples).
+	out = out.replace(/^(##(?!#))[ \t]*(?=\S)/gm, (match, hashes: string) => {
+		const normalized = `${hashes} `;
+		if (match !== normalized) changes.headerSpacing++;
+		return normalized;
+	});
+	return out;
+}
+
+/**
  * The CLI (`gram format`, 9 rules, whole-body regexes) and the
  * language server (`format on save`, ~6 rules, line-by-line) used to be two
  * independent implementations with disjoint rule sets — a recipe formatted
@@ -602,46 +631,24 @@ export function formatGram(source: string): {
 	// e.g. lowercasing the domain of `author: Jean@Example.com`.
 	// Order: the repairs (rules 6-8) first, then rules 1-5 on the elements
 	// the parser finds in the repaired text, then rules 9-12.
-	const { frontmatter, body: originalBody } = frontmatterOf(source);
-	let body = originalBody;
-
-	// Rule 6 (from language-server): normalize composite separator spacing
-	// (@ingA{} < @ingB{} → @ingA{}<@ingB{}). Tabs included: left to rule 9,
-	// `<\t@` became `<    @` and needed a second pass (#204). Unlike
-	// `trimBlanks` (#200), which strips only the grammar's blanks so as not to
-	// turn a line of text into a blank line, this repair takes every Unicode
-	// horizontal blank (a no-break space, U+3000…): kitchen flags
-	// SPACED_COMPOSITE whatever blank surrounds `<`, so the repair must glue
-	// what it flags. Never `\s`: the rule runs before the parser finds the
-	// steps, and a line break taken here would merge two steps or a comment.
-	body = body.replace(/[^\S\r\n]*<[^\S\r\n]*@/g, (match) => {
-		if (match !== "<@") changes.compositeSeparatorSpacing++;
-		return "<@";
-	});
-
-	// Rule 7 (from language-server): normalize ->&name {} → ->&name{}
-	// (handles single and multi-word names)
-	body = body.replace(/->&([^{\r\n]+?)[ \t]+\{\}/g, (_, name) => {
-		changes.arrowDeclarationSpacing++;
-		return `->&${name}{}`;
-	});
-
-	// Rule 8 (from language-server): ensure exactly one space after a section
-	// header's hashes (##Title, ##  Title → ## Title). Distinct from Rule 12
-	// below (blank lines *before* a header) — this is the space *within* the
-	// header line itself. Must match exactly "##" and not "###" (grammar.ohm's
-	// `header = "##" sp+ title ...` — there is no single- or triple-hash
-	// header form; Rule 12 below draws the same "##, not ###" line) — a
-	// `{1,3}` quantifier here previously also matched a bare `#cookware`
-	// reference at the start of a line (e.g. `#pan(20cm)`) and corrupted it
-	// into `# pan(20cm)`, which the parser no longer recognizes as cookware
-	// at all (found via the audit/ tool's calibration check against the
-	// human-verified docs corpus, see cookware.md's `#pan`/`#ramekins` examples).
-	body = body.replace(/^(##(?!#))[ \t]*(?=\S)/gm, (match, hashes: string) => {
-		const normalized = `${hashes} `;
-		if (match !== normalized) changes.headerSpacing++;
-		return normalized;
-	});
+	// The fenced block opening the file is frontmatter only when the parser reads
+	// it as frontmatter too: its grammar takes `key: value` lines only, and a
+	// block holding anything else (`/* a comment */`, `lan@guage:` alone on a
+	// line) is a step, with its elements and comments. Handled as frontmatter,
+	// it got rule 10, which stripped a blank inside such a comment (#284). Any
+	// span the parser finds inside the block makes it body, repaired like the
+	// rest. Decided on the repaired text, never the raw one: a file only the
+	// repairs make readable would otherwise change its mind at the second pass.
+	// A file that still does not parse keeps the textual split.
+	const split = splitFrontmatter(source);
+	let frontmatter = split.frontmatter;
+	let body = repair(split.body, changes);
+	let spans = parseSpans(frontmatter + body);
+	if (frontmatter && spans?.some((span) => span.start < frontmatter.length)) {
+		body = repair(frontmatter, changes) + body;
+		frontmatter = "";
+		spans = parseSpans(body);
+	}
 
 	// Rules 1-5 below touch the elements the parser finds, and only them:
 	// they run after the repairs (rules 6-8) so that a `< @` the parser
@@ -655,7 +662,7 @@ export function formatGram(source: string): {
 		{ text: frontmatter, verbatim: false },
 	];
 	let cursor = frontmatter.length;
-	for (const span of parseSpans(repaired) ?? []) {
+	for (const span of spans ?? []) {
 		if (span.start < cursor) continue;
 		segments.push({
 			text: repaired.slice(cursor, span.start),
