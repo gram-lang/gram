@@ -101,8 +101,8 @@ Rules:
 - String values must be single-quoted when they contain special characters.
 - "originalTitle" is the title in the original language, when it differs (free-form, informational only).
 - "author" is a string or an array (\`['Name1', 'Name2']\`); "source" is always an array.
-- "portions" is the canonical field for serving count (not "servings"): an INTEGER, used for scaling and nutrition.
-- "makes" is the canonical field for yield/mold description, e.g. '24cm tart tin' (the old field name "size" is obsolete — never emit it).
+- "portions" is the canonical field for serving count: an INTEGER, used for scaling and nutrition. "servings" is deprecated — never emit it.
+- "makes" is the canonical field for yield/mold description, e.g. '24cm tart tin'. "yield" and "yields" are deprecated, and the old field name "size" is obsolete — never emit any of them.
 - "densities" is optional: custom density overrides in g/mL.
 - Time fields (prep/active/total in minutes) are NOT part of the frontmatter — they are derived by the compiler from timers.
 - Omit any field for which there is no data. Do not invent values.
