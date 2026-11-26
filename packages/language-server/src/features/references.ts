@@ -6,7 +6,7 @@ import {
 	collectReferences,
 	collectRelativeTargets,
 	findNameAtOffset,
-} from "../utils/ast-walker";
+} from "@gram-lang/modules/lint";
 
 function findAllNameLocations(state: DocumentState, name: string): Location[] {
 	if (!state.ast) return [];

@@ -12,7 +12,7 @@ import {
 	collectReferences,
 	collectRelativeTargets,
 	findNameAtOffset,
-} from "../utils/ast-walker";
+} from "@gram-lang/modules/lint";
 
 // Returns the range covering only the name portion of a decl/ref token.
 // For ->&name{} or ->&name: name starts at offset+3 (after "->& ")

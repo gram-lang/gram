@@ -5,6 +5,9 @@
  * line the grammar does not take (`# …`, an indented line) has emptied it: the
  * completion, the hover and the deprecated key's diagnostic read the text
  * instead, and tolerate those lines without taking them for keys.
+ *
+ * @experimental Part of `@gram-lang/modules/lint`, whose shape may still
+ * change in a minor release.
  */
 
 /** One `key: value` line of the frontmatter. Offsets in UTF-16 code units. */

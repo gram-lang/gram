@@ -15,7 +15,7 @@ import {
 	collectReferences,
 	collectIngredients,
 	collectRelativeTargets,
-} from "../utils/ast-walker";
+} from "@gram-lang/modules/lint";
 import {
 	WarningCode,
 	type WarningSeverity,
@@ -23,7 +23,7 @@ import {
 } from "@gram-lang/kitchen";
 import { warningInfoOf } from "@gram-lang/modules";
 import { findClosestIngredients, isKnownIngredient } from "@gram-lang/analyzer";
-import { scanFrontmatter } from "../utils/frontmatter-text";
+import { scanFrontmatter } from "@gram-lang/modules/lint";
 import type { IngredientDB } from "../ingredient-loader";
 
 const ZERO_RANGE: Range = {

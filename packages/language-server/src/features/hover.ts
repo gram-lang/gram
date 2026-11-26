@@ -10,7 +10,7 @@ import {
 	collectIntermediates,
 	collectReferences,
 	getStepSourceText,
-} from "../utils/ast-walker";
+} from "@gram-lang/modules/lint";
 import type { IngredientDB } from "../ingredient-loader";
 import { provideNutritionHover } from "./hover-nutrition";
 import { provideAnchorHover, provideTimerHover } from "./hover-durations";

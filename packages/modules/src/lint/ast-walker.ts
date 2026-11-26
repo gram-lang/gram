@@ -1,3 +1,11 @@
+/**
+ * Walkers over a recipe's own AST: its intermediates, references,
+ * ingredients, timers and the targets of its shares and ratios. Moved from
+ * the language server, which reads them from here with the lint rules.
+ *
+ * @experimental Part of `@gram-lang/modules/lint`, whose shape may still
+ * change in a minor release.
+ */
 import {
 	type RecipeAST,
 	type SectionAST,

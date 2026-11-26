@@ -10,7 +10,7 @@ import {
 	type FrontmatterKeyDefinition,
 	frontmatterKey,
 } from "@gram-lang/kitchen";
-import { isFrontmatterLine, scanFrontmatter } from "../utils/frontmatter-text";
+import { isFrontmatterLine, scanFrontmatter } from "@gram-lang/modules/lint";
 
 const KEY_PREFIX = /^[\p{L}\p{N}_-]*$/u;
 

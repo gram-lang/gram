@@ -12,7 +12,7 @@ import { provideCodeActions } from "../src/features/code-actions";
 import { provideCompletions } from "../src/features/completions";
 import { provideDiagnostics } from "../src/features/diagnostics";
 import { provideHover } from "../src/features/hover";
-import { scanFrontmatter } from "../src/utils/frontmatter-text";
+import { scanFrontmatter } from "@gram-lang/modules/lint";
 import { positionToOffset } from "../src/utils/position";
 
 const URI = "file:///recipe.gram";

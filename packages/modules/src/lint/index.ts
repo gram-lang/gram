@@ -13,3 +13,21 @@ export {
 	unquantifiedFrom,
 	type WrittenIngredient,
 } from "./gram-tokens";
+export {
+	collectIngredients,
+	collectIntermediates,
+	collectReferences,
+	collectRelativeTargets,
+	collectTimers,
+	findNameAtOffset,
+	getStepSourceText,
+	type IntermediateDeclWithSection,
+	type RelativeTarget,
+} from "./ast-walker";
+export {
+	type FrontmatterBlock,
+	type FrontmatterKeyLine,
+	frontmatterKeyAt,
+	isFrontmatterLine,
+	scanFrontmatter,
+} from "./frontmatter-text";

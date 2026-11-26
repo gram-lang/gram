@@ -12,7 +12,10 @@ import {
 	offsetToPosition,
 	positionToOffset,
 } from "../utils/position";
-import { collectIntermediates, collectIngredients } from "../utils/ast-walker";
+import {
+	collectIntermediates,
+	collectIngredients,
+} from "@gram-lang/modules/lint";
 import type { IngredientDB } from "../ingredient-loader";
 import { normalizeUnit } from "@gram-lang/i18n";
 import { ASTNodeType, type QuantityAST } from "@gram-lang/parser";
@@ -23,7 +26,7 @@ import {
 	termsOfAst,
 	WarningCode,
 } from "@gram-lang/kitchen";
-import { scanFrontmatter } from "../utils/frontmatter-text";
+import { scanFrontmatter } from "@gram-lang/modules/lint";
 
 export function provideCodeActions(
 	state: DocumentState,
