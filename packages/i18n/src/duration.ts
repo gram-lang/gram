@@ -183,27 +183,34 @@ export function tokenizeDuration(
 			let j = i;
 			while (isDigit(s[j])) j++;
 			let num: NumKind = "int";
-			let value: number;
+			let value = Number(s.slice(i, j));
 			if ((s[j] === "." || s[j] === ",") && isDigit(s[j + 1])) {
 				j++;
 				while (isDigit(s[j])) j++;
 				num = "decimal";
 				value = Number(s.slice(i, j).replace(",", "."));
-			} else if (s[j] === "/" && j > i && isDigit(s[j + 1])) {
+			}
+			if (s[j] === "/" && j > i && isDigit(s[j + 1])) {
+				// `1/2`, and a decimal numerator (`1.5/2`, `1,5/2`), which the
+				// parser reads as a fraction too (`{1.5/2 cups}` is 0.75 cup): a
+				// timer refused what an ingredient accepted. The denominator is
+				// whole, as in the grammar's `plainNumber`.
 				const slash = j;
 				j++;
 				while (isDigit(s[j])) j++;
 				const den = Number(s.slice(slash + 1, j));
 				if (den === 0) return { ok: false, reason: "unexpected" };
 				num = "fraction";
-				value = Number(s.slice(i, slash)) / den;
-			} else if (s[j] !== undefined && (s[j] as string) in FRACTION_GLYPHS) {
+				value = Number(s.slice(i, slash).replace(",", ".")) / den;
+			} else if (
+				num === "int" &&
+				s[j] !== undefined &&
+				(s[j] as string) in FRACTION_GLYPHS
+			) {
 				const whole = j > i ? Number(s.slice(i, j)) : 0;
 				value = whole + (FRACTION_GLYPHS[s[j] as string] as number);
 				j++;
 				num = "fraction";
-			} else {
-				value = Number(s.slice(i, j));
 			}
 			tokens.push({ kind: "num", value, text: s.slice(i, j), num, space });
 			i = j;
@@ -260,6 +267,8 @@ function mergeMixedFractions(tokens: Token[]): Token[] {
 			token.num === "fraction" &&
 			token.space &&
 			token.value < 1 &&
+			// Only a whole numerator, as the grammar's `mixedFraction`.
+			!/[.,]/.test(token.text) &&
 			prev?.kind === "num" &&
 			prev.num === "int"
 		) {
