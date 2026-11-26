@@ -43,7 +43,6 @@ describe("resolveIngredientDb", () => {
 		const result = resolveIngredientDb(explicitPath, []);
 
 		expect(Object.keys(result.db)).toEqual(["flour"]);
-		expect(result.lookupSet.size).toBeGreaterThan(0);
 		expect(result.rejected).toEqual([]);
 	});
 
@@ -64,7 +63,6 @@ describe("resolveIngredientDb", () => {
 		const result = resolveIngredientDb(undefined, [dir]);
 
 		expect(result.db).toEqual({});
-		expect(result.lookupSet.size).toBe(0);
 		expect(result.rejected).toEqual([]);
 	});
 

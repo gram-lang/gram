@@ -100,7 +100,6 @@ process.on("unhandledRejection", (reason) => {
 });
 
 let ingredientDB: IngredientDB = {};
-let ingredientLookupSet: Set<string> = new Set();
 let workspaceFolders: string[] = [];
 
 // The module-imports RFC (§F.1) module resolution state — a `ModuleGraph`
@@ -294,7 +293,6 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 		onError: (message) => connection.console.error(message),
 	});
 	ingredientDB = outcome.ingredientDB;
-	ingredientLookupSet = outcome.ingredientLookupSet;
 	for (const [uri, diagnostics] of outcome.diagnosticsByUri) {
 		connection.sendDiagnostics({ uri, diagnostics });
 	}
@@ -427,12 +425,7 @@ async function refresh(
 	states.set(uri, state);
 	connection.sendDiagnostics({
 		uri,
-		diagnostics: provideDiagnostics(
-			state,
-			uri,
-			ingredientLookupSet,
-			ingredientDB,
-		),
+		diagnostics: provideDiagnostics(state, uri, ingredientDB),
 	});
 
 	// The session's scale or stock change what is compiled: the views get a
