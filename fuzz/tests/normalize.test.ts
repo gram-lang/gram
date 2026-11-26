@@ -21,6 +21,31 @@ describe("normalize", () => {
 		);
 	});
 
+	// The suggestion quotes the source spelling, which rule 4 canonicalizes;
+	// nothing else in it may differ.
+	it("compares an INVALID_DURATION suggestion up to its trailing zeros only", () => {
+		const warning = (suggestion: string) => ({
+			code: "INVALID_DURATION",
+			data: { suggestion },
+		});
+		const same = (a: string, b: string) =>
+			firstDifference(normalize(warning(a)), normalize(warning(b)));
+		expect(same("1.30 h", "1.3 h")).toBeNull();
+		expect(same("2.0-3.50 min", "2-3.5 min")).toBeNull();
+		expect(same("1.30 h", "1.3 min")).toBe("$.data.suggestion");
+		expect(same("1.30 h", "13 h")).toBe("$.data.suggestion");
+		// A fraction's terms keep their zeros (#286), and so does `1,000`.
+		expect(same("1/5.0 h", "1/5 h")).toBe("$.data.suggestion");
+		expect(same("1,000 h", "1 h")).toBe("$.data.suggestion");
+		// Another code's suggestion is still compared as written.
+		expect(
+			firstDifference(
+				normalize({ code: "OTHER", data: { suggestion: "1.30 h" } }),
+				normalize({ code: "OTHER", data: { suggestion: "1.3 h" } }),
+			),
+		).toBe("$.data.suggestion");
+	});
+
 	it("does not trim prose in the middle of a step", () => {
 		expect(normalize(["Bake ", { id: "x" }, "now. "])).toEqual([
 			"Bake ",
