@@ -728,6 +728,32 @@ describe("rules 4 and 5 touch numbers only (#213)", () => {
 		});
 	}
 
+	// Found by the fuzz (#286): the compiler reads neither `1.0/5` nor `1/5.0`
+	// as a duration, and `1/5` it does, so trimming changed a timer.
+	for (const source of [
+		"Bake for ~{1.0/5 min}.\n",
+		"Bake for ~{1/5.0 min}.\n",
+		"Add @x{1.50/2 g}.\n",
+	]) {
+		it(`leaves the fraction of ${JSON.stringify(source)} as written`, () => {
+			const result = formatGram(source);
+			expect(result.content).toBe(source);
+			expect(hasChanges(result.changes)).toBe(false);
+		});
+	}
+
+	it("leaves the fraction of a proportional timer, and trims its ratio", () => {
+		expect(
+			formatGram("Bake @b{100 g} for ~{1/5.0 min / 500.0 g @&b}.\n").content,
+		).toBe("Bake @b{100 g} for ~{1/5.0 min / 500 g @&b}.\n");
+		expect(
+			formatGram("Bake @b{100 g} for ~{15.0 min / 500.0 g @&b}.\n").content,
+		).toBe("Bake @b{100 g} for ~{15 min / 500 g @&b}.\n");
+		expect(formatGram("Add @a{1.50 / 100.0 g @&b}.\n").content).toBe(
+			"Add @a{1.5 / 100 g @&b}.\n",
+		);
+	});
+
 	it("trims a number's zeros, not the unit text after it", () => {
 		expect(formatGram("Add @e{1.50-2.0 %3.0}.\n").content).toBe(
 			"Add @e{1.5-2 %3.0}.\n",

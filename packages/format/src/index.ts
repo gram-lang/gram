@@ -133,9 +133,14 @@ const HAS_TARGET = /.(?:@&|&)/u;
  * A decimal number whose decimals end in zeros (`1.50`, `2,0`), standing on
  * its own: not inside a longer number, nor part of a name (`v2.0`,
  * `chocolat-70.0`); a `-` before it is a range's or a sign's.
+ *
+ * Nor a term of a fraction (`1.0/5`, `1/5.0`): the compiler reads neither as
+ * a duration (INVALID_DURATION, or a text quantity), and once trimmed to
+ * `1/5` it does, so a timer's duration changed (#286). A ratio's ` / ` is never
+ * inside one number's range, so its terms are still trimmed.
  */
 const DECIMAL_WITH_ZEROS =
-	/(?<![\p{L}\d.,_])(?<!\p{L}-)(\d+)([.,])(\d*?)(0+)(?![\d.,]\d)(?!\d)/gu;
+	/(?<![\p{L}\d.,_])(?<!\p{L}-)(?<!\/[ \t]*)(\d+)([.,])(\d*?)(0+)(?![\d.,]\d)(?!\d)(?![ \t]*\/)/gu;
 
 /**
  * Removes the trailing decimal zeros of every number in a quantity's
