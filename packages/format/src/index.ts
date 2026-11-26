@@ -584,10 +584,15 @@ export function formatGram(source: string): {
 	let body = originalBody;
 
 	// Rule 6 (from language-server): normalize composite separator spacing
-	// (@ingA{} < @ingB{} → @ingA{}<@ingB{}). Tabs included, as in the
-	// grammar's `invalidComposite`: left to rule 9, `<\t@` became `<    @`
-	// and needed a second pass (#204).
-	body = body.replace(/[ \t]*<[ \t]*@/g, (match) => {
+	// (@ingA{} < @ingB{} → @ingA{}<@ingB{}). Tabs included: left to rule 9,
+	// `<\t@` became `<    @` and needed a second pass (#204). Unlike
+	// `trimBlanks` (#200), which strips only the grammar's blanks so as not to
+	// turn a line of text into a blank line, this repair takes every Unicode
+	// horizontal blank (a no-break space, U+3000…): kitchen flags
+	// SPACED_COMPOSITE whatever blank surrounds `<`, so the repair must glue
+	// what it flags. Never `\s`: the rule runs before the parser finds the
+	// steps, and a line break taken here would merge two steps or a comment.
+	body = body.replace(/[^\S\r\n]*<[^\S\r\n]*@/g, (match) => {
 		if (match !== "<@") changes.compositeSeparatorSpacing++;
 		return "<@";
 	});
