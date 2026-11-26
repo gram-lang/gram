@@ -25,7 +25,7 @@ interface Warning {
 
 `compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
 
-<Since v="1.5.0" /> Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, since 1.5.2), `DEPRECATED_FRONTMATTER_KEY` (`{ key, suggestion, specifier? }`, since 1.6.0) and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
+<Since v="1.5.0" /> Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, since 1.5.2), `DEPRECATED_FRONTMATTER_KEY` (`{ key, suggestion, specifier? }`, since 1.6.0), `REFERENCE_TO_INGREDIENT` (`{ suggestion }`, since 1.6.0), a timer's `INVALID_DURATION` (`{ suggestion }` when Gram can tell, since 1.6.0) and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
 
 ## Severity & `--strict`
 
@@ -71,14 +71,20 @@ An ingredient's relative quantity targets itself (`@flour{50% of @flour}`). **Fi
 ### `UNDEFINED_REFERENCE`
 A bare reference (`&name`) or a referenceable ingredient (`@&name`) points to something that was never registered earlier in the recipe. **Fix**: introduce the ingredient (without `&`) before referencing it, or check for a typo.
 
+### `REFERENCE_TO_INGREDIENT`
+<Since v="1.6.0" />
+
+A reference (`&flour`) names a raw ingredient written earlier (`@flour{500 g}`), not an intermediate: `&` is for what a step or a section produces (`->&dough`), `@&` for a later mention of an ingredient. The recipe compiles as before. **Fix**: write `@&flour`; `data.suggestion` holds it, and the language server's quick fix adds the `@`. An intermediate that shares an ingredient's name (`Brown @chicken{1} ->&chicken.` then `&chicken`), or a `@use … as &name` binding, raises nothing.
+
 ### `MISSING_UNIT`
 A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` instead of `~{10 min}`). **Fix**: add an explicit unit.
 
 ### `INVALID_UNIT`
-Emitted in three situations:
+Emitted in four situations:
 - **Time or temperature units**: a word after a number in a `Timer` or section anchor is not a recognized time unit (`~{3 bananas}`), or a `Temperature` uses a unit other than Celsius or Fahrenheit. **Fix**: use a recognized time unit (`h`, `hr`, `min`, `heures`…), or `°C` / `°F` for temperatures.
 - **Unjoined quantities in a unit** <Since v="1.5.0" type="changed" />: an ingredient's unit looks like two quantities without an operator (`@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`), where `cup 5 tbsp` would otherwise be treated as one unknown unit with no mass. **Fix**: write it as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities) (`@flour{1 cup + 5 tbsp}`); `data.suggestion` provides the corrected unit (`cup + 5 tbsp`) for editor quick fixes. Descriptive unit text like `@tomatoes{1 tin of 400 g}` is unaffected.
 - **Leading prose before a number**: a unit hides a leading word before the number (`@flour{about 200g}`), since quantities must start with a number. **Fix**: write `@flour{200g}` and keep `"about"` in the prose. Pure text quantities (`{a pinch}`, `{to taste}`) raise nothing.
+- **Cooklang's separator** <Since v="1.6.0" />: a `%` between the number and a unit of mass or volume (`@flour{200%g}`, `reason: "cooklangSeparator"`), which would otherwise read as an unknown unit `%g` with no mass. **Fix**: write `@flour{200 g}`; `data.suggestion` holds the unit (`g`) and the language server's quick fix puts a space in place of the `%`. A `%` before any other word (`{70 % cacao}`) is left alone.
 
 ### `INVALID_QUANTITY`
 <Since v="1.5.0" />
@@ -127,7 +133,7 @@ A timer or section anchor uses numbers and units Gram recognizes, but in an ambi
 - **Unsupported anchors**: ranges (`~{-1-2d}`), seconds (`~{-1min30}`, `~{-5'}`), or proportional anchors (`reason: "anchorRatio"`).
 - **Proportional timer limits**: multipliers (`~{15 min / 500 g @&roast * 2}`, `reason: "ratioMultiplication"`) or ranged targets (`~{15 min / 1-2 kg @&roast}`, `reason: "ratioShape"`).
 
-**Fix**: follow the suggested format in `.message` (e.g. `~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). Unknown units after a number still raise `INVALID_UNIT`, and bare numbers raise `MISSING_UNIT`.
+**Fix**: follow the suggested format in `.message` (e.g. `~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). <Since v="1.6.0" /> For Cooklang's separator (`~{15%min}`), `data.suggestion` holds the duration Gram reads once the `%` is a space (`15 min`), which the language server's quick fix writes in the braces. Unknown units after a number still raise `INVALID_UNIT`, and bare numbers raise `MISSING_UNIT`.
 
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`->&name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.

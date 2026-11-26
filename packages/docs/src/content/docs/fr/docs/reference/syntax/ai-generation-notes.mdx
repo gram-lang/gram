@@ -59,8 +59,9 @@ Un `@ingrédient` ou `#matériel` composé de plusieurs mots requiert obligatoir
 ```gram
 ❌  #poêle{20cm}      →   ✅  #poêle(20cm)
 ❌  #bol{grand}       →   ✅  #bol(grand)
+❌  #four{180°C}      →   ✅  ^four{180°C}
 ```
-Les accolades du `#matériel` n'acceptent que des nombres entiers. Dimensions, matériaux et descriptions vont toujours entre parenthèses — voir [Matériel](/fr/docs/reference/syntax/cookware).
+Les accolades du `#matériel` n'acceptent que des nombres entiers. Dimensions, matériaux et descriptions vont toujours entre parenthèses — voir [Matériel](/fr/docs/reference/syntax/cookware). Une température s'écrit à part, en [température](/fr/docs/reference/syntax/temperatures) : `^` suivi du nom de l'appareil. Depuis la 1.6.0, l'erreur de lecture de `#four{180°C}` le dit.
 
 ### Texte libre là où un nombre est requis
 
@@ -72,6 +73,15 @@ Les accolades du `#matériel` n'acceptent que des nombres entiers. Dimensions, m
 ❌  ~{1,30 h}              →   ✅  ~{1h30}
 ```
 Les quantités et les minuteurs ont besoin d'un vrai nombre (ou d'accolades vides quand aucune quantité n'est donnée) ; les préfixes flous comme « environ » déclenchent des avertissements du compilateur (`INVALID_UNIT` / `INVALID_DURATION`), et le texte libre dans un minuteur fait perdre la durée calculée pour l'ordonnancement. Gram n'a pas de séparateur des milliers : `{1,000 g}` est lu comme `1 g` et lève `AMBIGUOUS_NUMBER`. De même, une décimale dans un minuteur reste une fraction de l'unité (`~{1,30 h}` vaut 1 h 18 min) : écrivez `~{1h30}` pour une heure et demie.
+
+### Le `%` de Cooklang entre le nombre et l'unité
+<Since v="1.6.0" />
+
+```gram
+❌  @farine{200%g}      →   ✅  @farine{200 g}
+❌  ~{15%minutes}       →   ✅  ~{15 minutes}
+```
+Cooklang sépare le nombre de l'unité par un `%`, Gram par une espace. Sur un ingrédient, `%g` passerait pour une unité inconnue, sans masse. Gram signale désormais les deux cas (`INVALID_UNIT`, `INVALID_DURATION`) et propose la forme corrigée : `gram check` les repère dans une recette générée.
 
 ### Un espace entre les accolades et la préparation
 
@@ -136,7 +146,7 @@ Lorsque la source formule une règle proportionnelle (« pour 100 g », « par l
 ❌  Étaler la @&pâte.                          // @& suppose un ingrédient de la liste de courses
 ✅  Étaler la &pâte.                           // & = référence à la variable intermédiaire déclarée
 ```
-Voir [Variables Intermédiaires](/fr/docs/reference/syntax/intermediate-variables) pour la distinction complète. Plus généralement, dès qu'une étape transforme un ingrédient en un nouveau produit référencé par son nom dans les étapes suivantes (« le poulet assaisonné », « la pâte »), le déclarer avec `->&nom` élimine cette ambiguïté.
+Voir [Variables Intermédiaires](/fr/docs/reference/syntax/intermediate-variables) pour la distinction complète. Depuis la 1.6.0, Gram signale la première erreur (`REFERENCE_TO_INGREDIENT`) quand l'ingrédient brut a été écrit plus haut : `gram check` la repère dans une recette générée. Sans aucun ingrédient de ce nom, `&poulet` lève `UNDEFINED_REFERENCE`. Plus généralement, dès qu'une étape transforme un ingrédient en un nouveau produit référencé par son nom dans les étapes suivantes (« le poulet assaisonné », « la pâte »), le déclarer avec `->&nom` élimine cette ambiguïté.
 
 ### Des étapes autonomes qui ne font que préparer un ingrédient
 

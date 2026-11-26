@@ -25,7 +25,7 @@ interface Warning {
 
 `compile()` les retourne dans le tableau `CompilationResult.warnings`. De son côté, `analyze()` les propage (et en ajoute potentiellement de nouveaux) dans `AnalyzedCompilationResult.warnings`. Ce ne sont jamais de simples chaînes de caractères : le champ `.message` est toujours garanti.
 
-<Since v="1.5.0" /> Certains codes fournissent aussi un champ `data` structuré permettant aux outils et aux correctifs rapides du serveur de langage d'agir sans analyser `.message`. Seuls `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, depuis la 1.5.2), `DEPRECATED_FRONTMATTER_KEY` (`{ key, suggestion, specifier? }`, depuis la 1.6.0) et `INVALID_UNIT` sur un ingrédient (`{ reason, suggestion? }`) renseignent `data`.
+<Since v="1.5.0" /> Certains codes fournissent aussi un champ `data` structuré permettant aux outils et aux correctifs rapides du serveur de langage d'agir sans analyser `.message`. Seuls `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, depuis la 1.5.2), `DEPRECATED_FRONTMATTER_KEY` (`{ key, suggestion, specifier? }`, depuis la 1.6.0), `REFERENCE_TO_INGREDIENT` (`{ suggestion }`, depuis la 1.6.0), `INVALID_DURATION` sur un minuteur (`{ suggestion }` quand Gram sait quoi proposer, depuis la 1.6.0) et `INVALID_UNIT` sur un ingrédient (`{ reason, suggestion? }`) renseignent `data`.
 
 ## Sévérité & `--strict`
 
@@ -72,14 +72,20 @@ La quantité relative d'un ingrédient se cible elle-même (`@farine{50% of @far
 ### `UNDEFINED_REFERENCE`
 Une référence pure (`&nom`) ou un ingrédient référençable (`@&nom`) pointe vers un élément qui n'a jamais été enregistré en amont de la recette. **Correction** : introduisez l'ingrédient (sans `&`) avant de le référencer, ou corrigez la faute de frappe.
 
+### `REFERENCE_TO_INGREDIENT`
+<Since v="1.6.0" />
+
+Une référence (`&farine`) désigne un ingrédient brut déjà écrit (`@farine{500 g}`) et non une préparation : `&` renvoie à ce qu'une étape ou une section produit (`->&pâte`), `@&` à une nouvelle mention d'un ingrédient. La recette compile comme avant. **Correction** : écrivez `@&farine` ; `data.suggestion` le contient, et la correction rapide du serveur de langage ajoute le `@`. Une préparation qui porte le nom d'un ingrédient (`Dorer le @poulet{1} ->&poulet.` puis `&poulet`), ou un nom importé par `@use … as &nom`, ne déclenche rien.
+
 ### `MISSING_UNIT`
 Un `Timer` (minuteur) ou une `Temperature` a été écrit sans unité explicite (ex. `~{10}` au lieu de `~{10 min}`). **Correction** : ajoutez l'unité manquante.
 
 ### `INVALID_UNIT`
-Émis dans trois cas :
+Émis dans quatre cas :
 - **Unités de temps ou de température** : le mot qui suit un nombre dans un `Timer` ou une ancre de section n'est pas une unité de temps reconnue (`~{3 bananes}`), ou une `Temperature` utilise une unité autre que Celsius ou Fahrenheit. **Correction** : utilisez une unité de temps reconnue (`h`, `min`, `heures`, `hr`…), et `°C` ou `°F` pour les températures.
 - **Quantités juxtaposées sans opérateur** <Since v="1.5.0" type="changed" /> : l'unité d'un ingrédient juxtapose deux quantités sans opérateur (`@farine{1 cup 5 tbsp}` ou `@farine{1 kg 200 g}`), sans quoi `cup 5 tbsp` passerait pour une seule unité inconnue sans masse. **Correction** : écrivez une [somme de quantités](/fr/docs/reference/syntax/ingredients/#sommes-de-quantités) (`@farine{1 kg + 200 g}`) ; `data.suggestion` fournit la forme corrigée pour les actions rapides de l'éditeur. Les mentions descriptives comme `@tomates{1 boîte de 400 g}` restent valides.
 - **Mot avant le nombre** : une unité commence par un mot qui précède la quantité (`@farine{environ 200g}`), alors que toute quantité doit débuter par son nombre. **Correction** : écrivez `@farine{200g}` et laissez « environ » dans la phrase. Les quantités textuelles sans nombre (`{une pincée}`, `{au goût}`) sont acceptées.
+- **Séparateur de Cooklang** <Since v="1.6.0" /> : un `%` entre le nombre et une unité de masse ou de volume (`@farine{200%g}`, `reason: "cooklangSeparator"`), qui passerait sinon pour une unité inconnue `%g`, sans masse. **Correction** : écrivez `@farine{200 g}` ; `data.suggestion` donne l'unité (`g`) et la correction rapide du serveur de langage remplace le `%` par une espace. Un `%` devant un autre mot (`{70 % cacao}`) ne déclenche rien.
 
 ### `INVALID_QUANTITY`
 <Since v="1.5.0" />
@@ -128,7 +134,7 @@ Un minuteur ou une ancre de section emploie des nombres et unités connus de Gra
 - **Ancres non prises en charge** : fourchettes (`~{-1-2j}`), secondes (`~{-1min30}`, `~{-5'}`) ou ancres proportionnelles (`reason: "anchorRatio"`).
 - **Limites des temps proportionnels** : multiplicateurs (`~{15 min / 500 g @&rôti * 2}`, `reason: "ratioMultiplication"`) ou cibles en fourchette (`~{15 min / 1-2 kg @&rôti}`, `reason: "ratioShape"`).
 
-**Correction** : suivez l'écriture suggérée dans `.message` (`~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). Un mot inconnu après un nombre lève toujours `INVALID_UNIT`, et un nombre seul `MISSING_UNIT`.
+**Correction** : suivez l'écriture suggérée dans `.message` (`~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). <Since v="1.6.0" /> Pour le séparateur de Cooklang (`~{15%min}`), `data.suggestion` donne la durée que Gram lit une fois le `%` remplacé par une espace (`15 min`), et la correction rapide du serveur de langage l'écrit entre les accolades. Un mot inconnu après un nombre lève toujours `INVALID_UNIT`, et un nombre seul `MISSING_UNIT`.
 
 ### `SCOPE_CONFLICT`
 Deux sections déclarent un même nom de variable (`->&nom`). Les noms de variables doivent être uniques à l'échelle de toute la recette, pas juste de la section. **Correction** : renommez l'une des deux variables.

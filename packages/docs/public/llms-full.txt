@@ -170,26 +170,45 @@ A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata
 
 The frontmatter is a **YAML** block at the very start of the file, enclosed by `---`.
 
-The Gram parser accepts **any** key-value pair in this block. You can add custom fields for your own application's needs. However, the Gram Compiler recognizes two types of keys: **Functional** and **Informational**.
+:::caution[Flat lines only]
+It looks like YAML, but Gram only reads flat `key: value` lines (blank lines are fine), with lists written inline (`tags: ['brownie', 'matcha']`). A comment line (`# …`) or an indented line makes the whole block unreadable: it is then read as a step of text, with no metadata. A `#` at the end of a line is part of the value.
+:::
+
+The Gram parser accepts **any** key-value pair in this block: a key Gram does not know is your own metadata, shown as is in the recipe's byline. The keys below are Gram's own. **Functional** keys change what the compiler, the analyzer or the views compute; **informational** keys are shown, never computed with.
+
+| Key | Role | Value | Meaning | Example |
+| --- | --- | --- | --- | --- |
+| `portions` | Functional | Number | The number of portions: the base of scaling and of the nutrition per portion. A label after the number (`4 servings`) is tolerated. | `portions: 4` |
+| `densities` | Functional | Inline list of name:value | Density overrides (g/mL) for this recipe's ingredients, as name:value pairs. | `densities: [flour:0.55, milk:1.03]` |
+| `language` | Functional | BCP 47 tag | The language the recipe is written in, as a BCP 47 tag (en, fr, fr-CA…): the editor reads its units and writes its preview in it. | `language: fr` |
+| `title` | Informational | Text | The name of the recipe. | `title: 'Matcha brownies'` |
+| `description` | Informational | Text | A short summary of the recipe, also used as the page's description. | `description: 'A soft, Japanese-style brownie'` |
+| `tags` | Informational | Inline list | Keywords to sort and find the recipe. | `tags: ['brownie', 'matcha']` |
+| `category` | Informational | Text | The main category of the recipe (dessert, main course…). | `category: 'Dessert'` |
+| `author` | Informational | Inline list | Who wrote the recipe: one name or a list. | `author: ['Auguste Kerflec']` |
+| `source` | Informational | Inline list | Where the recipe comes from: one URL or a list. | `source: ['https://example.com/matcha-brownie']` |
+| `date` | Informational | Date | When the recipe was written (YYYY-MM-DD). | `date: 2026-06-07` |
+| `lastUpdated` | Informational | Date | When the recipe was last changed (YYYY-MM-DD). | `lastUpdated: 2026-11-26` |
+| `makes` | Informational | Text | What the recipe makes, in words: "24 cookies", "1 layer cake", "20x20 cm mold". | `makes: '20x20 cm mold'` |
+| `notes` | Informational | Text | General notes about the recipe. | `notes: 'Less sugar next time.'` |
 
 ### Functional keys
-These keys directly alter how the Gram Compiler processes the recipe:
 
-*   `portions`: (Integer) The baseline number of portions. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
-*   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
+*   `portions`: The baseline number of portions. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
+*   `densities`: Custom density overrides (g/mL) for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm. Write them as `name:value` pairs in an inline list: `densities: [flour:0.55, milk:1.03]`.
+*   `language`: The language the recipe is written in, as a [BCP 47](https://www.rfc-editor.org/info/bcp47) tag (see below).
 
-### Informational keys
-These keys are recommended for proper display and metadata management:
+### Recipe language (`language`)
+*(since v1.6.0)*
 
-*   `title`: The recipe name.
-*   `description`: A short summary (useful for SEO meta tags).
-*   `tags`: A list of categories or keywords.
-*   `category`: Main category (e.g. "Dessert", "Main Course").
-*   `author`: Name or list of authors.
-*   `source`: URL(s) to the original recipe.
-*   `date`, `lastUpdated`: YYYY-MM-DD.
-*   `makes`: The physical output or dimensions of the recipe (e.g., "1 layer cake", "24 cookies", "20x20cm mold").
-*   `notes`: General notes about the recipe (e.g. "Tested on 2026-06-07. Decrease sugar next time.").
+`language: fr` (or `en`, `fr-CA`, `pt-BR`…) says which language the recipe is written in. In the editor, Gram reads the unit words of that language when it scales the recipe by an ingredient, and writes the preview and the hints in it; the printed recipe carries it as the page's `lang`. It is the language of the recipe, not of your editor: a French recipe opened in an English editor keeps its French units and preview. `gram view` and the playground do not read it yet, and keep their own language (`--lang`, the language of the site).
+
+### Deprecated keys
+*(since v1.6.0)*
+
+:::caution[Deprecated: `servings`, `yield` and `yields`]
+`servings`, `yield` and `yields` are deprecated since 1.6.0 and will be removed in 2.0.0. Only the HTML recipe ever read them: they were shown, but ignored by scaling and the nutrition per portion. Write `portions` instead of `servings`, and `makes` instead of `yield` or `yields`. Until 2.0.0 they keep working, and the compiler raises a [`DEPRECATED_FRONTMATTER_KEY`](/docs/reference/api/warnings) warning (which fails `gram check --strict`); in an imported module, it shows on the `@use` line that imports it. When a key and its replacement are both written, the replacement wins.
+:::
 
 <CodeTabs>
 ```gram title="recipe.gram"
@@ -202,10 +221,8 @@ category: 'Dessert'
 source: ['https://example.com/matcha-brownie']
 makes: '20x20cm mold'
 
-# Functional Fields
 portions: 4
-densities:
-  - flour: 0.55
+densities: [flour:0.55, milk:1.03]
 ---
 ```
 </CodeTabs>
@@ -2040,8 +2057,9 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ```gram
 ❌  #pan{20cm}      →   ✅  #pan(20cm)
 ❌  #bowl{large}    →   ✅  #bowl(large)
+❌  #oven{180°C}    →   ✅  ^oven{180°C}
 ```
-`#cookware` braces accept integer counts only. Dimensions, materials, and descriptions always go in parentheses — see [Cookware](/docs/reference/syntax/cookware).
+`#cookware` braces accept integer counts only. Dimensions, materials, and descriptions always go in parentheses — see [Cookware](/docs/reference/syntax/cookware). A temperature is a [temperature](/docs/reference/syntax/temperatures) of its own, `^` followed by the appliance's name; since 1.6.0, the parse error of `#oven{180°C}` says so.
 
 ### Free text where a number is required
 
@@ -2053,6 +2071,15 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ❌  ~{1.30 h}              →   ✅  ~{1h30}
 ```
 Quantities and timers need a real number (or empty braces when no quantity is given); fuzzy prefixes like `about` trigger compiler warnings (`INVALID_UNIT` / `INVALID_DURATION`), and free text in a timer loses its duration for scheduling. Gram has no thousands separator: `{1,000 g}` parses as `1 g` and triggers `AMBIGUOUS_NUMBER`. Similarly, decimals in timers are fractions of the unit (`~{1.30 h}` means 1 h 18 min), so write `~{1h30}` for an hour and a half.
+
+### Cooklang's `%` between a number and its unit
+*(since v1.6.0)*
+
+```gram
+❌  @flour{200%g}       →   ✅  @flour{200 g}
+❌  ~{15%minutes}       →   ✅  ~{15 minutes}
+```
+Cooklang separates a number from its unit with `%`; Gram uses a space. On an ingredient, `%g` would read as an unknown unit with no mass. Gram now warns about both (`INVALID_UNIT`, `INVALID_DURATION`) and suggests the corrected form, so `gram check` catches it in a generated recipe.
 
 ### Space between braces and preparations
 
@@ -2117,7 +2144,7 @@ When the source states a proportional rule ("per 100 g", "per liter", "per piece
 ❌  Roll out the @&dough.              // @& implies a shopping-list ingredient
 ✅  Roll out the &dough.               // & = reference to the declared intermediate
 ```
-See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for the full distinction. More generally, whenever a step transforms an ingredient into a new product referenced by name in later steps ("the seasoned chicken", "the dough"), declaring it with `->&name` avoids this ambiguity entirely.
+See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for the full distinction. Since 1.6.0, Gram warns about the first mistake (`REFERENCE_TO_INGREDIENT`) when the raw ingredient was written earlier, so `gram check` catches it in a generated recipe; with no ingredient of that name at all, `&chicken` is an `UNDEFINED_REFERENCE`. More generally, whenever a step transforms an ingredient into a new product referenced by name in later steps ("the seasoned chicken", "the dough"), declaring it with `->&name` avoids this ambiguity entirely.
 
 ### Standalone steps that only prepare an ingredient
 
@@ -2696,7 +2723,7 @@ interface Warning {
 
 `compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
 
-*(since v1.5.0)* Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, since 1.5.2), and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
+*(since v1.5.0)* Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, since 1.5.2), `DEPRECATED_FRONTMATTER_KEY` (`{ key, suggestion, specifier? }`, since 1.6.0), `REFERENCE_TO_INGREDIENT` (`{ suggestion }`, since 1.6.0), a timer's `INVALID_DURATION` (`{ suggestion }` when Gram can tell, since 1.6.0) and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
 
 ## Severity & `--strict`
 
@@ -2706,6 +2733,13 @@ const warningSeverity: Record<WarningCode, WarningSeverity>;
 ```
 
 Structural integrity issues — a reference to something that doesn't exist, a naming collision, or an unresolvable module — are `error`. Recoverable gaps (estimation gaps, incomplete annotations) are `warning`, and contextual notifications (surplus quantities, batch scaling, resource contention) are `info`. This is exactly the distinction the CLI's `gram check --strict` flag uses: without `--strict`, only `error`-severity codes fail the command; with it, every `warning` and `info` is promoted to `error` too. Build your own strict-mode logic on `warningSeverity[code]` the same way.
+
+*(since v1.6.0)* `warningInfo` holds the same severity with what else a tool needs to know of a code: `deprecated: true` marks a code that flags a deprecated form (`DEPRECATED_FRONTMATTER_KEY`), which the language server shows struck through. `warningInfoOf(code)`, exported by `@gram-lang/modules`, reads it for any code, module codes included.
+
+```typescript
+interface WarningCodeInfo { severity: WarningSeverity; deprecated?: true }
+const warningInfo: Record<WarningCode, WarningCodeInfo>;
+```
 
 ## Codes
 
@@ -2733,10 +2767,12 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `PASSIVE_OVERLAP_SAME_COOKWARE` | info | `Two passive timers overlap and both use #{cookware}: {item} and {other}. If one is meant to follow the other, give them the same named track, for example ~_{cookware}{…}, so they take turns.` |
 | `DURATION_OUT_OF_RANGE` | warning | `Timer "{item}" is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.` |
 | `AMBIGUOUS_NUMBER` | warning | `"{value}" on "{item}" was read as {read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write {suggestion} if that is the number you meant.` |
-| `INVALID_DURATION` | warning | `Timer duration "{value}" on "{item}" is not read: {reason} It is not counted in the total time.` |
+| `INVALID_DURATION` | warning | `Timer duration "{value}" on "{item}" is not read: {reason} Did you mean ~{{suggestion}}? It is not counted in the total time.` |
 | `INVALID_QUANTITY` | warning | `Quantity "{value}" of "{item}" is not read: {reason} Did you mean {{suggestion}}? It is not counted in the shopping list or the nutrition.` |
 | `OZ_AFTER_VOLUME` | info | `"{value}" of "{item}" is a weight: oz weighs, {suggestion} measures a volume. Write {suggestion} if a volume is meant.` |
 | `SPACED_COMPOSITE` | warning | `"{item}" and "{parent}" are read as two separate ingredients: a composite takes "<" with no space around it. Write {suggestion} right after "{item}" if "{item}" comes from "{parent}"; as written, both are counted in the shopping list.` |
+| `DEPRECATED_FRONTMATTER_KEY` | warning | `Frontmatter key "{key}" of module "{specifier}" is deprecated and will be removed in 2.0.0: write "{suggestion}" in that module instead.` |
+| `REFERENCE_TO_INGREDIENT` | warning | `"&{name}" refers to an intermediate, but "{name}" is a raw ingredient: write {suggestion} to mention it again.` |
 | `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
 | `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
 | `MODULE_CYCLE` | error | `Circular module import detected: {chain}.` |
@@ -2781,14 +2817,20 @@ An ingredient's relative quantity targets itself (`@flour{50% of @flour}`). **Fi
 ### `UNDEFINED_REFERENCE`
 A bare reference (`&name`) or a referenceable ingredient (`@&name`) points to something that was never registered earlier in the recipe. **Fix**: introduce the ingredient (without `&`) before referencing it, or check for a typo.
 
+### `REFERENCE_TO_INGREDIENT`
+*(since v1.6.0)*
+
+A reference (`&flour`) names a raw ingredient written earlier (`@flour{500 g}`), not an intermediate: `&` is for what a step or a section produces (`->&dough`), `@&` for a later mention of an ingredient. The recipe compiles as before. **Fix**: write `@&flour`; `data.suggestion` holds it, and the language server's quick fix adds the `@`. An intermediate that shares an ingredient's name (`Brown @chicken{1} ->&chicken.` then `&chicken`), or a `@use … as &name` binding, raises nothing.
+
 ### `MISSING_UNIT`
 A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` instead of `~{10 min}`). **Fix**: add an explicit unit.
 
 ### `INVALID_UNIT`
-Emitted in three situations:
+Emitted in four situations:
 - **Time or temperature units**: a word after a number in a `Timer` or section anchor is not a recognized time unit (`~{3 bananas}`), or a `Temperature` uses a unit other than Celsius or Fahrenheit. **Fix**: use a recognized time unit (`h`, `hr`, `min`, `heures`…), or `°C` / `°F` for temperatures.
 - **Unjoined quantities in a unit** *(since v1.5.0)*: an ingredient's unit looks like two quantities without an operator (`@flour{1 cup 5 tbsp}` or `@flour{1 kg 200 g}`), where `cup 5 tbsp` would otherwise be treated as one unknown unit with no mass. **Fix**: write it as a [sum](/docs/reference/syntax/ingredients/#sums-of-quantities) (`@flour{1 cup + 5 tbsp}`); `data.suggestion` provides the corrected unit (`cup + 5 tbsp`) for editor quick fixes. Descriptive unit text like `@tomatoes{1 tin of 400 g}` is unaffected.
 - **Leading prose before a number**: a unit hides a leading word before the number (`@flour{about 200g}`), since quantities must start with a number. **Fix**: write `@flour{200g}` and keep `"about"` in the prose. Pure text quantities (`{a pinch}`, `{to taste}`) raise nothing.
+- **Cooklang's separator** *(since v1.6.0)*: a `%` between the number and a unit of mass or volume (`@flour{200%g}`, `reason: "cooklangSeparator"`), which would otherwise read as an unknown unit `%g` with no mass. **Fix**: write `@flour{200 g}`; `data.suggestion` holds the unit (`g`) and the language server's quick fix puts a space in place of the `%`. A `%` before any other word (`{70 % cacao}`) is left alone.
 
 ### `INVALID_QUANTITY`
 *(since v1.5.0)*
@@ -2837,7 +2879,7 @@ A timer or section anchor uses numbers and units Gram recognizes, but in an ambi
 - **Unsupported anchors**: ranges (`~{-1-2d}`), seconds (`~{-1min30}`, `~{-5'}`), or proportional anchors (`reason: "anchorRatio"`).
 - **Proportional timer limits**: multipliers (`~{15 min / 500 g @&roast * 2}`, `reason: "ratioMultiplication"`) or ranged targets (`~{15 min / 1-2 kg @&roast}`, `reason: "ratioShape"`).
 
-**Fix**: follow the suggested format in `.message` (e.g. `~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). Unknown units after a number still raise `INVALID_UNIT`, and bare numbers raise `MISSING_UNIT`.
+**Fix**: follow the suggested format in `.message` (e.g. `~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). *(since v1.6.0)* For Cooklang's separator (`~{15%min}`), `data.suggestion` holds the duration Gram reads once the `%` is a space (`15 min`), which the language server's quick fix writes in the braces. Unknown units after a number still raise `INVALID_UNIT`, and bare numbers raise `MISSING_UNIT`.
 
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`->&name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
