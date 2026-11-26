@@ -47,7 +47,7 @@ See the [language server reference](https://gram-lang.org/docs/reference/tooling
 ## 🏗️ Capabilities
 
 The Gram Language Server currently supports:
-*   **Diagnostics:** Real-time syntax and semantic validation (including compound quantities, unit ratios, durations, and target states).
+*   **Diagnostics:** Real-time syntax and semantic validation (including compound quantities, unit ratios, durations, and target states), read from `@gram-lang/modules/lint`. Each diagnostic links to its code's documentation; a project turns a check off or changes its severity under `lint.rules` in `.gram/config.yaml`, or silences it for one step with a `// gram-ignore CODE` line.
 *   **Semantic Tokens:** Rich semantic highlighting for ingredients, quantities, cookware, timers, temperatures, and target states (`={...}`).
 *   **Hover:** Nutritional information, scaled quantities, duration breakdowns, and unit-ratio details on hover; on a frontmatter key, what it means (in the editor's language) and, for a deprecated key, its replacement.
 *   **Completion:** Suggestions for units (including ratio denominators), ingredients (from the user's local ingredient DB), `@use` import paths and exports (`as &…`, `as { &… }`), the frontmatter keys not written yet (never a deprecated one), and the cookware, temperatures, timers and tracks the recipe already names after `#`, `^`, `~` and `~_`.

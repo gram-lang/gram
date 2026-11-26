@@ -4,7 +4,10 @@ import {
 	type Position,
 } from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
-import { collectIngredients, collectIntermediates } from "../utils/ast-walker";
+import {
+	collectIngredients,
+	collectIntermediates,
+} from "@gram-lang/modules/lint";
 import type { IngredientDB } from "../ingredient-loader";
 import { isInsideBraces, provideUnitCompletions } from "./completions-units";
 import {

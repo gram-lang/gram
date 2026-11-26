@@ -4,7 +4,7 @@ import {
 	collectIntermediates,
 	collectReferences,
 	collectIngredients,
-} from "../src/utils/ast-walker";
+} from "../../src/lint/ast-walker";
 
 // Regression tests for the audit (2026-07-22, parser finding I3): these
 // walkers assumed every top-level `RecipeAST.children` entry was a

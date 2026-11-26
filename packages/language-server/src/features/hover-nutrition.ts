@@ -6,7 +6,7 @@ import {
 } from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
 import { positionToOffset } from "../utils/position";
-import { collectIngredients } from "../utils/ast-walker";
+import { collectIngredients } from "@gram-lang/modules/lint";
 import { compiledRatios } from "../utils/ratios";
 import type { IngredientDB, IngredientEntry } from "../ingredient-loader";
 import { formatTerms, normalizeUnit, termsTotal } from "@gram-lang/i18n";

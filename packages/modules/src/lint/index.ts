@@ -13,3 +13,50 @@ export {
 	unquantifiedFrom,
 	type WrittenIngredient,
 } from "./gram-tokens";
+export type {
+	FileEdit,
+	LintDiagnostic,
+	LintFix,
+	LintRelated,
+	LintSeverity,
+	TextPatch,
+} from "./types";
+export {
+	allDiagnosticInfo,
+	DIAGNOSTICS_DOC_BASE,
+	type DiagnosticInfo,
+	diagnosticInfoOf,
+	docUrlOf,
+	LINT_RULES,
+	type LintRuleCode,
+	type LintRuleInfo,
+} from "./registry";
+export {
+	type LintConfig,
+	type LintRuleSetting,
+	parseLintConfig,
+} from "./config";
+export {
+	EDITOR_HIDDEN_CODES,
+	type LintInput,
+	lintDocument,
+} from "./lint-document";
+export type { LintIngredientDB } from "./rules";
+export {
+	collectIngredients,
+	collectIntermediates,
+	collectReferences,
+	collectRelativeTargets,
+	collectTimers,
+	findNameAtOffset,
+	getStepSourceText,
+	type IntermediateDeclWithSection,
+	type RelativeTarget,
+} from "./ast-walker";
+export {
+	type FrontmatterBlock,
+	type FrontmatterKeyLine,
+	frontmatterKeyAt,
+	isFrontmatterLine,
+	scanFrontmatter,
+} from "./frontmatter-text";

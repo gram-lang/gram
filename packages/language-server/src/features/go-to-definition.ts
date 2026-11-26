@@ -6,7 +6,10 @@ import {
 	locToRange,
 	positionToOffset,
 } from "../utils/position";
-import { collectIntermediates, findNameAtOffset } from "../utils/ast-walker";
+import {
+	collectIntermediates,
+	findNameAtOffset,
+} from "@gram-lang/modules/lint";
 
 /**
  * `&name` resolves to an `@use ... as &name` binding, not a local

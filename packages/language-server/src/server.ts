@@ -27,6 +27,7 @@ import { LatestRefresh } from "./utils/latest-refresh";
 import { affectedOpenImporters } from "./utils/module-invalidation";
 import { provideDocumentSymbols } from "./features/document-symbols";
 import { provideDiagnostics } from "./features/diagnostics";
+import type { LintConfig } from "@gram-lang/modules/lint";
 import { provideDefinition } from "./features/go-to-definition";
 import { provideHover } from "./features/hover";
 import { provideFoldingRanges } from "./features/folding-ranges";
@@ -139,6 +140,16 @@ function projectContextOf(uri: string) {
 		projectContextCache.set(dir, ctx);
 	}
 	return ctx;
+}
+
+/** The project's `lint:` settings for `uri` (none outside a file, or when unreadable). */
+function lintConfigOf(uri: string): LintConfig | undefined {
+	if (!uri.startsWith("file:")) return undefined;
+	try {
+		return projectContextOf(uri).lint;
+	} catch {
+		return undefined;
+	}
 }
 
 /**
@@ -288,7 +299,8 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 		},
 		workspaceFolders,
 		states,
-		computeDiagnostics: provideDiagnostics,
+		computeDiagnostics: (state, uri, db) =>
+			provideDiagnostics(state, uri, db, lintConfigOf(uri)),
 		onWarn: (message) => connection.console.warn(message),
 		onError: (message) => connection.console.error(message),
 	});
@@ -377,9 +389,9 @@ connection.onInitialized(async () => {
 				invalidateDependents(change.uri);
 			} else if (change.uri.endsWith(".gram/config.yaml")) {
 				// The project's settings changed: its `paths:` aliases (the graph),
-				// `timezone`, `availability` and `clock` (the views). Every cached project
-				// context is dropped and every open document refreshed now, rather
-				// than at its next edit.
+				// `timezone`, `availability` and `clock` (the views), `lint` (the
+				// diagnostics). Every cached project context is dropped and every open
+				// document refreshed now, rather than at its next edit.
 				configChanged = true;
 			} else {
 				dbChanged = true;
@@ -425,7 +437,12 @@ async function refresh(
 	states.set(uri, state);
 	connection.sendDiagnostics({
 		uri,
-		diagnostics: provideDiagnostics(state, uri, ingredientDB),
+		diagnostics: provideDiagnostics(
+			state,
+			uri,
+			ingredientDB,
+			lintConfigOf(uri),
+		),
 	});
 
 	// The session's scale or stock change what is compiled: the views get a
@@ -840,7 +857,14 @@ connection.onDocumentFormatting(({ textDocument: { uri } }) => {
 connection.onCodeAction(({ textDocument: { uri }, range, context }) => {
 	const s = getFreshState(uri);
 	return s
-		? provideCodeActions(s, range, context.diagnostics, uri, ingredientDB)
+		? provideCodeActions(
+				s,
+				range,
+				context.diagnostics,
+				uri,
+				ingredientDB,
+				lintConfigOf(uri),
+			)
 		: [];
 });
 

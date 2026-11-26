@@ -3,7 +3,7 @@ import { getDictionary } from "@gram-lang/i18n";
 import { frontmatterKey } from "@gram-lang/kitchen";
 import type { DocumentState } from "../document-state";
 import { offsetToPosition, positionToOffset } from "../utils/position";
-import { frontmatterKeyAt, scanFrontmatter } from "../utils/frontmatter-text";
+import { frontmatterKeyAt, scanFrontmatter } from "@gram-lang/modules/lint";
 
 /**
  * The hover of a frontmatter key Gram knows: what it means and the kind of

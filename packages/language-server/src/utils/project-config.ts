@@ -8,6 +8,7 @@ import {
 	parseMealTimes,
 } from "@gram-lang/scheduler";
 import { type ClockMode, VIEW_SETTINGS } from "@gram-lang/renderer";
+import { type LintConfig, parseLintConfig } from "@gram-lang/modules/lint";
 import { parse } from "yaml";
 
 /** What the language server reads of a project's `.gram/config.yaml`. */
@@ -22,6 +23,8 @@ export interface ProjectConfig {
 	mealTimes?: string[];
 	/** How the times of day are written, when the editor's `gram.clock` is `auto`. */
 	clock?: ClockMode;
+	/** The `lint:` block: which checks are off, or shown at another severity. */
+	lint?: LintConfig;
 }
 
 /**
@@ -63,6 +66,8 @@ export function readProjectConfigSync(projectRoot: string): ProjectConfig {
 		if (meals?.ok) config.mealTimes = meals.times;
 	}
 	if (VIEW_SETTINGS.clock.accepts(raw.clock)) config.clock = raw.clock;
+	const lint = parseLintConfig(raw);
+	if (Object.keys(lint.rules).length > 0) config.lint = lint;
 	return config;
 }
 

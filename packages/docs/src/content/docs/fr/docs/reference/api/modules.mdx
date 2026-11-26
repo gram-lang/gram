@@ -4,6 +4,7 @@ description: "Référence de l'API de @gram-lang/modules : loadModuleGraph, comp
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 Le package `@gram-lang/modules` est le chef d'orchestre de la modularité dans Gram. Il prend en charge la résolution et la composition des directives d'import `@use` réparties sur plusieurs fichiers pour produire un AST unifié unique avant compilation. 
 
@@ -204,7 +205,69 @@ function pushModuleWarning<K extends ModuleWarningCode>(
 ```
 
 - **`warningSeverityOf(code)`** : Résout la sévérité d'un code (`"error" | "warning" | "info"`) de manière unifiée sur l'ensemble des codes de `@gram-lang/kitchen` et `@gram-lang/modules`.
-- **`allWarningInfo`** : Liste exhaustive des codes de diagnostic, sévérités et modèles de messages prêts pour l'affichage.
+- **`allWarningInfo`** : Liste exhaustive des codes du compilateur, sévérités et modèles de messages prêts pour l'affichage. `allDiagnosticInfo()` (voir [Lint](#lint)) y ajoute ceux du lint.
+
+## Lint
+
+<Since v="1.6.0" /> Le point d'entrée `@gram-lang/modules/lint` réunit les vérifications d'écriture du serveur de langage : un seul appel donne tous les diagnostics d'un document (les avertissements du compilateur et les vérifications propres au lint), avec leur sévérité, un lien vers leur documentation et les correctifs qui s'appliquent. C'est un point d'entrée à part, que `@gram-lang/modules` ne réexporte pas : l'entrée principale reste aussi légère qu'avant.
+
+:::caution[Expérimental]
+Tous les exports de `@gram-lang/modules/lint` sont marqués `@experimental` : leur forme peut encore changer dans une version mineure.
+:::
+
+```typescript
+import { lintDocument, parseLintConfig } from '@gram-lang/modules/lint';
+
+function lintDocument(input: LintInput): LintDiagnostic[];
+
+interface LintInput {
+  uri: string;                 // le document vérifié
+  text: string;
+  ast: RecipeAST | null;       // son propre AST, null s'il ne se lit pas
+  parseError?: { message: string; offset: number | null } | null;
+  compilation?: { warnings?: Warning[] } | null; // compilé ou analysé
+  compileError?: string | null;
+  moduleGraph?: ModuleGraph;   // le graphe de sa composition
+  ingredientDB?: Record<string, IngredientData>; // pour UNKNOWN_INGREDIENT
+  config?: LintConfig;         // parseLintConfig(.gram/config.yaml)
+}
+```
+
+`lintDocument` ne lit rien sur le disque : l'appelant lui passe ce qu'il a déjà lu, composé et compilé. Il ne lève jamais d'exception sur ce que le parser accepte.
+
+```typescript
+interface LintDiagnostic {
+  code: string;
+  severity: "error" | "warning" | "info" | "hint";
+  uri: string;                          // le fichier où il s'affiche
+  loc?: { start: number; end: number }; // absent : en tête de fichier
+  message: string;
+  data?: Record<string, unknown>;       // le data d'un avertissement du compilateur
+  docUrl?: string;                      // sa section de la page des avertissements
+  deprecated?: true;                    // affiché barré
+  related?: { uri: string; loc?: { start: number; end: number }; message: string }[];
+  fixes?: LintFix[];
+}
+
+interface LintFix {
+  title: string;
+  edits: FileEdit[];
+  isPreferred?: boolean; // l'intention ne fait aucun doute
+}
+
+type FileEdit =
+  | { kind: "patch"; uri: string; patches: { start: number; end: number; replacement: string }[] }
+  | { kind: "createFile"; uri: string; content: string };
+```
+
+Les positions se comptent en unités de code UTF-16, comme dans l'AST et en LSP. Un avertissement levé dans une dépendance s'ancre sur la ligne `@use` qui l'importe, sa vraie position partant dans `related`. Un correctif peut modifier un autre fichier que celui vérifié (une réexportation ajoutée à un module, par exemple).
+
+- **`allDiagnosticInfo()`** : tous les codes qu'un diagnostic peut porter, ceux du compilateur puis ceux du lint, avec leur sévérité, leur `origin` (`"compiler"` ou `"lint"`), leur drapeau `deprecated` et la forme de leur message. La table de la [page des avertissements](/fr/docs/reference/api/warnings/) en est générée.
+- **`docUrlOf(code)`** : l'adresse de la section d'un code sur la page des avertissements.
+- **`parseLintConfig(raw)`** : lit le bloc `lint:` d'un `.gram/config.yaml` déjà parsé, en laissant de côté ce qui ne se lit pas ; ne lève jamais. Voir [Configurer le lint](/fr/docs/reference/api/warnings/#configurer-le-lint).
+- **`EDITOR_HIDDEN_CODES`** : les codes du compilateur qu'un éditeur écarte quand ils n'ont pas de position (`MISSING_INGREDIENT`, `MISSING_MACROS`, `UNKNOWN_MASS`).
+- **`findWrittenIngredients(text)`**, **`lostFrom(compiled, written)`** : les `@ingrédient` écrits dans la source, et ceux que la compilation a perdus.
+- Les parcours d'AST qu'utilisent les règles (`collectIngredients`, `collectIntermediates`, `collectReferences`, `collectRelativeTargets`…) et `scanFrontmatter(text)`, qui retrouve les clés du frontmatter dans le texte.
 
 ## Ressources associées
 

@@ -1,7 +1,12 @@
 import { analyze, type IngredientData } from "@gram-lang/analyzer";
 import { formatGram } from "@gram-lang/format";
 import { type CompilationResult, compile } from "@gram-lang/kitchen";
-import { getAST, type RecipeAST } from "@gram-lang/parser";
+import {
+	type LintDiagnostic,
+	type LintInput,
+	lintDocument,
+} from "@gram-lang/modules/lint";
+import { GramParseError, getAST, type RecipeAST } from "@gram-lang/parser";
 
 export type Outcome<T> =
 	| { ok: true; value: T; ms: number }
@@ -59,6 +64,35 @@ export class Prepared {
 
 	get format(): Outcome<Formatted> {
 		return this.#memo("format", () => attempt(() => formatGram(this.source)));
+	}
+
+	/**
+	 * `lintDocument` on the source, as the language server calls it: the AST
+	 * and the analyzed recipe when they exist, the parse error otherwise.
+	 */
+	get lint(): Outcome<LintDiagnostic[]> {
+		return this.#memo("lint", () => {
+			const parsed = this.parse;
+			const analyzed = this.analyze;
+			const parseError =
+				!parsed.ok && parsed.error instanceof GramParseError
+					? { message: parsed.error.message, offset: parsed.error.offset }
+					: null;
+			return attempt(() =>
+				lintDocument({
+					uri: "fuzz.gram",
+					text: this.source,
+					ast: parsed.ok ? parsed.value : null,
+					parseError,
+					compilation: analyzed?.ok
+						? (analyzed.value as { result: LintInput["compilation"] }).result
+						: this.compile?.ok
+							? this.compile.value
+							: null,
+					ingredientDB: this.database,
+				}),
+			);
+		});
 	}
 
 	/** `formatGram` run again on its own output. */

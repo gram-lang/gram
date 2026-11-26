@@ -14,7 +14,7 @@ import {
 } from "@gram-lang/parser";
 import { formatDuration, formatTimerDuration } from "@gram-lang/renderer";
 import type { DocumentState } from "../document-state";
-import { collectTimers } from "../utils/ast-walker";
+import { collectTimers } from "@gram-lang/modules/lint";
 import { compiledRatios, recipeLang } from "../utils/ratios";
 
 const MINUTES_PER_DAY = 24 * 60;

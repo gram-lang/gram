@@ -12,7 +12,7 @@ import {
 	collectIntermediates,
 	collectReferences,
 	collectRelativeTargets,
-} from "../utils/ast-walker";
+} from "@gram-lang/modules/lint";
 
 /** One place a name is written, its sigil left out. */
 interface Occurrence {

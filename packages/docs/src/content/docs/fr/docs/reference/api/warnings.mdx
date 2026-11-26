@@ -136,6 +136,10 @@ Un minuteur ou une ancre de section emploie des nombres et unités connus de Gra
 
 **Correction** : suivez l'écriture suggérée dans `.message` (`~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). <Since v="1.6.0" /> Pour le séparateur de Cooklang (`~{15%min}`), `data.suggestion` donne la durée que Gram lit une fois le `%` remplacé par une espace (`15 min`), et la correction rapide du serveur de langage l'écrit entre les accolades. Un mot inconnu après un nombre lève toujours `INVALID_UNIT`, et un nombre seul `MISSING_UNIT`.
 
+### `DEPRECATED_FRONTMATTER_KEY`
+
+<Since v="1.6.0" /> Le frontmatter utilise une clé dépréciée, retirée en 2.0.0 : `servings` (écrivez `portions`), `yield` ou `yields` (écrivez `makes`). L'avertissement est levé même si la clé à écrire est aussi présente (c'est elle qui l'emporte). Il n'a pas de `loc` (l'AST ne garde pas la position des clés du frontmatter), mais porte `data: { key, suggestion }` : le serveur de langage le barre sur la clé et propose de la renommer, ou de retirer sa ligne si la clé à écrire est déjà là. Levé par un module importé, `data.specifier` le nomme et le diagnostic reste sur sa ligne `@use`. **Correction** : renommez la clé comme l'indique le message. Voir [Fonctionnalités dépréciées](/fr/docs/how-to/deprecations/).
+
 ### `SCOPE_CONFLICT`
 Deux sections déclarent un même nom de variable (`->&nom`). Les noms de variables doivent être uniques à l'échelle de toute la recette, pas juste de la section. **Correction** : renommez l'une des deux variables.
 
@@ -183,6 +187,124 @@ Plusieurs minuteurs passifs partagent la même piste d'équipement matériel (ex
 ### `PASSIVE_OVERLAP_SAME_COOKWARE`
 
 Deux minuteurs passifs se recouvrent dans le temps, dans des étapes qui citent le même ustensile (`#four` dans les deux), sans piste nommée commune. Si l'un doit suivre l'autre, ils sont probablement dans un seul four : le plan les montre côte à côte. **Correction** : donnez-leur la même piste nommée (`~_four{30min}` puis `~_four{20min}`) pour qu'ils passent à tour de rôle ; si les deux tiennent dans le four en même temps, ce n'est qu'une information. Seuls les noms sont comparés (`#four` avec `#four`), donc cela marche quelle que soit la langue de la recette, et le recouvrement est lu sur la chronologie par défaut.
+
+### `MODULE_PARSE_ERROR`
+
+Un module importé par `@use` ne se lit pas : aucune de ses sections ne peut être insérée. Sur le document vérifié lui-même, le message est celui du parser. **Correction** : ouvrez le fichier importé et corrigez l'erreur de syntaxe que cite le message.
+
+### `MODULE_CYCLE`
+
+Deux modules ou plus s'importent l'un l'autre, directement ou par d'autres (`a.gram` importe `b.gram`, qui importe `a.gram`). Le message donne la chaîne complète. **Correction** : placez ce dont ils ont tous deux besoin dans un troisième module, qui n'importe aucun des deux.
+
+### `MODULE_DEPTH_EXCEEDED`
+
+La chaîne d'imports est plus profonde que ce que Gram accepte de suivre. **Correction** : raccourcissez-la en important la base directement depuis la recette qui en a besoin.
+
+### `MODULE_EXPORT_NOT_FOUND`
+
+Une liaison de `@use` demande un nom que le module n'exporte pas (`as &sauce` alors que ses sections exportent `&base`). Seul un `->&nom` posé sur un en-tête de section est exporté : si le nom existe dans le module comme `->&` d'étape, le message précise qu'il n'est pas réexporté, et le serveur de langage propose d'ajouter `->&nom` à l'en-tête de la section qui le déclare, dans le module. Sinon, il suggère l'export le plus proche. **Correction** : utilisez l'un des exports listés, ou exportez le nom depuis le module.
+
+### `UNUSED_IMPORT`
+
+Une liaison de `@use` n'est jamais utilisée dans la recette. **Correction** : utilisez-la (`&nom`) ou retirez-la de la ligne `@use`.
+
+### `UNRESOLVED_MODULE_YIELD`
+
+La recette demande une quantité d'un intermédiaire importé (`&pate{300 g}`), mais le rendement du module ne se pèse pas : l'un de ses ingrédients n'a pas de masse connue. Le module ne peut donc pas être mis à l'échelle de la quantité demandée. **Correction** : donnez une masse à cet ingrédient, ou une densité ou un poids unitaire dans la base d'ingrédients.
+
+### `ESTIMATED_MODULE_YIELD`
+
+Le rendement du module a été pesé avec des densités ou des poids unitaires standards : le facteur d'échelle qui lui est appliqué reste une estimation. **Correction** : écrivez les ingrédients du module en grammes pour un facteur exact, ou acceptez l'estimation.
+
+### `MODULE_UNIT_MISMATCH`
+
+La recette demande un intermédiaire importé dans une unité vers laquelle le rendement du module ne se convertit pas (un volume pour un rendement en grammes, sans densité). **Correction** : demandez-le dans l'unité de son rendement, ou donnez une densité au module.
+
+### `MODULE_BATCH_INTERPRETATION`
+
+Un intermédiaire importé est demandé avec un nombre sans unité (`&pate{2}`) : il est lu comme autant de fournées du module. **Correction** : simple information ; écrivez une unité pour demander une quantité.
+
+### `IMPORTED_BAKERS_REFERENCE_DROPPED`
+
+Le module désigne une base de pourcentage du boulanger (`@*farine`), qui reste propre au module : la recette qui l'importe n'en hérite pas. **Correction** : simple information ; désignez une base dans la recette importatrice si elle en a besoin.
+
+### `DENSITY_OVERRIDE_SHADOWED`
+
+La recette importatrice et le module surchargent tous deux la densité du même ingrédient (`densities:`), avec des valeurs différentes : celle de la recette importatrice l'emporte. **Correction** : simple information ; gardez une seule valeur si l'écart n'est pas voulu.
+
+### `MODULE_SURPLUS`
+
+Plusieurs liaisons d'un même `@use` sont demandées dans des quantités qui ne respectent pas les proportions du module : il est mis à l'échelle pour celle qui en demande le plus, et une autre en sort plus abondante que ce que la recette utilise. Le message donne l'excédent. **Correction** : simple information ; ajustez les quantités si l'excédent n'est pas voulu.
+
+### `MODULE_SPECIFIER_INVALID`
+
+Le chemin d'un `@use` a une forme que Gram ne lit pas : un chemin absolu (`/home/…`, non portable), un chemin `hub:` (pas encore pris en charge), un chemin qui ne commence ni par `./`, ni par `../`, ni par `@…/`, ou qui ne finit pas par `.gram`. Le message en donne la raison. **Correction** : écrivez un chemin relatif, `@/…` depuis la racine du projet, ou `@alias/…` avec un alias déclaré sous `paths:` dans `.gram/config.yaml`.
+
+### `MODULE_SCHEME_UNSUPPORTED`
+
+Le chemin d'un `@use` est une URL (`https://…`, ou tout autre `schéma://`) : les modules se lisent uniquement dans le projet. **Correction** : copiez le module dans le projet et importez-le par son chemin.
+
+### `STOCKED_RETRO_PLANNING_IGNORED`
+
+Un module importé en stock (`--stock`) porte un décalage de rétro-planning (`~{-1d}`) : un élément en stock est déjà prêt, le décalage est donc ignoré. **Correction** : retirez le décalage, ou importez le module sans `--stock` pour planifier sa préparation.
+
+### `RETRO_PLANNING_OVERRIDE_SHADOWED`
+
+La ligne `@use` fixe un décalage de rétro-planning qui remplace celui que le module fixe lui-même. **Correction** : simple information ; gardez-en un seul si l'écart n'est pas voulu.
+
+### `MODULE_BINDING_SHADOWS_INGREDIENT`
+
+Le nom local d'un intermédiaire importé est aussi celui d'un ingrédient de la base (`as &beurre`) : les deux se confondent facilement dans la nutrition et la liste de courses. **Correction** : donnez un autre nom local à la liaison (`as &beurre_noisette`).
+
+### `STOCKED_DESTRUCTURED_NUTRITION_BLENDED`
+
+Un module en stock est importé avec plusieurs liaisons (`as { &a, &b }`) : sa nutrition n'est connue que pour le module entier, chaque liaison reçoit donc son profil moyen. **Correction** : simple information ; découpez le module si chaque partie doit avoir sa propre nutrition.
+
+## Codes de la couche de lint
+
+<Since v="1.6.0" /> Le serveur de langage tire ses diagnostics de `@gram-lang/modules/lint` (expérimental, voir l'[API Modules](/fr/docs/reference/api/modules/#lint)) : on y retrouve les avertissements du compilateur ci-dessus, plus des vérifications propres, faites sur le texte source plutôt que sur la recette compilée. Leur sévérité peut aussi valoir `hint`, qui ne fait jamais échouer un build, même sous `--strict`. Chaque diagnostic renvoie vers sa section de cette page.
+
+### `PARSE_ERROR`
+
+Le document ne se lit pas : le message est celui du parser, à l'endroit où il s'est arrêté. Aucun autre diagnostic n'apparaît tant que l'erreur reste. **Correction** : corrigez la syntaxe à l'endroit indiqué.
+
+### `COMPILE_ERROR`
+
+Le document se lit, mais sa compilation ou son analyse a échoué (une mise à l'échelle impossible, par exemple). Le diagnostic s'affiche en tête de fichier. **Correction** : corrigez ce que nomme le message.
+
+### `MISSING_TITLE`
+
+Le frontmatter n'a pas de `title:` (ou le fichier n'a pas de frontmatter). Les vues se rabattent alors sur un titre générique. Si le fichier ouvre un frontmatter, le serveur de langage propose d'ajouter la clé. **Correction** : ajoutez `title: …` au frontmatter.
+
+### `UNUSED_INTERMEDIATE`
+
+Une étape déclare un intermédiaire (`->&sauce`) qu'aucune étape n'utilise, ni comme référence (`&sauce`), ni comme cible d'une part, d'un ratio ou d'un minuteur proportionnel (`@sel{2% &sauce}`). Celui d'un en-tête de section n'est jamais signalé : c'est ce qu'exporte un module, ou le nom du plat fini. Le serveur de langage propose de le retirer. **Correction** : utilisez-le, ou retirez le `->&`.
+
+### `UNKNOWN_INGREDIENT`
+
+Un ingrédient est introuvable dans la base d'ingrédients, résolu comme le fait la nutrition (son nom, ses alias, le même slug). La vérification n'a lieu que si une base est chargée. Quand un seul nom de la base est le plus proche, le serveur de langage le propose comme correctif préféré ; quand plusieurs le sont autant, il propose le premier, sans le mettre en avant. **Correction** : corrigez l'orthographe, ou ajoutez l'ingrédient à la base (un pluriel se déclare dans ses `aliases`).
+
+## Configurer le lint
+
+<Since v="1.6.0" /> Un projet règle les vérifications de l'éditeur dans `.gram/config.yaml` : un code peut être coupé, ou affiché avec une autre sévérité (`hint`, `info` ou `warning`). Une erreur (`error`) ne se coupe ni ne s'abaisse jamais, pour qu'une recette cassée ne puisse pas passer inaperçue.
+
+```yaml
+lint:
+  rules:
+    UNKNOWN_INGREDIENT: off
+    UNUSED_INTERMEDIATE: hint
+```
+
+Pour un seul bloc, un commentaire `// gram-ignore` sur une ligne à part, suivi d'un ou plusieurs codes, suffit :
+
+```gram
+## Sauce
+
+// gram-ignore UNUSED_INTERMEDIATE
+Faire réduire @bouillon{200 ml}. ->&reduction
+```
+
+Le commentaire vaut pour le bloc qui le suit : une étape entière, sur autant de lignes qu'elle en compte, ou la ligne d'un en-tête de section (pas les étapes qui suivent). Plusieurs lignes `// gram-ignore` d'affilée se cumulent ; un `// gram-ignore` seul, sans code, n'a aucun effet. Les diagnostics hors étape et hors en-tête (frontmatter, lignes `@use`, diagnostics en tête de fichier) n'en acceptent pas, car on ne peut pas y écrire de commentaire sans changer le sens du fichier : ils se règlent dans `.gram/config.yaml`. N'écrivez jamais `// gram-ignore` en fin de ligne d'une étape : à cet endroit, `//` transforme la fin de la ligne en commentaire.
 
 ## Ressources associées
 
