@@ -75,19 +75,19 @@ The file starts with a YAML-like block delimited by --- (see the flat-key rule b
 \`\`\`
 ---
 title: 'Lemon Meringue Pie'
-originalTitle: 'Tarte au Citron Meringuée'   # original language if different (free-form, informational only)
+originalTitle: 'Tarte au Citron Meringuée'
 description: 'A classic French tart with silky lemon curd and toasted meringue.'
-author: 'Auguste Kerflec'                    # or array: ['Name1', 'Name2']
-source: ['https://example.com/recipe']       # always an array
+author: 'Auguste Kerflec'
+source: ['https://example.com/recipe']
 category: 'Dessert'
 tags: ['tart', 'lemon', 'french']
 date: '2025-06-23'
 lastUpdated: '2025-06-23'
 language: 'en'
-makes: '24cm tart tin'                       # yield description or mold dimensions (NOT "size")
-portions: 8                                  # INTEGER — used for scaling and nutrition
+makes: '24cm tart tin'
+portions: 8
 notes: 'Tested June 2025. Reduce sugar by 10g next time.'
-densities: [flour:0.55, water:1.0]           # optional custom density overrides (g/mL)
+densities: [flour:0.55, water:1.0]
 ---
 \`\`\`
 
@@ -96,9 +96,14 @@ Rules:
   block syntax. The only structured value form is an inline array: \`key: [a, b, c]\`.
   \`densities\` MUST use this array form with \`name:value\` entries, e.g. \`[flour:0.55, water:1.0]\`.
   A YAML-style indented list (\`- flour: 0.55\`) does NOT parse — never emit it.
+- The frontmatter has NO comments. A \`# …\` at the end of a line becomes part of the value, and
+  a \`# …\` line (or any indented line) silently empties the whole block — never emit either.
 - String values must be single-quoted when they contain special characters.
-- "portions" is the canonical field for serving count (not "servings").
-- "makes" is the canonical field for yield/mold description (the old field name "size" is obsolete — never emit it).
+- "originalTitle" is the title in the original language, when it differs (free-form, informational only).
+- "author" is a string or an array (\`['Name1', 'Name2']\`); "source" is always an array.
+- "portions" is the canonical field for serving count (not "servings"): an INTEGER, used for scaling and nutrition.
+- "makes" is the canonical field for yield/mold description, e.g. '24cm tart tin' (the old field name "size" is obsolete — never emit it).
+- "densities" is optional: custom density overrides in g/mL.
 - Time fields (prep/active/total in minutes) are NOT part of the frontmatter — they are derived by the compiler from timers.
 - Omit any field for which there is no data. Do not invent values.
 
@@ -730,9 +735,9 @@ makes: '24cm tart tin'
 
 ## Lemon Curd ->&curd
 
-[Cook] In a #saucepan over ^{medium heat}, whisk @lemon juice{1}<@lemon{3}, @lemon zest{1}<@lemon{3}, @sugar{150g}, and @egg white{3}<@egg{3} continuously.
+[Cook] In a #saucepan over ^{medium heat}, whisk @lemon juice{1}<@lemon{3}, @lemon zest{1}<@lemon{3}, @sugar{150g}, and @egg yolk{3}<@egg{3} continuously.
 
-[Thicken] Remove from heat and whisk in @butter{50g} until the curd is glossy and coats a spoon.
+[Thicken] Remove from heat and whisk in @&butter{50g} until the curd is glossy and coats a spoon.
 
 ## Assembly and Meringue
 
