@@ -6,6 +6,9 @@ description: "Référence de la structure d'un fichier .gram : frontmatter YAML,
 import { CodeTabs } from 'starlight-theme-nova/components';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../../components/Term.astro';
+import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
+import Since from '../../../../../../components/Since.astro';
+import { frontmatterKeysTable } from '../../../../../../data/api-reference';
 
 Un fichier de recette Gram (`.gram`) se découpe en plusieurs blocs distincts : les Métadonnées, les Sections, les Étapes et les Commentaires.
 
@@ -17,26 +20,27 @@ Le *frontmatter* est un bloc de configuration **YAML** situé tout en haut du fi
 Ça ressemble à du YAML, mais Gram ne lit que des lignes `clé: valeur` à plat (les lignes vides passent), avec les listes écrites sur une ligne (`tags: ['brownie', 'matcha']`). Une ligne de commentaire (`# …`) ou une ligne indentée rend tout le bloc illisible : il est alors lu comme une étape de texte, sans aucune métadonnée. Un `#` en fin de ligne fait partie de la valeur.
 :::
 
-Le *parser* Gram accepte **absolument n'importe quelle** paire clé-valeur dans ce bloc. Vous êtes libre d'y injecter des champs sur-mesure pour les besoins spécifiques de votre application. Cela dit, le compilateur Gram reconnaît nativement deux catégories de clés : les **Fonctionnelles** et les **Informatives**.
+Le *parser* Gram accepte **n'importe quelle** paire clé-valeur dans ce bloc : une clé que Gram ne connaît pas est une métadonnée à vous, affichée telle quelle sous le titre de la recette. Les clés ci-dessous sont celles de Gram. Les clés **fonctionnelles** changent ce que calculent le compilateur, l'analyseur ou les vues ; les clés **informatives** sont affichées, jamais utilisées dans un calcul.
+
+<GeneratedTable table={frontmatterKeysTable("fr")} />
 
 ### Clés fonctionnelles
-Ces clés modifient concrètement la façon dont le compilateur va interpréter la recette :
 
-*   `portions` : (Entier) Le nombre de portions de base. Divise l'[Estimation Nutritionnelle](/fr/docs/explanation/nutrition) en valeurs par portion, et est ajusté en même temps que les quantités lors d'un *scaling* — les valeurs par portion restent donc identiques quel que soit le facteur appliqué. Un libellé accolé (`portions: 4 personnes`) est toléré ; un nombre nul ou négatif est ignoré.
-*   `densities` : (Liste en ligne) Surcharges personnalisées de la densité (g/ml) pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](/fr/docs/explanation/engine/kitchen). Elles s'écrivent en paires `nom:valeur` dans une liste sur une ligne : `densities: [farine:0.55, lait:1.03]`.
+*   `portions` : Le nombre de portions de base. Divise l'[Estimation Nutritionnelle](/fr/docs/explanation/nutrition) en valeurs par portion, et est ajusté en même temps que les quantités lors d'un *scaling* — les valeurs par portion restent donc identiques quel que soit le facteur appliqué. Un libellé accolé (`portions: 4 personnes`) est toléré ; un nombre nul ou négatif est ignoré.
+*   `densities` : Surcharges personnalisées de la densité (g/ml) pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](/fr/docs/explanation/engine/kitchen). Elles s'écrivent en paires `nom:valeur` dans une liste sur une ligne : `densities: [farine:0.55, lait:1.03]`.
+*   `language` : La langue dans laquelle la recette est écrite, en balise [BCP 47](https://www.rfc-editor.org/info/bcp47) (voir plus bas).
 
-### Clés informatives
-Ces clés sont recommandées pour assurer un affichage propre et une gestion saine des métadonnées :
+### Langue de la recette (`language`)
+<Since v="1.6.0" />
 
-*   `title` : Le nom de la recette.
-*   `description` : Un court résumé (utile pour les balises méta SEO).
-*   `tags` : Une liste de catégories ou mots-clés.
-*   `category` : La catégorie principale (ex : "Dessert", "Plat Principal").
-*   `author` : Nom ou liste d'auteurs.
-*   `source` : URL(s) vers la recette d'origine.
-*   `date`, `lastUpdated` : AAAA-MM-JJ.
-*   `makes` : Le résultat physique ou les dimensions de la recette (ex : "1 gâteau", "24 cookies", "moule de 20x20 cm").
-*   `notes` : Des notes générales sur la recette (ex : "Testé le 07/06/2026. Réduire le sucre la prochaine fois.").
+`language: fr` (ou `en`, `fr-CA`, `pt-BR`…) indique la langue dans laquelle la recette est écrite. Dans l'éditeur, Gram s'en sert pour lire les noms d'unités de cette langue quand il met la recette à l'échelle sur un ingrédient, et pour écrire l'aperçu et les indications ; la recette imprimée la reprend comme `lang` de la page. C'est la langue de la recette, pas celle de votre éditeur : une recette française ouverte dans un éditeur en anglais garde ses unités et son aperçu en français. `gram view` et le playground ne la lisent pas encore et gardent leur propre langue (`--lang`, la langue du site).
+
+### Clés dépréciées
+<Since v="1.6.0" type="deprecated" />
+
+:::caution[Dépréciées : `servings`, `yield` et `yields`]
+`servings`, `yield` et `yields` sont dépréciées depuis la 1.6.0 et disparaîtront en 2.0.0. Seule la vue HTML de la recette les lisait : elles s'affichaient, mais la mise à l'échelle et la nutrition par portion les ignoraient. Écrivez `portions` à la place de `servings`, et `makes` à la place de `yield` ou `yields`. D'ici la 2.0.0, elles marchent toujours, et le compilateur lève un avertissement [`DEPRECATED_FRONTMATTER_KEY`](/fr/docs/reference/api/warnings) (qui fait échouer `gram check --strict`). Si une clé et sa remplaçante sont écrites toutes les deux, c'est la remplaçante qui compte.
+:::
 
 <CodeTabs>
 ```gram title="recette.gram"

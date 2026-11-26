@@ -13,7 +13,7 @@ Cette page répertorie l'ensemble des éléments dépréciés dans Gram, organis
 
 | Profil d'utilisation | Actions à prévoir |
 |---|---|
-| Rédaction de recettes `.gram` via le CLI, le moteur de rendu ou le playground | **Aucune**. La syntaxe du langage ne comporte aucune dépréciation. |
+| Rédaction de recettes `.gram` via le CLI, le moteur de rendu ou le playground | Seulement si votre frontmatter utilise `servings`, `yield` ou `yields` : voir [Clés `servings`, `yield` et `yields` du frontmatter](#clés-servings-yield-et-yields-du-frontmatter). |
 | Consommation du JSON compilé (`gram build`, interface web personnalisée, scripts) | Consultez les sections [Champs du JSON compilé](#champs-du-json-compilé) et [Compatibilité avec les versions antérieures](#compatibilité-avec-les-versions-antérieures). |
 | Rendu d'un diagramme de Gantt, commande VS Code ou notifications du serveur de langage | Voir [Remplacement du diagramme de Gantt et de ses composants](#remplacement-du-diagramme-de-gantt-et-de-ses-composants). |
 | Développement d'un client d'éditeur pour le serveur de langage | Voir [Notification d'aperçu du serveur de langage](#notification-daperçu-du-serveur-de-langage). |
@@ -24,6 +24,33 @@ Cette page répertorie l'ensemble des éléments dépréciés dans Gram, organis
 Pour vérifier l'état de votre code applicatif, reportez-vous à la section [Identifier les usages dépréciés dans votre code](#identifier-les-usages-dépréciés-dans-votre-code).
 
 ## Suppressions programmées en version 2.0.0
+
+### Clés `servings`, `yield` et `yields` du frontmatter
+
+<Since v="1.6.0" type="deprecated" />
+
+Seule la vue HTML de la recette lisait `servings`, `yield` et `yields` : elle les affichait, mais la mise à l'échelle, la nutrition par portion et les autres vues les ignoraient, et `yield` désigne déjà le rendement physique dans Gram. Depuis la 1.6.0, `portions` et `makes` sont les seules clés pour dire ce que donne une recette :
+
+| Clé dépréciée | Remplaçante |
+|---|---|
+| `servings` | `portions` : le nombre de portions, que lisent la mise à l'échelle et la nutrition par portion |
+| `yield`, `yields` | `makes` : ce que donne la recette, en toutes lettres |
+
+```gram title="Avant"
+---
+servings: 4
+yield: '24 cookies'
+---
+```
+
+```gram title="Après"
+---
+portions: 4
+makes: '24 cookies'
+---
+```
+
+D'ici la 2.0.0, les anciennes clés marchent comme avant, et chacune lève un avertissement [`DEPRECATED_FRONTMATTER_KEY`](/fr/docs/reference/api/warnings), qui fait échouer `gram check --strict`. Si une clé et sa remplaçante sont écrites toutes les deux, c'est la remplaçante qui compte. Pas de réécriture automatique : renommez la clé à la main.
 
 ### Champs du JSON compilé
 

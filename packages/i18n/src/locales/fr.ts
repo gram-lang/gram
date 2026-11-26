@@ -66,6 +66,7 @@ export const fr: GramLocale = {
 		composite: "Composite",
 		directUse: "Utilisation directe",
 		totalMass: "Masse totale",
+		lastUpdated: "Mis à jour le {date}",
 		incomplete: "Incomplet",
 		passive: "passif",
 		alt: "alt.",
@@ -508,5 +509,38 @@ export const fr: GramLocale = {
 		anchorInHours:
 			"En heures ou en minutes : une échéance dans la journée, sans journée de travail à part.",
 		showPreview: "Aperçu",
+	},
+	frontmatter: {
+		keys: {
+			title: "Le nom de la recette.",
+			description:
+				"Un court résumé de la recette, repris comme description de la page.",
+			tags: "Des mots-clés pour classer et retrouver la recette.",
+			category: "La catégorie principale de la recette (dessert, plat…).",
+			author: "Qui a écrit la recette : un nom ou une liste.",
+			source: "D'où vient la recette : une URL ou une liste.",
+			date: "La date d'écriture de la recette (AAAA-MM-JJ).",
+			lastUpdated: "La date de sa dernière modification (AAAA-MM-JJ).",
+			makes:
+				"Ce que donne la recette, en toutes lettres : « 24 cookies », « 1 gâteau à étages », « moule de 20 × 20 cm ».",
+			notes: "Des notes générales sur la recette.",
+			portions:
+				"Le nombre de portions : la base de la mise à l'échelle et de la nutrition par portion. Un mot après le nombre (`4 parts`) est toléré.",
+			densities:
+				"Des densités (g/mL) propres aux ingrédients de cette recette, en paires nom:valeur.",
+			language:
+				"La langue dans laquelle la recette est écrite, en balise BCP 47 (en, fr, fr-CA…) : l'éditeur y lit ses unités et y écrit son aperçu.",
+			servings: "Dépréciée : écrivez `portions`.",
+			yield: "Dépréciée : écrivez `makes`.",
+			yields: "Dépréciée : écrivez `makes`.",
+		},
+		values: {
+			text: "Texte",
+			number: "Nombre",
+			list: "Liste en ligne",
+			date: "Date",
+			languageTag: "Balise BCP 47",
+			densities: "Liste en ligne de nom:valeur",
+		},
 	},
 };

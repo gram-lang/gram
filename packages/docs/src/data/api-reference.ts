@@ -1,6 +1,7 @@
 // Single source of truth for the API Reference tables, computed directly from
 // the packages' own exports (no intermediate generated markdown files — see
 // migration plan Phase 6.5).
+import { canonicalFrontmatterKeys } from "@gram-lang/kitchen";
 import { allWarningInfo } from "@gram-lang/modules";
 import { ASTNodeType } from "@gram-lang/parser";
 import {
@@ -8,6 +9,7 @@ import {
 	TIME_DICTIONARIES,
 	UNIT_CONVERSIONS,
 	getDefaultCategories,
+	getDictionary,
 } from "@gram-lang/i18n";
 
 export type Locale = "en" | "fr";
@@ -37,6 +39,45 @@ export function warningCodesTable(locale: Locale): Table {
 			`\`${code}\``,
 			severity,
 			`\`${template(payloadProxy)}\``,
+		]),
+	};
+}
+
+const FRONTMATTER_LABELS: Record<
+	Locale,
+	{ headers: string[]; functional: string; informational: string }
+> = {
+	en: {
+		headers: ["Key", "Role", "Value", "Meaning", "Example"],
+		functional: "Functional",
+		informational: "Informational",
+	},
+	fr: {
+		headers: ["Clé", "Rôle", "Valeur", "Sens", "Exemple"],
+		functional: "Fonctionnelle",
+		informational: "Informative",
+	},
+};
+
+/**
+ * The frontmatter keys to write today, from kitchen's `FRONTMATTER_KEYS`:
+ * functional keys first. Deprecated keys are left out (they are documented
+ * once, in their own caution, never as aliases).
+ */
+export function frontmatterKeysTable(locale: Locale): Table {
+	const labels = FRONTMATTER_LABELS[locale];
+	const t = getDictionary(locale).frontmatter;
+	const keys = canonicalFrontmatterKeys().sort(
+		(a, b) => Number(a.role !== "functional") - Number(b.role !== "functional"),
+	);
+	return {
+		headers: labels.headers,
+		rows: keys.map((def) => [
+			`\`${def.key}\``,
+			labels[def.role],
+			t.values[def.value] as string,
+			t.keys[def.key] as string,
+			`\`${def.example}\``,
 		]),
 	};
 }

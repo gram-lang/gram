@@ -79,6 +79,8 @@ export const en = {
 		directUse: "Direct use",
 		/** The label of the total mass in the recipe's header. */
 		totalMass: "Total Mass",
+		/** In the byline of the recipe: the frontmatter's `lastUpdated`, `{date}` as written. */
+		lastUpdated: "Updated {date}",
 		incomplete: "Incomplete",
 		/** After a timer that is a passive wait, and the short mark of an alternative. */
 		passive: "passive",
@@ -552,6 +554,42 @@ export const en = {
 			"In hours or minutes: a deadline within the day, no working day of its own.",
 		/** CodeLens at the top of a recipe, in the editor's language: opens the preview. */
 		showPreview: "Preview",
+	},
+	/** The frontmatter keys Gram knows (`FRONTMATTER_KEYS` of `@gram-lang/kitchen`). */
+	frontmatter: {
+		/** What each key means, by key: docs table, editor hover. */
+		keys: {
+			title: "The name of the recipe.",
+			description:
+				"A short summary of the recipe, also used as the page's description.",
+			tags: "Keywords to sort and find the recipe.",
+			category: "The main category of the recipe (dessert, main course…).",
+			author: "Who wrote the recipe: one name or a list.",
+			source: "Where the recipe comes from: one URL or a list.",
+			date: "When the recipe was written (YYYY-MM-DD).",
+			lastUpdated: "When the recipe was last changed (YYYY-MM-DD).",
+			makes:
+				'What the recipe makes, in words: "24 cookies", "1 layer cake", "20x20 cm mold".',
+			notes: "General notes about the recipe.",
+			portions:
+				"The number of portions: the base of scaling and of the nutrition per portion. A label after the number (`4 servings`) is tolerated.",
+			densities:
+				"Density overrides (g/mL) for this recipe's ingredients, as name:value pairs.",
+			language:
+				"The language the recipe is written in, as a BCP 47 tag (en, fr, fr-CA…): the editor reads its units and writes its preview in it.",
+			servings: "Deprecated: write `portions`.",
+			yield: "Deprecated: write `makes`.",
+			yields: "Deprecated: write `makes`.",
+		} as Record<string, string>,
+		/** The kind of value a key takes (`FrontmatterValueKind`). */
+		values: {
+			text: "Text",
+			number: "Number",
+			list: "Inline list",
+			date: "Date",
+			languageTag: "BCP 47 tag",
+			densities: "Inline list of name:value",
+		} as Record<string, string>,
 	},
 };
 

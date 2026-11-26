@@ -7,6 +7,7 @@ import { RecipeRegistry } from "./registry";
 import type { RecipeAST } from "@gram-lang/parser";
 import type { CompilationResult, ProcessedSection, Usage } from "./types";
 import { pushWarning, WarningCode } from "./warnings";
+import { frontmatterKey } from "./frontmatter";
 
 import type { z } from "zod";
 import { CompilerOptionsSchema } from "./schemas";
@@ -22,6 +23,7 @@ export function compile(
 	if (ast.type !== "Recipe") throw new Error("Compiler expects Recipe AST");
 
 	const registry = new RecipeRegistry();
+	warnDeprecatedFrontmatterKeys(ast.meta, registry);
 
 	const resultPayload = processSections(
 		ast.children,
@@ -91,6 +93,28 @@ export function compile(
 	// cleanObject only prunes null/undefined fields — the shape stays
 	// CompilationResult, just with those keys absent instead of null.
 	return cleanObject(scaled) as CompilationResult;
+}
+
+/**
+ * A deprecated frontmatter key (`servings`, `yield`, `yields`) is still read
+ * by the HTML recipe, but flagged so the author moves to its canonical key,
+ * even when that key is written too (it wins, the old one is then dead).
+ * No `loc`: the AST does not keep where a key was written; the language
+ * server finds its line from `data.key`.
+ */
+function warnDeprecatedFrontmatterKeys(
+	meta: RecipeAST["meta"],
+	registry: RecipeRegistry,
+): void {
+	// @remove-in: 2.0.0 [frontmatter-servings-yield]
+	for (const key of Object.keys(meta)) {
+		const replacement = frontmatterKey(key)?.deprecated?.replacement;
+		if (replacement === undefined) continue;
+		pushWarning(registry, WarningCode.DEPRECATED_FRONTMATTER_KEY, {
+			key,
+			suggestion: replacement,
+		});
+	}
 }
 
 /**

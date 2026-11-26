@@ -1,0 +1,110 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Deprecated Frontmatter Key",
+    "portions": "4",
+    "servings": "6",
+    "yields": "12 cookies"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 101,
+                "end": 105
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 250,
+                  "text": "250"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 112,
+                  "end": 117
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 105,
+                "end": 118
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 119,
+                "end": 123
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 125,
+                  "text": "125"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 131,
+                  "end": 136
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 123,
+                "end": 137
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 137,
+                "end": 138
+              }
+            }
+          ],
+          "loc": {
+            "start": 101,
+            "end": 139
+          }
+        }
+      ],
+      "loc": {
+        "start": 91,
+        "end": 139
+      }
+    }
+  ]
+}

@@ -6,6 +6,9 @@ description: "Reference for the .gram file structure: YAML frontmatter, function
 import { CodeTabs } from 'starlight-theme-nova/components';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Term from '../../../../../components/Term.astro';
+import GeneratedTable from '../../../../../components/GeneratedTable.astro';
+import Since from '../../../../../components/Since.astro';
+import { frontmatterKeysTable } from '../../../../../data/api-reference';
 
 A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata, Sections, Steps, and Comments.
 
@@ -17,26 +20,27 @@ The frontmatter is a **YAML** block at the very start of the file, enclosed by `
 It looks like YAML, but Gram only reads flat `key: value` lines (blank lines are fine), with lists written inline (`tags: ['brownie', 'matcha']`). A comment line (`# …`) or an indented line makes the whole block unreadable: it is then read as a step of text, with no metadata. A `#` at the end of a line is part of the value.
 :::
 
-The Gram parser accepts **any** key-value pair in this block. You can add custom fields for your own application's needs. However, the Gram Compiler recognizes two types of keys: **Functional** and **Informational**.
+The Gram parser accepts **any** key-value pair in this block: a key Gram does not know is your own metadata, shown as is in the recipe's byline. The keys below are Gram's own. **Functional** keys change what the compiler, the analyzer or the views compute; **informational** keys are shown, never computed with.
+
+<GeneratedTable table={frontmatterKeysTable("en")} />
 
 ### Functional keys
-These keys directly alter how the Gram Compiler processes the recipe:
 
-*   `portions`: (Integer) The baseline number of portions. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
-*   `densities`: (Inline list) Custom density overrides (g/mL) for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm. Write them as `name:value` pairs in an inline list: `densities: [flour:0.55, milk:1.03]`.
+*   `portions`: The baseline number of portions. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
+*   `densities`: Custom density overrides (g/mL) for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm. Write them as `name:value` pairs in an inline list: `densities: [flour:0.55, milk:1.03]`.
+*   `language`: The language the recipe is written in, as a [BCP 47](https://www.rfc-editor.org/info/bcp47) tag (see below).
 
-### Informational keys
-These keys are recommended for proper display and metadata management:
+### Recipe language (`language`)
+<Since v="1.6.0" />
 
-*   `title`: The recipe name.
-*   `description`: A short summary (useful for SEO meta tags).
-*   `tags`: A list of categories or keywords.
-*   `category`: Main category (e.g. "Dessert", "Main Course").
-*   `author`: Name or list of authors.
-*   `source`: URL(s) to the original recipe.
-*   `date`, `lastUpdated`: YYYY-MM-DD.
-*   `makes`: The physical output or dimensions of the recipe (e.g., "1 layer cake", "24 cookies", "20x20cm mold").
-*   `notes`: General notes about the recipe (e.g. "Tested on 2026-06-07. Decrease sugar next time.").
+`language: fr` (or `en`, `fr-CA`, `pt-BR`…) says which language the recipe is written in. In the editor, Gram reads the unit words of that language when it scales the recipe by an ingredient, and writes the preview and the hints in it; the printed recipe carries it as the page's `lang`. It is the language of the recipe, not of your editor: a French recipe opened in an English editor keeps its French units and preview. `gram view` and the playground do not read it yet, and keep their own language (`--lang`, the language of the site).
+
+### Deprecated keys
+<Since v="1.6.0" type="deprecated" />
+
+:::caution[Deprecated: `servings`, `yield` and `yields`]
+`servings`, `yield` and `yields` are deprecated since 1.6.0 and will be removed in 2.0.0. Only the HTML recipe ever read them: they were shown, but ignored by scaling and the nutrition per portion. Write `portions` instead of `servings`, and `makes` instead of `yield` or `yields`. Until 2.0.0 they keep working, and the compiler raises a [`DEPRECATED_FRONTMATTER_KEY`](/docs/reference/api/warnings) warning (which fails `gram check --strict`). When a key and its replacement are both written, the replacement wins.
+:::
 
 <CodeTabs>
 ```gram title="recipe.gram"
