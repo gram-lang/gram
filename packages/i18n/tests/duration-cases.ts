@@ -178,6 +178,9 @@ export const DURATION_CASES: Record<string, DurationCases> = {
 			["1/2 hour", 30],
 			["½ hr", 30],
 			["3/4 hour", 45],
+			// A decimal numerator, as the parser reads `{1.5/2 cups}`.
+			["1.5/2 hours", 45],
+			["0.5/2 min", 0.25],
 			// Clock with an English unit.
 			["1:30 hr", 90],
 			["1:30 hours", 90],
@@ -197,6 +200,11 @@ export const DURATION_CASES: Record<string, DurationCases> = {
 			["3 bananas", "unknownUnit"],
 			["2 to 3 hours", "unknownUnit"],
 			["1 and 1/2 hours", "unknownUnit"],
+			// A whole and a fraction make one number only with a whole
+			// numerator, and a denominator is whole (the grammar's
+			// `mixedFraction` and `plainNumber`).
+			["1 0.5/2 hour", "bareNumber"],
+			["1/2.5 h", "unexpected"],
 			["1 fortnight", "unknownUnit"],
 			["1 week", "unknownUnit"],
 			["2 weeks", "unknownUnit"],
@@ -287,6 +295,7 @@ export const DURATION_CASES: Record<string, DurationCases> = {
 			["1 1/2 heure", 90],
 			["1/2 heure", 30],
 			["¾ h", 45],
+			["1,5/2 h", 45],
 			// Horloge.
 			["1:30 h", 90],
 			["1:30 heure", 90],
