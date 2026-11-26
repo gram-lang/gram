@@ -138,6 +138,28 @@ describe("formatGram", () => {
 		}
 	});
 
+	// #291: a section title is text, kept as written, and holds no element.
+	it("never glues a composite separator on a section header", () => {
+		for (const [src, expected] of [
+			[
+				"## Zest <@lemon ~{-1 h}\n\nStep.\n",
+				"## Zest <@lemon ~{-1 h}\n\nStep.\n",
+			],
+			["## Mix @a{1} < @b{2}\n\nStep.\n", "## Mix @a{1} < @b{2}\n\nStep.\n"],
+			["##<@s\n", "## <@s\n"],
+			// `###` is no header: the line is a step.
+			["### x < @y{1}\n", "### x<@y{1}\n"],
+		]) {
+			expect(formatGram(src as string).content).toBe(expected as string);
+		}
+	});
+
+	it("reports no change on a header that starts with `<@` (#291)", () => {
+		const { content, changes } = formatGram("## <@s\n");
+		expect(content).toBe("## <@s\n");
+		expect(hasChanges(changes)).toBe(false);
+	});
+
 	it("does not touch an already-normalized composite separator", () => {
 		const { content, changes } = formatGram("Add @sugar<@eggs{3}.\n");
 		expect(content).toBe("Add @sugar<@eggs{3}.\n");
@@ -296,6 +318,21 @@ describe("formatGram", () => {
 			expect(JSON.stringify(getAST(content))).toContain(
 				'"value":"This \\nis a block comment"',
 			);
+		});
+
+		// Found by the fuzz: decided on the raw text, which only the repairs
+		// make readable here (`^ < @`), the block stayed frontmatter at the
+		// first pass and became body at the second, which lowercased its id.
+		it("decides on the repaired text, so a second pass changes nothing", () => {
+			const input =
+				"---\nau Jean@Example.com\n---\n\nSeparate @yolks{3}^ < @eggs{3}.\n";
+			const first = formatGram(input);
+			expect(first.content).toBe(
+				"---\nau Jean@example.com\n---\n\nSeparate @yolks{3}^<@eggs{3}.\n",
+			);
+			const second = formatGram(first.content);
+			expect(second.content).toBe(first.content);
+			expect(hasChanges(second.changes)).toBe(false);
 		});
 
 		it("formats the elements of a fenced block the parser reads as a step", () => {
