@@ -86,7 +86,7 @@ Une journée de travail qu'une phase passive prolongée repousse au-delà du cyc
 - **Informations au survol** : Survolez un ingrédient pour inspecter son profil nutritionnel et les conversions volume-masse (`1 c.à.s → 15 g`). Survolez un minuteur pour voir la durée interprétée (`~{1:30 h}` → `1 h 30 min`), une ancre de section pour connaître son anticipation, ou une somme/proportion pour consulter la valeur calculée.
 
 :::tip[Détection automatique de la base de données]
-L'extension détecte automatiquement le fichier `.gram/ingredients.yaml` présent à la racine de votre espace de travail. Pour les arborescences spécifiques, personnalisez le chemin via `gram.ingredientDatabase.path` dans vos paramètres VS Code.
+L'extension trouve la base comme `gram` : le fichier indiqué par `database:` dans le `.gram/config.yaml` de l'espace de travail, sinon le fichier `.gram/ingredients.yaml` à sa racine. Pour utiliser un autre fichier dans l'éditeur seulement, renseignez `gram.ingredientDatabase.path` dans vos paramètres VS Code : ce réglage passe avant les deux autres.
 :::
 
 ### 5. Assistance à l'édition & navigation

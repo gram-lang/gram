@@ -51,7 +51,10 @@ import { serverCapabilities } from "./capabilities";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
-import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
+import {
+	reloadDbAndRefreshDiagnostics as computeDbReload,
+	isIngredientDbChange,
+} from "./utils/db-reload";
 import {
 	DEFAULT_RECIPE_SETTINGS,
 	DEFAULT_VIEW_SETTINGS,
@@ -101,6 +104,10 @@ process.on("unhandledRejection", (reason) => {
 });
 
 let ingredientDB: IngredientDB = {};
+// The file `ingredientDB` was read from (`resolveIngredientDb`), so a change to
+// it is seen whatever its name: a `database:` of `.gram/config.yaml` can name
+// any file.
+let ingredientDbPath: string | undefined;
 let workspaceFolders: string[] = [];
 
 // The module-imports RFC (§F.1) module resolution state — a `ModuleGraph`
@@ -305,6 +312,7 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 		onError: (message) => connection.console.error(message),
 	});
 	ingredientDB = outcome.ingredientDB;
+	ingredientDbPath = outcome.ingredientDbPath;
 	for (const [uri, diagnostics] of outcome.diagnosticsByUri) {
 		connection.sendDiagnostics({ uri, diagnostics });
 	}
@@ -372,8 +380,10 @@ connection.onInitialized(async () => {
 		try {
 			await connection.client.register(DidChangeWatchedFilesNotification.type, {
 				watchers: [
-					{ globPattern: "**/.gram/ingredients.yaml" },
-					{ globPattern: "**/.gram/config.yaml" },
+					// Any YAML file: the database a `database:` of `.gram/config.yaml`
+					// names can be called anything (`isIngredientDbChange` keeps only
+					// the one in use and the `.gram/ingredients.yaml` files).
+					{ globPattern: "**/*.{yaml,yml}" },
 					{ globPattern: "**/*.gram" },
 				],
 			});
@@ -391,9 +401,11 @@ connection.onInitialized(async () => {
 				// The project's settings changed: its `paths:` aliases (the graph),
 				// `timezone`, `availability` and `clock` (the views), `lint` (the
 				// diagnostics). Every cached project context is dropped and every open
-				// document refreshed now, rather than at its next edit.
+				// document refreshed now, rather than at its next edit. Its `database:`
+				// may name another ingredient database: it is read again too.
 				configChanged = true;
-			} else {
+				dbChanged = true;
+			} else if (isIngredientDbChange(change.uri, ingredientDbPath)) {
 				dbChanged = true;
 			}
 		}

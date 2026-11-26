@@ -1,41 +1,72 @@
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Diagnostic } from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
 import { loadIngredientDB, type IngredientDB } from "../ingredient-loader";
 import type { IngredientValidationIssue } from "@gram-lang/analyzer";
+import { readProjectConfigSync } from "./project-config";
 
 export interface ResolvedDb {
 	db: IngredientDB;
 	rejected: IngredientValidationIssue[];
+	/** The file the database was read from; absent when there is none. */
+	path?: string;
+}
+
+/**
+ * The database file of a workspace folder, as `gram` finds it from that
+ * folder (the CLI's `resolveDbPath`): the `database:` of its
+ * `.gram/config.yaml`, relative to the folder, else its
+ * `.gram/ingredients.yaml`. A `database:` naming a missing file is not
+ * replaced by `.gram/ingredients.yaml`, as the CLI does not replace it.
+ */
+function folderDbPath(folder: string): string {
+	const { database } = readProjectConfigSync(folder);
+	return database
+		? resolve(folder, database)
+		: join(folder, ".gram", "ingredients.yaml");
 }
 
 /**
  * Pure resolution of which ingredient database to load, and its result.
  * Extracted from `server.ts`'s old `loadDB()` so it's unit-testable without a
- * real LSP connection or workspace — an explicit `configPath` wins, else the
- * first workspace folder with a `.gram/ingredients.yaml` is used, else the
- * database is empty.
+ * real LSP connection or workspace — an explicit `configPath` (the editor's
+ * `gram.ingredientDatabase.path`) wins, else the database of the first
+ * workspace folder that has one (`folderDbPath`), else the database is empty.
  */
 export function resolveIngredientDb(
 	configPath: string | undefined,
 	workspaceFolders: string[],
 ): ResolvedDb {
-	let result:
-		| { db: IngredientDB; rejected: IngredientValidationIssue[] }
-		| undefined;
+	let path: string | undefined;
 	if (configPath?.trim()) {
-		result = loadIngredientDB(configPath.trim());
+		path = configPath.trim();
 	} else {
-		for (const folder of workspaceFolders) {
-			const auto = join(folder, ".gram", "ingredients.yaml");
-			if (existsSync(auto)) {
-				result = loadIngredientDB(auto);
-				break;
-			}
-		}
+		path = workspaceFolders.map(folderDbPath).find((p) => existsSync(p));
 	}
-	return { db: result?.db ?? {}, rejected: result?.rejected ?? [] };
+	if (path === undefined || !existsSync(path)) return { db: {}, rejected: [] };
+	const result = loadIngredientDB(path);
+	return { db: result.db, rejected: result.rejected, path };
+}
+
+/**
+ * Whether a watched file that changed is an ingredient database: any
+ * `.gram/ingredients.yaml`, or the file the database in use was read from
+ * (a `database:` of `.gram/config.yaml`, or the editor's setting), whatever
+ * its name.
+ */
+export function isIngredientDbChange(
+	uri: string,
+	loadedPath: string | undefined,
+): boolean {
+	if (uri.endsWith("/.gram/ingredients.yaml")) return true;
+	if (loadedPath === undefined || !uri.startsWith("file:")) return false;
+	try {
+		return resolve(fileURLToPath(uri)) === resolve(loadedPath);
+	} catch {
+		return false;
+	}
 }
 
 export interface DbReloadDeps {
@@ -54,6 +85,8 @@ export interface DbReloadDeps {
 
 export interface DbReloadOutcome {
 	ingredientDB: IngredientDB;
+	/** The file `ingredientDB` was read from; absent when there is none. */
+	ingredientDbPath?: string;
 	diagnosticsByUri: Map<string, Diagnostic[]>;
 }
 
@@ -104,6 +137,7 @@ export async function reloadDbAndRefreshDiagnostics(
 
 	return {
 		ingredientDB: resolved.db,
+		...(resolved.path !== undefined ? { ingredientDbPath: resolved.path } : {}),
 		diagnosticsByUri,
 	};
 }

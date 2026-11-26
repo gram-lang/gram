@@ -73,6 +73,20 @@ describe("readProjectConfigSync", () => {
 		});
 	});
 
+	describe("database", () => {
+		it("reads the path of the ingredient database, as the CLI does", async () => {
+			expect((await read("database: data/ingredients.yaml\n")).database).toBe(
+				"data/ingredients.yaml",
+			);
+		});
+
+		it("is absent without it, or with a value that is not a path", async () => {
+			expect((await read("timezone: Europe/Paris\n")).database).toBeUndefined();
+			expect((await read('database: ""\n')).database).toBeUndefined();
+			expect((await read("database: 42\n")).database).toBeUndefined();
+		});
+	});
+
 	describe("timezone", () => {
 		it("is absent without one, or with a zone that does not exist", async () => {
 			expect((await read("paths:\n  a: ./a\n")).timeZone).toBeUndefined();
