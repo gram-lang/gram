@@ -138,6 +138,28 @@ describe("formatGram", () => {
 		}
 	});
 
+	// #291: a section title is text, kept as written, and holds no element.
+	it("never glues a composite separator on a section header", () => {
+		for (const [src, expected] of [
+			[
+				"## Zest <@lemon ~{-1 h}\n\nStep.\n",
+				"## Zest <@lemon ~{-1 h}\n\nStep.\n",
+			],
+			["## Mix @a{1} < @b{2}\n\nStep.\n", "## Mix @a{1} < @b{2}\n\nStep.\n"],
+			["##<@s\n", "## <@s\n"],
+			// `###` is no header: the line is a step.
+			["### x < @y{1}\n", "### x<@y{1}\n"],
+		]) {
+			expect(formatGram(src as string).content).toBe(expected as string);
+		}
+	});
+
+	it("reports no change on a header that starts with `<@` (#291)", () => {
+		const { content, changes } = formatGram("## <@s\n");
+		expect(content).toBe("## <@s\n");
+		expect(hasChanges(changes)).toBe(false);
+	});
+
 	it("does not touch an already-normalized composite separator", () => {
 		const { content, changes } = formatGram("Add @sugar<@eggs{3}.\n");
 		expect(content).toBe("Add @sugar<@eggs{3}.\n");
