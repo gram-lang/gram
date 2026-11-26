@@ -2,11 +2,8 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { getIngredientData } from "@gram-lang/analyzer";
-import {
-	loadIngredientDB,
-	findClosestIngredient,
-} from "../src/ingredient-loader";
+import { findClosestIngredients, getIngredientData } from "@gram-lang/analyzer";
+import { loadIngredientDB } from "../src/ingredient-loader";
 
 // Regression tests for the security/robustness audit (2026-07-22, finding
 // B1): loadIngredientDB used to cast the parsed YAML straight to IngredientDB
@@ -73,6 +70,6 @@ describe("loadIngredientDB", () => {
 		// through unvalidated.
 		expect(() => getIngredientData("oups", db)).not.toThrow();
 		expect(getIngredientData("oups", db)).toBeNull();
-		expect(() => findClosestIngredient("oups", db)).not.toThrow();
+		expect(() => findClosestIngredients("oups", db)).not.toThrow();
 	});
 });

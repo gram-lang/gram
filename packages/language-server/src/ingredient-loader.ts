@@ -1,6 +1,5 @@
 import { parse } from "yaml";
 import { readFileSync, existsSync } from "node:fs";
-import { slugify } from "@gram-lang/kitchen";
 
 import {
 	validateIngredientDatabase,
@@ -37,58 +36,13 @@ export function loadIngredientDB(yamlPath: string): LoadIngredientDBResult {
 }
 
 // Whether an ingredient is known is never decided here: the editor asks the
-// analyzer (`getIngredientData`), the same resolution nutrition and
+// analyzer (`isKnownIngredient`, and `findClosestIngredients` for the
+// spelling suggestion), the same resolution nutrition and
 // `analyzed.missingIngredients` use, so an ingredient the editor accepts is
 // one the nutrition finds. This file used to keep its own lookup (raw keys,
 // lowercased names, a French plural guess) and the two disagreed both ways:
 // `@carottes` passed the editor while nutrition skipped it, `@olive-oil`
 // was flagged while nutrition found it.
-
-// Levenshtein edit distance — used only for unknown-ingredient suggestions, never for hot-path lookups.
-function levenshtein(a: string, b: string): number {
-	if (a === b) return 0;
-	if (a.length === 0) return b.length;
-	if (b.length === 0) return a.length;
-	const row = Array.from({ length: b.length + 1 }, (_, i) => i);
-	for (let i = 1; i <= a.length; i++) {
-		let prev = i;
-		for (let j = 1; j <= b.length; j++) {
-			const curr =
-				a[i - 1] === b[j - 1]
-					? row[j - 1]!
-					: 1 + Math.min(row[j - 1]!, row[j]!, prev);
-			row[j - 1] = prev;
-			prev = curr;
-		}
-		row[b.length] = prev;
-	}
-	return row[b.length]!;
-}
-
-// Returns the canonical entry name whose slug is closest to the input (within maxDistance),
-// or null if nothing is close enough. Only called for genuinely unknown ingredients.
-export function findClosestIngredient(
-	name: string,
-	db: IngredientDB,
-	maxDistance = 2,
-): string | null {
-	const inputSlug = slugify(name);
-	let best: string | null = null;
-	let bestDist = maxDistance + 1;
-	for (const [key, entry] of Object.entries(db)) {
-		const candidates = [key, entry.name, ...(entry.aliases ?? [])].map((c) =>
-			slugify(c),
-		);
-		for (const candidate of candidates) {
-			const d = levenshtein(inputSlug, candidate);
-			if (d > 0 && d < bestDist) {
-				bestDist = d;
-				best = entry.name;
-			}
-		}
-	}
-	return best;
-}
 
 export function allIngredientCompletionLabels(
 	db: IngredientDB,

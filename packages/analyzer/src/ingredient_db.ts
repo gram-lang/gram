@@ -1,5 +1,6 @@
 import type { IngredientData } from "./types";
 import { slugify } from "@gram-lang/kitchen";
+import { levenshtein } from "./levenshtein";
 
 type Database = Record<string, IngredientData>;
 
@@ -64,4 +65,45 @@ export function getIngredientData(
  */
 export function resolveCanonicalId(name: string, database: Database): string {
 	return resolveKey(name, database) ?? slugify(name);
+}
+
+/**
+ * Whether `name` resolves to an entry of `database`: the single "unknown
+ * ingredient" verdict shared by the editor, `gram check` and nutrition
+ * (`analyzed.missingIngredients`). Same resolution as `getIngredientData`,
+ * on the same cached index.
+ */
+export function isKnownIngredient(name: string, database: Database): boolean {
+	return getIngredientData(name, database) !== null;
+}
+
+/**
+ * Spelling suggestions for an unknown ingredient: the `name` of every entry
+ * whose key, name or alias slug lies at the smallest edit distance from
+ * `slugify(name)`, within `maxDistance`. An exact slug match (distance 0) is
+ * not a suggestion. Each entry name appears once, in database order, so the
+ * first element is the best and earliest candidate; the list is empty when
+ * nothing is close enough. Meant for names `isKnownIngredient` rejected.
+ */
+export function findClosestIngredients(
+	name: string,
+	database: Database,
+	maxDistance = 2,
+): string[] {
+	const inputSlug = slugify(name);
+	let best: string[] = [];
+	let bestDist = maxDistance + 1;
+	for (const [key, entry] of Object.entries(database)) {
+		for (const label of [key, entry.name, ...(entry.aliases ?? [])]) {
+			const d = levenshtein(inputSlug, slugify(label));
+			if (d === 0 || d > maxDistance || d > bestDist) continue;
+			if (d < bestDist) {
+				bestDist = d;
+				best = [entry.name];
+			} else if (!best.includes(entry.name)) {
+				best.push(entry.name);
+			}
+		}
+	}
+	return best;
 }
