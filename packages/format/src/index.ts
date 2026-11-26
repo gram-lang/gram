@@ -123,6 +123,23 @@ function splitFrontmatter(source: string): {
 	}
 }
 
+/**
+ * `splitFrontmatter`, kept only when the parser reads the fenced block as
+ * frontmatter too. Its grammar takes `key: value` lines only: a block holding
+ * anything else (`/* a comment *\/`, `lan@guage:` on its own line) is read as
+ * a step, with its elements and comments. Handled as frontmatter here, it got
+ * rule 10, which stripped a blank inside such a comment and changed the
+ * recipe. Any span the parser finds inside the block says it is body. A file
+ * that does not parse keeps the textual split: it gets whitespace rules only.
+ */
+function frontmatterOf(source: string): { frontmatter: string; body: string } {
+	const split = splitFrontmatter(source);
+	if (!split.frontmatter) return split;
+	const spans = parseSpans(source);
+	const inside = spans?.some((span) => span.start < split.frontmatter.length);
+	return inside ? { frontmatter: "", body: source } : split;
+}
+
 /** An operator between two terms of a sum, once spaced (` + `, ` - `). */
 const SUM_OPERATOR = / [+-] /;
 
@@ -580,7 +597,7 @@ export function formatGram(source: string): {
 	// e.g. lowercasing the domain of `author: Jean@Example.com`.
 	// Order: the repairs (rules 6-8) first, then rules 1-5 on the elements
 	// the parser finds in the repaired text, then rules 9-12.
-	const { frontmatter, body: originalBody } = splitFrontmatter(source);
+	const { frontmatter, body: originalBody } = frontmatterOf(source);
 	let body = originalBody;
 
 	// Rule 6 (from language-server): normalize composite separator spacing

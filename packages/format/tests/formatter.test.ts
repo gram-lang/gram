@@ -284,6 +284,25 @@ describe("formatGram", () => {
 			expect(hasChanges(second.changes)).toBe(false);
 		});
 
+		// Found by the fuzz (#284): the parser reads a fenced block holding anything
+		// but `key: value` lines as a step, so its comments and elements must
+		// be kept as written, like in any other step.
+		it("leaves a block comment inside a fenced block the parser reads as a step untouched", () => {
+			const input =
+				"---\n/* This \nis a block comment */\n---\n\n## Section\n\nStep.\n";
+			const { content } = formatGram(input);
+			expect(content).toContain("/* This \nis a block comment */");
+			// The parser keeps the blank before the line break in the comment.
+			expect(JSON.stringify(getAST(content))).toContain(
+				'"value":"This \\nis a block comment"',
+			);
+		});
+
+		it("formats the elements of a fenced block the parser reads as a step", () => {
+			const input = "---\nAdd @Flour {500.0g}.\n---\n\nStep.\n";
+			expect(formatGram(input).content).toContain("Add @flour{500g}.");
+		});
+
 		it("treats content as body (applies gram rules) when frontmatter has no closing delimiter", () => {
 			const input = "---\ntitle: Test\n## S\nAdd @Flour{200g}.\n";
 			const { content } = formatGram(input);
