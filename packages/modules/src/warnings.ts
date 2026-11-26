@@ -1,6 +1,8 @@
 import type { Location } from "@gram-lang/parser";
 import {
 	pushRawWarning,
+	warningInfo,
+	type WarningCodeInfo,
 	warningSeverity,
 	warningTemplates,
 	WarningCode,
@@ -266,6 +268,19 @@ export function warningSeverityOf(code: string): WarningSeverity {
 }
 
 /**
+ * Looks up a `Warning.code`'s info (severity, deprecation) across both
+ * code-spaces, like `warningSeverityOf`. A module code is never deprecated
+ * for now. Since 1.6.0.
+ */
+export function warningInfoOf(code: string): WarningCodeInfo {
+	return (
+		(warningInfo as Record<string, WarningCodeInfo>)[code] ?? {
+			severity: warningSeverityOf(code),
+		}
+	);
+}
+
+/**
  * Every warning code across both code-spaces, with its severity and message
  * template — the single source the docs API-reference table
  * (`packages/docs/src/data/api-reference.ts`) needs, since it must show both
@@ -274,11 +289,13 @@ export function warningSeverityOf(code: string): WarningSeverity {
 export const allWarningInfo: {
 	code: string;
 	severity: WarningSeverity;
+	/** The code flags a deprecated form. Since 1.6.0. */
+	deprecated?: true;
 	template: (payload: never) => string;
 }[] = [
 	...Object.values(WarningCode).map((code) => ({
 		code,
-		severity: warningSeverity[code],
+		...warningInfo[code],
 		template: warningTemplates[code] as (payload: never) => string,
 	})),
 	...Object.values(ModuleWarningCode).map((code) => ({
