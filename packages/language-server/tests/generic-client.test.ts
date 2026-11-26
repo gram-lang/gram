@@ -121,6 +121,49 @@ describe("a generic stdio client", () => {
 		expect(tokens?.data.length).toBeGreaterThan(0);
 	}, 20_000);
 
+	it("gets the @use links, the highlights and the export completion", async () => {
+		const base = pathToFileURL(join(root, "bases", "pate.gram")).href;
+		const tarte = pathToFileURL(join(root, "tarte.gram")).href;
+		mkdirSync(join(root, "bases"), { recursive: true });
+		writeFileSync(
+			join(root, "bases", "pate.gram"),
+			"## Pâte ->&pate\n\n[Mix] @flour{200g}.\n\n## Crème ->&creme\n\n[Whip] @water{10cl}.\n",
+		);
+		const text = `@use "./bases/pate.gram" as { &pate }\n\n## Tarte\n\nLine with &pate, then &pate{}.\n`;
+		let capabilities: Record<string, unknown>;
+		({ client, capabilities } = await startGeneric(["--stdio"]));
+		expect(capabilities.documentLinkProvider).toEqual({
+			resolveProvider: false,
+		});
+		expect(capabilities.documentHighlightProvider).toBe(true);
+
+		client.open(text, tarte);
+		await client.diagnosticsOf(tarte);
+		const links = (await until(
+			() =>
+				(client as Client).request("textDocument/documentLink", {
+					textDocument: { uri: tarte },
+				}),
+			(l) => Array.isArray(l) && l.length > 0,
+		)) as { target: string }[];
+		expect(links.map((l) => l.target)).toEqual([base]);
+
+		const highlights = (await (client as Client).request(
+			"textDocument/documentHighlight",
+			{ textDocument: { uri: tarte }, position: { line: 4, character: 12 } },
+		)) as unknown[];
+		expect(highlights).toHaveLength(3);
+
+		// Mid-typing, the line does not parse: the exports come from the base.
+		client.change(text.replace("{ &pate }", "{ &pate, &"), 2, tarte);
+		const completion = (await (client as Client).completion(
+			0,
+			'@use "./bases/pate.gram" as { &pate, &'.length,
+			tarte,
+		)) as { label: string }[];
+		expect(completion.map((i) => i.label)).toEqual(["creme"]);
+	}, 20_000);
+
 	it("gets nothing it did not ask for", async () => {
 		let capabilities: Record<string, unknown>;
 		({ client, capabilities } = await startGeneric(["--stdio"]));

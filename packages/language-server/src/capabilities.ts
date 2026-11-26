@@ -32,6 +32,8 @@ export function serverCapabilities(
 			},
 		},
 		referencesProvider: true,
+		documentHighlightProvider: true,
+		documentLinkProvider: { resolveProvider: false },
 		renameProvider: { prepareProvider: true },
 		documentFormattingProvider: true,
 		codeActionProvider: true,
