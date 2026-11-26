@@ -9,7 +9,11 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
-import { loadModuleGraph, type ModuleGraph } from "@gram-lang/modules";
+import {
+	loadModuleGraph,
+	type ModuleGraph,
+	type ModuleHost,
+} from "@gram-lang/modules";
 import type { AnalyzedCompilationResult } from "@gram-lang/analyzer";
 import { ALL_DAY, type Availability } from "@gram-lang/scheduler";
 import { parseDocument, type DocumentState } from "./document-state";
@@ -28,6 +32,8 @@ import { provideHover } from "./features/hover";
 import { provideFoldingRanges } from "./features/folding-ranges";
 import { provideCompletions } from "./features/completions";
 import { provideReferences } from "./features/references";
+import { provideDocumentLinks } from "./features/document-links";
+import { provideDocumentHighlights } from "./features/document-highlight";
 import { prepareName, provideRename } from "./features/rename";
 import { provideFormatting } from "./features/formatting";
 import { provideCodeActions } from "./features/code-actions";
@@ -169,11 +175,18 @@ function kitchenOf(uri: string): KitchenContext {
  * has-imports branch to keep in sync (same rationale as the CLI's
  * `runPipeline`, `core/pipeline.ts:24`).
  */
+/** The host resolving and reading this document's `@use` modules: open buffers first, then the disk. */
+function moduleHostFor(uri: string): ModuleHost | undefined {
+	if (!uri.startsWith("file:")) return undefined;
+	const ctx = projectContextOf(uri);
+	return createLspModuleHost(ctx.projectRoot, documents, ctx.paths);
+}
+
 async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
 	if (!uri.startsWith("file:")) return undefined;
 	try {
-		const ctx = projectContextOf(uri);
-		const host = createLspModuleHost(ctx.projectRoot, documents, ctx.paths);
+		const host = moduleHostFor(uri);
+		if (!host) return undefined;
 		return await loadModuleGraph(uri, host);
 	} catch (e) {
 		connection.console.error(`Module graph load failed for ${uri}: ${e}`);
@@ -783,7 +796,30 @@ connection.onCompletion(({ textDocument: { uri }, position }) => {
 				s.lineStarts[position.line] ?? 0,
 				positionToOffset(s.lineStarts, position),
 			);
-	return provideCompletions(s, ingredientDB, prefix, uri, profile.snippets);
+	let host: ModuleHost | undefined;
+	try {
+		host = moduleHostFor(uri);
+	} catch {
+		host = undefined;
+	}
+	return provideCompletions(
+		s,
+		ingredientDB,
+		prefix,
+		uri,
+		profile.snippets,
+		host,
+	);
+});
+
+connection.onDocumentLinks(({ textDocument: { uri } }) => {
+	const s = states.get(uri);
+	return s ? provideDocumentLinks(s, uri) : [];
+});
+
+connection.onDocumentHighlight(({ textDocument: { uri }, position }) => {
+	const s = states.get(uri);
+	return s ? provideDocumentHighlights(s, position) : [];
 });
 
 connection.onReferences(({ textDocument: { uri }, position }) => {

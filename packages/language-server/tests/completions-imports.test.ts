@@ -3,10 +3,15 @@ import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { createMemoryHost } from "@gram-lang/modules";
 import {
+	matchUseBindingPrefix,
 	matchUseSpecifierPrefix,
+	provideImportExportCompletions,
 	provideImportPathCompletions,
 } from "../src/features/completions-imports";
+import { provideCompletions } from "../src/features/completions";
+import { parseDocument } from "../src/document-state";
 
 describe("matchUseSpecifierPrefix", () => {
 	it("matches an empty specifier right after the opening quote", () => {
@@ -116,5 +121,130 @@ describe("provideImportPathCompletions", () => {
 		const uri = pathToFileURL(join(dir, "top.gram")).toString();
 		expect(() => provideImportPathCompletions("@nope/", uri)).not.toThrow();
 		expect(provideImportPathCompletions("@nope/", uri)).toEqual([]);
+	});
+});
+
+describe("matchUseBindingPrefix", () => {
+	it("matches the unbraced form, which binds the default export", () => {
+		expect(matchUseBindingPrefix('@use "./pate.gram" as &')).toEqual({
+			specifier: "./pate.gram",
+			kind: "default",
+		});
+		expect(matchUseBindingPrefix('@use "./pate.gram" as &pa')).toEqual({
+			specifier: "./pate.gram",
+			kind: "default",
+		});
+	});
+
+	it("matches a named binding, with the exports already written", () => {
+		expect(matchUseBindingPrefix('@use "./b.gram" as { &')).toEqual({
+			specifier: "./b.gram",
+			kind: "named",
+			written: [],
+		});
+		expect(
+			matchUseBindingPrefix(
+				'@use "./b.gram" as { &blancs, &creme fouettee{} as &creme, &j',
+			),
+		).toEqual({
+			specifier: "./b.gram",
+			kind: "named",
+			written: ["blancs", "creme fouettee"],
+		});
+	});
+
+	it("does not match a local name, which is the author's to choose", () => {
+		expect(
+			matchUseBindingPrefix('@use "./b.gram" as { &blancs as &'),
+		).toBeNull();
+		expect(
+			matchUseBindingPrefix('@use "./b.gram" as { &blancs as '),
+		).toBeNull();
+	});
+
+	it("does not match before the sigil, after the braces, or outside @use", () => {
+		expect(matchUseBindingPrefix('@use "./b.gram" as ')).toBeNull();
+		expect(matchUseBindingPrefix('@use "./b.gram" as { &a }')).toBeNull();
+		expect(matchUseBindingPrefix('@use "./b.gram" as &a ~{-1h}')).toBeNull();
+		expect(matchUseBindingPrefix("[Mix] the &")).toBeNull();
+	});
+});
+
+describe("provideImportExportCompletions", () => {
+	const BASE =
+		"## Blancs ->&blancs\n\n[Whip] @egg white{2}.\n\n## Crème ->&creme fouettee{}\n\n[Whip] @cream{20cl}.\n\n## Fin\n\n[Mix] &blancs and &creme fouettee{}.\n";
+	const host = createMemoryHost({
+		"/bases/meringue.gram": BASE,
+		"/bases/pate.gram": "## Pâte ->&pate\n\n[Mix] @flour{200g}.\n",
+		"/bases/plain.gram": "## Mix\n\n[Mix] @flour{200g}.\n",
+	});
+	const uri = "/tarte.gram";
+
+	it("offers the named exports, multi-word ones with their empty braces", () => {
+		const items = provideImportExportCompletions(
+			{ specifier: "./bases/meringue.gram", kind: "named", written: [] },
+			uri,
+			host,
+		);
+		expect(items.map((i) => [i.label, i.insertText, i.detail])).toEqual([
+			["blancs", "blancs", "## Blancs"],
+			["creme fouettee", "creme fouettee{}", "## Crème"],
+		]);
+	});
+
+	it("leaves out the exports already bound", () => {
+		const items = provideImportExportCompletions(
+			{
+				specifier: "./bases/meringue.gram",
+				kind: "named",
+				written: ["blancs"],
+			},
+			uri,
+			host,
+		);
+		expect(items.map((i) => i.label)).toEqual(["creme fouettee"]);
+	});
+
+	it("offers the name of the default export to the unbraced form", () => {
+		const items = provideImportExportCompletions(
+			{ specifier: "./bases/pate.gram", kind: "default" },
+			uri,
+			host,
+		);
+		expect(items.map((i) => i.label)).toEqual(["pate"]);
+	});
+
+	it("offers nothing for a default export with no name of its own", () => {
+		expect(
+			provideImportExportCompletions(
+				{ specifier: "./bases/plain.gram", kind: "default" },
+				uri,
+				host,
+			),
+		).toEqual([]);
+	});
+
+	it("offers nothing for a module that cannot be read, or without a host", () => {
+		const slot = {
+			specifier: "./missing.gram",
+			kind: "named",
+			written: [],
+		} as const;
+		expect(provideImportExportCompletions(slot, uri, host)).toEqual([]);
+		expect(
+			provideImportExportCompletions(
+				{ ...slot, specifier: "./bases/pate.gram" },
+				uri,
+				undefined,
+			),
+		).toEqual([]);
+	});
+
+	it("answers while the document being typed does not parse", () => {
+		const prefix = '@use "./bases/pate.gram" as &';
+		const state = parseDocument(`${prefix}\n\n## Tarte\n\n[Use] it.\n`);
+		expect(state.ast).toBeNull();
+		const items = provideCompletions(state, {}, prefix, uri, false, host);
+		expect(items.map((i) => i.label)).toEqual(["pate"]);
 	});
 });

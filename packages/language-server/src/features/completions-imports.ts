@@ -2,6 +2,8 @@ import { readdirSync, type Dirent } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { type CompletionItem, CompletionItemKind } from "vscode-languageserver";
+import { getAST } from "@gram-lang/parser";
+import { computeExports, type ModuleHost } from "@gram-lang/modules";
 import { findProjectRootSync } from "../utils/project-root";
 import { readProjectConfigSync } from "../utils/project-config";
 
@@ -97,4 +99,85 @@ export function provideImportPathCompletions(
 		items.push({ label: `@${alias}/`, kind: CompletionItemKind.Folder });
 	}
 	return items;
+}
+
+const USE_BINDINGS_RE = /^\s*@use\s+"([^"]+)"\s+as\s+(.*)$/;
+const AS_RE = /\sas(\s|$)/;
+
+/** Where the cursor sits among the bindings of an `@use "..." as ...` line. */
+export type UseBindingSlot =
+	/** `as &|`: the unbraced form, which binds the module's default export. */
+	| { specifier: string; kind: "default" }
+	/** `as { &a, &|`: a named export, `written` the ones already listed. */
+	| { specifier: string; kind: "named"; written: string[] };
+
+/**
+ * The binding being typed on an `@use` line, read from the live line prefix
+ * like `matchUseSpecifierPrefix`: the line does not parse until its binding
+ * is complete, so the AST knows nothing of it yet. `null` once the cursor
+ * is on a local name (`&x as &|`), which is the author's to choose.
+ */
+export function matchUseBindingPrefix(prefix: string): UseBindingSlot | null {
+	const lineStart = prefix.lastIndexOf("\n") + 1;
+	const match = USE_BINDINGS_RE.exec(prefix.slice(lineStart));
+	if (!match) return null;
+	const specifier = match[1]!;
+	const rest = match[2]!;
+	if (/^&[^\s{},&]*$/.test(rest)) return { specifier, kind: "default" };
+	if (!rest.startsWith("{")) return null;
+	const inner = rest.slice(1);
+	// Closed, unless the `}` is a multi-word name's own `{}`.
+	if (inner.replace(/\{\}/g, "").includes("}")) return null;
+	const segments = inner.split(",");
+	const current = segments.pop()!.trimStart();
+	if (!/^&[^,&]*$/.test(current) || AS_RE.test(current)) return null;
+	const written = segments.flatMap((segment) => {
+		const name = /^&(.+?)(?:\{\})?(?:\s+as\s+&.*)?$/.exec(segment.trim());
+		return name ? [name[1]!.trim()] : [];
+	});
+	return { specifier, kind: "named", written };
+}
+
+/**
+ * The exports `slot` can bind, read from the module itself through `host`
+ * (the open buffer, else the disk) with `computeExports`, the function the
+ * composer resolves the same binding with. Not from `state.moduleGraph`:
+ * while the line is being typed, the document does not parse and its graph
+ * is stale or absent. A multi-word name is inserted with its empty braces
+ * (`&creme fouettee{}`), which a binding always keeps empty.
+ */
+export function provideImportExportCompletions(
+	slot: UseBindingSlot,
+	uri: string,
+	host: ModuleHost | undefined,
+): CompletionItem[] {
+	if (!host) return [];
+	let exported: ReturnType<typeof computeExports>;
+	try {
+		const source = host.read(host.resolve(slot.specifier, uri));
+		if (typeof source !== "string") return [];
+		exported = computeExports(getAST(source));
+	} catch {
+		return [];
+	}
+	const { sections, exports } = exported;
+	const item = (name: string, sectionIndex: number): CompletionItem => {
+		const title = sections[sectionIndex]?.title;
+		return {
+			label: name,
+			kind: CompletionItemKind.Module,
+			...(title ? { detail: `## ${title}` } : {}),
+			insertText: name.includes(" ") ? `${name}{}` : name,
+		};
+	};
+	if (slot.kind === "default") {
+		const info = exports.get("default");
+		// A default section with no `->&` of its own has no name to offer.
+		if (!info || info.name === "default") return [];
+		return [item(info.name, info.sectionIndex)];
+	}
+	const written = new Set(slot.written);
+	return [...exports]
+		.filter(([key]) => key !== "default" && !written.has(key))
+		.map(([key, info]) => item(key, info.sectionIndex));
 }

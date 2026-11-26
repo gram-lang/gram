@@ -8,8 +8,11 @@ import {
 	nameInsertion,
 	provideIngredientCompletions,
 } from "./completions-ingredients";
+import type { ModuleHost } from "@gram-lang/modules";
 import {
+	matchUseBindingPrefix,
 	matchUseSpecifierPrefix,
+	provideImportExportCompletions,
 	provideImportPathCompletions,
 } from "./completions-imports";
 
@@ -37,13 +40,21 @@ export function provideCompletions(
 	prefix: string,
 	uri = "",
 	snippets = false,
+	/** Reads the modules an `@use` line names, for its exports. */
+	moduleHost?: ModuleHost,
 ): CompletionItem[] {
-	if (!state.ast) return [];
-
+	// The `@use` line being typed does not parse yet (`state.ast` is null or
+	// stale): both completions read the live prefix and the module itself.
 	const useSpecifier = matchUseSpecifierPrefix(prefix);
 	if (useSpecifier !== null) {
 		return provideImportPathCompletions(useSpecifier, uri);
 	}
+	const useBinding = matchUseBindingPrefix(prefix);
+	if (useBinding) {
+		return provideImportExportCompletions(useBinding, uri, moduleHost);
+	}
+
+	if (!state.ast) return [];
 
 	if (isInsideBraces(prefix)) {
 		// The target of a share or a ratio (`{70% @&`, `{1 / 100 g &`): the

@@ -27,6 +27,8 @@ describe("serverCapabilities", () => {
 			});
 			expect(caps.semanticTokensProvider).toMatchObject({ full: true });
 			expect(caps.referencesProvider).toBe(true);
+			expect(caps.documentHighlightProvider).toBe(true);
+			expect(caps.documentLinkProvider).toEqual({ resolveProvider: false });
 			expect(caps.renameProvider).toEqual({ prepareProvider: true });
 			expect(caps.documentFormattingProvider).toBe(true);
 			expect(caps.codeActionProvider).toBe(true);
