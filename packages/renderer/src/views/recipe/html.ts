@@ -717,6 +717,8 @@ export const htmlBackend: RenderBackend = {
 			"yields",
 			"notes",
 			"densities",
+			// The page's `lang` carries it: not the author's own metadata.
+			"language",
 		]);
 		for (const [k, v] of Object.entries(meta)) {
 			if (
