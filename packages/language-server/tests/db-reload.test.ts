@@ -2,7 +2,9 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { writeFileSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import {
+	isIngredientDbChange,
 	resolveIngredientDb,
 	reloadDbAndRefreshDiagnostics,
 } from "../src/utils/db-reload";
@@ -66,6 +68,60 @@ describe("resolveIngredientDb", () => {
 		expect(result.rejected).toEqual([]);
 	});
 
+	/** A workspace whose `.gram/config.yaml` says `database: <database>`. */
+	function configuredWorkspace(database: string): string {
+		const dir = tmpWorkspace("sugar:\n  name: Sugar\n");
+		writeFileSync(join(dir, ".gram", "config.yaml"), `database: ${database}\n`);
+		return dir;
+	}
+
+	it("reads the database named by the folder's .gram/config.yaml, as the CLI does", () => {
+		const dir = configuredWorkspace("data/ingredients.yaml");
+		mkdirSync(join(dir, "data"));
+		writeFileSync(
+			join(dir, "data", "ingredients.yaml"),
+			"flour:\n  name: Flour\n",
+		);
+
+		const result = resolveIngredientDb(undefined, [dir]);
+
+		expect(Object.keys(result.db)).toEqual(["flour"]);
+		expect(result.path).toBe(join(dir, "data", "ingredients.yaml"));
+	});
+
+	it("keeps the editor's setting over the folder's database:", () => {
+		const dir = configuredWorkspace("data/ingredients.yaml");
+		mkdirSync(join(dir, "data"));
+		writeFileSync(
+			join(dir, "data", "ingredients.yaml"),
+			"flour:\n  name: Flour\n",
+		);
+		const explicitPath = join(dir, "custom-db.yaml");
+		writeFileSync(explicitPath, "salt:\n  name: Salt\n");
+
+		const result = resolveIngredientDb(explicitPath, [dir]);
+
+		expect(Object.keys(result.db)).toEqual(["salt"]);
+		expect(result.path).toBe(explicitPath);
+	});
+
+	it("does not fall back to .gram/ingredients.yaml when database: names a missing file, as the CLI does not", () => {
+		const dir = configuredWorkspace("missing.yaml");
+
+		const result = resolveIngredientDb(undefined, [dir]);
+
+		expect(result.db).toEqual({});
+		expect(result.path).toBeUndefined();
+	});
+
+	it("gives the path of the auto-discovered database", () => {
+		const dir = tmpWorkspace("sugar:\n  name: Sugar\n");
+
+		expect(resolveIngredientDb(undefined, [dir]).path).toBe(
+			join(dir, ".gram", "ingredients.yaml"),
+		);
+	});
+
 	it("surfaces rejected entries instead of silently dropping them", () => {
 		const dir = mkdtempSync(join(tmpdir(), "gram-lsp-reload-test-"));
 		dirs.push(dir);
@@ -81,6 +137,29 @@ describe("resolveIngredientDb", () => {
 
 		expect(Object.keys(result.db)).toEqual(["flour"]);
 		expect(result.rejected.map((r) => r.key)).toEqual(["bad"]);
+	});
+});
+
+describe("isIngredientDbChange", () => {
+	it("is true for any .gram/ingredients.yaml and for the database in use", () => {
+		const loaded = join(tmpdir(), "proj", "data", "ingredients.yaml");
+		expect(
+			isIngredientDbChange("file:///w/.gram/ingredients.yaml", undefined),
+		).toBe(true);
+		expect(isIngredientDbChange(pathToFileURL(loaded).href, loaded)).toBe(true);
+	});
+
+	it("is false for another YAML file", () => {
+		const loaded = join(tmpdir(), "proj", "data", "ingredients.yaml");
+		expect(
+			isIngredientDbChange(
+				pathToFileURL(join(tmpdir(), "proj", "data", "other.yaml")).href,
+				loaded,
+			),
+		).toBe(false);
+		expect(isIngredientDbChange("file:///w/pnpm-lock.yaml", undefined)).toBe(
+			false,
+		);
 	});
 });
 
