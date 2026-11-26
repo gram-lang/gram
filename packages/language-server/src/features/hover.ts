@@ -14,12 +14,19 @@ import {
 import type { IngredientDB } from "../ingredient-loader";
 import { provideNutritionHover } from "./hover-nutrition";
 import { provideAnchorHover, provideTimerHover } from "./hover-durations";
+import { provideFrontmatterHover } from "./hover-frontmatter";
 
 export function provideHover(
 	state: DocumentState,
 	position: Position,
 	db: IngredientDB,
+	/** The editor's language: the descriptions of the frontmatter keys. */
+	locale?: string,
 ): Hover | null {
+	// Before the AST: a frontmatter being typed may not parse yet.
+	const frontmatter = provideFrontmatterHover(state, position, locale);
+	if (frontmatter) return frontmatter;
+
 	if (!state.ast) return null;
 
 	const offset = positionToOffset(state.lineStarts, position);

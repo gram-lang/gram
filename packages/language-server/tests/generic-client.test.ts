@@ -164,6 +164,63 @@ describe("a generic stdio client", () => {
 		expect(completion.map((i) => i.label)).toEqual(["creme"]);
 	}, 20_000);
 
+	it("gets the frontmatter keys, the recipe's names and the deprecated key's fix", async () => {
+		const file = pathToFileURL(join(root, "cookies.gram")).href;
+		const text =
+			"---\ntitle: Cookies\nservings: 4\n---\n\n## Bake\n\nHeat the #pan{} in ~_oven{10 min}.\n";
+		let capabilities: Record<string, unknown>;
+		({ client, capabilities } = await startGeneric(["--stdio"]));
+		expect(capabilities.completionProvider).toEqual({
+			triggerCharacters: ["&", "@", '"', "#", "^", "~"],
+		});
+
+		client.open(text, file);
+		const deprecated = (
+			await client.diagnosticsOf(file, (d) =>
+				d.some((x) => x.code === "DEPRECATED_FRONTMATTER_KEY"),
+			)
+		).find((x) => x.code === "DEPRECATED_FRONTMATTER_KEY");
+		const diag = deprecated as unknown as {
+			range: { start: { line: number; character: number } };
+			tags?: number[];
+		};
+		expect(diag.range.start).toEqual({ line: 2, character: 0 });
+		expect(diag.tags).toEqual([2]); // DiagnosticTag.Deprecated
+
+		const actions = (await (client as Client).request(
+			"textDocument/codeAction",
+			{
+				textDocument: { uri: file },
+				range: diag.range,
+				context: { diagnostics: [deprecated] },
+			},
+		)) as { title: string; isPreferred?: boolean }[];
+		expect(actions).toContainEqual(
+			expect.objectContaining({
+				title: "Rename 'servings' to 'portions'",
+				isPreferred: true,
+			}),
+		);
+
+		const hover = await (client as Client).hover(1, 2, file);
+		expect(hover?.contents.value).toContain("**`title`**");
+
+		// A key being typed, before the block is closed.
+		client.change("---\ntitle: Cookies\nport", 2, file);
+		const keys = (await (client as Client).completion(2, 4, file)) as {
+			label: string;
+		}[];
+		expect(keys.map((i) => i.label)).toContain("portions");
+		expect(keys.map((i) => i.label)).not.toContain("title");
+
+		client.change(`${text}\nThen ~_`, 3, file);
+		const tracks = (await until(
+			() => (client as Client).completion(9, 7, file),
+			(c) => Array.isArray(c) && c.length > 0,
+		)) as { label: string }[];
+		expect(tracks.map((i) => i.label)).toEqual(["oven"]);
+	}, 20_000);
+
 	it("gets nothing it did not ask for", async () => {
 		let capabilities: Record<string, unknown>;
 		({ client, capabilities } = await startGeneric(["--stdio"]));

@@ -1,6 +1,7 @@
 import {
 	type Diagnostic,
 	DiagnosticSeverity,
+	DiagnosticTag,
 	type Range,
 } from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
@@ -20,7 +21,8 @@ import {
 	type WarningSeverity,
 	type Warning,
 } from "@gram-lang/kitchen";
-import { warningSeverityOf } from "@gram-lang/modules";
+import { warningInfoOf } from "@gram-lang/modules";
+import { scanFrontmatter } from "../utils/frontmatter-text";
 import {
 	isKnownIngredient,
 	findClosestIngredient,
@@ -71,17 +73,26 @@ function warningToDiagnostic(
 	uri: string,
 	w: Warning,
 ): Diagnostic {
-	const severity = SEVERITY_MAP[warningSeverityOf(w.code)];
+	const info = warningInfoOf(w.code);
+	const severity = SEVERITY_MAP[info.severity];
 	const warnUri = w.loc?.uri ?? uri;
 
 	if (warnUri === uri) {
-		const range = w.loc ? locToRange(state.lineStarts, w.loc) : ZERO_RANGE;
+		const ownKey = ownFrontmatterKeyRange(state, w);
+		const range = w.loc
+			? locToRange(state.lineStarts, w.loc)
+			: (ownKey ?? ZERO_RANGE);
 		return {
 			severity,
 			range,
 			message: w.message,
 			code: w.code,
 			source: "gram",
+			// Struck through where the deprecated form is written: not on the
+			// `@use` line of a module that writes it.
+			...(info.deprecated && !w.data?.specifier
+				? { tags: [DiagnosticTag.Deprecated] }
+				: {}),
 			// What a Quick Fix acts on (the suggestion of an INVALID_QUANTITY,
 			// say): `provideCodeActions` reads it back from the diagnostic.
 			...(w.data ? { data: w.data } : {}),
@@ -111,6 +122,24 @@ function warningToDiagnostic(
 			{ location: { uri: warnUri, range: depRange }, message: w.message },
 		],
 	};
+}
+
+/**
+ * Where a deprecated key of this file's own frontmatter is written: the
+ * warning has no `loc` (the AST keeps no position for the frontmatter's
+ * keys), so its `data.key` is looked up in the text. Null for any other
+ * warning, and for a key raised by an imported module (`data.specifier`),
+ * which stays on its `@use` line.
+ */
+function ownFrontmatterKeyRange(
+	state: DocumentState,
+	w: Warning,
+): Range | null {
+	if (w.code !== WarningCode.DEPRECATED_FRONTMATTER_KEY) return null;
+	if (w.data?.specifier !== undefined) return null;
+	const key = w.data?.key;
+	const at = scanFrontmatter(state.text)?.keys.find((k) => k.key === key);
+	return at ? locToRange(state.lineStarts, at) : null;
 }
 
 export function provideDiagnostics(

@@ -773,7 +773,7 @@ connection.onDefinition(({ textDocument: { uri }, position }) => {
 
 connection.onHover(({ textDocument: { uri }, position }) => {
 	const s = states.get(uri);
-	return s ? provideHover(s, position, ingredientDB) : null;
+	return s ? provideHover(s, position, ingredientDB, locale) : null;
 });
 
 connection.onFoldingRanges(({ textDocument: { uri } }) => {
@@ -809,6 +809,7 @@ connection.onCompletion(({ textDocument: { uri }, position }) => {
 		uri,
 		profile.snippets,
 		host,
+		{ text: doc ? doc.getText() : s.text, position, locale },
 	);
 });
 

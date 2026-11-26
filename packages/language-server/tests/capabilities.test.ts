@@ -23,7 +23,7 @@ describe("serverCapabilities", () => {
 			expect(caps.hoverProvider).toBe(true);
 			expect(caps.foldingRangeProvider).toBe(true);
 			expect(caps.completionProvider).toEqual({
-				triggerCharacters: ["&", "@", '"'],
+				triggerCharacters: ["&", "@", '"', "#", "^", "~"],
 			});
 			expect(caps.semanticTokensProvider).toMatchObject({ full: true });
 			expect(caps.referencesProvider).toBe(true);
