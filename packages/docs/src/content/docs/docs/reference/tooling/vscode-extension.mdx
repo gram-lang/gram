@@ -81,7 +81,7 @@ All of these settings are available with identical values in the [CLI](/docs/ref
 A working day pushed beyond 24 hours by a prolonged passive phase triggers an explicit warning on its section (`DAY_OVERFLOW`), matching compiler diagnostics.
 
 ### 4. Smart ingredient management
-- **Silent plural management**: The extension automatically maps common plural nouns in your recipe (e.g. `@carrots`) to singular entries in your YAML database (`carrot`), maintaining natural language without raising false errors.
+- **Same verdict as the nutrition**: An ingredient is flagged as unknown exactly when the nutrition estimate cannot find it in your database. Case, accents, hyphens and apostrophes don't matter (`@Olive-Oil` finds `olive oil`), but a plural is a different name: write `@carrot`, or add `carrots` to the entry's `aliases` (see [Manage an ingredient database](/docs/how-to/manage-database/)).
 - **Fuzzy matching**: If you misspell an ingredient, a Levenshtein distance algorithm suggests the closest known match via Code Actions (Quick Fixes).
 - **Hover insights**: Hover over any ingredient to inspect its nutritional profile and automatic volume-to-mass conversions (`1 tbsp → 15g`). Hover over a timer to see the parsed duration (`~{1:30 h}` → `1 h 30 min`), over a section anchor to see its lead time, or over a sum/ratio to inspect its resolved value.
 

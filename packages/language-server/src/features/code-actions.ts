@@ -13,10 +13,10 @@ import {
 	positionToOffset,
 } from "../utils/position";
 import { collectIntermediates, collectIngredients } from "../utils/ast-walker";
-import { type IngredientDB, lookupIngredient } from "../ingredient-loader";
+import type { IngredientDB } from "../ingredient-loader";
 import { normalizeUnit } from "@gram-lang/i18n";
 import { ASTNodeType, type QuantityAST } from "@gram-lang/parser";
-import { standardizeMass } from "@gram-lang/analyzer";
+import { getIngredientData, standardizeMass } from "@gram-lang/analyzer";
 import { numericTotal, termsOfAst } from "@gram-lang/kitchen";
 
 export function provideCodeActions(
@@ -252,7 +252,7 @@ export function provideCodeActions(
 		);
 
 		if (ingredient) {
-			const entry = lookupIngredient(ingredient.name, db);
+			const entry = getIngredientData(ingredient.name, db);
 			const qty =
 				ingredient.quantity?.type === ASTNodeType.Quantity
 					? (ingredient.quantity as QuantityAST)

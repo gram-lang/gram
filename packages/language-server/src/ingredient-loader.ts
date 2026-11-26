@@ -36,46 +36,13 @@ export function loadIngredientDB(yamlPath: string): LoadIngredientDBResult {
 	}
 }
 
-export function lookupIngredient(
-	name: string,
-	db: IngredientDB,
-): IngredientEntry | null {
-	if (Object.keys(db).length === 0) return null;
-	const slug = slugify(name);
-
-	// Direct match by slug key
-	const bySlug = db[slug];
-	if (bySlug) return bySlug;
-
-	// Naive singularization
-	if (slug.endsWith("s")) {
-		const singular = db[slug.slice(0, -1)];
-		if (singular) return singular;
-	}
-
-	// Search by name or aliases (case-insensitive)
-	const nameLower = name.toLowerCase();
-	for (const entry of Object.values(db)) {
-		if (entry.name.toLowerCase() === nameLower) return entry;
-		if (entry.aliases?.some((a) => a.toLowerCase() === nameLower)) return entry;
-	}
-
-	return null;
-}
-
-// Pre-computes all known lookup keys into a Set for O(1) ingredient existence checks.
-// Must be rebuilt whenever the DB is reloaded.
-export function buildIngredientLookupSet(db: IngredientDB): Set<string> {
-	const set = new Set<string>();
-	for (const [key, entry] of Object.entries(db)) {
-		set.add(key);
-		set.add(entry.name.toLowerCase());
-		for (const alias of entry.aliases ?? []) {
-			set.add(alias.toLowerCase());
-		}
-	}
-	return set;
-}
+// Whether an ingredient is known is never decided here: the editor asks the
+// analyzer (`getIngredientData`), the same resolution nutrition and
+// `analyzed.missingIngredients` use, so an ingredient the editor accepts is
+// one the nutrition finds. This file used to keep its own lookup (raw keys,
+// lowercased names, a French plural guess) and the two disagreed both ways:
+// `@carottes` passed the editor while nutrition skipped it, `@olive-oil`
+// was flagged while nutrition found it.
 
 // Levenshtein edit distance — used only for unknown-ingredient suggestions, never for hot-path lookups.
 function levenshtein(a: string, b: string): number {
@@ -98,35 +65,6 @@ function levenshtein(a: string, b: string): number {
 	return row[b.length]!;
 }
 
-// O(1) check — mirrors the lookup order of lookupIngredient() without linear scan.
-// Handles common French plurals without fuzzy matching: each word's trailing 's' is
-// tried as a singular form, so @carottes and @tomates cerises silently resolve.
-export function isKnownIngredient(
-	name: string,
-	lookupSet: Set<string>,
-): boolean {
-	const slug = slugify(name);
-	if (lookupSet.has(slug)) return true;
-	if (lookupSet.has(name.toLowerCase())) return true;
-
-	// Single-word plural: "carottes" → "carotte"
-	if (slug.endsWith("s") && lookupSet.has(slug.slice(0, -1))) return true;
-
-	// Multi-word: remove trailing 's' from each word ("tomates cerises" → "tomate cerise")
-	const words = name.trim().split(/\s+/);
-	if (words.length > 1) {
-		const singular = words
-			.map((w) => (w.endsWith("s") ? w.slice(0, -1) : w))
-			.join(" ");
-		if (singular !== name) {
-			if (lookupSet.has(slugify(singular))) return true;
-			if (lookupSet.has(singular.toLowerCase())) return true;
-		}
-	}
-
-	return false;
-}
-
 // Returns the canonical entry name whose slug is closest to the input (within maxDistance),
 // or null if nothing is close enough. Only called for genuinely unknown ingredients.
 export function findClosestIngredient(
@@ -138,7 +76,9 @@ export function findClosestIngredient(
 	let best: string | null = null;
 	let bestDist = maxDistance + 1;
 	for (const [key, entry] of Object.entries(db)) {
-		const candidates = [key, ...(entry.aliases ?? []).map((a) => slugify(a))];
+		const candidates = [key, entry.name, ...(entry.aliases ?? [])].map((c) =>
+			slugify(c),
+		);
 		for (const candidate of candidates) {
 			const d = levenshtein(inputSlug, candidate);
 			if (d > 0 && d < bestDist) {
