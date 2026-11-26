@@ -76,6 +76,26 @@ export function normalize(value: unknown): unknown {
 				out[key] = v.toLowerCase();
 				continue;
 			}
+			// Rule 1 again: the glued parent a SPACED_COMPOSITE suggests
+			// (`<@Lemon`) quotes it as written, like `parent`. Today rule 6
+			// glues every `<` kitchen flags, so I6 skips those inputs; this
+			// keeps a blank kitchen would flag but rule 6 misses (a no-break
+			// space before the fix) from reporting a case change as a change
+			// of meaning.
+			if (
+				key === "data" &&
+				record.code === "SPACED_COMPOSITE" &&
+				v &&
+				typeof v === "object" &&
+				typeof (v as { suggestion?: unknown }).suggestion === "string"
+			) {
+				const data = v as { suggestion: string };
+				out[key] = normalize({
+					...data,
+					suggestion: data.suggestion.toLowerCase(),
+				});
+				continue;
+			}
 			out[key] = normalize(v);
 		}
 		return out;

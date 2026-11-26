@@ -107,6 +107,37 @@ describe("formatGram", () => {
 		}
 	});
 
+	// Kitchen flags `<` with any Unicode blank around it (SPACED_COMPOSITE
+	// trims the text between the two ingredients): the repair glues those
+	// too, a no-break space or an ideographic space as well as a space.
+	it("normalizes Unicode horizontal blanks around the composite separator", () => {
+		for (const src of [
+			"Add @Yolks{3} < @Eggs{3}.\n",
+			"Add @yolks{3} < @eggs{3}.\n",
+			"Add @yolks{3}　<　@eggs{3}.\n",
+		]) {
+			const { content, changes } = formatGram(src);
+			expect(content).toBe("Add @yolks{3}<@eggs{3}.\n");
+			expect(changes.compositeSeparatorSpacing).toBe(1);
+			expect(formatGram(content).content).toBe(content);
+		}
+	});
+
+	// The repair runs before the parser finds the steps: a line break is
+	// never a blank it takes, or it would merge two steps (or a comment).
+	it("never glues a composite separator across a line break", () => {
+		for (const [src, expected] of [
+			["Add @yolks{3}\n< @eggs{3}.\n", "Add @yolks{3}\n<@eggs{3}.\n"],
+			["Add @yolks{3} <\n@eggs{3}.\n", "Add @yolks{3} <\n@eggs{3}.\n"],
+			[
+				"Add @yolks{3}.\n\n<\u00a0@eggs{3}.\n",
+				"Add @yolks{3}.\n\n<@eggs{3}.\n",
+			],
+		]) {
+			expect(formatGram(src as string).content).toBe(expected as string);
+		}
+	});
+
 	it("does not touch an already-normalized composite separator", () => {
 		const { content, changes } = formatGram("Add @sugar<@eggs{3}.\n");
 		expect(content).toBe("Add @sugar<@eggs{3}.\n");
