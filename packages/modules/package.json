@@ -4,6 +4,16 @@
   "description": "Module resolution and composition for Gram's @use import directive",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./lint": {
+      "types": "./dist/lint/index.d.ts",
+      "import": "./dist/lint/index.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "dist"
@@ -29,7 +39,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
+    "build": "tsup src/index.ts src/lint/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "bun test --only-failures",
     "prepublishOnly": "npm run build"

@@ -1,4 +1,4 @@
-import { slugify } from "@gram-lang/kitchen";
+import { type CompilationResult, slugify } from "@gram-lang/kitchen";
 
 /**
  * Lexical scan for the `@ingredient` tokens a piece of .gram text *contains*,
@@ -92,6 +92,12 @@ function maskFrontmatter(text: string): string {
 	return blank(match[0]) + text.slice(match[0].length);
 }
 
+/**
+ * One `@ingredient` token found by `findWrittenIngredients`.
+ *
+ * @experimental Part of `@gram-lang/modules/lint`, whose shape may still
+ * change in a minor release.
+ */
 export interface WrittenIngredient {
 	/** The name as written, before slugification. */
 	name: string;
@@ -99,6 +105,17 @@ export interface WrittenIngredient {
 	id: string;
 	/** 1-based line the token starts on, for error messages. */
 	line: number;
+	/**
+	 * UTF-16 offset of the token's `@` in the scanned text (same units as
+	 * Ohm.js and LSP). A composite parent `<@` starts at its `@`, as in the AST.
+	 */
+	start: number;
+	/**
+	 * UTF-16 offset just past the token: after the closing `}` of its quantity,
+	 * or after the name of a bare `@word`. Unlike an AST `loc`, a preparation
+	 * `(…)` or a composite parent that follows is not included.
+	 */
+	end: number;
 	/**
 	 * Whether this particular mention carried a non-empty quantity.
 	 *
@@ -112,6 +129,9 @@ export interface WrittenIngredient {
 /**
  * Every `@ingredient` (and `<@parent`) token written in `text`, in source
  * order. Duplicates are kept: the caller decides whether repetition matters.
+ *
+ * @experimental Part of `@gram-lang/modules/lint`, whose shape may still
+ * change in a minor release.
  */
 export function findWrittenIngredients(text: string): WrittenIngredient[] {
 	const src = maskDeliberateComments(maskFrontmatter(text));
@@ -154,12 +174,14 @@ export function findWrittenIngredients(text: string): WrittenIngredient[] {
 
 		let name: string;
 		let quantified = false;
+		let tokenEnd: number;
 		if (src[afterAlias] === "{" && end > p) {
 			name = src.slice(p, end);
 			const close = src.indexOf("}", afterAlias + 1);
 			quantified =
 				close > afterAlias &&
 				src.slice(afterAlias + 1, close).trim().length > 0;
+			tokenEnd = close > afterAlias ? close + 1 : afterAlias + 1;
 		} else {
 			// -- bare: singleWordName
 			let bareEnd = p;
@@ -167,11 +189,19 @@ export function findWrittenIngredients(text: string): WrittenIngredient[] {
 				bareEnd++;
 			if (bareEnd === p) continue; // a lone "@" is not an ingredient
 			name = src.slice(p, bareEnd);
+			tokenEnd = bareEnd;
 		}
 
 		const trimmed = name.trim();
 		if (!trimmed) continue;
-		found.push({ name: trimmed, id: slugify(trimmed), line, quantified });
+		found.push({
+			name: trimmed,
+			id: slugify(trimmed),
+			line,
+			start: i,
+			end: tokenEnd,
+			quantified,
+		});
 	}
 
 	return found;
@@ -191,6 +221,9 @@ export function findWrittenIngredients(text: string): WrittenIngredient[] {
  * neither — the count is the single most useful quality signal there is: it
  * says how much of the recipe still has to be filled in by hand, and thus how
  * much the source was actually worth.
+ *
+ * @experimental Part of `@gram-lang/modules/lint`, whose shape may still
+ * change in a minor release.
  */
 export function findUnquantifiedIngredients(
 	text: string,
@@ -203,6 +236,9 @@ export function findUnquantifiedIngredients(
  * that also need findWrittenIngredients for something else (e.g. cross-
  * checking against the compiled registry) should scan once and pass the
  * result here rather than have this re-scan the same text.
+ *
+ * @experimental Part of `@gram-lang/modules/lint`, whose shape may still
+ * change in a minor release.
  */
 export function unquantifiedFrom(
 	written: WrittenIngredient[],
@@ -219,4 +255,32 @@ export function unquantifiedFrom(
 		result.push({ name: w.name, line: w.line });
 	}
 	return result;
+}
+
+/**
+ * Ingredients that were written but did not survive compilation: every
+ * scanned token whose id is missing from the compiled registry, at its first
+ * mention (one entry per id, in source order).
+ *
+ * The motivating case is a `//` dropped mid-sentence, which comments out the
+ * rest of the line and silently takes the ingredients after it. Only call it
+ * on a recipe that compiled: on a parse failure there is no registry to
+ * compare against, and guessing at lost content would only add noise.
+ *
+ * @experimental Part of `@gram-lang/modules/lint`, whose shape may still
+ * change in a minor release.
+ */
+export function lostFrom(
+	compiled: Pick<CompilationResult, "registry">,
+	written: WrittenIngredient[],
+): WrittenIngredient[] {
+	const registered = new Set(Object.keys(compiled.registry.ingredients));
+	const seen = new Set<string>();
+	const lost: WrittenIngredient[] = [];
+	for (const w of written) {
+		if (registered.has(w.id) || seen.has(w.id)) continue;
+		seen.add(w.id);
+		lost.push(w);
+	}
+	return lost;
 }
