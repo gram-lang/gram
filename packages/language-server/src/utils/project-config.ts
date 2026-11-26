@@ -22,6 +22,8 @@ export interface ProjectConfig {
 	mealTimes?: string[];
 	/** How the times of day are written, when the editor's `gram.clock` is `auto`. */
 	clock?: ClockMode;
+	/** The `database:` path of the ingredient database, relative to the project root (the CLI's `resolveDbPath`). */
+	database?: string;
 }
 
 /**
@@ -63,6 +65,9 @@ export function readProjectConfigSync(projectRoot: string): ProjectConfig {
 		if (meals?.ok) config.mealTimes = meals.times;
 	}
 	if (VIEW_SETTINGS.clock.accepts(raw.clock)) config.clock = raw.clock;
+	if (typeof raw.database === "string" && raw.database.trim() !== "") {
+		config.database = raw.database.trim();
+	}
 	return config;
 }
 
