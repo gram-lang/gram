@@ -36,6 +36,25 @@ export const MEANING_REPAIRS: readonly (keyof FormatterChanges)[] = [
 	"headerSpacing",
 ];
 
+/**
+ * Rule 4 of the formatter, as `DECIMAL_WITH_ZEROS` in packages/format reads
+ * it: the trailing decimal zeros of a number standing on its own, never a
+ * fraction's term (#286) nor a comma followed by three digits (a possible
+ * thousands separator).
+ */
+const DECIMAL_WITH_ZEROS =
+	/(?<![\p{L}\d.,_])(?<!\p{L}-)(?<!\/[ \t]*)(\d+)([.,])(\d*?)(0+)(?![\d.,]\d)(?!\d)(?![ \t]*\/)/gu;
+
+function withoutTrailingZeros(text: string): string {
+	return text.replace(
+		DECIMAL_WITH_ZEROS,
+		(match, n: string, sep: string, digits: string, zeros: string) => {
+			if (sep === "," && digits.length + zeros.length === 3) return match;
+			return digits ? `${n}${sep}${digits}` : n;
+		},
+	);
+}
+
 function normalizeText(text: string, isLast: boolean): string {
 	// Rule 9 (tabs → 4 spaces) and rule 10 (trailing whitespace) rewrite prose.
 	const out = text.replace(/\t/g, "    ").replace(/[ \t]+(?=\r?\n)/g, "");
@@ -96,6 +115,25 @@ export function normalize(value: unknown): unknown {
 				out[key] = normalize({
 					...data,
 					suggestion: data.suggestion.toLowerCase(),
+				});
+				continue;
+			}
+			// Rule 4 drops a number's trailing decimal zeros (`1.30` → `1.3`),
+			// and the duration an INVALID_DURATION suggests (`~{1.30% h}` →
+			// `1.30 h`, since 1.6) quotes the source spelling, like its
+			// `message`. Only those zeros are canonicalized: any other
+			// difference in the suggestion still counts.
+			if (
+				key === "data" &&
+				record.code === "INVALID_DURATION" &&
+				v &&
+				typeof v === "object" &&
+				typeof (v as { suggestion?: unknown }).suggestion === "string"
+			) {
+				const data = v as { suggestion: string };
+				out[key] = normalize({
+					...data,
+					suggestion: withoutTrailingZeros(data.suggestion),
 				});
 				continue;
 			}
