@@ -936,3 +936,54 @@ describe("blanks and line breaks (#200)", () => {
 		});
 	});
 });
+
+// Found by the fuzz (#281): `alias = ":" refName` took the blanks after `@salt: ` at
+// the end of a line as an empty alias, and the `:` vanished from the step,
+// while `@salt:` kept it as text. Stripping the trailing blank (what the
+// formatter does) changed the recipe.
+describe("a colon followed by blanks alone is no alias", () => {
+	const step = (source: string) =>
+		(getAST(source).children[0] as any).children.map((c: any) =>
+			c.type === ASTNodeType.Ingredient || c.type === ASTNodeType.Cookware
+				? { name: c.name, alias: c.alias }
+				: c.value,
+		);
+
+	// Up to a line break (LF, CRLF, lone CR) or the end of the file.
+	for (const rest of [
+		"\nok.",
+		" \nok.",
+		"\t\nok.",
+		" \r\nok.",
+		" \rok.",
+		" ",
+		"\t",
+	]) {
+		it(`keeps the colon of ${JSON.stringify(`@salt:${rest}`)} as text`, () => {
+			expect(step(`Add @salt:${rest}`).slice(0, 3)).toEqual([
+				"Add ",
+				{ name: "salt", alias: null },
+				":",
+			]);
+		});
+	}
+
+	it("does the same for a bare #cookware", () => {
+		expect(step("Take #pan: \nok.").slice(0, 3)).toEqual([
+			"Take ",
+			{ name: "pan", alias: null },
+			":",
+		]);
+	});
+
+	it("still reads a real alias, with or without a blank after the colon", () => {
+		expect(step("With @dry white wine:wine{100ml}.")[1]).toEqual({
+			name: "dry white wine",
+			alias: "wine",
+		});
+		expect(step("Add @salt: fleur de sel.")[1]).toEqual({
+			name: "salt",
+			alias: "fleur de sel.",
+		});
+	});
+});
