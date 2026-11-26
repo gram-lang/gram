@@ -1,0 +1,107 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Prep",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 9,
+                "end": 13
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "%g",
+                "fixed": false,
+                "loc": {
+                  "start": 20,
+                  "end": 25
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 13,
+                "end": 26
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 27,
+                "end": 32
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "fraction",
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "text": "1/2"
+                },
+                "unit": "% cup",
+                "fixed": false,
+                "loc": {
+                  "start": 38,
+                  "end": 47
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 32,
+                "end": 48
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 48,
+                "end": 49
+              }
+            }
+          ],
+          "loc": {
+            "start": 9,
+            "end": 50
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 50
+      }
+    }
+  ]
+}

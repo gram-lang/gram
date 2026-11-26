@@ -40,6 +40,9 @@
 // the tab, its notice in both languages, the warnings that lead to it). The
 // YAML text itself loads in a chunk of its own when the tab opens, and its
 // data is parsed at build time, so no YAML parser ships.
+// It went from 1060 KB to 1065 KB in 1.6.0: the compiler's writing hints
+// (`&flour` on a raw ingredient, Cooklang's `%` separator, a temperature in
+// cookware braces) brought their checks and messages (1059.1 KB to 1060.6 KB).
 
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -49,7 +52,7 @@ const ASSETS_DIR = join(import.meta.dirname, "..", "dist", "_astro");
 const BUDGETS_KB = {
 	"playground chunk (client:only, but should not balloon)": {
 		pattern: /^GramPlayground\..*\.js$/,
-		maxKb: 1060,
+		maxKb: 1065,
 	},
 };
 

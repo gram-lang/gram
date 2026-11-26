@@ -59,8 +59,9 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ```gram
 ❌  #pan{20cm}      →   ✅  #pan(20cm)
 ❌  #bowl{large}    →   ✅  #bowl(large)
+❌  #oven{180°C}    →   ✅  ^oven{180°C}
 ```
-`#cookware` braces accept integer counts only. Dimensions, materials, and descriptions always go in parentheses — see [Cookware](/docs/reference/syntax/cookware).
+`#cookware` braces accept integer counts only. Dimensions, materials, and descriptions always go in parentheses — see [Cookware](/docs/reference/syntax/cookware). A temperature is a [temperature](/docs/reference/syntax/temperatures) of its own, `^` followed by the appliance's name; since 1.6.0, the parse error of `#oven{180°C}` says so.
 
 ### Free text where a number is required
 
@@ -72,6 +73,15 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ❌  ~{1.30 h}              →   ✅  ~{1h30}
 ```
 Quantities and timers need a real number (or empty braces when no quantity is given); fuzzy prefixes like `about` trigger compiler warnings (`INVALID_UNIT` / `INVALID_DURATION`), and free text in a timer loses its duration for scheduling. Gram has no thousands separator: `{1,000 g}` parses as `1 g` and triggers `AMBIGUOUS_NUMBER`. Similarly, decimals in timers are fractions of the unit (`~{1.30 h}` means 1 h 18 min), so write `~{1h30}` for an hour and a half.
+
+### Cooklang's `%` between a number and its unit
+<Since v="1.6.0" />
+
+```gram
+❌  @flour{200%g}       →   ✅  @flour{200 g}
+❌  ~{15%minutes}       →   ✅  ~{15 minutes}
+```
+Cooklang separates a number from its unit with `%`; Gram uses a space. On an ingredient, `%g` would read as an unknown unit with no mass. Gram now warns about both (`INVALID_UNIT`, `INVALID_DURATION`) and suggests the corrected form, so `gram check` catches it in a generated recipe.
 
 ### Space between braces and preparations
 
@@ -136,7 +146,7 @@ When the source states a proportional rule ("per 100 g", "per liter", "per piece
 ❌  Roll out the @&dough.              // @& implies a shopping-list ingredient
 ✅  Roll out the &dough.               // & = reference to the declared intermediate
 ```
-See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for the full distinction. More generally, whenever a step transforms an ingredient into a new product referenced by name in later steps ("the seasoned chicken", "the dough"), declaring it with `->&name` avoids this ambiguity entirely.
+See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for the full distinction. Since 1.6.0, Gram warns about the first mistake (`REFERENCE_TO_INGREDIENT`) when the raw ingredient was written earlier, so `gram check` catches it in a generated recipe; with no ingredient of that name at all, `&chicken` is an `UNDEFINED_REFERENCE`. More generally, whenever a step transforms an ingredient into a new product referenced by name in later steps ("the seasoned chicken", "the dough"), declaring it with `->&name` avoids this ambiguity entirely.
 
 ### Standalone steps that only prepare an ingredient
 

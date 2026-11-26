@@ -176,7 +176,19 @@
       ]
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "REFERENCE_TO_INGREDIENT",
+      "message": "\"&dough\" refers to an intermediate, but \"dough\" is a raw ingredient: write @&dough to mention it again.",
+      "loc": {
+        "start": 164,
+        "end": 172
+      },
+      "data": {
+        "suggestion": "@&dough"
+      }
+    }
+  ],
   "metrics": {
     "totalTime": 10,
     "totalBreakdown": [
