@@ -21,11 +21,8 @@ import {
 	type Warning,
 } from "@gram-lang/kitchen";
 import { warningSeverityOf } from "@gram-lang/modules";
-import {
-	isKnownIngredient,
-	findClosestIngredient,
-	type IngredientDB,
-} from "../ingredient-loader";
+import { getIngredientData } from "@gram-lang/analyzer";
+import { findClosestIngredient, type IngredientDB } from "../ingredient-loader";
 
 const ZERO_RANGE: Range = {
 	start: { line: 0, character: 0 },
@@ -116,7 +113,6 @@ function warningToDiagnostic(
 export function provideDiagnostics(
 	state: DocumentState,
 	uri = "",
-	ingredientLookupSet: Set<string> = new Set(),
 	ingredientDB: IngredientDB = {},
 ): Diagnostic[] {
 	const diagnostics: Diagnostic[] = [];
@@ -194,16 +190,13 @@ export function provideDiagnostics(
 		});
 	}
 
-	if (ingredientLookupSet.size > 0) {
-		const hasDB = Object.keys(ingredientDB).length > 0;
+	if (Object.keys(ingredientDB).length > 0) {
 		for (const ingredient of collectIngredients(state.ast)) {
-			if (!isKnownIngredient(ingredient.name, ingredientLookupSet)) {
+			if (!getIngredientData(ingredient.name, ingredientDB)) {
 				const range = ingredient.loc
 					? locToRange(state.lineStarts, ingredient.loc)
 					: ZERO_RANGE;
-				const closest = hasDB
-					? findClosestIngredient(ingredient.name, ingredientDB)
-					: null;
+				const closest = findClosestIngredient(ingredient.name, ingredientDB);
 				diagnostics.push({
 					severity: DiagnosticSeverity.Information,
 					range,

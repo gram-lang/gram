@@ -2,11 +2,10 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { getIngredientData } from "@gram-lang/analyzer";
 import {
 	loadIngredientDB,
-	lookupIngredient,
-	buildIngredientLookupSet,
-	isKnownIngredient,
+	findClosestIngredient,
 } from "../src/ingredient-loader";
 
 // Regression tests for the security/robustness audit (2026-07-22, finding
@@ -72,9 +71,8 @@ describe("loadIngredientDB", () => {
 
 		// Would throw on `entry.name.toLowerCase()` pre-fix if `bad` had leaked
 		// through unvalidated.
-		expect(() => lookupIngredient("oups", db)).not.toThrow();
-		const set = buildIngredientLookupSet(db);
-		expect(() => isKnownIngredient("oups", set)).not.toThrow();
-		expect(isKnownIngredient("oups", set)).toBe(false);
+		expect(() => getIngredientData("oups", db)).not.toThrow();
+		expect(getIngredientData("oups", db)).toBeNull();
+		expect(() => findClosestIngredient("oups", db)).not.toThrow();
 	});
 });
