@@ -42,6 +42,7 @@ export {
 	lintDocument,
 } from "./lint-document";
 export type { LintIngredientDB } from "./rules";
+export type { LintIngredientsFile } from "./ingredients-file";
 export {
 	collectIngredients,
 	collectIntermediates,

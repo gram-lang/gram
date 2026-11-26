@@ -281,7 +281,23 @@ A step declares an intermediate (`->&sauce`) that no step uses, neither as a ref
 
 ### `UNKNOWN_INGREDIENT`
 
-An ingredient is not found in the ingredient database, resolved as the nutrition resolves it (its name, its aliases, the same slug). Only checked when a database is loaded. When one name of the database is the closest, the language server offers it as the preferred fix; when several are as close, it offers the first, not preferred. **Fix**: correct the spelling, or add the ingredient (or a plural, in its `aliases`) to the database.
+An ingredient is not found in the ingredient database, resolved as the nutrition resolves it (its name, its aliases, the same slug). Only checked when a database is loaded. When one name of the database is the closest, the language server offers it as the preferred fix; when several are as close, it offers the first, not preferred. A second fix, never preferred, adds the ingredient to the database the editor reads (the file named by `database:` in `.gram/config.yaml`, else `.gram/ingredients.yaml`): an entry with its `name` and a commented skeleton of the fields to fill in (aliases, category, allergens and diets as `tags`, density, unit weight, nutrition per 100 g). It is not offered when the database already has an entry under that name. **Fix**: correct the spelling, or add the ingredient (or a plural, in its `aliases`) to the database.
+
+### `LOST_INGREDIENT`
+
+An ingredient is written but never read: a `//` earlier on the same line turned the rest of it into a comment, so `Mix @flour{200 g} // to taste, @salt{}` has no salt, in the shopping list or anywhere else. Only a `//` in the middle of a step counts: a whole `//` line and a `/* … */` block are comments written on purpose. No fix is offered, since only the author knows whether the comment or the ingredient is the mistake. **Fix**: move the comment to its own line, or end it before the ingredient.
+
+### `MERGED_STEP_LINE`
+
+A line meant to start a new block is read as more text of the step above, because a single line break does not end a step: a line opening with `[Action]` (the action of the next step), a `## …` line (the section vanishes), or any line after one ending with `->&name` (the step's output, after which another step was most likely meant). A plain line break inside a step stays valid (`A step,` then `the same step.` on the next line). The language server offers to insert the blank line, as the preferred fix. **Fix**: leave a blank line before the line.
+
+### `SUSPECT_INGREDIENT_NAME`
+
+The name of an ingredient written with braces reads like a sentence: it holds `, `, `; `, `. ` (after a word of four letters or more, so `St. John's wort` is left alone), `、` or `。`, or it has more than 6 words or more than 40 characters. Only a hint: `@dark chocolate 70%, in drops{200 g}` is a valid name, but `drops` most likely belongs in the preparation. Where a break splits the name, the language server offers, never as the preferred fix, to move the rest into parentheses: `@dark chocolate 70%{200 g}(in drops)`. **Fix**: keep the name short, and the rest in the preparation.
+
+### `UNREAD_FRONTMATTER`
+
+The file opens a `---` block with keys, but the recipe has no metadata at all: a line the frontmatter does not accept, a `# …` comment or an indented line (`  - flour: 0.55`), made the whole block plain text of a step, title included. Shown on that line; `MISSING_TITLE` is then left out when the block writes a `title:`. On a `# …` line, the language server offers to remove it (not as the preferred fix); never on an indented line, which holds data. **Fix**: remove the comment, and write lists inline (`densities: [flour:0.55, milk:1.03]`).
 
 ## Configure the lint
 

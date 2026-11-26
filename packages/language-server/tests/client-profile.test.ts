@@ -44,7 +44,22 @@ describe("clientProfileOf", () => {
 			watchedFiles: false,
 			inlayHintRefresh: false,
 			snippets: false,
+			documentChanges: false,
 		});
+	});
+
+	it("reads documentChanges support from the workspace edit capability", () => {
+		const of = (documentChanges: unknown) =>
+			clientProfileOf(
+				params({
+					capabilities: {
+						workspace: { workspaceEdit: { documentChanges } },
+					} as InitializeParams["capabilities"],
+				}),
+			).documentChanges;
+		expect(of(true)).toBe(true);
+		expect(of(false)).toBe(false);
+		expect(of(undefined)).toBe(false);
 	});
 
 	it("reads snippet support from the completion capability", () => {

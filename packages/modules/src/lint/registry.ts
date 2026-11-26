@@ -47,6 +47,30 @@ export const LINT_RULES = [
 		summary:
 			"'@{name}' not found in the ingredient database. Did you mean '@{suggestion}'?",
 	},
+	{
+		code: "LOST_INGREDIENT",
+		defaultSeverity: "warning",
+		summary:
+			"'@{name}' is written but not read as an ingredient: the '//' before it on this line starts a comment.",
+	},
+	{
+		code: "MERGED_STEP_LINE",
+		defaultSeverity: "info",
+		summary:
+			"This line is read as text of the step above: leave a blank line before it.",
+	},
+	{
+		code: "SUSPECT_INGREDIENT_NAME",
+		defaultSeverity: "hint",
+		summary:
+			"'{name}' reads more like a sentence than an ingredient name: a preparation may belong in parentheses after the quantity.",
+	},
+	{
+		code: "UNREAD_FRONTMATTER",
+		defaultSeverity: "warning",
+		summary:
+			"The frontmatter is not read: a '#' or indented line is not a 'key: value' line, so the whole block is taken as the text of a step.",
+	},
 ] as const satisfies readonly LintRuleInfo[];
 
 /**

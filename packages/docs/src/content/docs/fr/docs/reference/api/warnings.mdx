@@ -282,7 +282,23 @@ Une étape déclare un intermédiaire (`->&sauce`) qu'aucune étape n'utilise, n
 
 ### `UNKNOWN_INGREDIENT`
 
-Un ingrédient est introuvable dans la base d'ingrédients, résolu comme le fait la nutrition (son nom, ses alias, le même slug). La vérification n'a lieu que si une base est chargée. Quand un seul nom de la base est le plus proche, le serveur de langage le propose comme correctif préféré ; quand plusieurs le sont autant, il propose le premier, sans le mettre en avant. **Correction** : corrigez l'orthographe, ou ajoutez l'ingrédient à la base (un pluriel se déclare dans ses `aliases`).
+Un ingrédient est introuvable dans la base d'ingrédients, résolu comme le fait la nutrition (son nom, ses alias, le même slug). La vérification n'a lieu que si une base est chargée. Quand un seul nom de la base est le plus proche, le serveur de langage le propose comme correctif préféré ; quand plusieurs le sont autant, il propose le premier, sans le mettre en avant. Un second correctif, jamais préféré, ajoute l'ingrédient à la base que lit l'éditeur (le fichier indiqué par `database:` dans `.gram/config.yaml`, sinon `.gram/ingredients.yaml`) : une entrée avec son `name` et, en commentaire, le squelette des champs à remplir (alias, catégorie, allergènes et régimes dans `tags`, densité, poids unitaire, valeurs nutritionnelles pour 100 g). Il n'est pas proposé si la base a déjà une entrée à ce nom. **Correction** : corrigez l'orthographe, ou ajoutez l'ingrédient à la base (un pluriel se déclare dans ses `aliases`).
+
+### `LOST_INGREDIENT`
+
+Un ingrédient est écrit mais jamais lu : un `//` placé plus tôt sur la même ligne a changé la fin de celle-ci en commentaire. Avec `Mélanger @farine{200 g} // selon le goût, @sel{}`, pas de sel, ni dans la liste de courses ni ailleurs. Seul compte un `//` au milieu d'une étape : une ligne `//` entière et un bloc `/* … */` sont des commentaires voulus. Aucun correctif n'est proposé, car seul l'auteur sait si l'erreur vient du commentaire ou de l'ingrédient. **Correction** : mettez le commentaire sur sa propre ligne, ou terminez-le avant l'ingrédient.
+
+### `MERGED_STEP_LINE`
+
+Une ligne censée ouvrir un nouveau bloc est lue comme la suite de l'étape du dessus, parce qu'un simple saut de ligne ne termine pas une étape : une ligne qui commence par `[Action]` (l'action de l'étape suivante), une ligne `## …` (la section disparaît), ou toute ligne qui suit une ligne terminée par `->&nom` (la sortie de l'étape, après laquelle on voulait sans doute une autre étape). Un saut de ligne ordinaire au sein d'une étape reste valable (`Une étape,` puis `la même étape.` à la ligne). Le serveur de langage propose d'insérer la ligne vide, en correctif préféré. **Correction** : laissez une ligne vide avant la ligne signalée.
+
+### `SUSPECT_INGREDIENT_NAME`
+
+Le nom d'un ingrédient écrit avec accolades ressemble à une phrase : il contient `, `, `; `, `. ` (après un mot d'au moins quatre lettres, pour épargner `St. John's wort`), `、` ou `。`, ou dépasse 6 mots ou 40 caractères. Ce n'est qu'une indication : `@chocolat noir 70 %, en pistoles{200 g}` est un nom valide, mais `en pistoles` a sans doute sa place dans la préparation. Quand une ponctuation coupe le nom, le serveur de langage propose, sans jamais le mettre en avant, d'en passer la fin entre parenthèses : `@chocolat noir 70 %{200 g}(en pistoles)`. **Correction** : gardez un nom court, et le reste dans la préparation.
+
+### `UNREAD_FRONTMATTER`
+
+Le fichier ouvre un bloc `---` avec des clés, mais la recette n'a aucune métadonnée : une ligne que le frontmatter n'accepte pas, un commentaire `# …` ou une ligne indentée (`  - flour: 0.55`), a fait de tout le bloc le texte d'une étape, titre compris. Le diagnostic s'affiche sur cette ligne ; `MISSING_TITLE` n'est alors pas signalé si le bloc écrit un `title:`. Sur une ligne `# …`, le serveur de langage propose de la retirer (sans la mettre en avant) ; jamais sur une ligne indentée, qui porte des données. **Correction** : retirez le commentaire, et écrivez les listes en ligne (`densities: [flour:0.55, milk:1.03]`).
 
 ## Configurer le lint
 
