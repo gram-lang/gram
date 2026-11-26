@@ -25,7 +25,7 @@ interface Warning {
 
 `compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
 
-<Since v="1.5.0" /> Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, since 1.5.2), and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
+<Since v="1.5.0" /> Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, since 1.5.2), `DEPRECATED_FRONTMATTER_KEY` (`{ key, suggestion, specifier? }`, since 1.6.0) and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
 
 ## Severity & `--strict`
 
@@ -35,6 +35,13 @@ const warningSeverity: Record<WarningCode, WarningSeverity>;
 ```
 
 Structural integrity issues — a reference to something that doesn't exist, a naming collision, or an unresolvable module — are `error`. Recoverable gaps (estimation gaps, incomplete annotations) are `warning`, and contextual notifications (surplus quantities, batch scaling, resource contention) are `info`. This is exactly the distinction the CLI's `gram check --strict` flag uses: without `--strict`, only `error`-severity codes fail the command; with it, every `warning` and `info` is promoted to `error` too. Build your own strict-mode logic on `warningSeverity[code]` the same way.
+
+<Since v="1.6.0" /> `warningInfo` holds the same severity with what else a tool needs to know of a code: `deprecated: true` marks a code that flags a deprecated form (`DEPRECATED_FRONTMATTER_KEY`), which the language server shows struck through. `warningInfoOf(code)`, exported by `@gram-lang/modules`, reads it for any code, module codes included.
+
+```typescript
+interface WarningCodeInfo { severity: WarningSeverity; deprecated?: true }
+const warningInfo: Record<WarningCode, WarningCodeInfo>;
+```
 
 ## Codes
 

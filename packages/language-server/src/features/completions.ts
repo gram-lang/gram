@@ -1,4 +1,8 @@
-import { type CompletionItem, CompletionItemKind } from "vscode-languageserver";
+import {
+	type CompletionItem,
+	CompletionItemKind,
+	type Position,
+} from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
 import { collectIngredients, collectIntermediates } from "../utils/ast-walker";
 import type { IngredientDB } from "../ingredient-loader";
@@ -15,6 +19,17 @@ import {
 	provideImportExportCompletions,
 	provideImportPathCompletions,
 } from "./completions-imports";
+import { provideFrontmatterCompletions } from "./completions-frontmatter";
+import { matchNamePrefix, provideNameCompletions } from "./completions-names";
+
+/** The live document around the cursor, for what the prefix alone cannot tell. */
+export interface CompletionContext {
+	/** The whole live text (`state.text` may lag behind it). */
+	text: string;
+	position: Position;
+	/** The editor's language: the descriptions of the frontmatter keys. */
+	locale?: string;
+}
 
 // True when cursor follows a & used as a reference (&name), NOT a declaration (->&name).
 function isAfterReference(prefix: string): boolean {
@@ -42,7 +57,19 @@ export function provideCompletions(
 	snippets = false,
 	/** Reads the modules an `@use` line names, for its exports. */
 	moduleHost?: ModuleHost,
+	live?: CompletionContext,
 ): CompletionItem[] {
+	// The frontmatter being typed may not parse yet (no closing `---`): its
+	// keys are read from the live text, and nothing else is completed there.
+	if (live) {
+		const frontmatter = provideFrontmatterCompletions(
+			live.text,
+			live.position,
+			live.locale,
+		);
+		if (frontmatter) return frontmatter;
+	}
+
 	// The `@use` line being typed does not parse yet (`state.ast` is null or
 	// stale): both completions read the live prefix and the module itself.
 	const useSpecifier = matchUseSpecifierPrefix(prefix);
@@ -71,6 +98,16 @@ export function provideCompletions(
 		}
 		if (target) return intermediateCompletions(state, false, snippets);
 		return provideUnitCompletions(prefix);
+	}
+
+	// Before `@`: in `@salt #`, the `#` is the one being typed.
+	const name = matchNamePrefix(prefix);
+	if (name) {
+		const position = live?.position ?? {
+			line: 0,
+			character: prefix.length,
+		};
+		return provideNameCompletions(state.ast, name, position, snippets);
 	}
 
 	// isAfterAt also matches optional modifiers: @?, @-, @*, @&, @=

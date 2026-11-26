@@ -452,6 +452,16 @@ const warningData: {
 
 export type WarningSeverity = "error" | "warning" | "info";
 
+/** What consumers (`gram check`, the language server) need to know of a code. Since 1.6.0. */
+export interface WarningCodeInfo {
+	severity: WarningSeverity;
+	/**
+	 * The code flags a deprecated form (its `warningCode` in
+	 * `deprecations.yaml`): an editor shows it struck through.
+	 */
+	deprecated?: true;
+}
+
 /**
  * Single source of truth for how each WarningCode should be treated by
  * consumers (`gram check`, the language server, `--strict`). Structural
@@ -461,37 +471,46 @@ export type WarningSeverity = "error" | "warning" | "info";
  * unit doesn't fail a build the same way an undefined reference does.
  * Pure contextual notifications/non-fault notices are `info`.
  * `--strict` promotes every `warning` and `info` to `error`.
+ * `deprecated` marks a code that flags a deprecated form. Since 1.6.0.
  */
-export const warningSeverity: Record<WarningCode, WarningSeverity> = {
-	[WarningCode.VARIABLE_NOT_FOUND]: "warning",
-	[WarningCode.RELATIVE_QUANTITY_UNRESOLVED]: "warning",
-	[WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: "warning",
-	[WarningCode.CIRCULAR_REFERENCE]: "error",
-	[WarningCode.UNDEFINED_REFERENCE]: "error",
-	[WarningCode.MISSING_UNIT]: "warning",
-	[WarningCode.INVALID_UNIT]: "warning",
-	[WarningCode.DURATION_OUT_OF_RANGE]: "warning",
-	[WarningCode.AMBIGUOUS_NUMBER]: "warning",
-	[WarningCode.INVALID_DURATION]: "warning",
-	[WarningCode.INVALID_QUANTITY]: "warning",
-	[WarningCode.OZ_AFTER_VOLUME]: "info",
-	[WarningCode.SPACED_COMPOSITE]: "warning",
-	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: "warning",
-	[WarningCode.SCOPE_CONFLICT]: "error",
-	[WarningCode.MISSING_INGREDIENT]: "warning",
-	[WarningCode.MISSING_MACROS]: "info",
-	[WarningCode.UNKNOWN_MASS]: "info",
-	[WarningCode.INVALID_MODIFIER_COMBINATION]: "warning",
-	[WarningCode.COMPOSITE_PARENT_CONFLICT]: "error",
-	[WarningCode.INVALID_BAKERS_REFERENCE]: "warning",
-	[WarningCode.NO_BAKERS_REFERENCE]: "warning",
-	[WarningCode.MULTIPLE_BAKERS_PERCENTAGE]: "warning",
-	[WarningCode.TIME_PARADOX]: "warning",
-	[WarningCode.TRACK_CONTENTION]: "info",
-	[WarningCode.DAY_OVERFLOW]: "warning",
-	[WarningCode.PASSIVE_OVERLAP_SAME_COOKWARE]: "info",
-	[WarningCode.MODULE_NOT_FOUND]: "error",
+export const warningInfo: Record<WarningCode, WarningCodeInfo> = {
+	[WarningCode.VARIABLE_NOT_FOUND]: { severity: "warning" },
+	[WarningCode.RELATIVE_QUANTITY_UNRESOLVED]: { severity: "warning" },
+	[WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: { severity: "warning" },
+	[WarningCode.CIRCULAR_REFERENCE]: { severity: "error" },
+	[WarningCode.UNDEFINED_REFERENCE]: { severity: "error" },
+	[WarningCode.MISSING_UNIT]: { severity: "warning" },
+	[WarningCode.INVALID_UNIT]: { severity: "warning" },
+	[WarningCode.DURATION_OUT_OF_RANGE]: { severity: "warning" },
+	[WarningCode.AMBIGUOUS_NUMBER]: { severity: "warning" },
+	[WarningCode.INVALID_DURATION]: { severity: "warning" },
+	[WarningCode.INVALID_QUANTITY]: { severity: "warning" },
+	[WarningCode.OZ_AFTER_VOLUME]: { severity: "info" },
+	[WarningCode.SPACED_COMPOSITE]: { severity: "warning" },
+	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: {
+		severity: "warning",
+		deprecated: true,
+	},
+	[WarningCode.SCOPE_CONFLICT]: { severity: "error" },
+	[WarningCode.MISSING_INGREDIENT]: { severity: "warning" },
+	[WarningCode.MISSING_MACROS]: { severity: "info" },
+	[WarningCode.UNKNOWN_MASS]: { severity: "info" },
+	[WarningCode.INVALID_MODIFIER_COMBINATION]: { severity: "warning" },
+	[WarningCode.COMPOSITE_PARENT_CONFLICT]: { severity: "error" },
+	[WarningCode.INVALID_BAKERS_REFERENCE]: { severity: "warning" },
+	[WarningCode.NO_BAKERS_REFERENCE]: { severity: "warning" },
+	[WarningCode.MULTIPLE_BAKERS_PERCENTAGE]: { severity: "warning" },
+	[WarningCode.TIME_PARADOX]: { severity: "warning" },
+	[WarningCode.TRACK_CONTENTION]: { severity: "info" },
+	[WarningCode.DAY_OVERFLOW]: { severity: "warning" },
+	[WarningCode.PASSIVE_OVERLAP_SAME_COOKWARE]: { severity: "info" },
+	[WarningCode.MODULE_NOT_FOUND]: { severity: "error" },
 };
+
+/** Each code's severity, read from `warningInfo`. */
+export const warningSeverity = Object.fromEntries(
+	Object.entries(warningInfo).map(([code, info]) => [code, info.severity]),
+) as Record<WarningCode, WarningSeverity>;
 
 // The common shape `pushRawWarning` needs from a payload, independent of
 // which code-space (kitchen's own `WarningCode` or e.g. `@gram-lang/modules`'

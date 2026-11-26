@@ -17,7 +17,13 @@ import { type IngredientDB, lookupIngredient } from "../ingredient-loader";
 import { normalizeUnit } from "@gram-lang/i18n";
 import { ASTNodeType, type QuantityAST } from "@gram-lang/parser";
 import { standardizeMass } from "@gram-lang/analyzer";
-import { numericTotal, termsOfAst } from "@gram-lang/kitchen";
+import {
+	FRONTMATTER_KEYS,
+	numericTotal,
+	termsOfAst,
+	WarningCode,
+} from "@gram-lang/kitchen";
+import { scanFrontmatter } from "../utils/frontmatter-text";
 
 export function provideCodeActions(
 	state: DocumentState,
@@ -45,6 +51,11 @@ export function provideCodeActions(
 					edit: { changes: { [uri]: [titleInsert] } },
 				});
 			}
+		}
+
+		if (diag.code === WarningCode.DEPRECATED_FRONTMATTER_KEY) {
+			const action = deprecatedKeyQuickFix(state, diag, uri);
+			if (action) actions.push(action);
 		}
 
 		if (diag.code === "UNUSED_INTERMEDIATE") {
@@ -376,4 +387,61 @@ function quantityQuickFix(
 	}
 
 	return null;
+}
+
+/**
+ * Renames a deprecated frontmatter key to its replacement (`servings:` to
+ * `portions:`), keeping its value. When the key Gram reads already is
+ * another one (the replacement itself, or an earlier alias of it: `yield`
+ * wins over `yields`, as in the HTML recipe), the line is removed instead:
+ * renaming would write the key twice, and change which value is read.
+ * Nothing for a key of an imported module (`data.specifier`): it is fixed
+ * in that module, not here.
+ */
+function deprecatedKeyQuickFix(
+	state: DocumentState,
+	diag: Diagnostic,
+	uri: string,
+): CodeAction | null {
+	const data = diag.data as
+		| { key?: string; suggestion?: string; specifier?: string }
+		| undefined;
+	if (!data?.key || !data.suggestion || data.specifier !== undefined)
+		return null;
+	const { key, suggestion } = data;
+	const keys = scanFrontmatter(state.text)?.keys ?? [];
+	const line = keys.find((k) => k.key === key);
+	if (!line) return null;
+
+	const written = new Set(keys.map((k) => k.key));
+	const winner = [
+		suggestion,
+		...FRONTMATTER_KEYS.filter(
+			(def) => def.deprecated?.replacement === suggestion,
+		).map((def) => def.key),
+	].find((k) => written.has(k));
+	const rename = winner === key;
+	return {
+		title: rename
+			? `Rename '${key}' to '${suggestion}'`
+			: `Remove '${key}' ('${winner}' is the key read)`,
+		kind: CodeActionKind.QuickFix,
+		isPreferred: true,
+		diagnostics: [diag],
+		edit: {
+			changes: {
+				[uri]: [
+					{
+						range: rename
+							? locToRange(state.lineStarts, line)
+							: locToRange(state.lineStarts, {
+									start: line.lineStart,
+									end: line.lineEnd,
+								}),
+						newText: rename ? suggestion : "",
+					},
+				],
+			},
+		},
+	};
 }

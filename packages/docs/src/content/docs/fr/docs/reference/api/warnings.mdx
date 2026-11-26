@@ -25,7 +25,7 @@ interface Warning {
 
 `compile()` les retourne dans le tableau `CompilationResult.warnings`. De son côté, `analyze()` les propage (et en ajoute potentiellement de nouveaux) dans `AnalyzedCompilationResult.warnings`. Ce ne sont jamais de simples chaînes de caractères : le champ `.message` est toujours garanti.
 
-<Since v="1.5.0" /> Certains codes fournissent aussi un champ `data` structuré permettant aux outils et aux correctifs rapides du serveur de langage d'agir sans analyser `.message`. Seuls `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, depuis la 1.5.2) et `INVALID_UNIT` sur un ingrédient (`{ reason, suggestion? }`) renseignent `data`.
+<Since v="1.5.0" /> Certains codes fournissent aussi un champ `data` structuré permettant aux outils et aux correctifs rapides du serveur de langage d'agir sans analyser `.message`. Seuls `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, depuis la 1.5.2), `DEPRECATED_FRONTMATTER_KEY` (`{ key, suggestion, specifier? }`, depuis la 1.6.0) et `INVALID_UNIT` sur un ingrédient (`{ reason, suggestion? }`) renseignent `data`.
 
 ## Sévérité & `--strict`
 
@@ -35,6 +35,13 @@ const warningSeverity: Record<WarningCode, WarningSeverity>;
 ```
 
 Les problèmes d'intégrité structurelle (une référence vers un élément fantôme, une collision de noms, un module introuvable, etc.) sont de sévérité `error`. Les lacunes récupérables (estimations, annotations incomplètes) sont catégorisées en `warning`, et les simples notifications contextuelles (surplus, calcul par fournées, contention de ressources) sont en `info`. Ainsi, une unité de minuteur manquante n'interrompra pas l'exécution de la même façon qu'une référence indéfinie. C'est exactement sur cette distinction que repose l'option `--strict` de la commande CLI `gram check` : sans `--strict`, seuls les codes de sévérité `error` font échouer la commande ; avec, chaque `warning` et `info` est promu en `error`. Vous pouvez facilement coder votre propre logique de mode strict en vous appuyant sur le dictionnaire `warningSeverity[code]`.
+
+<Since v="1.6.0" /> `warningInfo` reprend cette sévérité et y ajoute ce qu'un outil doit encore savoir d'un code : `deprecated: true` signale un code qui repère une forme dépréciée (`DEPRECATED_FRONTMATTER_KEY`), que le serveur de langage affiche barrée. `warningInfoOf(code)`, exporté par `@gram-lang/modules`, la lit pour n'importe quel code, y compris ceux des modules.
+
+```typescript
+interface WarningCodeInfo { severity: WarningSeverity; deprecated?: true }
+const warningInfo: Record<WarningCode, WarningCodeInfo>;
+```
 
 
 ## Codes

@@ -23,7 +23,9 @@ export function serverCapabilities(
 		definitionProvider: true,
 		hoverProvider: true,
 		foldingRangeProvider: true,
-		completionProvider: { triggerCharacters: ["&", "@", '"'] },
+		completionProvider: {
+			triggerCharacters: ["&", "@", '"', "#", "^", "~"],
+		},
 		semanticTokensProvider: {
 			full: true,
 			legend: {
