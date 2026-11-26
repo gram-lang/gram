@@ -115,6 +115,9 @@ function throwMalformedQuantity(
 	);
 }
 
+/** A degree sign before C or F, as in `{180°C}` or `{350 ° F}`. */
+const TEMPERATURE_UNIT = /\d\s*[°º]\s*[CF]\b/i;
+
 /** A ratio written with its slash glued to both numbers: `{1/100g @&flour}`. */
 const GLUED_RATIO = /^\{\s*\d+\/\d+\s*\p{L}*\s*(@&|&)/u;
 
@@ -921,9 +924,20 @@ semantics.addOperation("toAST", {
 	},
 
 	simpleCookware_malformed(_hash, _mods, name, _alias, braces) {
+		const cookware = clean(name.sourceString);
+		const raw = braces.sourceString;
+		// `#oven{180°C}`: a temperature, which has its own element.
+		if (raw.endsWith("}") && TEMPERATURE_UNIT.test(raw)) {
+			throwBracesError(
+				`Invalid quantity '${raw}' for cookware '${cookware}'`,
+				`a count only, with no unit; a temperature is written ^${cookware}${raw}`,
+				"a valid quantity in braces, e.g. {2}",
+				braces.source.startIdx,
+			);
+		}
 		throwMalformedQuantity(
 			"cookware",
-			clean(name.sourceString),
+			cookware,
 			braces,
 			"{2}",
 			"a number only, with no unit (cookware quantities take no unit)",

@@ -1,0 +1,7 @@
+{
+  "message": "Gram Syntax Error: Invalid quantity '{180°C}' for cookware 'oven'. Expected a count only, with no unit; a temperature is written ^oven{180°C}.",
+  "offset": 26,
+  "expected": "a valid quantity in braces, e.g. {2}",
+  "code": null,
+  "file": null
+}
