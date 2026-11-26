@@ -59,6 +59,7 @@ import {
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
 import { fillTemplate, formatNumber, getDictionary } from "@gram-lang/i18n";
+import { FRONTMATTER_KEYS } from "@gram-lang/kitchen";
 import {
 	resolveContributingUsage,
 	type AnalyzedUsage,
@@ -67,6 +68,15 @@ import {
 } from "@gram-lang/analyzer";
 
 type Dictionary = ReturnType<typeof getDictionary>;
+
+/**
+ * The frontmatter keys Gram gives a meaning to, deprecated ones included:
+ * every other key is the author's own metadata, listed in the byline as is.
+ * `language` is among them (the page's `lang` carries it).
+ */
+const KNOWN_FRONTMATTER_KEYS: ReadonlySet<string> = new Set(
+	FRONTMATTER_KEYS.map((def) => def.key),
+);
 
 /**
  * An entry of the shopping list, the cookware or a step's result, as the kit
@@ -675,6 +685,14 @@ export const htmlBackend: RenderBackend = {
 				`<span class="byline-date">${escapeHtml(String(meta.date))}</span>`,
 			);
 		}
+		if (meta.lastUpdated) {
+			const updated = fillTemplate(t.renderer.lastUpdated, {
+				date: String(meta.lastUpdated),
+			});
+			bylineParts.push(
+				`<span class="byline-updated">${escapeHtml(updated)}</span>`,
+			);
+		}
 		if (meta.source) {
 			const src = String(meta.source);
 			if (src.startsWith("http")) {
@@ -701,28 +719,10 @@ export const htmlBackend: RenderBackend = {
 			);
 		}
 
-		// Métadonnées personnalisées du frontmatter
-		const knownKeys = new Set([
-			"title",
-			"description",
-			"author",
-			"date",
-			"source",
-			"category",
-			"tags",
-			"portions",
-			"servings",
-			"makes",
-			"yield",
-			"yields",
-			"notes",
-			"densities",
-			// The page's `lang` carries it: not the author's own metadata.
-			"language",
-		]);
+		// The author's own frontmatter metadata.
 		for (const [k, v] of Object.entries(meta)) {
 			if (
-				!knownKeys.has(k) &&
+				!KNOWN_FRONTMATTER_KEYS.has(k) &&
 				!k.startsWith("_") &&
 				v !== undefined &&
 				v !== null &&
@@ -933,6 +933,7 @@ export const htmlBackend: RenderBackend = {
 		// Portions: the number and its word, then, once the recipe is scaled,
 		// the factor (and, interactive, a way back to the original). Nothing
 		// of the scale shows on a recipe that is not scaled.
+		// @remove-in: 2.0.0 [frontmatter-servings-yield]
 		const portionsVal = meta.portions ?? meta.servings;
 		if (portionsVal !== undefined) {
 			const numericV =
@@ -998,6 +999,7 @@ export const htmlBackend: RenderBackend = {
 		let factsHtml = "";
 
 		// Rendement (makes / yield)
+		// @remove-in: 2.0.0 [frontmatter-servings-yield]
 		const makesVal = meta.makes ?? meta.yield ?? meta.yields;
 		if (makesVal) {
 			const packageIcon = options.icons?.package ?? DEFAULT_ICONS.html.package;

@@ -1,0 +1,10 @@
+---
+title: Deprecated frontmatter key in module
+portions: 4
+---
+
+@use "./bases/pate.gram" as &pate
+
+## Tart
+
+Fill &pate{300 g} with @apple{4}.

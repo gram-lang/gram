@@ -1,0 +1,395 @@
+{
+  "title": "Deprecated frontmatter key in module",
+  "slug": "deprecated-frontmatter-key-in-module",
+  "meta": {
+    "title": "Deprecated frontmatter key in module",
+    "portions": "4"
+  },
+  "registry": {
+    "ingredients": {
+      "pate": {
+        "id": "pate",
+        "name": "pate",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      },
+      "apple": {
+        "id": "apple",
+        "name": "apple"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "g"
+    },
+    {
+      "id": "apple",
+      "name": "apple",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 4
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Pastry",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g"
+        },
+        {
+          "id": "butter",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "butter",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "pate",
+      "module": {
+        "binding": "pate",
+        "uri": "bases/pate.gram",
+        "title": "Pate",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "Tart",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "3",
+          "qty": 300,
+          "unit": "g"
+        },
+        {
+          "id": "apple",
+          "_usageId": "4",
+          "qty": 4
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Fill ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "3",
+              "qty": 300,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "apple",
+              "_usageId": "4",
+              "qty": 4
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "DEPRECATED_FRONTMATTER_KEY",
+      "message": "Frontmatter key \"servings\" of module \"./bases/pate.gram\" is deprecated and will be removed in 2.0.0: write \"portions\" in that module instead.",
+      "loc": {
+        "start": 65,
+        "end": 99,
+        "uri": "input.gram"
+      },
+      "uri": "input.gram",
+      "data": {
+        "key": "servings",
+        "suggestion": "portions",
+        "specifier": "./bases/pate.gram"
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 8,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Pastry",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Tart",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Pastry",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Tart",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      }
+    ]
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2,
+          "intermediates": 1
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s1.prep",
+        "kind": "prep",
+        "section": 1,
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s1.prep.pate",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "pate",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "consumes": [
+          "pate"
+        ],
+        "after": [
+          "s0.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0,
+        "intermediate": "pate"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 8,
+    "activeTime": 4,
+    "preparationTime": 4,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 4
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep",
+        "section": 1,
+        "start": 4,
+        "end": 6
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 6,
+        "end": 8
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 8,
+        "sections": [
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "bases/pate.gram",
+      "title": "Pate",
+      "meta": {
+        "title": "Pate",
+        "servings": "6"
+      },
+      "scaleFactor": 0.8,
+      "mode": "inline"
+    }
+  ]
+}

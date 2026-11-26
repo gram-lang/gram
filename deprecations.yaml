@@ -226,3 +226,18 @@ deprecations:
     replacement: "None: remove the option (nutritionBasis still shows a single basis)"
     files:
       - "packages/renderer/src/types.ts"
+
+  - id: frontmatter-servings-yield
+    layer: syntax
+    deprecatedIn: "1.6.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The frontmatter keys servings, yield and yields are deprecated: only the HTML recipe ever read them (shown, but ignored by scaling and nutrition), and yield already names the physical yield in Gram"
+    replacement: "portions instead of servings (the number of portions, which scaling and nutrition read), makes instead of yield and yields (what the recipe makes, in words)"
+    warningCode: DEPRECATED_FRONTMATTER_KEY
+    migration: manual
+    files:
+      - "packages/kitchen/src/frontmatter.ts"
+      - "packages/kitchen/src/core.ts"
+      - "packages/modules/src/compose.ts"
+      - "packages/renderer/src/views/recipe/html.ts"

@@ -34,6 +34,8 @@ export enum WarningCode {
 	OZ_AFTER_VOLUME = "OZ_AFTER_VOLUME",
 	/** `@lemon zest{1} < @lemon{2}`: spaces around `<` split a composite in two. Since 1.5.2. */
 	SPACED_COMPOSITE = "SPACED_COMPOSITE",
+	/** `servings:`, `yield:` or `yields:` in the frontmatter (see `FRONTMATTER_KEYS`). Since 1.6.0. */
+	DEPRECATED_FRONTMATTER_KEY = "DEPRECATED_FRONTMATTER_KEY",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
 	// Phase E). The only module-related code kitchen raises itself, in the
 	// no-resolution-happened degraded path (§C.4) — every other module-only
@@ -134,6 +136,20 @@ export interface WarningPayloads {
 		parent: string;
 		/** What replaces ` < @parent`: the operator glued to the parent, `<@lemon`. */
 		suggestion: string;
+		loc?: Location;
+	};
+	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: {
+		/** The deprecated key as written, e.g. `servings`. */
+		key: string;
+		/** The canonical key to write instead, e.g. `portions`. */
+		suggestion: string;
+		/**
+		 * Set when the key is in the frontmatter of an imported module (raised
+		 * by `@gram-lang/modules`): its specifier as written, `loc` being the
+		 * `@use` line that imports it. Absent for the file's own frontmatter,
+		 * which has no `loc` (the AST does not keep where a key was written).
+		 */
+		specifier?: string;
 		loc?: Location;
 	};
 	[WarningCode.AMBIGUOUS_NUMBER]: {
@@ -337,6 +353,10 @@ export const warningTemplates: {
 		`"${p.value}" of "${p.item}" is a weight: oz weighs, ${p.suggestion} measures a volume. Write ${p.suggestion} if a volume is meant.`,
 	[WarningCode.SPACED_COMPOSITE]: (p) =>
 		`"${p.item}" and "${p.parent}" are read as two separate ingredients: a composite takes "<" with no space around it. Write ${p.suggestion} right after "${p.item}" if "${p.item}" comes from "${p.parent}"; as written, both are counted in the shopping list.`,
+	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: (p) =>
+		p.specifier === undefined
+			? `Frontmatter key "${p.key}" is deprecated and will be removed in 2.0.0: write "${p.suggestion}" instead.`
+			: `Frontmatter key "${p.key}" of module "${p.specifier}" is deprecated and will be removed in 2.0.0: write "${p.suggestion}" in that module instead.`,
 	[WarningCode.AMBIGUOUS_NUMBER]: (p) =>
 		`"${p.value}" on "${p.item}" was read as ${p.read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write ${p.suggestion} if that is the number you meant.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
@@ -416,6 +436,10 @@ const warningData: {
 			: { reason: p.reason },
 	[WarningCode.OZ_AFTER_VOLUME]: (p) => ({ suggestion: p.suggestion }),
 	[WarningCode.SPACED_COMPOSITE]: (p) => ({ suggestion: p.suggestion }),
+	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: (p) =>
+		p.specifier === undefined
+			? { key: p.key, suggestion: p.suggestion }
+			: { key: p.key, suggestion: p.suggestion, specifier: p.specifier },
 	[WarningCode.INVALID_UNIT]: (p) => {
 		if (p.type !== "Ingredient" || !p.reason) return undefined;
 		const parts =
@@ -452,6 +476,7 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.INVALID_QUANTITY]: "warning",
 	[WarningCode.OZ_AFTER_VOLUME]: "info",
 	[WarningCode.SPACED_COMPOSITE]: "warning",
+	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: "warning",
 	[WarningCode.SCOPE_CONFLICT]: "error",
 	[WarningCode.MISSING_INGREDIENT]: "warning",
 	[WarningCode.MISSING_MACROS]: "info",

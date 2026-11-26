@@ -5,6 +5,7 @@ import {
 	type StepAST,
 	type IngredientAST,
 	type ImportBinding,
+	type ImportDecl,
 	type Location,
 	type Meta,
 } from "@gram-lang/parser";
@@ -15,6 +16,7 @@ import {
 	cleanRegistryName,
 	WarningCode,
 	pushWarning,
+	deprecatedFrontmatterKeysIn,
 	forEachStep,
 	type Warning,
 	type CompilationResult,
@@ -238,6 +240,29 @@ function parseDensityEntries(meta: Meta): Map<string, string> {
 		map.set(entry.slice(0, idx).trim(), entry.slice(idx + 1).trim());
 	});
 	return map;
+}
+
+/**
+ * A deprecated key in a spliced module's frontmatter (`servings`, `yield`,
+ * `yields`), reported on the `@use` line that imports it, like
+ * DENSITY_OVERRIDE_SHADOWED: the module's frontmatter never reaches the
+ * composed AST, so kitchen cannot see it. The `uri` is the importing file's,
+ * so a transitive import is anchored where it is written.
+ */
+function warnDeprecatedModuleFrontmatter(
+	depMeta: Meta,
+	decl: ImportDecl,
+	importerUri: string,
+	warnings: Warning[],
+): void {
+	// @remove-in: 2.0.0 [frontmatter-servings-yield]
+	for (const payload of deprecatedFrontmatterKeysIn(depMeta)) {
+		pushWarning(warnings, WarningCode.DEPRECATED_FRONTMATTER_KEY, {
+			...payload,
+			specifier: decl.specifier,
+			...(decl.loc && { loc: { ...decl.loc, uri: importerUri } }),
+		});
+	}
 }
 
 /** Merges a spliced module's `densities:` into the (recursively-)host's own — the host always wins on conflict (§D.6), warned via DENSITY_OVERRIDE_SHADOWED when the values actually differ. */
@@ -653,6 +678,7 @@ export function composeRecipe(
 				decl.loc,
 				warnings,
 			);
+			warnDeprecatedModuleFrontmatter(info.meta, decl, uri, warnings);
 		}
 
 		const offset = prepended.length;

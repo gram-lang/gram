@@ -31,6 +31,41 @@ describe("checkFiles — warning severity", () => {
 	});
 });
 
+describe("checkFiles — deprecated frontmatter key", () => {
+	// `servings:` still works but raises DEPRECATED_FRONTMATTER_KEY, a
+	// 'warning': a strict CI run fails until it becomes `portions:`.
+	const path = join(tmpdir(), `gram-checker-deprecated-${Date.now()}.gram`);
+
+	beforeAll(async () => {
+		await writeFile(
+			path,
+			"---\ntitle: Bread\nservings: 4\n---\n\n[Mix] @flour{500g}.\n",
+			"utf-8",
+		);
+	});
+
+	afterAll(async () => {
+		await unlink(path);
+	});
+
+	const deprecated = (result: Awaited<ReturnType<typeof checkFiles>>) =>
+		result.diagnostics.filter((d) =>
+			d.message.startsWith('Frontmatter key "servings" is deprecated'),
+		);
+
+	it("reports it as a warning by default", async () => {
+		const result = await checkFiles([path], { db: null });
+		expect(deprecated(result).map((d) => d.level)).toEqual(["warning"]);
+		expect(result.hasErrors).toBe(false);
+	});
+
+	it("fails under --strict", async () => {
+		const result = await checkFiles([path], { db: null, strict: true });
+		expect(deprecated(result).map((d) => d.level)).toEqual(["error"]);
+		expect(result.hasErrors).toBe(true);
+	});
+});
+
 describe("checkFiles — ingredients missing from the database", () => {
 	// An empty database resolves nothing, so @flour lands in
 	// analyzed.missingIngredients and gives a "Database" diagnostic.

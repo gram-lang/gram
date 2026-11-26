@@ -11,6 +11,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+	frontmatterKeysTable,
 	warningCodesTable,
 	astNodeTypesTable,
 	unitsTable,
@@ -47,6 +48,7 @@ const PAGES: [string, string][] = [
 ];
 
 const GENERATED_TABLES: Record<string, (locale: "en") => Table> = {
+	frontmatterKeysTable,
 	warningCodesTable,
 	astNodeTypesTable,
 	unitsTable,

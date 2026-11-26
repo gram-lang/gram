@@ -13,7 +13,7 @@ This page documents all features currently deprecated across Gram, categorized b
 
 | Usage scenario | Recommended action |
 |---|---|
-| Authoring `.gram` recipes via CLI, renderer, or playground | **None**. The recipe language syntax contains zero deprecations. |
+| Authoring `.gram` recipes via CLI, renderer, or playground | Only if your frontmatter uses `servings`, `yield` or `yields`: see [Frontmatter keys `servings`, `yield` and `yields`](#frontmatter-keys-servings-yield-and-yields). |
 | Consuming compiled JSON (`gram build`, custom UI applications, scripts) | See [Compiled JSON fields](#compiled-json-fields) and [Backwards compatibility with older JSON](#backwards-compatibility-with-older-json). |
 | Rendering a Gantt chart, VS Code command or language server notifications | See [Replacement of the Gantt chart and its components](#replacement-of-the-gantt-chart-and-its-components). |
 | Writing an editor client for the language server | See [Language server preview notification](#language-server-preview-notification). |
@@ -24,6 +24,33 @@ This page documents all features currently deprecated across Gram, categorized b
 To audit your application code, see [Identify deprecated usages in your codebase](#identify-deprecated-usages-in-your-codebase).
 
 ## Deprecations scheduled for 2.0.0
+
+### Frontmatter keys `servings`, `yield` and `yields`
+
+<Since v="1.6.0" type="deprecated" />
+
+Only the HTML recipe ever read `servings`, `yield` and `yields`: it showed them, but scaling, the nutrition per portion and the other views ignored them, and `yield` already names the physical yield in Gram. Since 1.6.0, `portions` and `makes` are the only keys for what a recipe gives:
+
+| Deprecated key | Replacement |
+|---|---|
+| `servings` | `portions`: the number of portions, which scaling and the nutrition per portion read |
+| `yield`, `yields` | `makes`: what the recipe makes, in words |
+
+```gram title="Before"
+---
+servings: 4
+yield: '24 cookies'
+---
+```
+
+```gram title="After"
+---
+portions: 4
+makes: '24 cookies'
+---
+```
+
+Until 2.0.0 the old keys keep working as before, and each one raises a [`DEPRECATED_FRONTMATTER_KEY`](/docs/reference/api/warnings) warning, which fails `gram check --strict`; a key in an imported module is reported on the `@use` line that imports it. When a key and its replacement are both written, the replacement wins. No automatic rewrite: rename the key by hand.
 
 ### Compiled JSON fields
 

@@ -459,6 +459,76 @@ Use &pate{200g}.
 });
 
 describe("composeRecipe: warning coverage (test hardening plan, §1)", () => {
+	it("reports a deprecated frontmatter key of a module on its @use line", async () => {
+		const source = `@use "./pate.gram" as &pate
+
+## Montage
+
+Use &pate{200g}.
+`;
+		const { result } = await build({
+			"/recipe.gram": source,
+			"/pate.gram":
+				"---\ntitle: Pate\nservings: 4\n---\n\n## Pastry ->&pate\n\nMix @flour{150g}.\n",
+		});
+
+		const w = result.warnings.filter(
+			(x) => x.code === "DEPRECATED_FRONTMATTER_KEY",
+		);
+		expect(w).toHaveLength(1);
+		expect(w[0]?.data).toEqual({
+			key: "servings",
+			suggestion: "portions",
+			specifier: "./pate.gram",
+		});
+		expect(w[0]?.message).toContain('of module "./pate.gram"');
+		expect(w[0]?.loc?.uri).toBe("/recipe.gram");
+		expect(source.slice(w[0]?.loc?.start, w[0]?.loc?.end)).toStartWith(
+			'@use "./pate.gram"',
+		);
+	});
+
+	it("anchors a transitive module's deprecated key in the file that imports it", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./b.gram" as &b
+
+## Montage
+
+Use &b{200g}.
+`,
+			"/b.gram": `@use "./c.gram" as &c
+
+## B ->&b
+
+Use &c{100g}.
+`,
+			"/c.gram": "---\nyield: 1 jar\n---\n\n## C ->&c\n\nMix @sugar{100g}.\n",
+		});
+
+		const w = result.warnings.filter(
+			(x) => x.code === "DEPRECATED_FRONTMATTER_KEY",
+		);
+		expect(w.map((x) => [x.data?.specifier, x.loc?.uri])).toEqual([
+			["./c.gram", "/b.gram"],
+		]);
+	});
+
+	it("says nothing about a module whose frontmatter is canonical", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./pate.gram" as &pate
+
+## Montage
+
+Use &pate{200g}.
+`,
+			"/pate.gram":
+				"---\ntitle: Pate\nportions: 4\n---\n\n## Pastry ->&pate\n\nMix @flour{150g}.\n",
+		});
+		expect(
+			result.warnings.filter((x) => x.code === "DEPRECATED_FRONTMATTER_KEY"),
+		).toEqual([]);
+	});
+
 	it("keeps the host's own density on conflict, with DENSITY_OVERRIDE_SHADOWED", async () => {
 		const { result, composed } = await build({
 			"/recipe.gram": `---
