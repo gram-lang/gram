@@ -39,7 +39,7 @@ Le *parser* Gram accepte **n'importe quelle** paire clé-valeur dans ce bloc : u
 <Since v="1.6.0" type="deprecated" />
 
 :::caution[Dépréciées : `servings`, `yield` et `yields`]
-`servings`, `yield` et `yields` sont dépréciées depuis la 1.6.0 et disparaîtront en 2.0.0. Seule la vue HTML de la recette les lisait : elles s'affichaient, mais la mise à l'échelle et la nutrition par portion les ignoraient. Écrivez `portions` à la place de `servings`, et `makes` à la place de `yield` ou `yields`. D'ici la 2.0.0, elles marchent toujours, et le compilateur lève un avertissement [`DEPRECATED_FRONTMATTER_KEY`](/fr/docs/reference/api/warnings) (qui fait échouer `gram check --strict`). Si une clé et sa remplaçante sont écrites toutes les deux, c'est la remplaçante qui compte.
+`servings`, `yield` et `yields` sont dépréciées depuis la 1.6.0 et disparaîtront en 2.0.0. Seule la vue HTML de la recette les lisait : elles s'affichaient, mais la mise à l'échelle et la nutrition par portion les ignoraient. Écrivez `portions` à la place de `servings`, et `makes` à la place de `yield` ou `yields`. D'ici la 2.0.0, elles marchent toujours, et le compilateur lève un avertissement [`DEPRECATED_FRONTMATTER_KEY`](/fr/docs/reference/api/warnings) (qui fait échouer `gram check --strict`) ; pour un module importé, il apparaît sur la ligne `@use` qui l'importe. Si une clé et sa remplaçante sont écrites toutes les deux, c'est la remplaçante qui compte.
 :::
 
 <CodeTabs>

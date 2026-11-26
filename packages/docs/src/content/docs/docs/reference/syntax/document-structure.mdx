@@ -39,7 +39,7 @@ The Gram parser accepts **any** key-value pair in this block: a key Gram does no
 <Since v="1.6.0" type="deprecated" />
 
 :::caution[Deprecated: `servings`, `yield` and `yields`]
-`servings`, `yield` and `yields` are deprecated since 1.6.0 and will be removed in 2.0.0. Only the HTML recipe ever read them: they were shown, but ignored by scaling and the nutrition per portion. Write `portions` instead of `servings`, and `makes` instead of `yield` or `yields`. Until 2.0.0 they keep working, and the compiler raises a [`DEPRECATED_FRONTMATTER_KEY`](/docs/reference/api/warnings) warning (which fails `gram check --strict`). When a key and its replacement are both written, the replacement wins.
+`servings`, `yield` and `yields` are deprecated since 1.6.0 and will be removed in 2.0.0. Only the HTML recipe ever read them: they were shown, but ignored by scaling and the nutrition per portion. Write `portions` instead of `servings`, and `makes` instead of `yield` or `yields`. Until 2.0.0 they keep working, and the compiler raises a [`DEPRECATED_FRONTMATTER_KEY`](/docs/reference/api/warnings) warning (which fails `gram check --strict`); in an imported module, it shows on the `@use` line that imports it. When a key and its replacement are both written, the replacement wins.
 :::
 
 <CodeTabs>

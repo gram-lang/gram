@@ -1,0 +1,124 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Deprecated frontmatter key in module",
+    "portions": "4"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 93,
+            "end": 98
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 65,
+        "end": 99
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Tart",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Fill ",
+              "loc": {
+                "start": 109,
+                "end": 114
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 300,
+                  "text": "300"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 120,
+                  "end": 125
+                }
+              },
+              "loc": {
+                "start": 114,
+                "end": 126
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 127,
+                "end": 132
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "apple",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 4,
+                  "text": "4"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 139,
+                  "end": 140
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 132,
+                "end": 141
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 141,
+                "end": 142
+              }
+            }
+          ],
+          "loc": {
+            "start": 109,
+            "end": 143
+          }
+        }
+      ],
+      "loc": {
+        "start": 100,
+        "end": 143
+      }
+    }
+  ]
+}

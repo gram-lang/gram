@@ -239,4 +239,5 @@ deprecations:
     files:
       - "packages/kitchen/src/frontmatter.ts"
       - "packages/kitchen/src/core.ts"
+      - "packages/modules/src/compose.ts"
       - "packages/renderer/src/views/recipe/html.ts"

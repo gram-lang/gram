@@ -50,7 +50,7 @@ makes: '24 cookies'
 ---
 ```
 
-Until 2.0.0 the old keys keep working as before, and each one raises a [`DEPRECATED_FRONTMATTER_KEY`](/docs/reference/api/warnings) warning, which fails `gram check --strict`. When a key and its replacement are both written, the replacement wins. No automatic rewrite: rename the key by hand.
+Until 2.0.0 the old keys keep working as before, and each one raises a [`DEPRECATED_FRONTMATTER_KEY`](/docs/reference/api/warnings) warning, which fails `gram check --strict`; a key in an imported module is reported on the `@use` line that imports it. When a key and its replacement are both written, the replacement wins. No automatic rewrite: rename the key by hand.
 
 ### Compiled JSON fields
 

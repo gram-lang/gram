@@ -50,7 +50,7 @@ makes: '24 cookies'
 ---
 ```
 
-D'ici la 2.0.0, les anciennes clés marchent comme avant, et chacune lève un avertissement [`DEPRECATED_FRONTMATTER_KEY`](/fr/docs/reference/api/warnings), qui fait échouer `gram check --strict`. Si une clé et sa remplaçante sont écrites toutes les deux, c'est la remplaçante qui compte. Pas de réécriture automatique : renommez la clé à la main.
+D'ici la 2.0.0, les anciennes clés marchent comme avant, et chacune lève un avertissement [`DEPRECATED_FRONTMATTER_KEY`](/fr/docs/reference/api/warnings), qui fait échouer `gram check --strict` ; une clé d'un module importé est signalée sur la ligne `@use` qui l'importe. Si une clé et sa remplaçante sont écrites toutes les deux, c'est la remplaçante qui compte. Pas de réécriture automatique : renommez la clé à la main.
 
 ### Champs du JSON compilé
 

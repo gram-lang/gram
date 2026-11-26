@@ -1,12 +1,13 @@
 ---
 "@gram-lang/kitchen": minor
+"@gram-lang/modules": minor
 "@gram-lang/renderer": minor
 "@gram-lang/docs": minor
 ---
 
 **Kitchen & Renderer**: The frontmatter keys Gram knows now come from one registry, and the keys that only ever worked in one view are deprecated:
   - Kitchen exports `FRONTMATTER_KEYS`, the frontmatter keys Gram gives a meaning to (functional or informational, the kind of value, an example line), which the docs and the HTML recipe now read; `language` (a BCP 47 tag) is documented among them.
-  - A deprecated key raises the new `DEPRECATED_FRONTMATTER_KEY` warning, with the key to write instead; as a warning, it fails `gram check --strict`.
+  - A deprecated key raises the new `DEPRECATED_FRONTMATTER_KEY` warning, with the key to write instead, also for a key in an imported module (on the `@use` line that imports it); as a warning, it fails `gram check --strict`.
   - The HTML recipe shows `lastUpdated` in its byline as "Updated …" (in French, "Mis à jour le …") instead of a raw `lastUpdated:` entry.
 
 **Deprecated**

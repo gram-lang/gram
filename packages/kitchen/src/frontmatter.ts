@@ -155,6 +155,20 @@ export function frontmatterKey(
 	return BY_KEY.get(key);
 }
 
+/**
+ * The deprecated keys a frontmatter uses, in the order written, each with
+ * the canonical key to write instead.
+ */
+export function deprecatedFrontmatterKeysIn(
+	meta: Readonly<Record<string, unknown>>,
+): { key: string; suggestion: string }[] {
+	// @remove-in: 2.0.0 [frontmatter-servings-yield]
+	return Object.keys(meta).flatMap((key) => {
+		const suggestion = BY_KEY.get(key)?.deprecated?.replacement;
+		return suggestion === undefined ? [] : [{ key, suggestion }];
+	});
+}
+
 /** The keys to write today: every key of the registry but the deprecated ones. */
 export function canonicalFrontmatterKeys(): FrontmatterKeyDefinition[] {
 	return FRONTMATTER_KEYS.filter((def) => !def.deprecated);

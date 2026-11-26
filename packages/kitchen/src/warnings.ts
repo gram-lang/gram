@@ -143,6 +143,14 @@ export interface WarningPayloads {
 		key: string;
 		/** The canonical key to write instead, e.g. `portions`. */
 		suggestion: string;
+		/**
+		 * Set when the key is in the frontmatter of an imported module (raised
+		 * by `@gram-lang/modules`): its specifier as written, `loc` being the
+		 * `@use` line that imports it. Absent for the file's own frontmatter,
+		 * which has no `loc` (the AST does not keep where a key was written).
+		 */
+		specifier?: string;
+		loc?: Location;
 	};
 	[WarningCode.AMBIGUOUS_NUMBER]: {
 		/** The number as written, e.g. `1,000` or `1,000-2,000`. */
@@ -346,7 +354,9 @@ export const warningTemplates: {
 	[WarningCode.SPACED_COMPOSITE]: (p) =>
 		`"${p.item}" and "${p.parent}" are read as two separate ingredients: a composite takes "<" with no space around it. Write ${p.suggestion} right after "${p.item}" if "${p.item}" comes from "${p.parent}"; as written, both are counted in the shopping list.`,
 	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: (p) =>
-		`Frontmatter key "${p.key}" is deprecated and will be removed in 2.0.0: write "${p.suggestion}" instead.`,
+		p.specifier === undefined
+			? `Frontmatter key "${p.key}" is deprecated and will be removed in 2.0.0: write "${p.suggestion}" instead.`
+			: `Frontmatter key "${p.key}" of module "${p.specifier}" is deprecated and will be removed in 2.0.0: write "${p.suggestion}" in that module instead.`,
 	[WarningCode.AMBIGUOUS_NUMBER]: (p) =>
 		`"${p.value}" on "${p.item}" was read as ${p.read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write ${p.suggestion} if that is the number you meant.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
@@ -426,10 +436,10 @@ const warningData: {
 			: { reason: p.reason },
 	[WarningCode.OZ_AFTER_VOLUME]: (p) => ({ suggestion: p.suggestion }),
 	[WarningCode.SPACED_COMPOSITE]: (p) => ({ suggestion: p.suggestion }),
-	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: (p) => ({
-		key: p.key,
-		suggestion: p.suggestion,
-	}),
+	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: (p) =>
+		p.specifier === undefined
+			? { key: p.key, suggestion: p.suggestion }
+			: { key: p.key, suggestion: p.suggestion, specifier: p.specifier },
 	[WarningCode.INVALID_UNIT]: (p) => {
 		if (p.type !== "Ingredient" || !p.reason) return undefined;
 		const parts =
