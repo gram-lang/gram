@@ -225,10 +225,11 @@ interface LintInput {
   text: string;
   ast: RecipeAST | null;       // son propre AST, null s'il ne se lit pas
   parseError?: { message: string; offset: number | null } | null;
-  compilation?: { warnings?: Warning[] } | null; // compilé ou analysé
+  compilation?: { warnings?: Warning[]; registry?: Registry } | null; // compilé ou analysé
   compileError?: string | null;
   moduleGraph?: ModuleGraph;   // le graphe de sa composition
   ingredientDB?: Record<string, IngredientData>; // pour UNKNOWN_INGREDIENT
+  ingredientsFile?: { uri: string; text: string }; // le fichier de la base : son correctif y ajoute l'ingrédient
   config?: LintConfig;         // parseLintConfig(.gram/config.yaml)
 }
 ```

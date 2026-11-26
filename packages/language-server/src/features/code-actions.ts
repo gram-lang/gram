@@ -3,7 +3,9 @@ import {
 	CodeActionKind,
 	type Diagnostic,
 	type Range,
+	TextDocumentEdit,
 	type TextEdit,
+	type WorkspaceEdit,
 } from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
 import {
@@ -16,6 +18,7 @@ import {
 	type LintConfig,
 	type LintDiagnostic,
 	type LintFix,
+	type LintIngredientsFile,
 } from "@gram-lang/modules/lint";
 import type { IngredientDB } from "../ingredient-loader";
 import { normalizeUnit } from "@gram-lang/i18n";
@@ -30,27 +33,39 @@ const sameRange = (a: Range, b: Range) =>
 	a.end.line === b.end.line &&
 	a.end.character === b.end.character;
 
+/** What the client and the server know beyond the document, for the Quick Fixes. */
+export interface CodeActionContext {
+	/** The client applies `documentChanges` (`ClientProfile.documentChanges`). */
+	documentChanges?: boolean;
+	/** The ingredient database file, with its current text (`ADD_TO_INGREDIENTS_DB`). */
+	ingredientsFile?: LintIngredientsFile;
+}
+
 /**
  * A lint fix as an LSP workspace edit: each patch converted against the
- * lines of the file it edits (this document, or a dependency of its `@use`
- * graph). Null when it edits a file this document does not know.
+ * lines of the file it edits (this document, a dependency of its `@use`
+ * graph, or the ingredient database), as `documentChanges` for a client that
+ * applies them, else as `changes`. Null when it edits a file whose text is
+ * unknown here, or creates one (not offered yet).
  */
-function toWorkspaceChanges(
+function toWorkspaceEdit(
 	state: DocumentState,
 	uri: string,
 	fix: LintFix,
-): Record<string, TextEdit[]> | null {
+	context: CodeActionContext,
+): WorkspaceEdit | null {
 	const changes: Record<string, TextEdit[]> = {};
 	for (const edit of fix.edits) {
 		if (edit.kind !== "patch") return null;
-		const lines =
+		const source =
 			edit.uri === uri
-				? state.lineStarts
-				: (() => {
-						const source = state.moduleGraph?.modules.get(edit.uri)?.source;
-						return source === undefined ? null : buildLineIndex(source);
-					})();
-		if (!lines) return null;
+				? null
+				: (state.moduleGraph?.modules.get(edit.uri)?.source ??
+					(edit.uri === context.ingredientsFile?.uri
+						? context.ingredientsFile.text
+						: undefined));
+		if (source === undefined) return null;
+		const lines = source === null ? state.lineStarts : buildLineIndex(source);
 		changes[edit.uri] = [
 			...(changes[edit.uri] ?? []),
 			...edit.patches.map((p) => ({
@@ -59,7 +74,12 @@ function toWorkspaceChanges(
 			})),
 		];
 	}
-	return changes;
+	if (!context.documentChanges) return { changes };
+	return {
+		documentChanges: Object.entries(changes).map(([target, edits]) =>
+			TextDocumentEdit.create({ uri: target, version: null }, edits),
+		),
+	};
 }
 
 /**
@@ -76,24 +96,27 @@ export function provideCodeActions(
 	uri: string,
 	db: IngredientDB,
 	config?: LintConfig,
+	context: CodeActionContext = {},
 ): CodeAction[] {
 	const actions: CodeAction[] = [];
 
 	const linted: LintDiagnostic[] =
-		diagnostics.length > 0 ? lintState(state, uri, db, config) : [];
+		diagnostics.length > 0
+			? lintState(state, uri, db, config, context.ingredientsFile)
+			: [];
 	for (const diag of diagnostics) {
 		const match = linted.find(
 			(d) => d.code === diag.code && sameRange(rangeOf(state, d), diag.range),
 		);
 		for (const fix of match?.fixes ?? []) {
-			const changes = toWorkspaceChanges(state, uri, fix);
-			if (!changes) continue;
+			const edit = toWorkspaceEdit(state, uri, fix, context);
+			if (!edit) continue;
 			actions.push({
 				title: fix.title,
 				kind: CodeActionKind.QuickFix,
 				...(fix.isPreferred ? { isPreferred: true } : {}),
 				diagnostics: [diag],
-				edit: { changes },
+				edit,
 			});
 		}
 	}

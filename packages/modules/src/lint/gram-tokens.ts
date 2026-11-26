@@ -1,4 +1,5 @@
 import { type CompilationResult, slugify } from "@gram-lang/kitchen";
+import { scanFrontmatter } from "./frontmatter-text";
 
 /**
  * Lexical scan for the `@ingredient` tokens a piece of .gram text *contains*,
@@ -87,9 +88,31 @@ function maskDeliberateComments(text: string): string {
  * Only the block at the very start counts; `---` further down is body text.
  */
 function maskFrontmatter(text: string): string {
+	// A closed block as the editor reads it (`scanFrontmatter`): line breaks
+	// `\r\n` included, where the pattern below never matched and turned
+	// `author: '@ChefJohn'` into a lost ingredient.
+	const block = scanFrontmatter(text);
+	if (block?.closed) {
+		let end = 0;
+		for (let line = 0; line <= block.endLine; line++) {
+			const nl = text.indexOf("\n", end);
+			end = nl === -1 ? text.length : nl + 1;
+		}
+		return blank(text.slice(0, end)) + text.slice(end);
+	}
 	const match = text.match(/^---\n[\s\S]*?\n---/);
 	if (!match) return text;
 	return blank(match[0]) + text.slice(match[0].length);
+}
+
+/**
+ * Blank out the `@use` directives: `@use "./base.gram" as &base` imports a
+ * module, it does not introduce an ingredient called "use", and every file
+ * that imports one reported it lost. Only the directive's own shape counts
+ * (`@use "…" as`), at the start of a line, as the grammar reads it.
+ */
+function maskUseDirectives(text: string): string {
+	return text.replace(/^[ \t]*@use[ \t]+"[^"\n]*"[ \t]+as\b[^\n]*/gm, blank);
 }
 
 /**
@@ -134,7 +157,7 @@ export interface WrittenIngredient {
  * change in a minor release.
  */
 export function findWrittenIngredients(text: string): WrittenIngredient[] {
-	const src = maskDeliberateComments(maskFrontmatter(text));
+	const src = maskDeliberateComments(maskUseDirectives(maskFrontmatter(text)));
 	const found: WrittenIngredient[] = [];
 	let line = 1;
 	let braceDepth = 0;

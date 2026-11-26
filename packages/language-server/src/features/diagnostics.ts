@@ -8,6 +8,7 @@ import {
 	EDITOR_HIDDEN_CODES,
 	type LintConfig,
 	type LintDiagnostic,
+	type LintIngredientsFile,
 	type LintSeverity,
 	lintDocument,
 } from "@gram-lang/modules/lint";
@@ -37,6 +38,7 @@ export function lintState(
 	uri: string,
 	ingredientDB: IngredientDB,
 	config?: LintConfig,
+	ingredientsFile?: LintIngredientsFile,
 ): LintDiagnostic[] {
 	return lintDocument({
 		uri,
@@ -50,6 +52,7 @@ export function lintState(
 		moduleGraph: state.moduleGraph,
 		ingredientDB,
 		config,
+		...(ingredientsFile ? { ingredientsFile } : {}),
 	}).filter((d) => d.loc || !EDITOR_HIDDEN_CODES.has(d.code));
 }
 

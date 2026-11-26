@@ -6,6 +6,10 @@ import {
 	collectReferences,
 	collectRelativeTargets,
 } from "./ast-walker";
+import {
+	addToIngredientsFix,
+	type LintIngredientsFile,
+} from "./ingredients-file";
 import type { LintDiagnostic, LintFix } from "./types";
 
 /** The ingredient database `UNKNOWN_INGREDIENT` resolves names against (the analyzer's). */
@@ -98,7 +102,7 @@ export function unusedIntermediates(ctx: RuleContext): RuleDiagnostic[] {
  * its modifiers, up to its braces, a composite `<`, a preparation, a pipe or
  * the end of the line, trailing blanks left out.
  */
-function nameSpan(written: string): { start: number; end: number } {
+export function nameSpan(written: string): { start: number; end: number } {
 	let start = written[0] === "@" ? 1 : 0;
 	while (start < written.length && "-?&*=".includes(written[start]!)) start++;
 	let end = start;
@@ -111,11 +115,14 @@ function nameSpan(written: string): { start: number; end: number } {
  * `UNKNOWN_INGREDIENT`: every mention of an ingredient the analyzer does not
  * resolve (`resolveCanonicalId`, the resolution the nutrition uses). Only
  * with a non-empty database: without one every ingredient would be unknown.
- * The spelling fix is preferred only when one name is the closest.
+ * The spelling fix is preferred only when one name is the closest; with the
+ * database file at hand, a second fix adds the ingredient to it
+ * (`ADD_TO_INGREDIENTS_DB`), never preferred.
  */
 export function unknownIngredients(
 	ctx: RuleContext,
 	db: LintIngredientDB | undefined,
+	ingredientsFile?: LintIngredientsFile,
 ): RuleDiagnostic[] {
 	if (!db || Object.keys(db).length === 0) return [];
 	const found: RuleDiagnostic[] = [];
@@ -145,6 +152,9 @@ export function unknownIngredients(
 				...(closest.length === 1 ? { isPreferred: true } : {}),
 			});
 		}
+		const add =
+			ingredientsFile && addToIngredientsFix(ingredient.name, ingredientsFile);
+		if (add) fixes.push(add);
 		found.push({
 			code: "UNKNOWN_INGREDIENT",
 			...(loc ? { loc: { start: loc.start, end: loc.end } } : {}),

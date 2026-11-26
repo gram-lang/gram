@@ -4,10 +4,12 @@ import {
 	TextDocuments,
 	type InitializeParams,
 	type InitializeResult,
+	type Diagnostic,
 	DidChangeWatchedFilesNotification,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { fileURLToPath } from "node:url";
+import { readFileSync } from "node:fs";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname } from "node:path";
 import {
 	loadModuleGraph,
@@ -27,7 +29,7 @@ import { LatestRefresh } from "./utils/latest-refresh";
 import { affectedOpenImporters } from "./utils/module-invalidation";
 import { provideDocumentSymbols } from "./features/document-symbols";
 import { provideDiagnostics } from "./features/diagnostics";
-import type { LintConfig } from "@gram-lang/modules/lint";
+import type { LintConfig, LintIngredientsFile } from "@gram-lang/modules/lint";
 import { provideDefinition } from "./features/go-to-definition";
 import { provideHover } from "./features/hover";
 import { provideFoldingRanges } from "./features/folding-ranges";
@@ -228,6 +230,7 @@ let profile: ClientProfile = {
 	watchedFiles: false,
 	inlayHintRefresh: false,
 	snippets: false,
+	documentChanges: false,
 };
 // The editor's language, for the words the server writes itself (the paused
 // banner, the CodeLens): the recipe's own language is unknown when it does not
@@ -866,6 +869,26 @@ connection.onDocumentFormatting(({ textDocument: { uri } }) => {
 	return s ? provideFormatting(s) : [];
 });
 
+// The ingredient database file with its current text, for the fix that adds
+// an unknown ingredient to it: the open buffer when the file is open, else
+// the disk. Read only when an `UNKNOWN_INGREDIENT` asks for its Quick Fixes.
+function ingredientsFileFor(
+	diagnostics: Diagnostic[],
+): LintIngredientsFile | undefined {
+	if (ingredientDbPath === undefined) return undefined;
+	if (!diagnostics.some((d) => d.code === "UNKNOWN_INGREDIENT")) {
+		return undefined;
+	}
+	const uri = pathToFileURL(ingredientDbPath).href;
+	const open = documents.get(uri)?.getText();
+	if (open !== undefined) return { uri, text: open };
+	try {
+		return { uri, text: readFileSync(ingredientDbPath, "utf-8") };
+	} catch {
+		return undefined;
+	}
+}
+
 connection.onCodeAction(({ textDocument: { uri }, range, context }) => {
 	const s = getFreshState(uri);
 	return s
@@ -876,6 +899,10 @@ connection.onCodeAction(({ textDocument: { uri }, range, context }) => {
 				uri,
 				ingredientDB,
 				lintConfigOf(uri),
+				{
+					documentChanges: profile.documentChanges,
+					ingredientsFile: ingredientsFileFor(context.diagnostics),
+				},
 			)
 		: [];
 });

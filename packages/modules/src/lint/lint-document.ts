@@ -1,4 +1,4 @@
-import type { Warning } from "@gram-lang/kitchen";
+import type { CompilationResult, Warning } from "@gram-lang/kitchen";
 import type { RecipeAST } from "@gram-lang/parser";
 import type { ModuleGraph } from "../host";
 import { applyLintConfig, ignoreRanges, type LintConfig } from "./config";
@@ -13,6 +13,13 @@ import {
 } from "./rules";
 import type { LintDiagnostic } from "./types";
 import { scanFrontmatter } from "./frontmatter-text";
+import type { LintIngredientsFile } from "./ingredients-file";
+import {
+	lostIngredients,
+	mergedStepLines,
+	suspectIngredientNames,
+	unreadFrontmatter,
+} from "./rules-writing";
 
 /**
  * What `lintDocument` checks: one document, as its caller already parsed,
@@ -29,14 +36,28 @@ export interface LintInput {
 	ast: RecipeAST | null;
 	/** Why it does not parse (`GramParseError`), and where when known. */
 	parseError?: { message: string; offset: number | null } | null;
-	/** The compiled (or analyzed) recipe, whose `warnings` are reported. */
-	compilation?: { warnings?: Warning[] } | null;
+	/**
+	 * The compiled (or analyzed) recipe, whose `warnings` are reported and
+	 * whose `registry` tells which written ingredients were read
+	 * (`LOST_INGREDIENT`).
+	 */
+	compilation?: {
+		warnings?: Warning[];
+		registry?: Pick<CompilationResult, "registry">["registry"];
+	} | null;
 	/** Why `compile()` / `analyze()` failed on an AST that parses. */
 	compileError?: string | null;
 	/** The `@use` graph the compilation was composed against. */
 	moduleGraph?: ModuleGraph;
 	/** The ingredient database (`UNKNOWN_INGREDIENT`); none, no check. */
 	ingredientDB?: LintIngredientDB;
+	/**
+	 * The file that database was read from, with its current text: an
+	 * `UNKNOWN_INGREDIENT` then gets a fix that adds the ingredient to it.
+	 * Absent: no such fix (an editor computing only its diagnostics need not
+	 * read it).
+	 */
+	ingredientsFile?: LintIngredientsFile;
 	/** The project's `lint:` settings (`parseLintConfig`). */
 	config?: LintConfig;
 }
@@ -184,8 +205,21 @@ export function lintDocument(input: LintInput): LintDiagnostic[] {
 
 	const ctx = { uri: input.uri, text: input.text, ast };
 	found.push(...unusedIntermediates(ctx));
-	found.push(...unknownIngredients(ctx, input.ingredientDB));
-	found.push(...missingTitle(ctx));
+	found.push(
+		...unknownIngredients(ctx, input.ingredientDB, input.ingredientsFile),
+	);
+	const registry = input.compilation?.registry;
+	found.push(...lostIngredients(ctx, registry ? { registry } : undefined));
+	found.push(...mergedStepLines(ctx));
+	found.push(...suspectIngredientNames(ctx));
+	const unread = unreadFrontmatter(ctx);
+	found.push(...unread);
+	// A title written in a frontmatter that is not read is not missing: the
+	// block's own diagnostic says why it is not seen.
+	const titleWritten =
+		unread.length > 0 &&
+		(scanFrontmatter(input.text)?.keys.some((k) => k.key === "title") ?? false);
+	if (!titleWritten) found.push(...missingTitle(ctx));
 
 	return applyLintConfig(
 		finish(input, found),

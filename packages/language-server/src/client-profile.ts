@@ -26,6 +26,12 @@ export interface ClientProfile {
 	inlayHintRefresh: boolean;
 	/** `textDocument.completion.completionItem.snippetSupport`: it expands snippet completions. */
 	snippets: boolean;
+	/**
+	 * `workspace.workspaceEdit.documentChanges`: it applies a workspace edit
+	 * written as `documentChanges` (a Quick Fix that edits another file than
+	 * the document, such as the ingredient database, goes there).
+	 */
+	documentChanges: boolean;
 }
 
 function viewsModeOf(options: unknown): ViewsMode {
@@ -50,5 +56,6 @@ export function clientProfileOf(params: InitializeParams): ClientProfile {
 		snippets:
 			params.capabilities?.textDocument?.completion?.completionItem
 				?.snippetSupport === true,
+		documentChanges: workspace?.workspaceEdit?.documentChanges === true,
 	};
 }

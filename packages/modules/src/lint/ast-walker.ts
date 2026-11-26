@@ -62,7 +62,7 @@ function* iterSectionSteps(
 // Unlike iterSectionSteps, also yields a bare top-level step (no enclosing
 // Section) — correct for collectReferences/collectIngredients, which don't
 // need a section to attach to, unlike IntermediateDeclWithSection.
-function* iterAllSteps(ast: RecipeAST): Generator<StepAST> {
+export function* iterAllSteps(ast: RecipeAST): Generator<StepAST> {
 	for (const child of ast.children) {
 		if (isSection(child)) {
 			for (const block of child.children) {

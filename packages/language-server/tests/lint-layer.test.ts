@@ -70,3 +70,96 @@ describe("Quick Fixes from the lint layer", () => {
 		);
 	});
 });
+
+describe("the writing rules in the editor", () => {
+	it("shows a merged line as information, with the blank line as the preferred Quick Fix", () => {
+		const state = parseDocument(
+			"---\ntitle: T\n---\n\nMix @a{1}.\n[Bake] it.\n",
+		);
+		const diag = provideDiagnostics(state, URI).find(
+			(d) => d.code === "MERGED_STEP_LINE",
+		)!;
+		expect(diag.severity).toBe(DiagnosticSeverity.Information);
+		expect(diag.range.start).toEqual({ line: 5, character: 0 });
+		const [action] = provideCodeActions(state, diag.range, [diag], URI, {});
+		expect(action!.isPreferred).toBe(true);
+		expect(action!.edit!.changes![URI]).toEqual([
+			{
+				range: {
+					start: { line: 5, character: 0 },
+					end: { line: 5, character: 0 },
+				},
+				newText: "\n",
+			},
+		]);
+	});
+
+	it("shows an ingredient lost behind '//' as a warning, on its token", () => {
+		const state = parseDocument(
+			"---\ntitle: T\n---\n\nMix @flour{1} // or more, @sugar{2}\n",
+		);
+		const diag = provideDiagnostics(state, URI).find(
+			(d) => d.code === "LOST_INGREDIENT",
+		)!;
+		expect(diag.severity).toBe(DiagnosticSeverity.Warning);
+		expect(diag.range).toEqual({
+			start: { line: 4, character: 26 },
+			end: { line: 4, character: 35 },
+		});
+	});
+});
+
+describe("the Quick Fix that adds an ingredient to the database", () => {
+	const DB_URI = "file:///project/.gram/ingredients.yaml";
+	const DB_TEXT = "flour:\n  name: Flour\n";
+	const db = { flour: { name: "Flour" } };
+	const state = parseDocument("---\ntitle: T\n---\n\nAdd @salt{1 g}.\n");
+
+	function addAction(context: Parameters<typeof provideCodeActions>[6]) {
+		const diag = provideDiagnostics(state, URI, db).find(
+			(d) => d.code === "UNKNOWN_INGREDIENT",
+		)!;
+		return provideCodeActions(
+			state,
+			diag.range,
+			[diag],
+			URI,
+			db,
+			undefined,
+			context,
+		).find((a) => a.title === "Add 'salt' to ingredients.yaml");
+	}
+
+	it("edits the database file, at its end, as changes for a client without documentChanges", () => {
+		const action = addAction({
+			ingredientsFile: { uri: DB_URI, text: DB_TEXT },
+		})!;
+		expect(action.isPreferred).toBeUndefined();
+		const [edit] = action.edit!.changes![DB_URI]!;
+		expect(edit!.range).toEqual({
+			start: { line: 2, character: 0 },
+			end: { line: 2, character: 0 },
+		});
+		expect(edit!.newText).toStartWith('\nsalt:\n  name: "salt"\n');
+		expect(action.edit!.changes![URI]).toBeUndefined();
+	});
+
+	it("writes documentChanges for a client that applies them", () => {
+		const action = addAction({
+			documentChanges: true,
+			ingredientsFile: { uri: DB_URI, text: DB_TEXT },
+		})!;
+		expect(action.edit!.changes).toBeUndefined();
+		const [change] = action.edit!.documentChanges!;
+		expect(change).toMatchObject({
+			textDocument: { uri: DB_URI, version: null },
+		});
+		expect(
+			(change as { edits: { newText: string }[] }).edits[0]!.newText,
+		).toContain("salt:");
+	});
+
+	it("is not offered without the database file", () => {
+		expect(addAction({})).toBeUndefined();
+	});
+});
