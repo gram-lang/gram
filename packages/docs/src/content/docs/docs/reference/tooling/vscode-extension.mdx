@@ -86,7 +86,7 @@ A working day pushed beyond 24 hours by a prolonged passive phase triggers an ex
 - **Hover insights**: Hover over any ingredient to inspect its nutritional profile and automatic volume-to-mass conversions (`1 tbsp → 15g`). Hover over a timer to see the parsed duration (`~{1:30 h}` → `1 h 30 min`), over a section anchor to see its lead time, or over a sum/ratio to inspect its resolved value.
 
 :::tip[Automatic database discovery]
-The extension automatically detects the `.gram/ingredients.yaml` file located at the workspace root. For custom folder layouts, specify `gram.ingredientDatabase.path` in your VS Code settings.
+The extension finds the database the way `gram` does: the file named by `database:` in the workspace's `.gram/config.yaml`, else the `.gram/ingredients.yaml` file at the workspace root. To use another file in the editor only, specify `gram.ingredientDatabase.path` in your VS Code settings: it takes precedence over both.
 :::
 
 ### 5. Editing assistance & navigation

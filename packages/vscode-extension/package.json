@@ -106,7 +106,7 @@
         "gram.ingredientDatabase.path": {
           "type": "string",
           "default": "",
-          "description": "Path to a YAML ingredient database file. Leave empty to auto-detect .gram/ingredients.yaml in the workspace root."
+          "description": "Path to a YAML ingredient database file. Leave empty to use the database: of the workspace's .gram/config.yaml, else .gram/ingredients.yaml in the workspace root."
         },
         "gram.miseEnPlace": {
           "type": "string",

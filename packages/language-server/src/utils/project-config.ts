@@ -25,6 +25,8 @@ export interface ProjectConfig {
 	clock?: ClockMode;
 	/** The `lint:` block: which checks are off, or shown at another severity. */
 	lint?: LintConfig;
+	/** The `database:` path of the ingredient database, relative to the project root (the CLI's `resolveDbPath`). */
+	database?: string;
 }
 
 /**
@@ -68,6 +70,9 @@ export function readProjectConfigSync(projectRoot: string): ProjectConfig {
 	if (VIEW_SETTINGS.clock.accepts(raw.clock)) config.clock = raw.clock;
 	const lint = parseLintConfig(raw);
 	if (Object.keys(lint.rules).length > 0) config.lint = lint;
+	if (typeof raw.database === "string" && raw.database.trim() !== "") {
+		config.database = raw.database.trim();
+	}
 	return config;
 }
 
