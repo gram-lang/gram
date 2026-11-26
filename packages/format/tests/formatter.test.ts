@@ -298,6 +298,21 @@ describe("formatGram", () => {
 			);
 		});
 
+		// Found by the fuzz: decided on the raw text, which only the repairs
+		// make readable here (`^ < @`), the block stayed frontmatter at the
+		// first pass and became body at the second, which lowercased its id.
+		it("decides on the repaired text, so a second pass changes nothing", () => {
+			const input =
+				"---\nau Jean@Example.com\n---\n\nSeparate @yolks{3}^ < @eggs{3}.\n";
+			const first = formatGram(input);
+			expect(first.content).toBe(
+				"---\nau Jean@example.com\n---\n\nSeparate @yolks{3}^<@eggs{3}.\n",
+			);
+			const second = formatGram(first.content);
+			expect(second.content).toBe(first.content);
+			expect(hasChanges(second.changes)).toBe(false);
+		});
+
 		it("formats the elements of a fenced block the parser reads as a step", () => {
 			const input = "---\nAdd @Flour {500.0g}.\n---\n\nStep.\n";
 			expect(formatGram(input).content).toContain("Add @flour{500g}.");
