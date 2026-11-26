@@ -11,8 +11,9 @@ import { fetchTextWithSsrfGuard } from "../core/http";
 import {
 	findWrittenIngredients,
 	unquantifiedFrom,
+	lostFrom,
 	type WrittenIngredient,
-} from "../core/gram-tokens";
+} from "@gram-lang/modules/lint";
 import { runPipelineFromSource } from "../core/pipeline";
 import type { ImportResult } from "../types";
 import { GRAM_SPEC_PROMPT } from "../prompts/gram-spec";
@@ -414,24 +415,20 @@ function gapsFrom(result: CompileCheck): string[] {
  * example recipes, or any of the 63 conformance cases.
  */
 export function findLostIngredients(text: string): string[] {
-	return lostFrom(checkGram(text), findWrittenIngredients(text));
+	return lostLabelsFrom(checkGram(text), findWrittenIngredients(text));
 }
 
-function lostFrom(
+// A file that does not compile has no registry to compare against: its parse
+// failure is reported by validateGram, and guessing at lost content would only
+// add noise.
+function lostLabelsFrom(
 	result: CompileCheck,
 	written: WrittenIngredient[],
 ): string[] {
 	if (!result.ok) return [];
-
-	const registered = new Set(Object.keys(result.compiled.registry.ingredients));
-	const seen = new Set<string>();
-	const lost: string[] = [];
-	for (const w of written) {
-		if (registered.has(w.id) || seen.has(w.id)) continue;
-		seen.add(w.id);
-		lost.push(`${w.name} (line ${w.line})`);
-	}
-	return lost;
+	return lostFrom(result.compiled, written).map(
+		(w) => `${w.name} (line ${w.line})`,
+	);
 }
 
 // Only `warningSeverityOf(code) === "error"` (undefined references, scope
@@ -477,7 +474,7 @@ type ImportInspection = Pick<
  * Every verdict on the finished file, from one compile and one lexical scan.
  *
  * The four `*From` helpers above each take an already-computed `CompileCheck`
- * (or, for `lostFrom`, an already-scanned ingredient list) — right for a
+ * (or, for `lostLabelsFrom`, an already-scanned ingredient list) — right for a
  * caller asking a single question, like the repair loop only wanting the
  * errors. The end of an import wants all five at once, and callers that also
  * need the scan for something else (e.g. `importVideoWithAI`'s ingredient
@@ -491,7 +488,7 @@ function inspectFrom(
 	return {
 		parseWarnings: allWarningsFrom(result),
 		unresolvedErrors: errorsFrom(result),
-		lostIngredients: lostFrom(result, written),
+		lostIngredients: lostLabelsFrom(result, written),
 		analysisGaps: db ? gapsFrom(result) : [],
 		unquantified: unquantifiedFrom(written),
 	};
@@ -818,7 +815,7 @@ export async function importVideoWithAI(
 
 	// One scan, reused for both the count below and inspectFrom — a video
 	// import used to pay for three passes over the identical text (this count,
-	// plus one inside each of inspectImport's lostFrom/unquantifiedFrom).
+	// plus one inside each of inspectImport's lostLabelsFrom/unquantifiedFrom).
 	const written = findWrittenIngredients(gramContent);
 
 	return {

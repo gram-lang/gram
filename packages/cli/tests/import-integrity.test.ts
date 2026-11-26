@@ -2,10 +2,6 @@ import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-	findUnquantifiedIngredients,
-	findWrittenIngredients,
-} from "../src/core/gram-tokens";
-import {
 	findLostIngredients,
 	collectAnalysisGaps,
 	setFrontmatterField,
@@ -78,60 +74,18 @@ Add @sugar{50% @&flour}.
 		expect(findLostIngredients(source)).toEqual([]);
 	});
 
+	it("does not mistake an @ in the frontmatter for a lost ingredient", () => {
+		// The scanner itself is tested in packages/modules/tests/lint; this keeps
+		// the importer's end of it covered: a channel handle in `author:` must
+		// not refuse a good import.
+		const source = `---\ntitle: 'T'\nauthor: '@ChefJohn'\n---\n\n## Steps\nMix @flour{200g}.\n`;
+		expect(findLostIngredients(source)).toEqual([]);
+	});
+
 	it("says nothing about a file that does not compile", () => {
 		// A parse failure is reported by validateGram; guessing at lost content in
 		// a file the compiler never read would only add noise.
 		expect(findLostIngredients("---\nbroken: [\n")).toEqual([]);
-	});
-});
-
-describe("findWrittenIngredients", () => {
-	it("ignores ingredients inside a deliberate block comment", () => {
-		const source = `${FRONT}## Steps
-Mix @flour{200g}. /* could also use @rye flour{200g} */
-`;
-		expect(findWrittenIngredients(source).map((w) => w.name)).toEqual([
-			"flour",
-		]);
-	});
-
-	it("ignores a whole-line // comment, but not one mid-sentence", () => {
-		const source = `${FRONT}// note: @rye flour{} is an option
-Mix @flour{200g}. // or @spelt{200g}
-`;
-		expect(findWrittenIngredients(source).map((w) => w.name)).toEqual([
-			"flour",
-			"spelt",
-		]);
-	});
-
-	it("reads modifiers, aliases, preparations and composite parents", () => {
-		const source = `${FRONT}## Steps
-Take @?optional herb{1}, @-omitted{1}, @tomatoes:toms{2}(diced) and @zest{1}<@unwaxed lemon{1}.
-`;
-		expect(findWrittenIngredients(source).map((w) => w.name)).toEqual([
-			"optional herb",
-			"omitted",
-			"tomatoes",
-			"zest",
-			"unwaxed lemon",
-		]);
-	});
-
-	it("reads a bare ingredient with no quantity", () => {
-		expect(
-			findWrittenIngredients(`${FRONT}Season with @salt and serve.\n`).map(
-				(w) => w.name,
-			),
-		).toEqual(["salt"]);
-	});
-
-	it("stops a bare ingredient before a target state", () => {
-		expect(
-			findWrittenIngredients(
-				`${FRONT}Sweat with @oil until ={translucent}.\n`,
-			).map((w) => ({ name: w.name, quantified: w.quantified })),
-		).toEqual([{ name: "oil", quantified: false }]);
 	});
 });
 
@@ -228,113 +182,6 @@ body`;
 describe("injectLanguage", () => {
 	it("still behaves as before now that it delegates to setFrontmatterField", () => {
 		expect(injectLanguage(`${FRONT}body`, "fr")).toContain("language: 'fr'");
-	});
-});
-
-// How much of an import is still to fill in by hand. Not a defect: `@salt{}`
-// is idiomatic Gram for "to taste", and the compiler says nothing about it.
-// But on a video import it is the sharpest quality signal available — a Short
-// came back with 11 ingredients and not one amount, where a long narrated
-// video left only 3 of 15 blank.
-describe("findUnquantifiedIngredients", () => {
-	it("lists an ingredient that never gets a quantity, at its first mention", () => {
-		const source = `${FRONT}## Steps
-Mix @flour{200g} with @sugar{}.
-Season with @salt{}.
-`;
-		expect(findUnquantifiedIngredients(source)).toEqual([
-			{ name: "sugar", line: 6 },
-			{ name: "salt", line: 7 },
-		]);
-	});
-
-	it("ignores a back-reference that correctly carries no amount of its own", () => {
-		// `@&butter{}` is a second draw on butter, not a missing quantity. Judging
-		// each mention on its own would report every well-written recipe as
-		// incomplete.
-		const source = `${FRONT}## Steps
-Melt @butter{100g} in the pan.
-Finish the sauce with @&butter{}.
-`;
-		expect(findUnquantifiedIngredients(source)).toEqual([]);
-	});
-
-	it("counts an ingredient once however often it is left blank", () => {
-		const source = `${FRONT}## Steps
-Beat @egg{} and @egg{} together.
-`;
-		expect(findUnquantifiedIngredients(source)).toEqual([
-			{ name: "egg", line: 6 },
-		]);
-	});
-
-	it("treats a bare mention with no braces as unquantified", () => {
-		expect(
-			findUnquantifiedIngredients(`${FRONT}Season with @pepper and serve.\n`),
-		).toEqual([{ name: "pepper", line: 5 }]);
-	});
-
-	it("accepts a relative quantity as a quantity", () => {
-		const source = `${FRONT}## Steps
-Add @flour{200g}, then @water{60% @&flour}.
-`;
-		expect(findUnquantifiedIngredients(source)).toEqual([]);
-	});
-
-	it("finds exactly the two the repo's own empanadas recipe leaves open", () => {
-		// Independently established: the spike's self-test derived the same pair
-		// from the compiled shopping list, by a completely different route.
-		const path = join(
-			import.meta.dir,
-			"../../docs/public/examples/empanadas.gram",
-		);
-		expect(
-			findUnquantifiedIngredients(readFileSync(path, "utf-8")).map(
-				(u) => u.name,
-			),
-		).toEqual(["oil", "green olives"]);
-	});
-
-	it("reports nothing on a fully quantified recipe", () => {
-		const path = join(
-			import.meta.dir,
-			"../../docs/public/examples/canneles.gram",
-		);
-		expect(findUnquantifiedIngredients(readFileSync(path, "utf-8"))).toEqual(
-			[],
-		);
-	});
-});
-
-// The scanner reads recipe text, and frontmatter is not recipe text — the
-// compiler parses it as YAML and registers nothing from it. Reading it anyway
-// turned an ordinary metadata value into a phantom lost ingredient, and since
-// a lost ingredient refuses the whole import, an email address or a channel
-// handle in `author:` was enough to reject a perfectly good recipe. Video
-// imports write `author:` straight from YouTube, so this is not hypothetical.
-describe("the frontmatter is not scanned for ingredients", () => {
-	const body = "\n## Steps\nMix @flour{200g}.\n";
-
-	it.each([
-		["author: 'contact@example.com'", "an email address"],
-		["author: '@ChefJohn'", "a channel handle"],
-		["source: ['https://x.test/u@v']", "an @ in the source URL"],
-		["title: 'Pasta @ Home'", "an @ in the title"],
-	])("ignores %s (%s)", (field) => {
-		const source = `---\ntitle: 'T'\n${field}\n---\n${body}`;
-		expect(findLostIngredients(source)).toEqual([]);
-		expect(findUnquantifiedIngredients(source)).toEqual([]);
-		expect(findWrittenIngredients(source).map((w) => w.name)).toEqual([
-			"flour",
-		]);
-	});
-
-	it("still reads a `---` that appears in the body", () => {
-		const source = `---\ntitle: 'T'\n---\n\n## Steps\nMix @flour{200g}.\n\n---\n\nAdd @salt{}.\n`;
-		expect(findWrittenIngredients(source).map((w) => w.name)).toEqual([
-			"flour",
-			"salt",
-		]);
 	});
 });
 
