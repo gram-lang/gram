@@ -1,0 +1,132 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Cook",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Boil the pasta ",
+            {
+              "type": "timer",
+              "raw": "10%minutes"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "INVALID_DURATION",
+      "message": "Timer duration \"10%minutes\" is not read: a character is out of place: write e.g. 1h30, 45 min - 1 h or 5'30\". Did you mean ~{10 minutes}? It is not counted in the total time.",
+      "item": "Timer",
+      "loc": {
+        "start": 24,
+        "end": 37
+      },
+      "data": {
+        "suggestion": "10 minutes"
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 2,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Cook",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Cook",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 0,
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0
+    }
+  },
+  "miseEnPlace": [],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 2,
+    "activeTime": 2,
+    "preparationTime": 0,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 0,
+        "end": 2
+      }
+    ],
+    "days": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 2,
+        "sections": [
+          0
+        ]
+      }
+    ]
+  }
+}

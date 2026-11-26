@@ -81,10 +81,13 @@ export function normalize(value: unknown): unknown {
 			// glues every `<` kitchen flags, so I6 skips those inputs; this
 			// keeps a blank kitchen would flag but rule 6 misses (a no-break
 			// space before the fix) from reporting a case change as a change
-			// of meaning.
+			// of meaning. The same goes for the `@&Flour` a
+			// REFERENCE_TO_INGREDIENT suggests for `&Flour`: it quotes the
+			// name as written, like `item`.
 			if (
 				key === "data" &&
-				record.code === "SPACED_COMPOSITE" &&
+				(record.code === "SPACED_COMPOSITE" ||
+					record.code === "REFERENCE_TO_INGREDIENT") &&
 				v &&
 				typeof v === "object" &&
 				typeof (v as { suggestion?: unknown }).suggestion === "string"

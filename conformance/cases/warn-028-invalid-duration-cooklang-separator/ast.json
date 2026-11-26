@@ -1,0 +1,69 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Cook",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Boil the pasta ",
+              "loc": {
+                "start": 9,
+                "end": 24
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "raw": "10%minutes",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 10,
+                  "text": "10"
+                },
+                "unit": "%minutes",
+                "fixed": false,
+                "loc": {
+                  "start": 26,
+                  "end": 36
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 24,
+                "end": 37
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 37,
+                "end": 38
+              }
+            }
+          ],
+          "loc": {
+            "start": 9,
+            "end": 39
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 39
+      }
+    }
+  ]
+}

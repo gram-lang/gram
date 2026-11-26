@@ -36,6 +36,8 @@ export enum WarningCode {
 	SPACED_COMPOSITE = "SPACED_COMPOSITE",
 	/** `servings:`, `yield:` or `yields:` in the frontmatter (see `FRONTMATTER_KEYS`). Since 1.6.0. */
 	DEPRECATED_FRONTMATTER_KEY = "DEPRECATED_FRONTMATTER_KEY",
+	/** `&flour` on a raw ingredient: `@&flour` mentions it again. Since 1.6.0. */
+	REFERENCE_TO_INGREDIENT = "REFERENCE_TO_INGREDIENT",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
 	// Phase E). The only module-related code kitchen raises itself, in the
 	// no-resolution-happened degraded path (§C.4) — every other module-only
@@ -90,9 +92,10 @@ export interface WarningPayloads {
 		item?: string;
 		/**
 		 * An ingredient only: why its unit is invalid. `twoQuantities` for
-		 * `{1 cup 5 tbsp}`, `hiddenQuantity` for `{about 200g}`.
+		 * `{1 cup 5 tbsp}`, `hiddenQuantity` for `{about 200g}`,
+		 * `cooklangSeparator` for `{200%g}` (since 1.6.0).
 		 */
-		reason?: "twoQuantities" | "hiddenQuantity";
+		reason?: "twoQuantities" | "hiddenQuantity" | "cooklangSeparator";
 		loc?: Location;
 	};
 	[WarningCode.DURATION_OUT_OF_RANGE]: {
@@ -106,6 +109,11 @@ export interface WarningPayloads {
 		value: string;
 		/** Why it is not read (see `InvalidDurationReason`). */
 		reason: InvalidDurationReason;
+		/**
+		 * What to write in the braces instead, when Gram can tell: `15 min`
+		 * for Cooklang's `15%min`. Since 1.6.0.
+		 */
+		suggestion?: string;
 		item: string;
 		loc?: Location;
 	};
@@ -150,6 +158,13 @@ export interface WarningPayloads {
 		 * which has no `loc` (the AST does not keep where a key was written).
 		 */
 		specifier?: string;
+		loc?: Location;
+	};
+	[WarningCode.REFERENCE_TO_INGREDIENT]: {
+		/** The name as written after `&`, e.g. `flour`. */
+		name: string;
+		/** What to write instead: the same name after `@&`, e.g. `@&flour`. */
+		suggestion: string;
 		loc?: Location;
 	};
 	[WarningCode.AMBIGUOUS_NUMBER]: {
@@ -330,17 +345,19 @@ export const warningTemplates: {
 	[WarningCode.INVALID_UNIT]: (p) =>
 		p.type === "RetroPlanning"
 			? `Invalid retro-planning unit "${p.value}"${p.item ? ` on "${p.item}"` : ""} — expected d, h, or min.`
-			: p.type === "Ingredient" && p.reason === "hiddenQuantity"
-				? `Unit "${p.value}"${p.item ? ` of "${p.item}"` : ""} hides a quantity: a quantity starts with its number, so write it alone (e.g. {200g} rather than {about 200g}).`
-				: p.type === "Ingredient"
-					? `Unit "${p.value}"${p.item ? ` of "${p.item}"` : ""} reads as two quantities: write them as a sum, with " + " between them (e.g. {1 kg + 200 g} rather than {1 kg 200 g}).`
-					: `Invalid unit "${p.value}" for ${p.type}.`,
+			: p.type === "Ingredient" && p.reason === "cooklangSeparator"
+				? `Unit "${p.value}"${p.item ? ` of "${p.item}"` : ""} starts with "%", Cooklang's separator: Gram writes a space between the number and the unit (e.g. {200 g} rather than {200%g}).`
+				: p.type === "Ingredient" && p.reason === "hiddenQuantity"
+					? `Unit "${p.value}"${p.item ? ` of "${p.item}"` : ""} hides a quantity: a quantity starts with its number, so write it alone (e.g. {200g} rather than {about 200g}).`
+					: p.type === "Ingredient"
+						? `Unit "${p.value}"${p.item ? ` of "${p.item}"` : ""} reads as two quantities: write them as a sum, with " + " between them (e.g. {1 kg + 200 g} rather than {1 kg 200 g}).`
+						: `Invalid unit "${p.value}" for ${p.type}.`,
 	[WarningCode.DURATION_OUT_OF_RANGE]: (p) =>
 		`${p.type === "RetroPlanning" ? `Retro-planning offset for "${p.item}"` : `Timer "${p.item}"`} is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.`,
 	[WarningCode.INVALID_DURATION]: (p) =>
 		p.type === "RetroPlanning"
 			? `Retro-planning offset "${p.value}" on "${p.item}" is not read: ${DURATION_HINTS[p.reason] ?? p.reason} The section is not anchored.`
-			: `Timer duration "${p.value}"${p.item === "Timer" ? "" : ` on "${p.item}"`} is not read: ${DURATION_HINTS[p.reason] ?? p.reason} It is not counted in the total time.`,
+			: `Timer duration "${p.value}"${p.item === "Timer" ? "" : ` on "${p.item}"`} is not read: ${DURATION_HINTS[p.reason] ?? p.reason}${p.suggestion ? ` Did you mean ~{${p.suggestion}}?` : ""} It is not counted in the total time.`,
 	[WarningCode.INVALID_QUANTITY]: (p) =>
 		p.reason === "zeroRatioDenominator"
 			? `${p.type === "Timer" ? (p.item === "Timer" ? "A timer" : `Timer "${p.item}"`) : `"${p.item}"`} is per "${p.value}": ${QUANTITY_HINTS.zeroRatioDenominator} ${p.type === "Timer" ? "It is not counted in the total time." : "It is left out, as if no amount had been written."}`
@@ -357,6 +374,8 @@ export const warningTemplates: {
 		p.specifier === undefined
 			? `Frontmatter key "${p.key}" is deprecated and will be removed in 2.0.0: write "${p.suggestion}" instead.`
 			: `Frontmatter key "${p.key}" of module "${p.specifier}" is deprecated and will be removed in 2.0.0: write "${p.suggestion}" in that module instead.`,
+	[WarningCode.REFERENCE_TO_INGREDIENT]: (p) =>
+		`"&${p.name}" refers to an intermediate, but "${p.name}" is a raw ingredient: write ${p.suggestion} to mention it again.`,
 	[WarningCode.AMBIGUOUS_NUMBER]: (p) =>
 		`"${p.value}" on "${p.item}" was read as ${p.read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write ${p.suggestion} if that is the number you meant.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
@@ -434,7 +453,10 @@ const warningData: {
 		p.suggestion !== undefined
 			? { reason: p.reason, suggestion: p.suggestion }
 			: { reason: p.reason },
+	[WarningCode.INVALID_DURATION]: (p) =>
+		p.suggestion !== undefined ? { suggestion: p.suggestion } : undefined,
 	[WarningCode.OZ_AFTER_VOLUME]: (p) => ({ suggestion: p.suggestion }),
+	[WarningCode.REFERENCE_TO_INGREDIENT]: (p) => ({ suggestion: p.suggestion }),
 	[WarningCode.SPACED_COMPOSITE]: (p) => ({ suggestion: p.suggestion }),
 	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: (p) =>
 		p.specifier === undefined
@@ -442,6 +464,8 @@ const warningData: {
 			: { key: p.key, suggestion: p.suggestion, specifier: p.specifier },
 	[WarningCode.INVALID_UNIT]: (p) => {
 		if (p.type !== "Ingredient" || !p.reason) return undefined;
+		if (p.reason === "cooklangSeparator")
+			return { reason: p.reason, suggestion: p.value.replace(/^%\s*/, "") };
 		const parts =
 			p.reason === "twoQuantities" ? splitTwoQuantities(p.value) : null;
 		return parts
@@ -487,6 +511,7 @@ export const warningInfo: Record<WarningCode, WarningCodeInfo> = {
 	[WarningCode.INVALID_QUANTITY]: { severity: "warning" },
 	[WarningCode.OZ_AFTER_VOLUME]: { severity: "info" },
 	[WarningCode.SPACED_COMPOSITE]: { severity: "warning" },
+	[WarningCode.REFERENCE_TO_INGREDIENT]: { severity: "warning" },
 	[WarningCode.DEPRECATED_FRONTMATTER_KEY]: {
 		severity: "warning",
 		deprecated: true,

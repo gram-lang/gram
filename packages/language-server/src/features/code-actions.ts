@@ -313,7 +313,11 @@ const escapeRegExp = (text: string) =>
  *   `{100 g + 10%}`): the braces hold that result (`{110 g}`);
  * - `oz` after a volume (`OZ_AFTER_VOLUME`, `{1 cup + 2 oz}`): `fl oz`;
  * - a composite split by spaces (`SPACED_COMPOSITE`,
- *   `@lemon zest{1} < @lemon{2}`): `<` glued to the parent (`<@lemon`).
+ *   `@lemon zest{1} < @lemon{2}`): `<` glued to the parent (`<@lemon`);
+ * - `&` before a raw ingredient (`REFERENCE_TO_INGREDIENT`, `&flour`):
+ *   `@&flour`;
+ * - Cooklang's `%` between a number and its unit (`INVALID_DURATION`,
+ *   `~{15%min}`; `INVALID_UNIT`, `{200%g}`): a space.
  */
 function quantityQuickFix(
 	state: DocumentState,
@@ -332,6 +336,43 @@ function quantityQuickFix(
 		},
 		newText,
 	});
+
+	if (diag.code === "INVALID_UNIT" && data.reason === "cooklangSeparator") {
+		// The range is the whole ingredient: the `%` is the one in its
+		// braces, right before the unit.
+		const open = text.indexOf("{");
+		if (open === -1) return null;
+		const gap = new RegExp(`\\s*%\\s*(?=${escapeRegExp(suggestion)})`).exec(
+			text.slice(open + 1),
+		);
+		if (!gap) return null;
+		const at = start + open + 1 + gap.index;
+		return {
+			title: `Write the unit after a space: ${suggestion}`,
+			edit: edit(at, at + gap[0].length, " "),
+		};
+	}
+
+	if (diag.code === "INVALID_DURATION") {
+		// The range is the timer (`~pasta{15%min}`): its braces get the
+		// duration as Gram reads it.
+		const open = text.indexOf("{");
+		const close = text.lastIndexOf("}");
+		if (open === -1 || close < open) return null;
+		return {
+			title: `Replace with {${suggestion}}`,
+			edit: edit(start + open + 1, start + close, suggestion),
+		};
+	}
+
+	if (diag.code === "REFERENCE_TO_INGREDIENT") {
+		// The range starts at the `&`: an `@` before it makes `@&name`.
+		if (!text.startsWith("&")) return null;
+		return {
+			title: `Write ${suggestion} (a raw ingredient)`,
+			edit: edit(start, start, "@"),
+		};
+	}
 
 	if (diag.code === "INVALID_UNIT" && data.reason === "twoQuantities") {
 		// The range is the term, or the whole ingredient for a lone quantity:

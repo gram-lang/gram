@@ -66,6 +66,7 @@ import {
 	looksLikeThousands,
 	parseDuration,
 	unitContainsQuantity,
+	isMeasureUnit,
 } from "@gram-lang/i18n";
 import { type Warning, WarningCode, pushWarning } from "./warnings";
 import { looksLikeTwoQuantities, readSum } from "./compound";
@@ -632,9 +633,11 @@ function processIngredient(
 			? hidesAQuantity(defaultUnit)
 				? "hiddenQuantity"
 				: undefined
-			: looksLikeTwoQuantities(defaultUnit)
-				? "twoQuantities"
-				: undefined;
+			: hasCooklangSeparator(defaultUnit)
+				? "cooklangSeparator"
+				: looksLikeTwoQuantities(defaultUnit)
+					? "twoQuantities"
+					: undefined;
 		if (reason) {
 			pushWarning(ctx, WarningCode.INVALID_UNIT, {
 				type: "Ingredient",
@@ -875,11 +878,25 @@ function processReference(
 	// Strip trailing sentence punctuation before resolving the reference.
 	const cleanName = item.name.replace(/[.,!?;:]+$/, "");
 	const id = registry.getIngredientId(cleanName);
-	if (!registry.ingredients.has(id)) {
+	const entry = registry.ingredients.get(id);
+	if (!entry) {
 		pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, {
 			prefix: "&",
 			name: item.displayName ?? cleanName,
 			item: item.displayName ?? cleanName,
+			loc: item.loc,
+		});
+	} else if (
+		// A raw ingredient: neither an intermediate (`->&`, a section's, a
+		// spliced or an unresolved `@use` binding) nor a stocked import's leaf.
+		!entry.is_intermediate &&
+		!entry.is_module_synthetic &&
+		!ctx.definedIntermediates.has(cleanName)
+	) {
+		const name = item.displayName ?? cleanName;
+		pushWarning(ctx, WarningCode.REFERENCE_TO_INGREDIENT, {
+			name,
+			suggestion: `@&${name}`,
 			loc: item.loc,
 		});
 	}
@@ -1042,7 +1059,15 @@ function processTimer(
 					reason: /[*×]/.test(item.raw) ? "ratioMultiplication" : "ratioShape",
 				}
 			: reading.problem;
-		pushDurationProblem(ctx, problem, "Timer", name, item.raw, item.loc);
+		pushDurationProblem(
+			ctx,
+			problem,
+			"Timer",
+			name,
+			item.raw,
+			item.loc,
+			cooklangDuration(item.raw),
+		);
 		return obj;
 	}
 
@@ -1062,6 +1087,30 @@ function processTimer(
 	return obj;
 }
 
+/** Cooklang's separator between a number and its unit: `15%min`, `200%g`. */
+const COOKLANG_SEPARATOR = /^([^%]*\d)\s*%\s*(\p{L}[\p{L}.]*)$/u;
+
+/**
+ * The duration to write for Cooklang's `~{15%min}`: `15 min`, when Gram reads
+ * it once the `%` is a space. Undefined for any other duration.
+ */
+function cooklangDuration(raw: string): string | undefined {
+	const match = COOKLANG_SEPARATOR.exec(raw.trim());
+	if (!match) return undefined;
+	const candidate = `${match[1]!.trim()} ${match[2]}`;
+	return readTimer(candidate).ok ? candidate : undefined;
+}
+
+/**
+ * `{200%g}`: Cooklang's separator left in an ingredient's unit, read as an
+ * unknown unit "%g" (no mass, no shopping total). Only a unit of mass or
+ * volume after it counts, so `{70 % cacao}` stays the author's own unit.
+ */
+function hasCooklangSeparator(unit: string): boolean {
+	const match = /^%\s*(\S.*)$/.exec(unit.trim());
+	return !!match && isMeasureUnit(match[1]);
+}
+
 /** A slash followed by a target (`/ 500 g @&roast`): a ratio, read or not. */
 const LOOKS_LIKE_RATIO = /\/[^/]*(?:@&|&)/;
 
@@ -1073,6 +1122,7 @@ function pushDurationProblem(
 	item: string,
 	raw: string,
 	loc?: Location,
+	suggestion?: string,
 ) {
 	switch (problem.code) {
 		case "MISSING_UNIT":
@@ -1090,6 +1140,7 @@ function pushDurationProblem(
 				type,
 				value: raw,
 				reason: problem.reason,
+				...(suggestion !== undefined ? { suggestion } : {}),
 				item,
 				loc,
 			});
