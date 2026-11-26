@@ -135,6 +135,10 @@ A timer or section anchor uses numbers and units Gram recognizes, but in an ambi
 
 **Fix**: follow the suggested format in `.message` (e.g. `~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). <Since v="1.6.0" /> For Cooklang's separator (`~{15%min}`), `data.suggestion` holds the duration Gram reads once the `%` is a space (`15 min`), which the language server's quick fix writes in the braces. Unknown units after a number still raise `INVALID_UNIT`, and bare numbers raise `MISSING_UNIT`.
 
+### `DEPRECATED_FRONTMATTER_KEY`
+
+<Since v="1.6.0" /> The frontmatter uses a deprecated key, removed in 2.0.0: `servings` (write `portions`), `yield` or `yields` (write `makes`). It is raised even when the key to write is also there (that one wins). The warning carries no `loc` (the AST keeps no position for the frontmatter's keys) but `data: { key, suggestion }`: the language server shows it struck through on the key and offers to rename it, or to remove its line when the key to write is already there. Raised by an imported module, `data.specifier` names it and the diagnostic stays on its `@use` line. **Fix**: rename the key as the message says. See [Deprecated features](/docs/how-to/deprecations/).
+
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`->&name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
 
@@ -182,6 +186,124 @@ Multiple passive timers share the same equipment track (e.g. `~_oven`) and canno
 ### `PASSIVE_OVERLAP_SAME_COOKWARE`
 
 Two passive timers overlap in time, in steps that cite the same cookware (`#oven` in both), with no named track in common. If one is meant to follow the other, they are probably on one oven: the plan shows them side by side. **Fix**: give them the same named track (`~_oven{30min}` then `~_oven{20min}`) so they take turns; if both fit in the oven at once, this is only an informational notice. Only names are compared (`#oven` with `#oven`), so it works whatever the language of the recipe, and the overlap is read on the default timeline.
+
+### `MODULE_PARSE_ERROR`
+
+A module imported by `@use` does not parse, so none of its sections can be spliced in. On the checked document itself, the message is the parser's own. **Fix**: open the imported file and fix the syntax error the message quotes.
+
+### `MODULE_CYCLE`
+
+Two or more modules import each other, directly or through others (`a.gram` imports `b.gram`, which imports `a.gram`). The message lists the chain. **Fix**: move what both need into a third module that imports neither.
+
+### `MODULE_DEPTH_EXCEEDED`
+
+The chain of imports is deeper than Gram follows. **Fix**: flatten the chain: import the base directly from the recipe that needs it.
+
+### `MODULE_EXPORT_NOT_FOUND`
+
+A binding of `@use` names something the module does not export (`as &sauce` when the module's sections export `&base`). Only a section-level `->&name` is exported: when the name exists in the module as a step-level `->&`, the message says it is not re-exported, and the language server offers to add `->&name` to the header of the section that declares it, in the module. Otherwise it suggests the closest export. **Fix**: use one of the listed exports, or export the name from the module.
+
+### `UNUSED_IMPORT`
+
+A binding of `@use` is never used in the recipe. **Fix**: use it (`&name`), or remove it from the `@use` line.
+
+### `UNRESOLVED_MODULE_YIELD`
+
+The recipe asks for a quantity of an imported intermediate (`&dough{300 g}`), but the module's yield cannot be weighed: one of its ingredients has no known mass. The module cannot be scaled to the quantity asked. **Fix**: give that ingredient a mass, or a density or unit weight in the ingredient database.
+
+### `ESTIMATED_MODULE_YIELD`
+
+The module's yield was weighed with standard densities or unit weights, so the scale factor applied to it is an estimate. **Fix**: write the module's ingredients in grams for an exact factor, or accept the estimate.
+
+### `MODULE_UNIT_MISMATCH`
+
+The recipe asks for an imported intermediate in a unit the module's yield does not convert to (a volume for a yield in grams, with no density). **Fix**: ask for it in the unit of its yield, or give the module a density.
+
+### `MODULE_BATCH_INTERPRETATION`
+
+An imported intermediate is asked for with a number and no unit (`&dough{2}`): it is read as that many batches of the module. **Fix**: an informational notice; write a unit to ask for a quantity instead.
+
+### `IMPORTED_BAKERS_REFERENCE_DROPPED`
+
+The module marks a baker's-percentage base (`@*flour`), which stays scoped to the module: the importing recipe does not inherit it. **Fix**: an informational notice; mark a base in the importing recipe if it needs one.
+
+### `DENSITY_OVERRIDE_SHADOWED`
+
+The importing recipe and the module both override the density of the same ingredient (`densities:`), with different values: the importing recipe's value wins. **Fix**: an informational notice; keep a single value if the difference is not meant.
+
+### `MODULE_SURPLUS`
+
+Several bindings of one `@use` are asked for in quantities that do not match the module's proportions: the module is scaled for the one that needs the most, so another one comes out larger than the recipe uses. The message gives the surplus. **Fix**: an informational notice; adjust the quantities if the surplus is not meant.
+
+### `MODULE_SPECIFIER_INVALID`
+
+The path of a `@use` has a shape Gram does not read: an absolute path (`/home/…`, not portable), a `hub:` path (not supported yet), a path that starts with neither `./`, `../` nor `@…/`, or one that does not end in `.gram`. The message gives the reason. **Fix**: write a relative path, `@/…` from the project root, or `@alias/…` with an alias declared under `paths:` in `.gram/config.yaml`.
+
+### `MODULE_SCHEME_UNSUPPORTED`
+
+The path of a `@use` is a URL (`https://…`, or any other `scheme://`): modules are read from the project only. **Fix**: copy the module into the project and import it by its path.
+
+### `STOCKED_RETRO_PLANNING_IGNORED`
+
+A module imported as stock (`--stock`) carries a retro-planning offset (`~{-1d}`): a stocked item is already made, so the offset is ignored. **Fix**: remove the offset, or import the module without `--stock` to schedule its preparation.
+
+### `RETRO_PLANNING_OVERRIDE_SHADOWED`
+
+The `@use` line sets a retro-planning offset that replaces the one the module sets itself. **Fix**: an informational notice; keep one of the two if the difference is not meant.
+
+### `MODULE_BINDING_SHADOWS_INGREDIENT`
+
+The local name of an imported intermediate is also the name of an ingredient of the database (`as &butter`), which makes the two easy to confuse in the nutrition and the shopping list. **Fix**: give the binding another local name (`as &brown_butter`).
+
+### `STOCKED_DESTRUCTURED_NUTRITION_BLENDED`
+
+A stocked module is imported with several bindings (`as { &a, &b }`): its nutrition is known for the whole module only, so each binding gets the module's average profile. **Fix**: an informational notice; split the module if each part needs its own nutrition.
+
+## Codes of the lint layer
+
+<Since v="1.6.0" /> The language server reads its diagnostics from `@gram-lang/modules/lint` (experimental, see the [Modules API](/docs/reference/api/modules/#lint)), which reports the compiler's warnings above and adds checks of its own, found in the source rather than in the compiled recipe. Their severity can also be `hint`, which never fails a build, even under `--strict`. Each diagnostic links to its section of this page.
+
+### `PARSE_ERROR`
+
+The document does not parse: the message is the parser's, at the place it stopped. No other diagnostic is reported until it parses. **Fix**: correct the syntax at the place shown.
+
+### `COMPILE_ERROR`
+
+The document parses, but compiling or analyzing it failed (a scale that cannot be applied, say). It is shown at the top of the file. **Fix**: correct what the message names.
+
+### `MISSING_TITLE`
+
+The frontmatter has no `title:` (or there is no frontmatter). The views fall back to a generic title. When the file opens a frontmatter, the language server offers to add the key. **Fix**: add `title: …` to the frontmatter.
+
+### `UNUSED_INTERMEDIATE`
+
+A step declares an intermediate (`->&sauce`) that no step uses, neither as a reference (`&sauce`) nor as the target of a share, a ratio or a proportional timer (`@salt{2% &sauce}`). One declared on a section heading is never reported: it is what a module exports, or the name of the finished dish. The language server offers to remove it. **Fix**: use it, or remove the `->&`.
+
+### `UNKNOWN_INGREDIENT`
+
+An ingredient is not found in the ingredient database, resolved as the nutrition resolves it (its name, its aliases, the same slug). Only checked when a database is loaded. When one name of the database is the closest, the language server offers it as the preferred fix; when several are as close, it offers the first, not preferred. **Fix**: correct the spelling, or add the ingredient (or a plural, in its `aliases`) to the database.
+
+## Configure the lint
+
+<Since v="1.6.0" /> A project tunes the editor's checks in `.gram/config.yaml`: a code can be turned off, or shown at another severity (`hint`, `info` or `warning`). An `error` is never turned off nor lowered, so a broken recipe cannot be hidden.
+
+```yaml
+lint:
+  rules:
+    UNKNOWN_INGREDIENT: off
+    UNUSED_INTERMEDIATE: hint
+```
+
+A single block can also be left out with a `// gram-ignore` comment on its own line, naming one or more codes:
+
+```gram
+## Sauce
+
+// gram-ignore UNUSED_INTERMEDIATE
+Reduce @stock{200 ml}. ->&reduction
+```
+
+The comment covers the block right after it: a whole step, however many lines it spans, or the line of a section heading (not the steps below it). Several `// gram-ignore` lines in a row add up. A bare `// gram-ignore`, with no code, does nothing. Diagnostics outside any step or heading (the frontmatter, the `@use` lines, those shown at the top of the file) cannot carry one: a comment cannot be written there without changing the file's meaning, so they are set in `.gram/config.yaml`. Never write `// gram-ignore` at the end of a step's line: `//` there turns the rest of the line into a comment.
 
 ## Related resources
 

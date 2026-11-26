@@ -4,6 +4,7 @@ description: "Reference for loadModuleGraph, composeRecipe, ModuleHost, and util
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 Resolves and composes multi-file `@use` import directives into a single unified AST before compilation. This package handles dependency graph traversal, cycle detection, hygienic intermediate variable renaming, yield-based scaling, and stocked (`--stock`) leaf integration.
 
@@ -201,7 +202,69 @@ function pushModuleWarning<K extends ModuleWarningCode>(
 ```
 
 - **`warningSeverityOf(code)`**: Unified lookup resolving severity (`"error" | "warning" | "info"`) across both `@gram-lang/kitchen` and `@gram-lang/modules` warning codes.
-- **`allWarningInfo`**: Full list of diagnostic codes, severities, and message templates.
+- **`allWarningInfo`**: Full list of the compiler's codes, severities, and message templates. `allDiagnosticInfo()` (see [Lint](#lint)) adds the lint layer's.
+
+## Lint
+
+<Since v="1.6.0" /> The `@gram-lang/modules/lint` entry point holds the writing checks of the language server: one call gives every diagnostic of a document, the compiler's warnings and the lint layer's own checks, with their severity, a link to their documentation and the fixes that apply. It is a separate entry point, not re-exported by `@gram-lang/modules`, so the main entry stays as light as it was.
+
+:::caution[Experimental]
+Every export of `@gram-lang/modules/lint` is marked `@experimental`: its shape may still change in a minor release.
+:::
+
+```typescript
+import { lintDocument, parseLintConfig } from '@gram-lang/modules/lint';
+
+function lintDocument(input: LintInput): LintDiagnostic[];
+
+interface LintInput {
+  uri: string;                 // the checked document
+  text: string;
+  ast: RecipeAST | null;       // its own AST, null when it does not parse
+  parseError?: { message: string; offset: number | null } | null;
+  compilation?: { warnings?: Warning[] } | null; // compiled or analyzed
+  compileError?: string | null;
+  moduleGraph?: ModuleGraph;   // the graph it was composed against
+  ingredientDB?: Record<string, IngredientData>; // for UNKNOWN_INGREDIENT
+  config?: LintConfig;         // parseLintConfig(.gram/config.yaml)
+}
+```
+
+`lintDocument` reads nothing from disk: its caller hands in what it already parsed, composed and compiled. It never throws on what the parser accepts.
+
+```typescript
+interface LintDiagnostic {
+  code: string;
+  severity: "error" | "warning" | "info" | "hint";
+  uri: string;                          // the file it is shown in
+  loc?: { start: number; end: number }; // absent: the top of the file
+  message: string;
+  data?: Record<string, unknown>;       // a compiler warning's data
+  docUrl?: string;                      // its section of the warnings page
+  deprecated?: true;                    // shown struck through
+  related?: { uri: string; loc?: { start: number; end: number }; message: string }[];
+  fixes?: LintFix[];
+}
+
+interface LintFix {
+  title: string;
+  edits: FileEdit[];
+  isPreferred?: boolean; // leaves no doubt about the intent
+}
+
+type FileEdit =
+  | { kind: "patch"; uri: string; patches: { start: number; end: number; replacement: string }[] }
+  | { kind: "createFile"; uri: string; content: string };
+```
+
+Offsets are UTF-16 code units, as in the AST and in LSP. A warning raised in a dependency is anchored on the `@use` line that imports it, its real position in `related`. A fix may edit another file than the checked one (a re-export added to a module, say).
+
+- **`allDiagnosticInfo()`**: every code a diagnostic can carry, the compiler's then the lint layer's, with its severity, `origin` (`"compiler"` or `"lint"`), `deprecated` flag and the shape of its message. The table of the [warnings page](/docs/reference/api/warnings/) is generated from it.
+- **`docUrlOf(code)`**: the address of a code's section on the warnings page.
+- **`parseLintConfig(raw)`**: reads the `lint:` block of a parsed `.gram/config.yaml`, leaving out what does not read; never throws. See [Configure the lint](/docs/reference/api/warnings/#configure-the-lint).
+- **`EDITOR_HIDDEN_CODES`**: the compiler codes an editor leaves out when they carry no position (`MISSING_INGREDIENT`, `MISSING_MACROS`, `UNKNOWN_MASS`).
+- **`findWrittenIngredients(text)`**, **`lostFrom(compiled, written)`**: the `@ingredient` tokens written in the source, and those the compilation lost.
+- The walkers the rules read the AST with (`collectIngredients`, `collectIntermediates`, `collectReferences`, `collectRelativeTargets`…) and `scanFrontmatter(text)`, which finds the frontmatter's keys in the text.
 
 ## Related resources
 

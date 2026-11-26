@@ -2,7 +2,7 @@
 // the packages' own exports (no intermediate generated markdown files — see
 // migration plan Phase 6.5).
 import { canonicalFrontmatterKeys } from "@gram-lang/kitchen";
-import { allWarningInfo } from "@gram-lang/modules";
+import { allDiagnosticInfo } from "@gram-lang/modules/lint";
 import { ASTNodeType } from "@gram-lang/parser";
 import {
 	UNIT_DICTIONARIES,
@@ -19,26 +19,23 @@ export interface Table {
 	rows: string[][];
 }
 
-// Renders each warning's template with a placeholder proxy standing in for
-// its payload, so the table shows real message shapes (e.g. "Variable
-// '{targetName}' not found.") without needing real payload data.
-const payloadProxy = new Proxy(
-	{},
-	{ get: (_t, prop) => `{${String(prop)}}` },
-) as never;
-
 const WARNING_LABELS: Record<Locale, string[]> = {
 	en: ["Code", "Severity", "Message template"],
 	fr: ["Code", "Sévérité", "Modèle de message"],
 };
 
+/**
+ * Every code a diagnostic can carry (the compiler's, then the lint layer's),
+ * from `allDiagnosticInfo()`: each one links to its own section, the anchor
+ * its `docUrl` points to.
+ */
 export function warningCodesTable(locale: Locale): Table {
 	return {
 		headers: WARNING_LABELS[locale],
-		rows: allWarningInfo.map(({ code, severity, template }) => [
-			`\`${code}\``,
+		rows: allDiagnosticInfo().map(({ code, severity, summary }) => [
+			`[\`${code}\`](#${code.toLowerCase()})`,
 			severity,
-			`\`${template(payloadProxy)}\``,
+			`\`${summary}\``,
 		]),
 	};
 }

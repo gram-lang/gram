@@ -12,7 +12,11 @@ function renderCell(raw: string): string {
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;");
-	return escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+	// `[text](#anchor)`: a link to a section of the same page, and nothing
+	// else (no other address can be written in a generated table).
+	return escaped
+		.replace(/\[([^\]]+)\]\(#([\w-]+)\)/g, '<a href="#$2">$1</a>')
+		.replace(/`([^`]+)`/g, "<code>$1</code>");
 }
 ---
 
