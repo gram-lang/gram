@@ -549,6 +549,9 @@ function formatBraces(
 	return inner;
 }
 
+/** The start of a section header line: `##`, not `###` (rules 6 and 8). */
+const HEADER_LINE = /^##(?!#)/;
+
 /**
  * Rules 6-8, the repairs: textual, line by line, run before the parser reads
  * the text, so that a `< @` it would reject is already a composite.
@@ -564,10 +567,25 @@ function repair(text: string, changes: FormatterChanges): string {
 	// SPACED_COMPOSITE whatever blank surrounds `<`, so the repair must glue
 	// what it flags. Never `\s`: the rule runs before the parser finds the
 	// steps, and a line break taken here would merge two steps or a comment.
-	out = out.replace(/[^\S\r\n]*<[^\S\r\n]*@/g, (match) => {
-		if (match !== "<@") changes.compositeSeparatorSpacing++;
-		return "<@";
-	});
+	// Never on a section header (`##`, not `###`, as rule 8 reads it): its
+	// title is text, kept as written, and holds no element. Glued there,
+	// `## Zest <@lemon` changed the title, and `## <@s` lost the blank after
+	// `##` that rule 8 put back, reporting two changes at every pass (#291).
+	out = out.replace(
+		/[^\S\r\n]*<[^\S\r\n]*@/g,
+		(match, offset: number, whole: string) => {
+			const lineStart =
+				Math.max(
+					whole.lastIndexOf("\n", offset - 1),
+					whole.lastIndexOf("\r", offset - 1),
+				) + 1;
+			if (HEADER_LINE.test(whole.slice(lineStart, lineStart + 3))) {
+				return match;
+			}
+			if (match !== "<@") changes.compositeSeparatorSpacing++;
+			return "<@";
+		},
+	);
 
 	// Rule 7 (from language-server): normalize ->&name {} → ->&name{}
 	// (handles single and multi-word names)
