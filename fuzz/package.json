@@ -12,6 +12,7 @@
     "@gram-lang/audit": "workspace:*",
     "@gram-lang/format": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/modules": "workspace:*",
     "@gram-lang/parser": "workspace:*"
   },
   "devDependencies": {

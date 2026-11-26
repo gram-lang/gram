@@ -1,4 +1,5 @@
 import { hasChanges } from "@gram-lang/format";
+import { allDiagnosticInfo } from "@gram-lang/modules/lint";
 import { GramParseError } from "@gram-lang/parser";
 import {
 	firstDifference,
@@ -55,7 +56,7 @@ function noThrow(
 }
 
 /**
- * The time an input may take through parse + compile + format, in ms. Wide on
+ * The time an input may take through parse + compile + format + lint, in ms. Wide on
  * purpose: it catches a super-linear blow-up, not a slow CI runner.
  */
 export function timeBudget(length: number): number {
@@ -169,10 +170,39 @@ export const INVARIANTS: readonly Invariant[] = [
 		},
 	},
 	{
+		id: "lint-contract",
+		check: (p) => {
+			const thrown = noThrow("lint-contract", p.lint, "lintDocument");
+			if (thrown || !p.lint.ok) return thrown;
+			const known = new Set(allDiagnosticInfo().map((i) => i.code));
+			const stray = p.lint.value.find((d) => !known.has(d.code));
+			if (stray) {
+				return violation(
+					"lint-contract",
+					`lintDocument returned ${stray.code}, which allDiagnosticInfo() does not list`,
+				);
+			}
+			const outside = p.lint.value.find(
+				(d) =>
+					d.loc &&
+					(d.loc.start < 0 ||
+						d.loc.end < d.loc.start ||
+						d.loc.start > p.source.length),
+			);
+			if (outside) {
+				return violation(
+					"lint-contract",
+					`${outside.code} has a loc outside the source`,
+				);
+			}
+			return null;
+		},
+	},
+	{
 		id: "time-budget",
 		check: (p) => {
 			const elapsed = (q: Prepared) =>
-				q.parse.ms + (q.compile?.ms ?? 0) + q.format.ms;
+				q.parse.ms + (q.compile?.ms ?? 0) + q.format.ms + q.lint.ms;
 			const budget = timeBudget(p.source.length);
 			let ms = elapsed(p);
 			// A GC pause or a cold JIT is not a blow-up: measure twice more, keep the best.
@@ -181,7 +211,7 @@ export const INVARIANTS: readonly Invariant[] = [
 			if (ms <= budget) return null;
 			return violation(
 				"time-budget",
-				`parse + compile + format took ${Math.round(ms)} ms, budget ${Math.round(budget)} ms`,
+				`parse + compile + format + lint took ${Math.round(ms)} ms, budget ${Math.round(budget)} ms`,
 			);
 		},
 	},

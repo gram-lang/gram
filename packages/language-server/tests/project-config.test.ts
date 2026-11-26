@@ -128,4 +128,25 @@ describe("readProjectConfigSync", () => {
 			expect((await read("mealTimes: []\n")).mealTimes).toBeUndefined();
 		});
 	});
+
+	describe("lint", () => {
+		it("reads the settings of lint.rules", async () => {
+			expect(
+				(
+					await read(
+						"lint:\n  rules:\n    UNKNOWN_INGREDIENT: off\n    UNUSED_INTERMEDIATE: hint\n",
+					)
+				).lint,
+			).toEqual({
+				rules: { UNKNOWN_INGREDIENT: "off", UNUSED_INTERMEDIATE: "hint" },
+			});
+		});
+
+		it("is absent without it, or when no setting reads", async () => {
+			expect((await read("clock: 24h\n")).lint).toBeUndefined();
+			expect(
+				(await read("lint:\n  rules:\n    MISSING_TITLE: error\n")).lint,
+			).toBeUndefined();
+		});
+	});
 });
