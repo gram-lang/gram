@@ -2,16 +2,11 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Diagnostic } from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
-import {
-	loadIngredientDB,
-	buildIngredientLookupSet,
-	type IngredientDB,
-} from "../ingredient-loader";
+import { loadIngredientDB, type IngredientDB } from "../ingredient-loader";
 import type { IngredientValidationIssue } from "@gram-lang/analyzer";
 
 export interface ResolvedDb {
 	db: IngredientDB;
-	lookupSet: Set<string>;
 	rejected: IngredientValidationIssue[];
 }
 
@@ -40,12 +35,7 @@ export function resolveIngredientDb(
 			}
 		}
 	}
-	const db = result?.db ?? {};
-	return {
-		db,
-		lookupSet: buildIngredientLookupSet(db),
-		rejected: result?.rejected ?? [],
-	};
+	return { db: result?.db ?? {}, rejected: result?.rejected ?? [] };
 }
 
 export interface DbReloadDeps {
@@ -56,7 +46,6 @@ export interface DbReloadDeps {
 	computeDiagnostics: (
 		state: DocumentState,
 		uri: string,
-		ingredientLookupSet: Set<string>,
 		ingredientDB: IngredientDB,
 	) => Diagnostic[];
 	onWarn: (message: string) => void;
@@ -65,7 +54,6 @@ export interface DbReloadDeps {
 
 export interface DbReloadOutcome {
 	ingredientDB: IngredientDB;
-	ingredientLookupSet: Set<string>;
 	diagnosticsByUri: Map<string, Diagnostic[]>;
 }
 
@@ -90,7 +78,7 @@ export async function reloadDbAndRefreshDiagnostics(
 			resolved = resolveIngredientDb(undefined, deps.workspaceFolders);
 		} catch (e) {
 			deps.onError(`Failed to load ingredient database: ${e}`);
-			resolved = { db: {}, lookupSet: new Set(), rejected: [] };
+			resolved = { db: {}, rejected: [] };
 		}
 	}
 
@@ -107,7 +95,7 @@ export async function reloadDbAndRefreshDiagnostics(
 		try {
 			diagnosticsByUri.set(
 				uri,
-				deps.computeDiagnostics(state, uri, resolved.lookupSet, resolved.db),
+				deps.computeDiagnostics(state, uri, resolved.db),
 			);
 		} catch (e) {
 			deps.onError(`Failed to refresh diagnostics for ${uri}: ${e}`);
@@ -116,7 +104,6 @@ export async function reloadDbAndRefreshDiagnostics(
 
 	return {
 		ingredientDB: resolved.db,
-		ingredientLookupSet: resolved.lookupSet,
 		diagnosticsByUri,
 	};
 }

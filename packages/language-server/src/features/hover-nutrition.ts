@@ -8,13 +8,14 @@ import type { DocumentState } from "../document-state";
 import { positionToOffset } from "../utils/position";
 import { collectIngredients } from "../utils/ast-walker";
 import { compiledRatios } from "../utils/ratios";
-import {
-	type IngredientDB,
-	lookupIngredient,
-	type IngredientEntry,
-} from "../ingredient-loader";
+import type { IngredientDB, IngredientEntry } from "../ingredient-loader";
 import { formatTerms, normalizeUnit, termsTotal } from "@gram-lang/i18n";
-import { NUTRIENTS, standardizeMass, weighAmount } from "@gram-lang/analyzer";
+import {
+	getIngredientData,
+	NUTRIENTS,
+	standardizeMass,
+	weighAmount,
+} from "@gram-lang/analyzer";
 import {
 	type CompoundQuantityAST,
 	isCompoundQuantity,
@@ -179,7 +180,7 @@ export function provideNutritionHover(
 	if (!ingredient) return null;
 
 	const entry =
-		Object.keys(db).length > 0 ? lookupIngredient(ingredient.name, db) : null;
+		Object.keys(db).length > 0 ? getIngredientData(ingredient.name, db) : null;
 	const sum = isCompoundQuantity(ingredient.quantity)
 		? buildSumSection(ingredient.quantity, entry ?? null, db)
 		: null;

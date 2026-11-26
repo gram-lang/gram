@@ -81,7 +81,7 @@ Chacun de ces réglages est disponible avec les mêmes valeurs dans la [CLI](/fr
 Une journée de travail qu'une phase passive prolongée repousse au-delà du cycle normal de 24 heures déclenche un avertissement explicite sur la section concernée (`DAY_OVERFLOW`), affiché au même titre que les diagnostics du compilateur.
 
 ### 4. Gestion intelligente des ingrédients
-- **Gestion transparente des pluriels** : L'extension associe automatiquement les formes plurielles courantes de votre recette (ex. `@carottes`) aux entrées singulières correspondantes de votre référentiel YAML (`carotte`). Vous conservez ainsi une rédaction naturelle sans générer de faux avertissements.
+- **Le même verdict que la nutrition** : un ingrédient est signalé comme inconnu exactement quand l'estimation nutritionnelle ne le trouve pas dans votre base. Majuscules, accents, tirets et apostrophes n'y changent rien (`@Huile-d’Olive` trouve `huile d'olive`), mais un pluriel reste un autre nom : écrivez `@carotte`, ou ajoutez `carottes` aux `aliases` de l'entrée (voir [Gérer une base d'ingrédients](/fr/docs/how-to/manage-database/)).
 - **Appariement flou (*Fuzzy Matching*)** : En cas de faute de frappe sur un ingrédient, un algorithme basé sur la distance de Levenshtein suggère la correspondance la plus probable via les actions de code (*Quick Fixes*).
 - **Informations au survol** : Survolez un ingrédient pour inspecter son profil nutritionnel et les conversions volume-masse (`1 c.à.s → 15 g`). Survolez un minuteur pour voir la durée interprétée (`~{1:30 h}` → `1 h 30 min`), une ancre de section pour connaître son anticipation, ou une somme/proportion pour consulter la valeur calculée.
 
