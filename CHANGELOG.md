@@ -941,7 +941,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 
 ---
 
-## [0.7.0-alpha](https://git.gram-lang.org/gram-lang/gram/compare/v.0.6.0-alpha...v.0.7.0-alpha) - 2026-05-10
+## [0.7.0](https://git.gram-lang.org/gram-lang/gram/compare/v.0.6.0-alpha...v.0.7.0-alpha) - 2026-05-10
 
 ### New features
 - Reclassified database-backed features (mass unification, yield management, and nutrition estimation) as experimental feature flags in `CompilerOptions` and the Playground.
@@ -953,7 +953,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 
 ---
 
-## [0.6.0-alpha](https://git.gram-lang.org/gram-lang/gram/compare/v.0.5.0-alpha...v.0.6.0-alpha) - 2026-01-18
+## [0.6.0](https://git.gram-lang.org/gram-lang/gram/compare/v.0.5.0-alpha...v.0.6.0-alpha) - 2026-01-18
 
 ### New features
 - Overhauled the ingredient database into categorized YAML files (`~900` ingredients sourced from ANSES CIQUAL and USDA FoodData Central), with English/French lookup and user-defined entries.
@@ -965,7 +965,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 
 ---
 
-## [0.5.0-alpha](https://git.gram-lang.org/gram-lang/gram/compare/v.0.4.0-alpha...v.0.5.0-alpha) - 2026-01-06
+## [0.5.0](https://git.gram-lang.org/gram-lang/gram/compare/v.0.4.0-alpha...v.0.5.0-alpha) - 2026-01-06
 
 ### New features
 - **Mass unification**: Added volume-to-gram conversion via average densities, net vs. purchasing mass (yield/waste), custom frontmatter densities, and an initial proof-of-concept ingredient database.
@@ -977,7 +977,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 
 ---
 
-## [0.4.0-alpha](https://git.gram-lang.org/gram-lang/gram/compare/v.0.3.1-alpha...v.0.4.0-alpha) - 2026-01-04
+## [0.4.0](https://git.gram-lang.org/gram-lang/gram/compare/v.0.3.1-alpha...v.0.4.0-alpha) - 2026-01-04
 
 ### New features
 - Added asynchronous (background) timer support (`~{1h}&`) to distinguish active work from total duration, with dedicated styling in the Playground.
@@ -988,7 +988,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 
 ---
 
-## [0.3.1-alpha](https://git.gram-lang.org/gram-lang/gram/compare/v.0.3.0-alpha...v.0.3.1-alpha) - 2026-01-03
+## [0.3.1](https://git.gram-lang.org/gram-lang/gram/compare/v.0.3.0-alpha...v.0.3.1-alpha) - 2026-01-03
 
 ### Bug fixes and improvements
 - Fixed composite sub-ingredient quantities not summing properly across multiple sections in the shopping list.
@@ -996,7 +996,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 
 ---
 
-## [0.3.0-alpha](https://git.gram-lang.org/gram-lang/gram/compare/v0.2.0-alpha...v.0.3.0-alpha) - 2026-01-02
+## [0.3.0](https://git.gram-lang.org/gram-lang/gram/compare/v0.2.0-alpha...v.0.3.0-alpha) - 2026-01-02
 
 ### New features
 - Restructured the project into a workspace monorepo under `packages/` (`parser`, `compiler`, `playground`, `vscode-extension`).
@@ -1004,7 +1004,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 
 ---
 
-## [0.2.0-alpha](https://git.gram-lang.org/gram-lang/gram/compare/v0.1.0...v0.2.0-alpha) - 2025-12-30
+## [0.2.0](https://git.gram-lang.org/gram-lang/gram/compare/v0.1.0...v0.2.0-alpha) - 2025-12-30
 
 ### Bug fixes and improvements
 - Migrated `gram-parser` from JavaScript to TypeScript with strict AST/compiler interfaces and generated `.d.ts` declarations.
