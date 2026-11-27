@@ -37,3 +37,29 @@ jobs:
       - name: Content Vocabulary Audit
         run: bun run audit
         continue-on-error: true
+
+  fuzz:
+    name: Nightly Fuzzing
+    runs-on: docker
+    timeout-minutes: 30
+    container:
+      image: oven/bun:1.4.0
+    steps:
+      - name: Install Git
+        run: |
+          apt-get update -qq && apt-get install -y -qq --no-install-recommends git ca-certificates
+          git config --global --add safe.directory '*'
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+
+      # Fuzzing imports the pipeline packages via @gram-lang/* (dist/):
+      # build them first (install runs with --ignore-scripts).
+      - name: Build Fuzz Dependencies
+        run: bun run build --filter='@gram-lang/fuzz^...'
+
+      - name: Run Fuzzer (100k iterations)
+        run: bun run fuzz --iterations 100000 --minimize
