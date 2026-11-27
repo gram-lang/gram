@@ -262,6 +262,7 @@ Offsets are UTF-16 code units, as in the AST and in LSP. A warning raised in a d
 
 - **`allDiagnosticInfo()`**: every code a diagnostic can carry, the compiler's then the lint layer's, with its severity, `origin` (`"compiler"` or `"lint"`), `deprecated` flag and the shape of its message. The table of the [warnings page](/docs/reference/api/warnings/) is generated from it.
 - **`docUrlOf(code)`**: the address of a code's section on the warnings page.
+- **`applyPreferredFixes(text, uri, diagnostics)`**: applies to `text` the preferred fix of each diagnostic, as one pass of `gram check --fix`, and returns `{ text, applied }` (`applied`: the `{ diagnostic, fix }` pairs kept). Pure: it writes nothing, and the caller lints the result again. A fix is left out whole when it creates a file, edits another file than `uri`, has no patch or one outside the text, or overlaps a fix already kept (two insertions at one point, or one at the edge of a replacement, count as an overlap); fixes are kept in text order and applied from the end back.
 - **`parseLintConfig(raw)`**: reads the `lint:` block of a parsed `.gram/config.yaml`, leaving out what does not read; never throws. See [Configure the lint](/docs/reference/api/warnings/#configure-the-lint).
 - **`EDITOR_HIDDEN_CODES`**: the compiler codes an editor leaves out when they carry no position (`MISSING_INGREDIENT`, `MISSING_MACROS`, `UNKNOWN_MASS`).
 - **`findWrittenIngredients(text)`**, **`lostFrom(compiled, written)`**: the `@ingredient` tokens written in the source, and those the compilation lost.
