@@ -51,6 +51,11 @@ export interface CheckResult {
 	diagnostics: CheckDiagnostic[];
 	hasErrors: boolean;
 	fileCount: number;
+	/**
+	 * With `--fix`, how many fixes were applied to each file, by its absolute
+	 * path (0 for a file left as it was); absent without `--fix`.
+	 */
+	fixed?: Map<string, number>;
 	/** The `--stock` entries some `@use` of the checked files matched. */
 	usedStock: Set<string>;
 }
@@ -377,11 +382,21 @@ export interface PipelineOptions extends ModuleResolutionOptions {
 	 * single-file call — `composeRecipe` creates its own throwaway Map.
 	 */
 	moduleCache?: Map<string, AnalyzedCompilationResult>;
+	/**
+	 * The entry file's text, read in place of the file on disk (its `@use`
+	 * imports are still read from disk): `gram check --fix` lints the text
+	 * it fixed between two passes, and writes the file once, at the end.
+	 */
+	entryText?: string;
 }
 
 export interface CheckOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
 	strict?: boolean;
+	/** Apply the preferred fixes to each file (`gram check --fix`). */
+	fix?: boolean;
+	/** The passes `fix` makes at most on one file. Default: `FIX_MAX_PASSES`. */
+	maxFixPasses?: number;
 }
 
 export interface BuildOptions extends ModuleResolutionOptions {

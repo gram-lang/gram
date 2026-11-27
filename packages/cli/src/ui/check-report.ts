@@ -1,4 +1,4 @@
-import { relative, sep } from "node:path";
+import { relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { FileEdit, LintFix } from "@gram-lang/modules/lint";
 import type { CheckDiagnostic, CheckRelated, CheckResult } from "../types";
@@ -62,13 +62,18 @@ function diagnostic(d: CheckDiagnostic, cwd: string) {
 	};
 }
 
-/** The `gram check --format json` report (`version: 1`). */
+/**
+ * The `gram check --format json` report (`version: 1`). With `--fix`, each
+ * entry of `files` adds `fixed`, the fixes applied to it, and `diagnostics`
+ * are those left after the fixes.
+ */
 export function checkReport(result: CheckResult, cwd = process.cwd()) {
 	return {
 		version: CHECK_REPORT_VERSION,
 		files: result.files.map((file) => ({
 			file: reportPath(file, cwd),
 			uri: fileUrl(file),
+			...(result.fixed ? { fixed: result.fixed.get(resolve(file)) ?? 0 } : {}),
 		})),
 		diagnostics: result.diagnostics.map((d) => diagnostic(d, cwd)),
 	};

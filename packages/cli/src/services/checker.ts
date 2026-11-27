@@ -1,6 +1,8 @@
+import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import pLimit from "p-limit";
 import {
+	applyPreferredFixes,
 	buildLineIndex,
 	type LintConfig,
 	type LintDiagnostic,
@@ -48,25 +50,96 @@ function byPosition(a: LintDiagnostic, b: LintDiagnostic): number {
 	);
 }
 
+/** The passes `gram check --fix` makes at most on one file. */
+export const FIX_MAX_PASSES = 5;
+
+type LintConfigOf = (projectRoot: string) => Promise<LintConfig>;
+
 /**
- * One file's diagnostics: `lintDocument` on the file as the language server
- * prepares it (its own AST, the composed and analyzed compilation, the
- * `@use` graph, the database and the project's `lint:` settings), so both
- * report the same codes at the same places. A file that cannot be read is
- * one `COMPILE_ERROR`.
+ * `lintDocument` on the file as the language server prepares it (its own
+ * AST, the composed and analyzed compilation, the `@use` graph, the
+ * database and the project's `lint:` settings), so both report the same
+ * codes at the same places. `entryText`, when given, is linted in place of
+ * the file on disk. Throws only when the file cannot be read.
+ */
+async function lintFile(
+	file: string,
+	opts: CheckOptions,
+	lintConfigOf: LintConfigOf,
+	entryText?: string,
+) {
+	const prepared = await runLintPipeline(file, {
+		db: opts.db,
+		paths: opts.paths,
+		stock: opts.stock,
+		...(entryText !== undefined ? { entryText } : {}),
+	});
+	const found = lintDocument({
+		uri: prepared.uri,
+		text: prepared.text,
+		ast: prepared.ast,
+		parseError: prepared.parseError,
+		compilation: prepared.compilation,
+		compileError: prepared.compileError,
+		moduleGraph: prepared.moduleGraph,
+		...(opts.db ? { ingredientDB: opts.db } : {}),
+		config: await lintConfigOf(prepared.projectRoot),
+	});
+	return { prepared, found };
+}
+
+/**
+ * `gram check --fix` on one linted file: applies the preferred fixes
+ * (`applyPreferredFixes`: patches of this file only, never a new file nor a
+ * `@use` dependency) and lints the fixed text again, in memory, until a
+ * pass applies nothing or `maxPasses` passes were made. A code turned
+ * `off` or named by a `// gram-ignore` has no diagnostic, so no fix. The
+ * file is written once, at the end, and only when its text changed.
+ */
+async function fixFile(
+	file: string,
+	opts: CheckOptions,
+	lintConfigOf: LintConfigOf,
+	linted: Awaited<ReturnType<typeof lintFile>>,
+): Promise<{ linted: Awaited<ReturnType<typeof lintFile>>; fixed: number }> {
+	const original = linted.prepared.text;
+	const maxPasses = opts.maxFixPasses ?? FIX_MAX_PASSES;
+	let fixed = 0;
+	for (let pass = 0; pass < maxPasses; pass++) {
+		const { text, applied } = applyPreferredFixes(
+			linted.prepared.text,
+			linted.prepared.uri,
+			linted.found,
+		);
+		// Nothing applied: `linted` already holds the final text's diagnostics.
+		if (applied.length === 0) break;
+		fixed += applied.length;
+		linted = await lintFile(file, opts, lintConfigOf, text);
+	}
+	if (linted.prepared.text !== original)
+		await writeFile(linted.prepared.uri, linted.prepared.text, "utf-8");
+	return { linted, fixed };
+}
+
+/**
+ * One file's diagnostics (after its fixes, with `--fix`). A file that
+ * cannot be read is one `COMPILE_ERROR`, and is never fixed.
  */
 async function checkFile(
 	file: string,
 	opts: CheckOptions,
-	lintConfigOf: (projectRoot: string) => Promise<LintConfig>,
-): Promise<{ diagnostics: CheckDiagnostic[]; usedStock: Set<string> }> {
-	let prepared: Awaited<ReturnType<typeof runLintPipeline>>;
+	lintConfigOf: LintConfigOf,
+): Promise<{
+	diagnostics: CheckDiagnostic[];
+	usedStock: Set<string>;
+	fixed: number;
+}> {
+	let linted: Awaited<ReturnType<typeof lintFile>>;
+	let fixed = 0;
 	try {
-		prepared = await runLintPipeline(file, {
-			db: opts.db,
-			paths: opts.paths,
-			stock: opts.stock,
-		});
+		linted = await lintFile(file, opts, lintConfigOf);
+		if (opts.fix)
+			({ linted, fixed } = await fixFile(file, opts, lintConfigOf, linted));
 	} catch (err) {
 		const severity = diagnosticInfoOf("COMPILE_ERROR").severity;
 		return {
@@ -82,20 +155,10 @@ async function checkFile(
 				},
 			],
 			usedStock: new Set(),
+			fixed: 0,
 		};
 	}
-
-	const found = lintDocument({
-		uri: prepared.uri,
-		text: prepared.text,
-		ast: prepared.ast,
-		parseError: prepared.parseError,
-		compilation: prepared.compilation,
-		compileError: prepared.compileError,
-		moduleGraph: prepared.moduleGraph,
-		...(opts.db ? { ingredientDB: opts.db } : {}),
-		config: await lintConfigOf(prepared.projectRoot),
-	});
+	const { prepared, found } = linted;
 
 	const lineStarts = buildLineIndex(prepared.text);
 	const depLineStarts = new Map<string, number[]>();
@@ -129,14 +192,16 @@ async function checkFile(
 				: {}),
 		}),
 	);
-	return { diagnostics, usedStock: prepared.usedStock };
+	return { diagnostics, usedStock: prepared.usedStock, fixed };
 }
 
 export async function checkFiles(
 	files: string[],
 	opts: CheckOptions = {},
 ): Promise<CheckResult> {
-	const limit = pLimit(20);
+	// One file at a time with `--fix`: a file is never read as another's
+	// `@use` dependency while it is being rewritten.
+	const limit = pLimit(opts.fix ? 1 : 20);
 	const configs = new Map<string, Promise<LintConfig>>();
 	const lintConfigOf = (projectRoot: string) => {
 		let config = configs.get(projectRoot);
@@ -163,6 +228,13 @@ export async function checkFiles(
 		diagnostics,
 		hasErrors: diagnostics.some((d) => d.level === "error"),
 		fileCount: files.length,
+		...(opts.fix
+			? {
+					fixed: new Map(
+						files.map((file, i) => [resolve(file), perFile[i]!.fixed]),
+					),
+				}
+			: {}),
 		usedStock,
 	};
 }
