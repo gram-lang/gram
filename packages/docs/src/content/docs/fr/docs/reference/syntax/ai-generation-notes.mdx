@@ -31,6 +31,20 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 5. **Relecture** : Avant de valider, passez au crible les écueils détaillés ci-dessous : noms en *kebab-case*, unités planquées dans les accolades du matériel, `@&` manquant sur un ingrédient répété, déclarations `->&nom` redondantes, et étapes orphelines ne servant qu'à préparer un ingrédient pour la suite.
 </Steps>
 
+## Vérifier le résultat avec `gram check`
+
+Un fichier généré n'est pas terminé tant que [`gram check`](/fr/docs/reference/tooling/cli/#gram-check-motif) ne l'accepte pas. Son rapport JSON est fait pour être relu par le script ou le modèle qui a écrit la recette : la boucle se referme toute seule.
+
+1. Générer le fichier `.gram`.
+2. Lancer `gram check recette.gram --format json`. Le code de sortie dit s'il reste une erreur ; chaque diagnostic donne son `code`, sa place (`line` et `col`, à partir de 1), son `message`, et souvent un correctif tout prêt (`fixes`, celui à privilégier marqué `isPreferred`).
+3. Corriger ce qu'il signale, en appliquant le correctif préféré ou en réécrivant le passage, puis relancer jusqu'à ce qu'il ne reste plus d'erreur. Avec `--strict`, les avertissements doivent disparaître aussi.
+
+```bash
+gram check recette.gram --format json | jq '.diagnostics[] | {code, line, col, message}'
+```
+
+La plupart des erreurs ci-dessous ont leur propre code : le rapport indique donc quelle section de cette page s'applique. Les codes sont décrits dans la [référence des avertissements](/fr/docs/reference/api/warnings/).
+
 ## Erreurs courantes
 
 Voici les erreurs les plus fréquentes dans les fichiers `.gram` générés automatiquement.

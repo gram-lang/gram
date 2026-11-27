@@ -48,17 +48,24 @@ function lintSource(
 }
 
 /** Several files, composed as the language server and `gram check` do. */
-async function lintFiles(files: Record<string, string>) {
+async function lintFiles(
+	files: Record<string, string>,
+	db?: Record<string, IngredientData>,
+) {
 	const graph = await loadModuleGraph(URI, createFakeHost(files));
-	const composed = composeRecipe(graph, { db: {} });
+	const composed = composeRecipe(graph, { db: db ?? {} });
 	const compiled = compile(composed.ast);
-	const analyzed = analyze(compiled, composed.syntheticIngredients).result;
+	const analyzed = analyze(compiled, {
+		...composed.syntheticIngredients,
+		...db,
+	}).result;
 	return lintDocument({
 		uri: URI,
 		text: files[URI]!,
 		ast: graph.modules.get(URI)!.ast,
 		compilation: finalizeComposed(analyzed, composed),
 		moduleGraph: graph,
+		...(db ? { ingredientDB: db } : {}),
 	});
 }
 
@@ -134,12 +141,43 @@ describe("lintDocument — what every diagnostic carries", () => {
 	});
 
 	it("keeps the codes with no position an editor hides, without a loc", () => {
-		const text = `${TITLE}Mix @flour{100 g} and @sugar{50 g}.\n`;
-		const hidden = lintSource(text, { flour: entry("Flour") }).filter((d) =>
-			EDITOR_HIDDEN_CODES.has(d.code),
-		);
+		// A known ingredient with no nutrition and no mass: MISSING_MACROS,
+		// UNKNOWN_MASS. (An unknown one is UNKNOWN_INGREDIENT, on its mention.)
+		const text = `${TITLE}Mix @flour{100 g} and @egg{1}.\n`;
+		const hidden = lintSource(text, {
+			flour: entry("Flour"),
+			egg: { name: "Egg" } as unknown as IngredientData,
+		}).filter((d) => EDITOR_HIDDEN_CODES.has(d.code));
 		expect(hidden.length).toBeGreaterThan(0);
 		for (const d of hidden) expect(d.loc).toBeUndefined();
+	});
+});
+
+describe("lintDocument — MISSING_INGREDIENT next to UNKNOWN_INGREDIENT", () => {
+	it("leaves out the analyzer's verdict on an ingredient the file already flags", () => {
+		const text = `${TITLE}Mix @flour{100 g} and @Brown sugar{50 g}.\n`;
+		const diags = lintSource(text, { flour: entry("Flour") });
+		const unknown = diags.filter((d) => d.code === "UNKNOWN_INGREDIENT");
+		expect(unknown.map((d) => d.data?.name)).toEqual(["Brown sugar"]);
+		expect(diags.map((d) => d.code)).not.toContain("MISSING_INGREDIENT");
+	});
+
+	it("keeps it for an ingredient only an imported module writes", async () => {
+		const base = "## Dough ->&dough\n\nMix @flour{100 g} and @salt{2 g}.\n";
+		const top = `@use "./base.gram" as &dough\n\n${TITLE}## Bake\n\nBake &dough{1} with @sugar{5 g}.\n`;
+		const diags = await lintFiles(
+			{ [URI]: top, "/base.gram": base },
+			{ flour: entry("Flour") },
+		);
+		const missing = diags.filter((d) => d.code === "MISSING_INGREDIENT");
+		expect(missing.map((d) => d.message)).toEqual([
+			'Ingredient "salt" not found in database — nutritional metrics and density conversions unavailable.',
+		]);
+		expect(
+			diags
+				.filter((d) => d.code === "UNKNOWN_INGREDIENT")
+				.map((d) => d.data?.name),
+		).toEqual(["sugar"]);
 	});
 });
 
@@ -238,7 +276,7 @@ describe("lintDocument — the rules moved from the language server", () => {
 			(x) => x.code === "UNKNOWN_INGREDIENT",
 		)!;
 		expect(one.severity).toBe("info");
-		expect(one.data).toEqual({ suggestion: "Flour" });
+		expect(one.data).toEqual({ name: "flur", suggestion: "Flour" });
 		expect(one.fixes![0]!.isPreferred).toBe(true);
 		expect(apply(text, one.fixes![0]!)).toContain("@Flour{100 g}");
 

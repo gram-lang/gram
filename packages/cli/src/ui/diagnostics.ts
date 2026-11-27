@@ -1,7 +1,8 @@
 import chalk from "chalk";
 import { log } from "@clack/prompts";
-import { relative } from "node:path";
-import type { CheckResult, Diagnostic } from "../types";
+import type { LintSeverity } from "@gram-lang/modules/lint";
+import type { CheckDiagnostic, CheckResult } from "../types";
+import { reportPath } from "./check-report";
 import type { IngredientValidationIssue } from "@gram-lang/analyzer";
 
 /**
@@ -22,8 +23,10 @@ export function reportRejectedIngredients(
 	);
 }
 
-function groupByFile(diagnostics: Diagnostic[]): Map<string, Diagnostic[]> {
-	const map = new Map<string, Diagnostic[]>();
+function groupByFile(
+	diagnostics: CheckDiagnostic[],
+): Map<string, CheckDiagnostic[]> {
+	const map = new Map<string, CheckDiagnostic[]>();
 	for (const d of diagnostics) {
 		const bucket = map.get(d.file) ?? [];
 		bucket.push(d);
@@ -32,67 +35,62 @@ function groupByFile(diagnostics: Diagnostic[]): Map<string, Diagnostic[]> {
 	return map;
 }
 
-function displayPath(file: string): string {
-	return relative(process.cwd(), file) || file;
+const plural = (n: number, word: string) => `${n} ${word}${n !== 1 ? "s" : ""}`;
+
+/** `line:col`, or `-` for a diagnostic of the whole file. */
+function where(d: { line?: number; col?: number }): string {
+	return d.line !== undefined ? `${d.line}:${d.col}` : "-";
 }
 
+const ICONS: Record<LintSeverity, string> = {
+	error: chalk.red("✗"),
+	warning: chalk.yellow("⚠"),
+	info: chalk.blue("·"),
+	hint: chalk.dim("·"),
+};
+
+/**
+ * `gram check`'s terminal report: each file with its diagnostics, in text
+ * order, as `line:col  ✗ message  CODE`, a cause found in a `@use`
+ * dependency on the next line (`↳ see base.gram:12:4`), then the count of
+ * each level. The icon is the level (`--strict` makes errors of all but the
+ * hints); the JSON report lists the same diagnostics.
+ */
 export function renderCheckResult(result: CheckResult): void {
 	if (result.diagnostics.length === 0) {
-		const n = result.fileCount;
-		log.success(`${n} file${n !== 1 ? "s" : ""} valid.`);
+		log.success(`${plural(result.fileCount, "file")} valid.`);
 		return;
 	}
 
 	for (const [file, diags] of groupByFile(result.diagnostics)) {
 		console.log();
-		console.log(chalk.bold(displayPath(file)));
-
-		const byCategory = new Map<string, Diagnostic[]>();
+		console.log(chalk.bold(reportPath(file)));
+		const width = Math.max(...diags.map((d) => where(d).length));
 		for (const d of diags) {
-			const bucket = byCategory.get(d.category) ?? [];
-			bucket.push(d);
-			byCategory.set(d.category, bucket);
-		}
-
-		for (const [category, catDiags] of byCategory) {
-			console.log(chalk.dim(`  [${category}]`));
-			for (const d of catDiags) {
-				const loc =
-					d.line != null
-						? chalk.dim(`  line ${String(d.line).padEnd(2)} `)
-						: "  ";
-				const icon =
-					d.level === "error"
-						? chalk.red("✗")
-						: d.level === "warning"
-							? chalk.yellow("⚠")
-							: chalk.blue("·");
-				console.log(`  ${loc}${icon} ${d.message}`);
+			console.log(
+				`  ${chalk.dim(where(d).padEnd(width))}  ${ICONS[d.level]} ${d.message}  ${chalk.dim(d.code)}`,
+			);
+			for (const r of d.related ?? []) {
+				const at = r.line !== undefined ? `:${r.line}:${r.col}` : "";
+				console.log(
+					`  ${" ".repeat(width)}    ${chalk.dim(`↳ see ${reportPath(r.file)}${at}`)}`,
+				);
 			}
 		}
 	}
 
-	const errCount = result.diagnostics.filter((d) => d.level === "error").length;
-	const warnCount = result.diagnostics.filter(
-		(d) => d.level === "warning",
-	).length;
-
-	const parts: string[] = [];
-	if (errCount)
-		parts.push(chalk.red(`${errCount} error${errCount !== 1 ? "s" : ""}`));
-	if (warnCount)
-		parts.push(
-			chalk.yellow(`${warnCount} warning${warnCount !== 1 ? "s" : ""}`),
-		);
+	const count = (level: LintSeverity) =>
+		result.diagnostics.filter((d) => d.level === level).length;
+	const errors = count("error");
+	const parts = [
+		errors ? chalk.red(plural(errors, "error")) : "",
+		count("warning") ? chalk.yellow(plural(count("warning"), "warning")) : "",
+		count("info") ? chalk.blue(plural(count("info"), "info")) : "",
+		count("hint") ? chalk.dim(plural(count("hint"), "hint")) : "",
+	].filter(Boolean);
 
 	console.log();
-	if (errCount > 0) {
-		log.error(
-			`${parts.join(", ")} in ${result.fileCount} file${result.fileCount !== 1 ? "s" : ""}.`,
-		);
-	} else {
-		log.warn(
-			`${parts.join(", ")} in ${result.fileCount} file${result.fileCount !== 1 ? "s" : ""}.`,
-		);
-	}
+	const summary = `${parts.join(", ")} in ${plural(result.fileCount, "file")}.`;
+	if (errors > 0) log.error(summary);
+	else log.warn(summary);
 }

@@ -5,21 +5,50 @@ import type {
 } from "@gram-lang/analyzer";
 import type { CategoryKey } from "@gram-lang/i18n";
 import type { RecipeSettings } from "@gram-lang/renderer";
+import type {
+	LintDiagnostic,
+	LintRelated,
+	LintSeverity,
+} from "@gram-lang/modules/lint";
 import { z } from "zod";
 
-export type DiagnosticLevel = "error" | "warning" | "info";
+/**
+ * Where a diagnostic is, for a reader: lines and columns from 1 (the
+ * `file:line:col` of compilers, which editors open), columns counted in
+ * UTF-16 code units like `loc`.
+ */
+export interface CheckPosition {
+	line: number;
+	col: number;
+	endLine: number;
+	endCol: number;
+}
 
-export interface Diagnostic {
-	level: DiagnosticLevel;
-	category: "Structure" | "Database";
+/** A `related` place (the cause, in a `@use` dependency), located. */
+export interface CheckRelated extends LintRelated, Partial<CheckPosition> {
+	/** The dependency, as an absolute path. */
 	file: string;
-	message: string;
-	line?: number;
-	col?: number;
+}
+
+/** One `LintDiagnostic` of a checked file, located. */
+export interface CheckDiagnostic
+	extends Omit<LintDiagnostic, "related">,
+		Partial<CheckPosition> {
+	/** The checked file, as an absolute path. */
+	file: string;
+	/**
+	 * What it counts as for the exit code: its severity, which `--strict`
+	 * turns into `error` unless it is a `hint`.
+	 */
+	level: LintSeverity;
+	related?: CheckRelated[];
 }
 
 export interface CheckResult {
-	diagnostics: Diagnostic[];
+	/** The checked files, absolute, in the order they were given. */
+	files: string[];
+	/** Every file's diagnostics, file by file, each file's in text order. */
+	diagnostics: CheckDiagnostic[];
 	hasErrors: boolean;
 	fileCount: number;
 	/** The `--stock` entries some `@use` of the checked files matched. */
@@ -287,6 +316,13 @@ export const GramConfigFileSchema = z.object({
 	clock: z.unknown().optional(),
 	/** Set to `false` to disable the passive "update available" notice printed after a command finishes. */
 	updateCheck: z.boolean().optional(),
+	/**
+	 * `lint: { rules: { CODE: off | hint | info | warning } }`, read by
+	 * `gram check` from each file's own project, as the language server reads
+	 * it (`parseLintConfig`, which drops what it does not understand), so a
+	 * typo never stops another command.
+	 */
+	lint: z.unknown().optional(),
 	/** Named `@use` specifier aliases (module-imports RFC §B.1/§F.1): `paths: { bases: "./shared/bases" }` lets `@use "@bases/pate.gram"` resolve to `<projectRoot>/shared/bases/pate.gram`. The bare `@/` prefix (project root itself) needs no entry here. */
 	paths: z.record(z.string(), z.string()).optional(),
 	ai: z

@@ -161,7 +161,7 @@ export function unknownIngredients(
 			message: suggestion
 				? `'@${ingredient.name}' not found in the ingredient database. Did you mean '@${suggestion}'?`
 				: `'@${ingredient.name}' not found in the ingredient database. Possible typo or missing entry.`,
-			...(suggestion ? { data: { suggestion } } : {}),
+			data: { name: ingredient.name, ...(suggestion ? { suggestion } : {}) },
 			...(fixes.length > 0 ? { fixes } : {}),
 		});
 	}

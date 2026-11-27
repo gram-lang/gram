@@ -1,59 +1,135 @@
-import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import pLimit from "p-limit";
-import type { WarningSeverity } from "@gram-lang/kitchen";
-import { warningSeverityOf } from "@gram-lang/modules";
-import { GramParseError } from "@gram-lang/parser";
-import { runPipeline } from "../core/pipeline";
+import {
+	buildLineIndex,
+	type LintConfig,
+	type LintDiagnostic,
+	type LintSeverity,
+	diagnosticInfoOf,
+	docUrlOf,
+	lintDocument,
+	offsetToPosition,
+} from "@gram-lang/modules/lint";
+import { readLintConfig } from "../core/lint-config";
+import { runLintPipeline } from "../core/pipeline";
 import type {
-	CheckResult,
-	Diagnostic,
+	CheckDiagnostic,
 	CheckOptions,
-	DiagnosticLevel,
+	CheckPosition,
+	CheckResult,
 } from "../types";
 import { getErrorMessage } from "../errors";
 
-function diagnosticLevel(
-	severity: WarningSeverity,
-	strict: boolean | undefined,
-): DiagnosticLevel {
-	return strict && severity !== "error" ? "error" : severity;
+/** What a diagnostic counts as: `--strict` makes an error of all but a hint. */
+function levelOf(severity: LintSeverity, strict: boolean | undefined) {
+	return strict && severity !== "hint" ? "error" : severity;
 }
 
-async function errorToDiagnostic(
-	file: string,
-	err: unknown,
-): Promise<Diagnostic> {
-	const message = getErrorMessage(err);
-	let line: number | undefined;
-	if (err instanceof GramParseError) {
-		// content isn't in scope here (the pipeline threw before returning it) —
-		// re-read to resolve the offset into a line number. Error-path only.
-		try {
-			const content = await readFile(file, "utf-8");
-			line = getLineFromOffset(content, err.offset);
-		} catch {
-			line = undefined;
-		}
-	} else {
-		// Some errors still only embed "line N" in prose.
-		const lineMatch = message.match(/line[: ]+(\d+)/i);
-		line = lineMatch ? parseInt(lineMatch[1]!, 10) : undefined;
-	}
+/** A located span of `text`, lines and UTF-16 columns from 1. */
+function positionIn(
+	lineStarts: number[],
+	loc: { start: number; end: number },
+): CheckPosition {
+	const start = offsetToPosition(lineStarts, loc.start);
+	const end = offsetToPosition(lineStarts, loc.end);
 	return {
-		level: "error",
-		category: "Structure",
-		file,
-		message,
-		line,
+		line: start.line + 1,
+		col: start.character + 1,
+		endLine: end.line + 1,
+		endCol: end.character + 1,
 	};
 }
 
-function getLineFromOffset(
-	content: string,
-	offset?: number,
-): number | undefined {
-	if (offset == null) return undefined;
-	return content.slice(0, offset).split("\n").length;
+/** Unlocated first (they sit at the top of the file), then in text order. */
+function byPosition(a: LintDiagnostic, b: LintDiagnostic): number {
+	return (
+		(a.loc?.start ?? -1) - (b.loc?.start ?? -1) ||
+		(a.loc?.end ?? -1) - (b.loc?.end ?? -1)
+	);
+}
+
+/**
+ * One file's diagnostics: `lintDocument` on the file as the language server
+ * prepares it (its own AST, the composed and analyzed compilation, the
+ * `@use` graph, the database and the project's `lint:` settings), so both
+ * report the same codes at the same places. A file that cannot be read is
+ * one `COMPILE_ERROR`.
+ */
+async function checkFile(
+	file: string,
+	opts: CheckOptions,
+	lintConfigOf: (projectRoot: string) => Promise<LintConfig>,
+): Promise<{ diagnostics: CheckDiagnostic[]; usedStock: Set<string> }> {
+	let prepared: Awaited<ReturnType<typeof runLintPipeline>>;
+	try {
+		prepared = await runLintPipeline(file, {
+			db: opts.db,
+			paths: opts.paths,
+			stock: opts.stock,
+		});
+	} catch (err) {
+		const severity = diagnosticInfoOf("COMPILE_ERROR").severity;
+		return {
+			diagnostics: [
+				{
+					code: "COMPILE_ERROR",
+					severity,
+					level: levelOf(severity, opts.strict),
+					uri: resolve(file),
+					file: resolve(file),
+					message: getErrorMessage(err),
+					docUrl: docUrlOf("COMPILE_ERROR"),
+				},
+			],
+			usedStock: new Set(),
+		};
+	}
+
+	const found = lintDocument({
+		uri: prepared.uri,
+		text: prepared.text,
+		ast: prepared.ast,
+		parseError: prepared.parseError,
+		compilation: prepared.compilation,
+		compileError: prepared.compileError,
+		moduleGraph: prepared.moduleGraph,
+		...(opts.db ? { ingredientDB: opts.db } : {}),
+		config: await lintConfigOf(prepared.projectRoot),
+	});
+
+	const lineStarts = buildLineIndex(prepared.text);
+	const depLineStarts = new Map<string, number[]>();
+	const linesOf = (uri: string): number[] | undefined => {
+		const source = prepared.sources.get(uri);
+		if (source === undefined) return undefined;
+		const known = depLineStarts.get(uri);
+		if (known) return known;
+		const starts = buildLineIndex(source);
+		depLineStarts.set(uri, starts);
+		return starts;
+	};
+
+	const diagnostics = [...found].sort(byPosition).map(
+		({ related, ...d }): CheckDiagnostic => ({
+			...d,
+			file: prepared.uri,
+			level: levelOf(d.severity, opts.strict),
+			...(d.loc ? positionIn(lineStarts, d.loc) : {}),
+			...(related
+				? {
+						related: related.map((r) => {
+							const starts = linesOf(r.uri);
+							return {
+								...r,
+								file: r.uri,
+								...(starts && r.loc ? positionIn(starts, r.loc) : {}),
+							};
+						}),
+					}
+				: {}),
+		}),
+	);
+	return { diagnostics, usedStock: prepared.usedStock };
 }
 
 export async function checkFiles(
@@ -61,59 +137,29 @@ export async function checkFiles(
 	opts: CheckOptions = {},
 ): Promise<CheckResult> {
 	const limit = pLimit(20);
-	const diagnostics: Diagnostic[] = [];
-	const usedStock = new Set<string>();
+	const configs = new Map<string, Promise<LintConfig>>();
+	const lintConfigOf = (projectRoot: string) => {
+		let config = configs.get(projectRoot);
+		if (!config) {
+			config = readLintConfig(projectRoot);
+			configs.set(projectRoot, config);
+		}
+		return config;
+	};
 
-	await Promise.all(
-		files.map((file) =>
-			limit(async () => {
-				try {
-					const {
-						content,
-						compiled,
-						analyzed,
-						usedStock: used,
-					} = await runPipeline(file, {
-						db: opts.db,
-						paths: opts.paths,
-						stock: opts.stock,
-					});
-					for (const u of used) usedStock.add(u);
-
-					// Compiler warnings, leveled by warningSeverityOf — a nutritional/
-					// estimation gap (e.g. RELATIVE_QUANTITY_UNKNOWN_MASS) no longer
-					// fails the build the same way an undefined reference does.
-					// --strict promotes every warning/info to error.
-					for (const w of compiled.warnings) {
-						diagnostics.push({
-							level: diagnosticLevel(warningSeverityOf(w.code), opts.strict),
-							category: "Structure",
-							file,
-							message: w.message,
-							line: getLineFromOffset(content, w.loc?.start),
-						});
-					}
-
-					// Ingredients the database does not resolve: a warning, which
-					// --strict promotes like any other (--skip-db keeps them out).
-					if (analyzed) {
-						for (const id of analyzed.missingIngredients) {
-							diagnostics.push({
-								level: diagnosticLevel("warning", opts.strict),
-								category: "Database",
-								file,
-								message: `"${id}" not found in ingredient database.`,
-							});
-						}
-					}
-				} catch (err) {
-					diagnostics.push(await errorToDiagnostic(file, err));
-				}
-			}),
-		),
+	// Filled by index, not pushed as each file finishes: the report reads the
+	// same from one run to the next, whatever order the checks end in.
+	const perFile = await Promise.all(
+		files.map((file) => limit(() => checkFile(file, opts, lintConfigOf))),
 	);
 
+	const usedStock = new Set<string>();
+	for (const { usedStock: used } of perFile)
+		for (const u of used) usedStock.add(u);
+	const diagnostics = perFile.flatMap((r) => r.diagnostics);
+
 	return {
+		files,
 		diagnostics,
 		hasErrors: diagnostics.some((d) => d.level === "error"),
 		fileCount: files.length,

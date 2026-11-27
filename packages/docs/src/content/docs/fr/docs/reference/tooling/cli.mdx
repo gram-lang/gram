@@ -88,12 +88,94 @@ gram upgrade
 - Ne produit aucune modification (en dehors du rapport d'état) si le CLI est déjà à jour.
 
 #### `gram check [motif]`
-Valide vos fichiers `.gram` afin de vérifier la syntaxe, l'intégrité structurelle et la conformité des ingrédients.
-- Exécute l'analyseur syntaxique Ohm.js pour intercepter les erreurs de syntaxe.
-- Exécute le compilateur Kitchen pour détecter les erreurs structurelles (ex. dépendances circulaires).
-- Interroge votre base `ingredients.yaml` pour signaler les ingrédients non documentés.
-- Les simples avertissements (estimations nutritionnelles, annotations incomplètes) ne font pas échouer la commande par défaut — seules les erreurs structurelles bloquantes (références introuvables, conflits de portée) déclenchent un code de sortie non nul. Spécifiez `--strict` pour traiter le moindre avertissement comme une erreur (particulièrement adapté aux pipelines d'intégration continue). Les ingrédients absents de la base en font partie <Since v="1.6.0" /> ; ajoutez `--skip-db` pour laisser la base hors d'une vérification stricte.
-- Options : `--db <chemin>`, `--skip-db`, `--strict`.
+Vérifie vos fichiers `.gram` et signale, fichier par fichier, tout ce que l'éditeur souligne : erreurs de syntaxe, erreurs de structure (références introuvables, cycles), avertissements du compilateur, vérifications d'écriture de la [référence des avertissements](/fr/docs/reference/api/warnings/) (un ingrédient perdu derrière un `//`, une ligne collée à l'étape du dessus, un titre manquant…) et ingrédients inconnus de votre base.
+```bash
+gram check                                # Tous les fichiers .gram du projet
+gram check recettes/brioche.gram --strict # Un fichier, en échec au moindre avertissement
+gram check --format json > rapport.json   # Un rapport pour un script, une CI ou un agent IA
+```
+- Les vérifications sont celles du [serveur de langage](/fr/docs/reference/tooling/language-server/) <Since v="1.6.0" />, sur le même fichier, avec les mêmes codes aux mêmes endroits : ce que signale `gram check`, c'est ce que souligne votre éditeur. Chaque diagnostic s'écrit `ligne:colonne`, suivi de son message et de son code ; un diagnostic sans position (`-`) concerne le fichier entier.
+- Un problème venu d'un fichier importé par `@use` s'affiche sur la ligne `@use`, et sa vraie place sur la ligne suivante (`↳ see bases/pate.gram:3:5`).
+- Avec une base d'ingrédients (celle de `--db`, sinon celle de `database:` dans `.gram/config.yaml`, sinon `.gram/ingredients.yaml`), chaque mention d'un ingrédient qu'elle ne connaît pas donne un `UNKNOWN_INGREDIENT`, avec le nom le plus proche s'il y en a un. `gram check` montre aussi ce que l'éditeur laisse de côté faute de position : un ingrédient que seul un module importé écrit (`MISSING_INGREDIENT`), une entrée sans valeurs nutritionnelles (`MISSING_MACROS`) ou sans masse (`UNKNOWN_MASS`). `--skip-db` laisse la base de côté.
+- Les réglages `lint:` du projet et les commentaires `// gram-ignore` sont respectés ([Configurer le lint](/fr/docs/reference/api/warnings/#configurer-le-lint)), lus comme dans l'éditeur dans le `.gram/config.yaml` du projet de chaque fichier.
+- Seules les erreurs font échouer la commande (code de sortie 1). Avec `--strict`, tout avertissement et toute info comptent comme une erreur (idéal en intégration continue), ingrédients absents de la base compris ; un `hint` ne fait jamais échouer. Pour sortir une vérification d'un passage strict, abaissez-la à `hint` ou coupez-la dans `lint.rules` ; `--skip-db` laisse la base de côté.
+- Options : `--db <chemin>`, `--skip-db`, `--strict`, `--stock <spécificateurs>`, `--format <text|json>`.
+
+##### Rapport JSON
+
+<Since v="1.6.0" /> `--format json` écrit un seul document JSON sur la sortie standard, et rien d'autre : tous les autres messages partent sur la sortie d'erreur. Le code de sortie est le même qu'en mode texte. Si aucun fichier ne correspond, le rapport est tout de même écrit, vide, et la commande échoue.
+
+```json
+{
+  "version": 1,
+  "files": [{ "file": "brioche.gram", "uri": "file:///home/moi/recettes/brioche.gram" }],
+  "diagnostics": [
+    {
+      "file": "brioche.gram",
+      "line": 12,
+      "col": 10,
+      "endLine": 12,
+      "endCol": 19,
+      "code": "INVALID_DURATION",
+      "severity": "warning",
+      "message": "Timer duration \"15%min\" is not read: […] Did you mean ~{15 min}? […]",
+      "uri": "file:///home/moi/recettes/brioche.gram",
+      "loc": { "start": 231, "end": 240 },
+      "data": { "suggestion": "15 min" },
+      "docUrl": "https://gram-lang.org/docs/reference/api/warnings/#invalid_duration",
+      "fixes": [
+        {
+          "title": "Replace with {15 min}",
+          "edits": [
+            {
+              "kind": "patch",
+              "uri": "file:///home/moi/recettes/brioche.gram",
+              "patches": [{ "start": 233, "end": 239, "replacement": "15 min" }]
+            }
+          ],
+          "isPreferred": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+| Champ | Contenu |
+| --- | --- |
+| `version` | `1`. Un champ peut s'ajouter sans la changer ; un champ renommé, retiré ou dont le type change la fait passer à `2`. |
+| `files[]` | Les fichiers vérifiés, dans l'ordre : `file` (relatif au dossier courant, avec des `/`) et `uri` (une URL `file://`). |
+| `diagnostics[]` | Tous les diagnostics, fichier après fichier, dans l'ordre du texte. |
+| `file`, `uri` | Le fichier vérifié où s'affiche le diagnostic. |
+| `line`, `col`, `endLine`, `endCol` | Son début et sa fin, comptés à partir de 1, comme dans `fichier:ligne:colonne`. Les colonnes comptent des unités UTF-16, comme `loc` : un emoji en prend deux. Absents pour un diagnostic du fichier entier. |
+| `code` | Son code, décrit dans la [référence des avertissements](/fr/docs/reference/api/warnings/), vers laquelle pointe `docUrl`. |
+| `severity` | `error`, `warning`, `info` ou `hint`, après les `lint.rules` du projet. `--strict` ne la change pas : il ne touche qu'au code de sortie. |
+| `message` | Le message, en anglais. |
+| `loc` | `{ start, end }` : positions dans le fichier, en unités UTF-16. |
+| `data` | Ce dont un outil a besoin pour agir, selon le code (la `suggestion` d'une quantité, le `name` d'un ingrédient…). |
+| `deprecated` | `true` là où une forme dépréciée est écrite. |
+| `related[]` | Où se trouve vraiment la cause, dans un fichier importé par `@use` : `file`, `line`, `col`, `endLine`, `endCol` (quand on les connaît), `uri`, `loc` et `message`. |
+| `fixes[]` | Les correctifs que propose l'éditeur : un `title`, `isPreferred` pour celui à appliquer, et des `edits`, chacun un `patch` (des `patches` `{ start, end, replacement }` dans un fichier) ou un `createFile` (`content`). |
+
+##### En intégration continue
+
+Une vérification stricte fait échouer le pipeline au premier avertissement, et le rapport JSON peut se garder comme artefact ou se lire avec `jq` :
+
+```yaml
+# .forgejo/workflows/recettes.yaml (même syntaxe que GitHub Actions)
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npx @gram-lang/cli check --strict --format json > gram-check.json
+      - if: failure()
+        run: jq -r '.diagnostics[] | "\(.file):\(.line // 1):\(.col // 1) \(.code) \(.message)"' gram-check.json
+```
 
 #### `gram build [motif]`
 Compile vos recettes `.gram` au format JSON final minifié.

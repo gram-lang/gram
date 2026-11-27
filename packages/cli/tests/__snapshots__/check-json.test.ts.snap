@@ -1,0 +1,190 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`gram check --format json prints the version 1 report, and nothing else, on stdout 1`] = `
+{
+  "diagnostics": [
+    {
+      "code": "MISSING_TITLE",
+      "docUrl": "https://gram-lang.org/docs/reference/api/warnings/#missing_title",
+      "file": "recipe.gram",
+      "fixes": [
+        {
+          "edits": [
+            {
+              "kind": "patch",
+              "patches": [
+                {
+                  "end": 4,
+                  "replacement": 
+"title: 
+"
+,
+                  "start": 4,
+                },
+              ],
+              "uri": "file://<project>/recipe.gram",
+            },
+          ],
+          "title": "Add 'title' to frontmatter",
+        },
+      ],
+      "message": "Recipe is missing a 'title' in frontmatter.",
+      "severity": "warning",
+      "uri": "file://<project>/recipe.gram",
+    },
+    {
+      "code": "DEPRECATED_FRONTMATTER_KEY",
+      "col": 1,
+      "data": {
+        "key": "servings",
+        "suggestion": "portions",
+      },
+      "deprecated": true,
+      "docUrl": "https://gram-lang.org/docs/reference/api/warnings/#deprecated_frontmatter_key",
+      "endCol": 9,
+      "endLine": 2,
+      "file": "recipe.gram",
+      "fixes": [
+        {
+          "edits": [
+            {
+              "kind": "patch",
+              "patches": [
+                {
+                  "end": 12,
+                  "replacement": "portions",
+                  "start": 4,
+                },
+              ],
+              "uri": "file://<project>/recipe.gram",
+            },
+          ],
+          "isPreferred": true,
+          "title": "Rename 'servings' to 'portions'",
+        },
+      ],
+      "line": 2,
+      "loc": {
+        "end": 12,
+        "start": 4,
+      },
+      "message": "Frontmatter key "servings" is deprecated and will be removed in 2.0.0: write "portions" instead.",
+      "severity": "warning",
+      "uri": "file://<project>/recipe.gram",
+    },
+    {
+      "code": "INVALID_UNIT",
+      "col": 1,
+      "docUrl": "https://gram-lang.org/docs/reference/api/warnings/#invalid_unit",
+      "endCol": 1,
+      "endLine": 6,
+      "file": "recipe.gram",
+      "line": 5,
+      "loc": {
+        "end": 50,
+        "start": 21,
+      },
+      "message": "Unit "cup 5 tbsp" of "flour" reads as two quantities: write them as a sum, with " + " between them (e.g. {1 kg + 200 g} rather than {1 kg 200 g}).",
+      "related": [
+        {
+          "col": 5,
+          "endCol": 25,
+          "endLine": 3,
+          "file": "base.gram",
+          "line": 3,
+          "loc": {
+            "end": 43,
+            "start": 23,
+          },
+          "message": "Unit "cup 5 tbsp" of "flour" reads as two quantities: write them as a sum, with " + " between them (e.g. {1 kg + 200 g} rather than {1 kg 200 g}).",
+          "uri": "file://<project>/base.gram",
+        },
+      ],
+      "severity": "warning",
+      "uri": "file://<project>/recipe.gram",
+    },
+    {
+      "code": "UNDEFINED_REFERENCE",
+      "col": 13,
+      "docUrl": "https://gram-lang.org/docs/reference/api/warnings/#undefined_reference",
+      "endCol": 18,
+      "endLine": 9,
+      "file": "recipe.gram",
+      "fixes": [
+        {
+          "edits": [
+            {
+              "kind": "patch",
+              "patches": [
+                {
+                  "end": 113,
+                  "replacement": 
+"->&pâte{}
+"
+,
+                  "start": 113,
+                },
+              ],
+              "uri": "file://<project>/recipe.gram",
+            },
+          ],
+          "title": "Declare '->&pâte{}'",
+        },
+      ],
+      "line": 9,
+      "loc": {
+        "end": 80,
+        "start": 75,
+      },
+      "message": "Undefined reference '&pâte' — no prior step or section produces this item.",
+      "severity": "error",
+      "uri": "file://<project>/recipe.gram",
+    },
+    {
+      "code": "INVALID_DURATION",
+      "col": 10,
+      "data": {
+        "suggestion": "15 min",
+      },
+      "docUrl": "https://gram-lang.org/docs/reference/api/warnings/#invalid_duration",
+      "endCol": 19,
+      "endLine": 11,
+      "file": "recipe.gram",
+      "fixes": [
+        {
+          "edits": [
+            {
+              "kind": "patch",
+              "patches": [
+                {
+                  "end": 110,
+                  "replacement": "15 min",
+                  "start": 104,
+                },
+              ],
+              "uri": "file://<project>/recipe.gram",
+            },
+          ],
+          "isPreferred": true,
+          "title": "Replace with {15 min}",
+        },
+      ],
+      "line": 11,
+      "loc": {
+        "end": 111,
+        "start": 102,
+      },
+      "message": "Timer duration "15%min" is not read: a character is out of place: write e.g. 1h30, 45 min - 1 h or 5'30". Did you mean ~{15 min}? It is not counted in the total time.",
+      "severity": "warning",
+      "uri": "file://<project>/recipe.gram",
+    },
+  ],
+  "files": [
+    {
+      "file": "recipe.gram",
+      "uri": "file://<project>/recipe.gram",
+    },
+  ],
+  "version": 1,
+}
+`;

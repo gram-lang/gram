@@ -103,7 +103,8 @@ export default defineCommand({
 					`${chalk.dim(`[${ts}]`)} ${chalk.red("✗")} ${rel} — ${chalk.red(`${errCount} error${errCount !== 1 ? "s" : ""}`)}\n`,
 				);
 				for (const d of result.diagnostics.filter((d) => d.level === "error")) {
-					const loc = d.line != null ? chalk.dim(` line ${d.line}`) : "";
+					const loc =
+						d.line != null ? chalk.dim(` line ${d.line}:${d.col}`) : "";
 					process.stdout.write(
 						`         ${chalk.dim("→")} ${d.message}${loc}\n`,
 					);

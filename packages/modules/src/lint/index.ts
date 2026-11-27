@@ -41,6 +41,11 @@ export {
 	type LintInput,
 	lintDocument,
 } from "./lint-document";
+export {
+	buildLineIndex,
+	type LinePosition,
+	offsetToPosition,
+} from "./position";
 export type { LintIngredientDB } from "./rules";
 export type { LintIngredientsFile } from "./ingredients-file";
 export {

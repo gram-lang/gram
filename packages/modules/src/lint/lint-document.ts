@@ -1,4 +1,10 @@
-import type { CompilationResult, Warning } from "@gram-lang/kitchen";
+import {
+	type CompilationResult,
+	slugify,
+	type Warning,
+	WarningCode,
+	warningTemplates,
+} from "@gram-lang/kitchen";
 import type { RecipeAST } from "@gram-lang/parser";
 import type { ModuleGraph } from "../host";
 import { applyLintConfig, ignoreRanges, type LintConfig } from "./config";
@@ -205,9 +211,12 @@ export function lintDocument(input: LintInput): LintDiagnostic[] {
 
 	const ctx = { uri: input.uri, text: input.text, ast };
 	found.push(...unusedIntermediates(ctx));
-	found.push(
-		...unknownIngredients(ctx, input.ingredientDB, input.ingredientsFile),
+	const unknown = unknownIngredients(
+		ctx,
+		input.ingredientDB,
+		input.ingredientsFile,
 	);
+	found.push(...unknown);
 	const registry = input.compilation?.registry;
 	found.push(...lostIngredients(ctx, registry ? { registry } : undefined));
 	found.push(...mergedStepLines(ctx));
@@ -222,9 +231,37 @@ export function lintDocument(input: LintInput): LintDiagnostic[] {
 	if (!titleWritten) found.push(...missingTitle(ctx));
 
 	return applyLintConfig(
-		finish(input, found),
+		finish(input, withoutCoveredMissing(found, unknown)),
 		input.config,
 		ignoreRanges(ast, input.text),
+	);
+}
+
+/**
+ * Leaves out the analyzer's `MISSING_INGREDIENT` of an ingredient this file
+ * already flags as `UNKNOWN_INGREDIENT`, on each of its mentions: the same
+ * verdict twice, once without a position. One of an ingredient that only an
+ * imported module writes is kept, as nothing else reports it. The editor
+ * hides `MISSING_INGREDIENT` anyway (`EDITOR_HIDDEN_CODES`); `gram check`
+ * shows the rest.
+ */
+function withoutCoveredMissing(
+	found: RuleDiagnostic[],
+	unknown: RuleDiagnostic[],
+): RuleDiagnostic[] {
+	if (unknown.length === 0) return found;
+	// The warning carries its id only in its message (no `data`, so the
+	// compiled JSON stays as it is): the message each flagged id would get is
+	// rendered from the same template and compared whole.
+	const flagged = new Set(
+		unknown.map((d) =>
+			warningTemplates[WarningCode.MISSING_INGREDIENT]({
+				id: slugify(String(d.data?.name)),
+			}),
+		),
+	);
+	return found.filter(
+		(d) => d.code !== "MISSING_INGREDIENT" || !flagged.has(d.message),
 	);
 }
 
