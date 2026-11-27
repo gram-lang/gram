@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.2](https://git.gram-lang.org/gram-lang/gram/compare/v.1.5.1...v.1.5.2) - 2026-11-27
+
+### Bug fixes and improvements
+- **Kitchen, Analyzer & Renderer**: Composite ingredients used in different units (e.g. `@butter{100 g}` and `@brown butter{1}<@butter{2}`) now stay separate on the shopping list instead of adding up incompatible units, and a parent also used whole (`@eggs{1}` next to `@egg yolks{2}<@eggs{2}`) can now be targeted by `--scale`.
+- **CLI / Import**: `gram import` now tells you which step failed (source, recipe extraction, or AI model), handles more website recipe formats without crashing, and stops generating `#` comments in frontmatter.
+- **CLI**: Commands (`view`, `export`, `print`, `build`, `plan`, `shop`, `scale`, `cook`…) now fail cleanly on syntax errors instead of showing an empty recipe, `gram print` prints the file path if no browser is available, and multi-file commands process files in sorted order.
+- **Kitchen & i18n**: Timers with decimal fractions (`~{1.5/2 min}`, `~{1,5/2 h}`) now work instead of raising `INVALID_DURATION`.
+- **Format**: Fixed four edge cases where `gram format` could slightly alter a recipe (section headers containing `<`, non-breaking spaces around `<`, `---` blocks inside steps, and trailing zeros in duration fractions).
+- **Language Server**: Fixed ingredient database detection and false warnings in editors:
+  - Now reads `database:` from `.gram/config.yaml` (updating live on edit), detects `.gram/ingredients.yaml` in more editors, and translates the "Preview" button.
+  - Unknown-ingredient warnings and nutrition hovers now match actual nutrition lookup (ignoring case, accents, hyphens, and apostrophes, without guessing plurals).
+  - Intermediates used in percentages/ratios/timers or declared on section headings (`## Dough ->&dough`) are no longer flagged as unused.
+- **Parser & VS Code**: A trailing colon after an ingredient (`Add @salt: `) is now kept in the step text instead of disappearing, and temperature names (`oven` in `^oven{180°C}`) are now highlighted like timer names in VS Code.
+- **Renderer**: The HTML recipe view no longer shows `language` as custom metadata in the header.
+- **Kitchen & Language Server**: Writing spaces around `<` in a composite (`@lemon zest{1} < @lemon{2}`) now raises a `SPACED_COMPOSITE` warning with a one-click fix in the editor instead of silently counting both ingredients.
+
+---
+
 ## [1.5.1](https://git.gram-lang.org/gram-lang/gram/compare/v.1.5.0...v.1.5.1) - 2026-11-22
 
 ### Bug fixes and improvements

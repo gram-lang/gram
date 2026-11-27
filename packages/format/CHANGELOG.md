@@ -1,5 +1,13 @@
 # @gram-lang/format
 
+## 1.5.2
+
+### Patch Changes
+
+- 4115529: **Format**: Fixed four edge cases where `gram format` could slightly alter a recipe (section headers containing `<`, non-breaking spaces around `<`, `---` blocks inside steps, and trailing zeros in duration fractions).
+- Updated dependencies [daddb56]
+  - @gram-lang/parser@1.5.2
+
 ## 1.5.1
 
 ### Patch Changes

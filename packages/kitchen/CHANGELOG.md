@@ -1,5 +1,18 @@
 # @gram-lang/kitchen
 
+## 1.5.2
+
+### Patch Changes
+
+- 9a09465: **Kitchen, Analyzer & Renderer**: Composite ingredients used in different units (e.g. `@butter{100 g}` and `@brown butter{1}<@butter{2}`) now stay separate on the shopping list instead of adding up incompatible units, and a parent also used whole (`@eggs{1}` next to `@egg yolks{2}<@eggs{2}`) can now be targeted by `--scale`.
+- ccdbca7: **Kitchen & i18n**: Timers with decimal fractions (`~{1.5/2 min}`, `~{1,5/2 h}`) now work instead of raising `INVALID_DURATION`.
+- 14f9a9f: **Kitchen & Language Server**: Writing spaces around `<` in a composite (`@lemon zest{1} < @lemon{2}`) now raises a `SPACED_COMPOSITE` warning with a one-click fix in the editor instead of silently counting both ingredients.
+- Updated dependencies [ccdbca7]
+- Updated dependencies [daddb56]
+  - @gram-lang/i18n@1.5.2
+  - @gram-lang/parser@1.5.2
+  - @gram-lang/scheduler@1.5.2
+
 ## 1.5.1
 
 ### Patch Changes

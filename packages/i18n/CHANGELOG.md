@@ -1,5 +1,11 @@
 # @gram-lang/i18n
 
+## 1.5.2
+
+### Patch Changes
+
+- ccdbca7: **Kitchen & i18n**: Timers with decimal fractions (`~{1.5/2 min}`, `~{1,5/2 h}`) now work instead of raising `INVALID_DURATION`.
+
 ## 1.5.1
 
 ### Patch Changes

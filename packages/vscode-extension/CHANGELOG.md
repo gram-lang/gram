@@ -1,5 +1,21 @@
 # @gram-lang/vscode-extension
 
+## 1.5.2
+
+### Patch Changes
+
+- 09d4c11: **Language Server**: Fixed ingredient database detection and false warnings in editors:
+  - Now reads `database:` from `.gram/config.yaml` (updating live on edit), detects `.gram/ingredients.yaml` in more editors, and translates the "Preview" button.
+  - Unknown-ingredient warnings and nutrition hovers now match actual nutrition lookup (ignoring case, accents, hyphens, and apostrophes, without guessing plurals).
+  - Intermediates used in percentages/ratios/timers or declared on section headings (`## Dough ->&dough`) are no longer flagged as unused.
+- daddb56: **Parser & VS Code**: A trailing colon after an ingredient (`Add @salt: `) is now kept in the step text instead of disappearing, and temperature names (`oven` in `^oven{180°C}`) are now highlighted like timer names in VS Code.
+- Updated dependencies [9a09465]
+- Updated dependencies [09d4c11]
+- Updated dependencies [3f20d76]
+- Updated dependencies [14f9a9f]
+  - @gram-lang/renderer@1.5.2
+  - @gram-lang/language-server@1.5.2
+
 ## 1.5.1
 
 ### Patch Changes

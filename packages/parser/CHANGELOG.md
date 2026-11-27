@@ -1,5 +1,11 @@
 # @gram-lang/parser
 
+## 1.5.2
+
+### Patch Changes
+
+- daddb56: **Parser & VS Code**: A trailing colon after an ingredient (`Add @salt: `) is now kept in the step text instead of disappearing, and temperature names (`oven` in `^oven{180°C}`) are now highlighted like timer names in VS Code.
+
 ## 1.5.1
 
 ### Patch Changes

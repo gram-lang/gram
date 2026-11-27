@@ -170,13 +170,17 @@ A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata
 
 The frontmatter is a **YAML** block at the very start of the file, enclosed by `---`.
 
+:::caution[Flat lines only]
+It looks like YAML, but Gram only reads flat `key: value` lines (blank lines are fine), with lists written inline (`tags: ['brownie', 'matcha']`). A comment line (`# …`) or an indented line makes the whole block unreadable: it is then read as a step of text, with no metadata. A `#` at the end of a line is part of the value.
+:::
+
 The Gram parser accepts **any** key-value pair in this block. You can add custom fields for your own application's needs. However, the Gram Compiler recognizes two types of keys: **Functional** and **Informational**.
 
 ### Functional keys
 These keys directly alter how the Gram Compiler processes the recipe:
 
 *   `portions`: (Integer) The baseline number of portions. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
-*   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
+*   `densities`: (Inline list) Custom density overrides (g/mL) for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm. Write them as `name:value` pairs in an inline list: `densities: [flour:0.55, milk:1.03]`.
 
 ### Informational keys
 These keys are recommended for proper display and metadata management:
@@ -202,10 +206,8 @@ category: 'Dessert'
 source: ['https://example.com/matcha-brownie']
 makes: '20x20cm mold'
 
-# Functional Fields
 portions: 4
-densities:
-  - flour: 0.55
+densities: [flour:0.55, milk:1.03]
 ---
 ```
 </CodeTabs>
@@ -1774,6 +1776,8 @@ Here is how you would declare that 100ml of juice requires 2 lemons, but the zes
 Spaces are **strictly forbidden** around the `<` operator.
 - ❌ `@lemon zest{1} < @lemon`
 - ✅ `@lemon zest{1}<@lemon`
+
+With spaces, Gram reads two separate ingredients and buys the lemon on top of the zest. It says so with a [`SPACED_COMPOSITE`](/docs/reference/api/warnings#spaced_composite) warning *(since v1.5.2)*, which the editor fixes in one click.
 :::
 
 ## Calculation rules
@@ -2133,6 +2137,8 @@ Any step whose entire purpose is "take X and do Y to it before the real step" sh
 ❌  the juice from @lemon{1/2}    →   ✅  @lemon juice{}<@lemon{1/2}
 ❌  the zest of @lemon{2}         →   ✅  @lemon zest{1}<@lemon{2}
 ```
+
+With spaces, the zest and the lemon are two separate ingredients and the lemon is counted twice. Gram now warns about it (`SPACED_COMPOSITE`), so `gram check` catches it in a generated recipe.
 [Composite ingredients](/docs/reference/syntax/composite-ingredients) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step. Always give the child its **full name** (parent word included), not a bare generic word like `@juice` — a bare child name becomes its own entry in the shared ingredient database with no memory of which parent it came from, so "juice" from a lemon and "juice" from an orange elsewhere would wrongly collide into one database entry. See [Naming the child](/docs/reference/syntax/composite-ingredients#naming-the-child) for the full reasoning.
 
 ### Spaces around the composite operator
@@ -2692,7 +2698,7 @@ interface Warning {
 
 `compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
 
-*(since v1.5.0)* Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
+*(since v1.5.0)* Certain codes also attach structured `data` so tools and language-server quick fixes can act without parsing `.message`. Only `INVALID_QUANTITY` (`{ reason, suggestion? }`), `OZ_AFTER_VOLUME` (`{ suggestion }`), `SPACED_COMPOSITE` (`{ suggestion }`, since 1.5.2), and ingredient `INVALID_UNIT` (`{ reason, suggestion? }`) populate `data`.
 
 ## Severity & `--strict`
 
@@ -2810,6 +2816,11 @@ Subtraction is checked per unit family: `{1 cup - 2 tbsp + 30 g}` is valid (2 tb
 *(since v1.5.0)*
 
 Informational notice when `oz` follows a volume in a sum (`@water{1 cup + 2 oz}`). Because `oz` denotes weight, Gram keeps it separate from the volume. **Fix**: change to `fl oz` if fluid ounces were intended (`data.suggestion` offers this quick fix).
+
+### `SPACED_COMPOSITE`
+*(since v1.5.2)*
+
+Spaces around the composite operator (`@lemon zest{1} < @lemon{2}`, or a space on one side only). With them, the line reads as two separate ingredients with a `<` in the prose between them: the lemon is bought on top of the zest's own entry, two lemons too many on the shopping list. The recipe still compiles as written. **Fix**: glue `<` to both ingredients (`@lemon zest{1}<@lemon{2}`); `data.suggestion` holds the operator glued to the parent (`<@lemon`), which the language server's quick fix writes in place of the gap, and `gram format` makes the same repair.
 
 ### `DURATION_OUT_OF_RANGE`
 
