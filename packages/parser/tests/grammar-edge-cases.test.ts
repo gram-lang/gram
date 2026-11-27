@@ -976,14 +976,61 @@ describe("a colon followed by blanks alone is no alias", () => {
 		]);
 	});
 
-	it("still reads a real alias, with or without a blank after the colon", () => {
+	it("still reads a real alias, glued to the colon", () => {
 		expect(step("With @dry white wine:wine{100ml}.")[1]).toEqual({
 			name: "dry white wine",
 			alias: "wine",
 		});
-		expect(step("Add @salt: fleur de sel.")[1]).toEqual({
+		expect(step("Use the #cast iron skillet:skillet{}.")[1]).toEqual({
+			name: "cast iron skillet",
+			alias: "skillet",
+		});
+		expect(step("Add @salt:fleur de sel.")[1]).toEqual({
 			name: "salt",
 			alias: "fleur de sel.",
 		});
+	});
+});
+
+// #273: `alias = ":" refName` also took a name starting with a blank, so a `:`
+// written as punctuation after a bare mention read the rest of the line as
+// its alias, and that text vanished from the step. The alias now starts right
+// after the colon, or the colon is text.
+describe("a colon followed by a blank is punctuation, not an alias", () => {
+	const step = (source: string) =>
+		(getAST(source).children[0] as any).children.map((c: any) =>
+			c.type === ASTNodeType.Ingredient || c.type === ASTNodeType.Cookware
+				? { name: c.name, alias: c.alias }
+				: c.value,
+		);
+
+	it("keeps the rest of the line after a bare #cookware", () => {
+		expect(step("Heat the #pan: then add oil.")).toEqual([
+			"Heat the ",
+			{ name: "pan", alias: null },
+			": then add oil.",
+		]);
+	});
+
+	it("keeps the rest of the line after a bare @ingredient", () => {
+		expect(step("Add @flour: sifted.")).toEqual([
+			"Add ",
+			{ name: "flour", alias: null },
+			": sifted.",
+		]);
+	});
+
+	it("keeps it after a tab too", () => {
+		expect(step("Heat the #pan:\tthen add oil.")).toEqual([
+			"Heat the ",
+			{ name: "pan", alias: null },
+			":\tthen add oil.",
+		]);
+	});
+
+	it("leaves a colon after braces as text, as before", () => {
+		expect(step("Mix @flour{200g}: then rest.").slice(2)).toEqual([
+			": then rest.",
+		]);
 	});
 });
