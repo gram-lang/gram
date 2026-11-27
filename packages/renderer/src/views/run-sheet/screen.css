@@ -392,7 +392,9 @@
 	}
 
 	.kit-list li {
-		display: block;
+		display: inline-block;
+		width: 100%;
+		vertical-align: top;
 		break-inside: avoid;
 		min-width: 0;
 		margin: 0 0 0.35rem;
@@ -401,7 +403,7 @@
 
 	.kit-list label {
 		display: flex;
-		align-items: baseline;
+		align-items: flex-start;
 		gap: 0.65rem;
 		width: 100%;
 		min-width: 0;
@@ -416,12 +418,11 @@
 		flex-shrink: 0;
 		width: 12px;
 		height: 12px;
-		margin: 0;
+		margin: 5px 0 0;
 		border: 1.5px solid var(--color-text);
 		border-radius: 3px;
 		background: transparent;
 		cursor: pointer;
-		transform: translateY(1px);
 	}
 
 	.kit-list input[type="checkbox"]:checked {
