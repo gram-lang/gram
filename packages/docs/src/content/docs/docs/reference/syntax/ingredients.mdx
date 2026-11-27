@@ -145,6 +145,8 @@ You can rename an `@ingredient` for display purposes using a colon `:` immediate
 
 **Format**: `@Real Name:Display Name{Quantity}`
 
+The display name starts right after the colon, with no space. A colon followed by a space is ordinary punctuation: `Heat the @butter: then add the onions.` keeps `: then add the onions.` as text <Since v="1.6.0" />.
+
 <CodeTabs>
 ```gram title="Code"
 [Deglaze] With @dry white wine:wine{100ml}.

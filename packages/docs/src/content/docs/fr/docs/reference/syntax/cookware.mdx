@@ -4,6 +4,7 @@ description: "Comment déclarer le matériel de cuisine avec le symbole #, entre
 ---
 
 import { Badge, Tabs, TabItem, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 Le matériel, les ustensiles et l'équipement requis par une recette se déclarent à l'aide du symbole `#`.
 
@@ -84,6 +85,8 @@ Vous pouvez renommer un équipement pour l'affichage tout en conservant un ident
 ```gram
 [Utiliser] La #poêle en fonte:poêle{}.
 ```
+
+Le nom d'affichage se colle aux deux-points : dans `Chauffez la #poêle: puis versez l'huile.`, les deux-points suivis d'une espace sont une ponctuation et la fin de la ligne reste du texte <Since v="1.6.0" />.
   </TabItem>
   <TabItem label="Alternatives">
 Vous pouvez définir des alternatives d'ustensiles interchangeables avec l'opérateur `|` :

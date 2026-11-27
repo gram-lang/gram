@@ -159,11 +159,12 @@ GRAM {
     | "@" modifier* singleWordName alias? preparation? composite? -- bare
 
   modifier = "?" | "-" | "*" | "&" | "="
-  // Blanks alone up to the end of the line are no alias: `@salt: ` took them
-  // as an empty one and the `:` vanished from the step, while `@salt:` kept
-  // it as text, so stripping a trailing blank (the formatter) changed the
-  // recipe. The `:` is text in both now.
-  alias = ":" ~(sp* (nl | end)) refName
+  // The alias starts right after the `:`, with no blank (`@dry white
+  // wine:wine{10ml}`). A `:` followed by a blank is punctuation: `Heat the
+  // #pan: then add oil.` read the rest of the line as the alias of `pan` and
+  // it vanished from the step (#273). It also covers `@salt: ` at the end of
+  // a line, which took the blanks as an empty alias (#281).
+  alias = ":" ~sp refName
   ingredientQuantity = "{" space* (relativeQuantity | absoluteQuantity) space* "}"
   // The amount of an ingredient, a composite parent or a reference: an
   // ingredientQuantity, or a sum of quantities (`{1 cup + 1 tbsp}`,

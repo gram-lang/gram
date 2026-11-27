@@ -4,6 +4,7 @@ description: "How to declare cookware with the # symbol, including quantity coun
 ---
 
 import { Badge, Tabs, TabItem, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 You can define the tools and equipment needed for a recipe using the `#` symbol.
 
@@ -84,6 +85,8 @@ You can rename an equipment item for display while keeping a clean canonical slu
 ```gram
 [Use] The #cast iron skillet:skillet{}.
 ```
+
+The display name is glued to the colon: in `Heat the #pan: then add oil.`, the colon followed by a space is punctuation and the rest of the line stays text <Since v="1.6.0" />.
   </TabItem>
   <TabItem label="Alternatives">
 You can declare acceptable equipment substitutions using the pipe `|` operator:
