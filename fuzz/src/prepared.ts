@@ -2,9 +2,12 @@ import { analyze, type IngredientData } from "@gram-lang/analyzer";
 import { formatGram } from "@gram-lang/format";
 import { type CompilationResult, compile } from "@gram-lang/kitchen";
 import {
+	type AppliedFix,
+	applyPreferredFixes,
 	type LintDiagnostic,
 	type LintInput,
 	lintDocument,
+	type TextPatch,
 } from "@gram-lang/modules/lint";
 import { GramParseError, getAST, type RecipeAST } from "@gram-lang/parser";
 
@@ -23,6 +26,17 @@ function attempt<T>(fn: () => T): Outcome<T> {
 }
 
 type Formatted = ReturnType<typeof formatGram>;
+
+/** The uri the fuzzed source is linted under. */
+export const FUZZ_URI = "fuzz.gram";
+
+/** The preferred fixes of the lint applied once, and the fixed text prepared in turn. */
+export interface Fixed {
+	applied: AppliedFix[];
+	/** Every patch applied, in text order (they never overlap). */
+	patches: TextPatch[];
+	after: Prepared;
+}
 
 /**
  * Everything the invariants look at, computed once per input and only when
@@ -80,7 +94,7 @@ export class Prepared {
 					: null;
 			return attempt(() =>
 				lintDocument({
-					uri: "fuzz.gram",
+					uri: FUZZ_URI,
 					text: this.source,
 					ast: parsed.ok ? parsed.value : null,
 					parseError,
@@ -92,6 +106,28 @@ export class Prepared {
 					ingredientDB: this.database,
 				}),
 			);
+		});
+	}
+
+	/**
+	 * `applyPreferredFixes` on the lint, as one pass of `gram check --fix`;
+	 * null when the lint threw.
+	 */
+	get fixed(): Fixed | null {
+		return this.#memo("fixed", () => {
+			const linted = this.lint;
+			if (!linted.ok) return null;
+			const { text, applied } = applyPreferredFixes(
+				this.source,
+				FUZZ_URI,
+				linted.value,
+			);
+			const patches = applied
+				.flatMap((a) =>
+					a.fix.edits.flatMap((e) => (e.kind === "patch" ? e.patches : [])),
+				)
+				.sort((a, b) => a.start - b.start);
+			return { applied, patches, after: new Prepared(text, this.database) };
 		});
 	}
 

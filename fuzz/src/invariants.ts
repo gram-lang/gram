@@ -1,5 +1,9 @@
 import { hasChanges } from "@gram-lang/format";
-import { allDiagnosticInfo } from "@gram-lang/modules/lint";
+import {
+	allDiagnosticInfo,
+	type LintDiagnostic,
+	type TextPatch,
+} from "@gram-lang/modules/lint";
 import { GramParseError } from "@gram-lang/parser";
 import {
 	firstDifference,
@@ -52,6 +56,68 @@ function noThrow(
 		id,
 		`${stage} threw ${describe(outcome.error)}`,
 		outcome.error,
+	);
+}
+
+/**
+ * Where a span of the source lands once `patches` (in text order, never
+ * overlapping) are applied. Text inserted at the span's start goes before
+ * it, at its end after it; a span edge inside a replaced range moves to the
+ * start (or the end) of its replacement.
+ */
+export function mapSpan(
+	patches: readonly TextPatch[],
+	span: { start: number; end: number },
+): { start: number; end: number } {
+	const map = (offset: number, edge: "start" | "end") => {
+		let delta = 0;
+		for (const p of patches) {
+			const grows = p.replacement.length - (p.end - p.start);
+			const insertion = p.start === p.end;
+			if (
+				p.end < offset ||
+				(p.end === offset && (edge === "start" || !insertion))
+			)
+				delta += grows;
+			else if (p.start < offset)
+				return edge === "start"
+					? p.start + delta
+					: p.start + delta + p.replacement.length;
+		}
+		return offset + delta;
+	};
+	return { start: map(span.start, "start"), end: map(span.end, "end") };
+}
+
+/**
+ * Whether two spans share text. Strict: spans that only meet do not, and an
+ * empty span overlaps another only strictly inside it (or at the same point
+ * as another empty one), so a line that moves up to where a removed one
+ * began is not the removed one coming back.
+ */
+function spansOverlap(
+	a: { start: number; end: number },
+	b: { start: number; end: number },
+): boolean {
+	const emptyA = a.start === a.end;
+	const emptyB = b.start === b.end;
+	if (emptyA && emptyB) return a.start === b.start;
+	if (emptyA) return b.start < a.start && a.start < b.end;
+	if (emptyB) return a.start < b.start && b.start < a.end;
+	return a.start < b.end && b.start < a.end;
+}
+
+/** A diagnostic of the fixed text that is `fixed` coming back: same code, at its place. */
+function comesBack(
+	patches: readonly TextPatch[],
+	fixed: LintDiagnostic,
+	after: readonly LintDiagnostic[],
+): boolean {
+	const zone = fixed.loc ? mapSpan(patches, fixed.loc) : null;
+	return after.some(
+		(d) =>
+			d.code === fixed.code &&
+			(zone ? !!d.loc && spansOverlap(zone, d.loc) : !d.loc),
 	);
 }
 
@@ -195,6 +261,43 @@ export const INVARIANTS: readonly Invariant[] = [
 					`${outside.code} has a loc outside the source`,
 				);
 			}
+			return null;
+		},
+	},
+	{
+		id: "fix-idempotent",
+		check: (p) => {
+			const fixed = p.fixed;
+			if (!fixed || fixed.applied.length === 0) return null;
+			const codes = [...new Set(fixed.applied.map((a) => a.diagnostic.code))]
+				.sort()
+				.join(", ");
+			const { after } = fixed;
+			if (p.parse.ok && !after.parse.ok)
+				return violation(
+					"fix-idempotent",
+					`the preferred fixes of ${codes} break the parse`,
+				);
+			if (p.compile?.ok && !after.compile?.ok)
+				return violation(
+					"fix-idempotent",
+					`the preferred fixes of ${codes} break the compilation`,
+				);
+			const relinted = after.lint;
+			if (!relinted.ok)
+				return noThrow(
+					"fix-idempotent",
+					relinted,
+					"lintDocument on the fixed text",
+				);
+			const back = fixed.applied.find(({ diagnostic }) =>
+				comesBack(fixed.patches, diagnostic, relinted.value),
+			);
+			if (back)
+				return violation(
+					"fix-idempotent",
+					`${back.diagnostic.code} comes back after its preferred fix`,
+				);
 			return null;
 		},
 	},
