@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.2](https://git.gram-lang.org/gram-lang/gram/compare/v.1.5.1...v.1.5.2) - 2026-11-27
+
+### Bug fixes and improvements
+- **Kitchen, Analyzer & Renderer**: Composite ingredients used in different units (e.g. `@butter{100 g}` and `@brown butter{1}<@butter{2}`) now stay separate on the shopping list instead of adding up incompatible units, and a parent also used whole (`@eggs{1}` next to `@egg yolks{2}<@eggs{2}`) can now be targeted by `--scale`.
+- **CLI / Import**: `gram import` now tells you which step failed (source, recipe extraction, or AI model), handles more website recipe formats without crashing, and stops generating `#` comments in frontmatter.
+- **CLI**: Commands (`view`, `export`, `print`, `build`, `plan`, `shop`, `scale`, `cook`…) now fail cleanly on syntax errors instead of showing an empty recipe, `gram print` prints the file path if no browser is available, and multi-file commands process files in sorted order.
+- **Kitchen & i18n**: Timers with decimal fractions (`~{1.5/2 min}`, `~{1,5/2 h}`) now work instead of raising `INVALID_DURATION`.
+- **Format**: Fixed four edge cases where `gram format` could slightly alter a recipe (section headers containing `<`, non-breaking spaces around `<`, `---` blocks inside steps, and trailing zeros in duration fractions).
+- **Language Server**: Fixed ingredient database detection and false warnings in editors:
+  - Now reads `database:` from `.gram/config.yaml` (updating live on edit), detects `.gram/ingredients.yaml` in more editors, and translates the "Preview" button.
+  - Unknown-ingredient warnings and nutrition hovers now match actual nutrition lookup (ignoring case, accents, hyphens, and apostrophes, without guessing plurals).
+  - Intermediates used in percentages/ratios/timers or declared on section headings (`## Dough ->&dough`) are no longer flagged as unused.
+- **Parser & VS Code**: A trailing colon after an ingredient (`Add @salt: `) is now kept in the step text instead of disappearing, and temperature names (`oven` in `^oven{180°C}`) are now highlighted like timer names in VS Code.
+- **Renderer**: The HTML recipe view no longer shows `language` as custom metadata in the header.
+- **Kitchen & Language Server**: Writing spaces around `<` in a composite (`@lemon zest{1} < @lemon{2}`) now raises a `SPACED_COMPOSITE` warning with a one-click fix in the editor instead of silently counting both ingredients.
+
+---
+
 ## [1.5.1](https://git.gram-lang.org/gram-lang/gram/compare/v.1.5.0...v.1.5.1) - 2026-11-22
 
 ### Bug fixes and improvements
@@ -922,3 +940,79 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 - Empty ingredient masses now count as zero.
 
 ---
+
+## [0.7.0](https://git.gram-lang.org/gram-lang/gram/compare/v.0.6.0-alpha...v.0.7.0-alpha) - 2026-05-10
+
+### New features
+- Reclassified database-backed features (mass unification, yield management, and nutrition estimation) as experimental feature flags in `CompilerOptions` and the Playground.
+- Ingredients with empty braces (`@salt{}`) now count as negligible mass (0 g) so total recipe mass can still be computed.
+- Centralized unit translations in `i18n.ts` with support for standard French culinary abbreviations.
+
+### Bug fixes and improvements
+- The Playground nutrition panel now hides automatically when any ingredient is missing macro data or has an undetermined mass, avoiding misleading partial totals.
+
+---
+
+## [0.6.0](https://git.gram-lang.org/gram-lang/gram/compare/v.0.5.0-alpha...v.0.6.0-alpha) - 2026-01-18
+
+### New features
+- Overhauled the ingredient database into categorized YAML files (`~900` ingredients sourced from ANSES CIQUAL and USDA FoodData Central), with English/French lookup and user-defined entries.
+- Introduced ingredient states (`@ingredient:state{qty}`) and compiler warnings for missing ingredients or incomplete nutrition data.
+
+### Bug fixes and improvements
+- Replaced the Playground syntax highlighter with `code-input` and improved warning display.
+- Fixed mass calculations for section intermediates and composite ingredient aggregation in shopping lists.
+
+---
+
+## [0.5.0](https://git.gram-lang.org/gram-lang/gram/compare/v.0.4.0-alpha...v.0.5.0-alpha) - 2026-01-06
+
+### New features
+- **Mass unification**: Added volume-to-gram conversion via average densities, net vs. purchasing mass (yield/waste), custom frontmatter densities, and an initial proof-of-concept ingredient database.
+- **Nutrition & time estimation**: Added per-recipe and per-portion nutritional estimates and distinct active, total, and estimated prep ("mise en place") time metrics in the Playground.
+- Migrated repository hosting to Codeberg.
+
+### Bug fixes and improvements
+- Fixed comment rendering so notes no longer shift step numbering, fixed percentages inside alternative groups, and improved parser robustness.
+
+---
+
+## [0.4.0](https://git.gram-lang.org/gram-lang/gram/compare/v.0.3.1-alpha...v.0.4.0-alpha) - 2026-01-04
+
+### New features
+- Added asynchronous (background) timer support (`~{1h}&`) to distinguish active work from total duration, with dedicated styling in the Playground.
+- Added a raw AST view and a view-selector dropdown in the Playground.
+
+### Bug fixes and improvements
+- Fixed shopping-list aggregation when multiple composite ingredients share the same parent.
+
+---
+
+## [0.3.1](https://git.gram-lang.org/gram-lang/gram/compare/v.0.3.0-alpha...v.0.3.1-alpha) - 2026-01-03
+
+### Bug fixes and improvements
+- Fixed composite sub-ingredient quantities not summing properly across multiple sections in the shopping list.
+- Updated documentation links and recipe examples after the workspace reorganization.
+
+---
+
+## [0.3.0](https://git.gram-lang.org/gram-lang/gram/compare/v0.2.0-alpha...v.0.3.0-alpha) - 2026-01-02
+
+### New features
+- Restructured the project into a workspace monorepo under `packages/` (`parser`, `compiler`, `playground`, `vscode-extension`).
+- Separated the Ohm.js parser (`packages/parser`) from the semantic compiler (`packages/compiler`) and added an `examples/` library synced with the Playground.
+
+---
+
+## [0.2.0](https://git.gram-lang.org/gram-lang/gram/compare/v0.1.0...v0.2.0-alpha) - 2025-12-30
+
+### Bug fixes and improvements
+- Migrated `gram-parser` from JavaScript to TypeScript with strict AST/compiler interfaces and generated `.d.ts` declarations.
+
+---
+
+## [0.1.0] - 2025-12-28
+
+### New features
+- Initial alpha release of **Gram**: language specification, Ohm.js reference parser (`gram-parser`), web Playground (JSON, AST tree, and Markdown views), and VS Code syntax highlighting extension.
+- Core recipe features: separation of ingredients, cookware, and instructions, section vs. aggregated shopping lists, relative quantities (baker's percentages), intermediate references, and composite ingredients.
