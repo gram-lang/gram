@@ -290,7 +290,7 @@ Un ingrédient est écrit mais jamais lu : un `//` placé plus tôt sur la même
 
 ### `MERGED_STEP_LINE`
 
-Une ligne censée ouvrir un nouveau bloc est lue comme la suite de l'étape du dessus, parce qu'un simple saut de ligne ne termine pas une étape : une ligne qui commence par `[Action]` (l'action de l'étape suivante), une ligne `## …` (la section disparaît), ou toute ligne qui suit une ligne terminée par `->&nom` (la sortie de l'étape, après laquelle on voulait sans doute une autre étape). Un saut de ligne ordinaire au sein d'une étape reste valable (`Une étape,` puis `la même étape.` à la ligne). Le serveur de langage propose d'insérer la ligne vide, en correctif préféré. **Correction** : laissez une ligne vide avant la ligne signalée.
+Une ligne censée ouvrir un nouveau bloc est lue comme la suite de l'étape du dessus, parce qu'un simple saut de ligne ne termine pas une étape : une ligne qui commence par `[Action]` (l'action de l'étape suivante), une ligne `## …` (la section disparaît), ou toute ligne qui suit une ligne terminée par `->&nom` (la sortie de l'étape, après laquelle on voulait sans doute une autre étape). Un saut de ligne ordinaire au sein d'une étape reste valable (`Une étape,` puis `la même étape.` à la ligne), et une ligne qui ne pourrait pas ouvrir un bloc à elle seule n'est pas signalée (une action `[Action]` sans rien derrière, un `## …` suivi de texte après son `~{…}`) : une ligne vide n'en ferait qu'une erreur de syntaxe. Le serveur de langage propose d'insérer la ligne vide, en correctif préféré. **Correction** : laissez une ligne vide avant la ligne signalée.
 
 ### `SUSPECT_INGREDIENT_NAME`
 

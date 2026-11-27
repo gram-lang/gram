@@ -289,7 +289,7 @@ An ingredient is written but never read: a `//` earlier on the same line turned 
 
 ### `MERGED_STEP_LINE`
 
-A line meant to start a new block is read as more text of the step above, because a single line break does not end a step: a line opening with `[Action]` (the action of the next step), a `## …` line (the section vanishes), or any line after one ending with `->&name` (the step's output, after which another step was most likely meant). A plain line break inside a step stays valid (`A step,` then `the same step.` on the next line). The language server offers to insert the blank line, as the preferred fix. **Fix**: leave a blank line before the line.
+A line meant to start a new block is read as more text of the step above, because a single line break does not end a step: a line opening with `[Action]` (the action of the next step), a `## …` line (the section vanishes), or any line after one ending with `->&name` (the step's output, after which another step was most likely meant). A plain line break inside a step stays valid (`A step,` then `the same step.` on the next line), and a line that could not open a block on its own is left alone (a bare `[Action]` with nothing after it, a `## …` with text after its `~{…}`): a blank line would only make it a syntax error. The language server offers to insert the blank line, as the preferred fix. **Fix**: leave a blank line before the line.
 
 ### `SUSPECT_INGREDIENT_NAME`
 
