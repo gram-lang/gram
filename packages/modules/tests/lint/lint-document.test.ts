@@ -270,14 +270,14 @@ describe("lintDocument — the rules moved from the language server", () => {
 		expect(apply(text, d.fixes![0]!)).toBe(`${TITLE}## A\n\nMix @a{1}. \n`);
 	});
 
-	it("UNKNOWN_INGREDIENT prefers a spelling fix only when it is the one closest name", () => {
+	it("UNKNOWN_INGREDIENT never prefers a spelling fix, even with one closest name", () => {
 		const text = `${TITLE}Mix @flur{100 g}.\n`;
 		const one = lintSource(text, { flour: entry("Flour") }).find(
 			(x) => x.code === "UNKNOWN_INGREDIENT",
 		)!;
 		expect(one.severity).toBe("info");
 		expect(one.data).toEqual({ name: "flur", suggestion: "Flour" });
-		expect(one.fixes![0]!.isPreferred).toBe(true);
+		expect(one.fixes![0]!.isPreferred).toBeUndefined();
 		expect(apply(text, one.fixes![0]!)).toContain("@Flour{100 g}");
 
 		const two = lintSource(text, {

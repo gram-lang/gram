@@ -36,11 +36,11 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 A generated file is not done until [`gram check`](/docs/reference/tooling/cli/#gram-check-pattern) accepts it. Its JSON report is made to be read back by the script or the model that wrote the recipe, so the loop closes on its own:
 
 1. Generate the `.gram` file.
-2. Run `gram check recipe.gram --format json`. The exit code says whether an error is left; each diagnostic gives its `code`, its place (`line` and `col`, from 1), its `message`, and often a fix to apply (`fixes`, the one to prefer marked `isPreferred`).
-3. Correct what it reports, by applying the preferred fix or by rewriting the passage, and run it again until no error is left. Add `--strict` to also clear the warnings.
+2. Run `gram check recipe.gram --fix --format json`. `--fix` first applies the fixes that leave no doubt (a `15%min` duration, a missing blank line, a deprecated key…), then the report lists what is left: the exit code says whether an error remains; each diagnostic gives its `code`, its place (`line` and `col`, from 1), its `message`, and sometimes a fix to weigh (`fixes`).
+3. Correct what it reports, by rewriting the passage or applying a fix that fits, and run it again until no error is left. Add `--strict` to also clear the warnings.
 
 ```bash
-gram check recipe.gram --format json | jq '.diagnostics[] | {code, line, col, message}'
+gram check recipe.gram --fix --format json | jq '.diagnostics[] | {code, line, col, message}'
 ```
 
 Most of the mistakes below have a code of their own, so the report says which section of this page applies. The codes are described in the [warnings reference](/docs/reference/api/warnings/).

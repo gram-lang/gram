@@ -35,7 +35,8 @@ function groupByFile(
 	return map;
 }
 
-const plural = (n: number, word: string) => `${n} ${word}${n !== 1 ? "s" : ""}`;
+const plural = (n: number, word: string, many = `${word}s`) =>
+	`${n} ${n !== 1 ? many : word}`;
 
 /** `line:col`, or `-` for a diagnostic of the whole file. */
 function where(d: { line?: number; col?: number }): string {
@@ -56,6 +57,13 @@ const ICONS: Record<LintSeverity, string> = {
  * each level. The icon is the level (`--strict` makes errors of all but the
  * hints); the JSON report lists the same diagnostics.
  */
+/** The last line of `gram check --fix`: `N fixes applied, M remaining`. */
+export function fixSummary(result: CheckResult): string {
+	let fixed = 0;
+	for (const n of result.fixed?.values() ?? []) fixed += n;
+	return `${plural(fixed, "fix", "fixes")} applied, ${result.diagnostics.length} remaining.`;
+}
+
 export function renderCheckResult(result: CheckResult): void {
 	if (result.diagnostics.length === 0) {
 		log.success(`${plural(result.fileCount, "file")} valid.`);

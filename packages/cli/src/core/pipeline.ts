@@ -53,9 +53,10 @@ async function loadEntry(
 	opts: PipelineOptions,
 ): Promise<LoadedEntry> {
 	const entryUri = resolvePath(filePath);
+	const { entryText } = opts;
 	let content: string;
 	try {
-		content = await readFile(entryUri, "utf-8");
+		content = entryText ?? (await readFile(entryUri, "utf-8"));
 	} catch (err) {
 		if ((err as { code?: string }).code === "ENOENT") {
 			throw new GramCLIError(`File not found: ${filePath}`, ExitCode.Error);
@@ -65,9 +66,13 @@ async function loadEntry(
 
 	const projectRoot = await findProjectRoot(dirname(entryUri));
 	const dependencies = new Set<string>([entryUri]);
+	// The entry's text comes from `entryText` when given, for the graph too
+	// (an import cycle back to the entry reads the same text).
 	const host = createCliModuleHost(projectRoot, opts.paths, (uri) => {
 		dependencies.add(uri);
-		return readFile(uri, "utf-8");
+		return uri === entryUri && entryText !== undefined
+			? Promise.resolve(entryText)
+			: readFile(uri, "utf-8");
 	});
 	const graph = await loadModuleGraph(entryUri, host);
 	return { entryUri, projectRoot, content, graph, dependencies };

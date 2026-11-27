@@ -93,17 +93,19 @@ Vérifie vos fichiers `.gram` et signale, fichier par fichier, tout ce que l'éd
 gram check                                # Tous les fichiers .gram du projet
 gram check recettes/brioche.gram --strict # Un fichier, en échec au moindre avertissement
 gram check --format json > rapport.json   # Un rapport pour un script, une CI ou un agent IA
+gram check --fix                          # Applique les correctifs sûrs, puis signale ce qui reste
 ```
 - Les vérifications sont celles du [serveur de langage](/fr/docs/reference/tooling/language-server/) <Since v="1.6.0" />, sur le même fichier, avec les mêmes codes aux mêmes endroits : ce que signale `gram check`, c'est ce que souligne votre éditeur. Chaque diagnostic s'écrit `ligne:colonne`, suivi de son message et de son code ; un diagnostic sans position (`-`) concerne le fichier entier.
 - Un problème venu d'un fichier importé par `@use` s'affiche sur la ligne `@use`, et sa vraie place sur la ligne suivante (`↳ see bases/pate.gram:3:5`).
 - Avec une base d'ingrédients (celle de `--db`, sinon celle de `database:` dans `.gram/config.yaml`, sinon `.gram/ingredients.yaml`), chaque mention d'un ingrédient qu'elle ne connaît pas donne un `UNKNOWN_INGREDIENT`, avec le nom le plus proche s'il y en a un. `gram check` montre aussi ce que l'éditeur laisse de côté faute de position : un ingrédient que seul un module importé écrit (`MISSING_INGREDIENT`), une entrée sans valeurs nutritionnelles (`MISSING_MACROS`) ou sans masse (`UNKNOWN_MASS`). `--skip-db` laisse la base de côté.
 - Les réglages `lint:` du projet et les commentaires `// gram-ignore` sont respectés ([Configurer le lint](/fr/docs/reference/api/warnings/#configurer-le-lint)), lus comme dans l'éditeur dans le `.gram/config.yaml` du projet de chaque fichier.
+- `--fix` <Since v="1.6.0" /> applique sur place les correctifs marqués comme préférés (`isPreferred`), ceux dont l'intention ne fait aucun doute : une unité ou une durée écrite `15%min`, un composite espacé, `oz` après un volume, `&farine` pour un ingrédient brut, une clé de frontmatter dépréciée, une ligne blanche oubliée entre deux étapes. Il relance le lint sur le texte corrigé et recommence, cinq passes au plus, puis termine par `N fixes applied, M remaining` sous le rapport de ce qui reste. Ce qu'il garantit : il ne modifie que les fichiers vérifiés, jamais un module qu'ils importent par `@use` ni la base d'ingrédients, et ne crée aucun fichier ; une recette qui se lisait se lit toujours, et un problème corrigé ne revient pas. Chaque fichier est écrit une seule fois, à la fin, et seulement s'il a changé. Les `lint.rules` et les `// gram-ignore` sont respectés : une vérification coupée n'est jamais corrigée. Un ingrédient inconnu de la base n'est jamais renommé d'après le nom le plus proche, ce qui changerait la recette. Le code de sortie est celui de la vérification après correction.
 - Seules les erreurs font échouer la commande (code de sortie 1). Avec `--strict`, tout avertissement et toute info comptent comme une erreur (idéal en intégration continue), ingrédients absents de la base compris ; un `hint` ne fait jamais échouer. Pour sortir une vérification d'un passage strict, abaissez-la à `hint` ou coupez-la dans `lint.rules` ; `--skip-db` laisse la base de côté.
-- Options : `--db <chemin>`, `--skip-db`, `--strict`, `--stock <spécificateurs>`, `--format <text|json>`.
+- Options : `--db <chemin>`, `--skip-db`, `--strict`, `--stock <spécificateurs>`, `--fix`, `--format <text|json>`.
 
 ##### Rapport JSON
 
-<Since v="1.6.0" /> `--format json` écrit un seul document JSON sur la sortie standard, et rien d'autre : tous les autres messages partent sur la sortie d'erreur. Le code de sortie est le même qu'en mode texte. Si aucun fichier ne correspond, le rapport est tout de même écrit, vide, et la commande échoue.
+<Since v="1.6.0" /> `--format json` écrit un seul document JSON sur la sortie standard, et rien d'autre : tous les autres messages partent sur la sortie d'erreur. Le code de sortie est le même qu'en mode texte. Si aucun fichier ne correspond, le rapport est tout de même écrit, vide, et la commande échoue. Avec `--fix`, le rapport donne les diagnostics restants après correction, et pour chaque fichier le nombre de correctifs appliqués (`fixed`) ; la ligne de résumé n'est pas écrite.
 
 ```json
 {
@@ -145,6 +147,7 @@ gram check --format json > rapport.json   # Un rapport pour un script, une CI ou
 | --- | --- |
 | `version` | `1`. Un champ peut s'ajouter sans la changer ; un champ renommé, retiré ou dont le type change la fait passer à `2`. |
 | `files[]` | Les fichiers vérifiés, dans l'ordre : `file` (relatif au dossier courant, avec des `/`) et `uri` (une URL `file://`). |
+| `files[].fixed` | Avec `--fix` seulement : le nombre de correctifs appliqués au fichier (`0` s'il est resté tel quel). |
 | `diagnostics[]` | Tous les diagnostics, fichier après fichier, dans l'ordre du texte. |
 | `file`, `uri` | Le fichier vérifié où s'affiche le diagnostic. |
 | `line`, `col`, `endLine`, `endCol` | Son début et sa fin, comptés à partir de 1, comme dans `fichier:ligne:colonne`. Les colonnes comptent des unités UTF-16, comme `loc` : un emoji en prend deux. Absents pour un diagnostic du fichier entier. |

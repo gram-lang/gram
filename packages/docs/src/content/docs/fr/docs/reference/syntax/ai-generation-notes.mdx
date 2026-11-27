@@ -36,11 +36,11 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 Un fichier généré n'est pas terminé tant que [`gram check`](/fr/docs/reference/tooling/cli/#gram-check-motif) ne l'accepte pas. Son rapport JSON est fait pour être relu par le script ou le modèle qui a écrit la recette : la boucle se referme toute seule.
 
 1. Générer le fichier `.gram`.
-2. Lancer `gram check recette.gram --format json`. Le code de sortie dit s'il reste une erreur ; chaque diagnostic donne son `code`, sa place (`line` et `col`, à partir de 1), son `message`, et souvent un correctif tout prêt (`fixes`, celui à privilégier marqué `isPreferred`).
-3. Corriger ce qu'il signale, en appliquant le correctif préféré ou en réécrivant le passage, puis relancer jusqu'à ce qu'il ne reste plus d'erreur. Avec `--strict`, les avertissements doivent disparaître aussi.
+2. Lancer `gram check recette.gram --fix --format json`. `--fix` applique d'abord les correctifs qui ne laissent aucun doute (une durée `15%min`, une ligne blanche oubliée, une clé dépréciée…), puis le rapport dresse la liste de ce qui reste : le code de sortie dit s'il reste une erreur ; chaque diagnostic donne son `code`, sa place (`line` et `col`, à partir de 1), son `message`, et parfois un correctif à examiner (`fixes`).
+3. Corriger ce qu'il signale, en réécrivant le passage ou en appliquant un correctif qui convient, puis relancer jusqu'à ce qu'il ne reste plus d'erreur. Avec `--strict`, les avertissements doivent disparaître aussi.
 
 ```bash
-gram check recette.gram --format json | jq '.diagnostics[] | {code, line, col, message}'
+gram check recette.gram --fix --format json | jq '.diagnostics[] | {code, line, col, message}'
 ```
 
 La plupart des erreurs ci-dessous ont leur propre code : le rapport indique donc quelle section de cette page s'applique. Les codes sont décrits dans la [référence des avertissements](/fr/docs/reference/api/warnings/).

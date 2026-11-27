@@ -36,6 +36,7 @@ export {
 	type LintRuleSetting,
 	parseLintConfig,
 } from "./config";
+export { type AppliedFix, applyPreferredFixes } from "./apply-fixes";
 export {
 	EDITOR_HIDDEN_CODES,
 	type LintInput,

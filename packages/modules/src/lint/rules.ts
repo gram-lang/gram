@@ -115,9 +115,11 @@ export function nameSpan(written: string): { start: number; end: number } {
  * `UNKNOWN_INGREDIENT`: every mention of an ingredient the analyzer does not
  * resolve (`resolveCanonicalId`, the resolution the nutrition uses). Only
  * with a non-empty database: without one every ingredient would be unknown.
- * The spelling fix is preferred only when one name is the closest; with the
- * database file at hand, a second fix adds the ingredient to it
- * (`ADD_TO_INGREDIENTS_DB`), never preferred.
+ * The spelling fix is never preferred, even when one name is the closest:
+ * renaming an ingredient changes the recipe, so `gram check --fix` and an
+ * editor's auto fix leave it to the author. With the database file at hand,
+ * a second fix adds the ingredient to it (`ADD_TO_INGREDIENTS_DB`), never
+ * preferred either.
  */
 export function unknownIngredients(
 	ctx: RuleContext,
@@ -149,7 +151,6 @@ export function unknownIngredients(
 						],
 					},
 				],
-				...(closest.length === 1 ? { isPreferred: true } : {}),
 			});
 		}
 		const add =

@@ -93,17 +93,19 @@ Checks your `.gram` files and reports, file by file, every problem the editor sh
 gram check                                # Every .gram file of the project
 gram check recipes/brioche.gram --strict  # One file, failing on any warning
 gram check --format json > report.json    # A report for a script, a CI or an AI agent
+gram check --fix                          # Apply the safe fixes, then report what is left
 ```
 - It runs the same checks as the [language server](/docs/reference/tooling/language-server/) <Since v="1.6.0" />, on the same file, with the same codes at the same places: what `gram check` reports is what your editor underlines. Each diagnostic is written `line:col`, then its message and its code; one with no position (`-`) concerns the whole file.
 - A problem raised in a file imported with `@use` is shown on the `@use` line, with where it really is on the next line (`↳ see bases/pate.gram:3:5`).
 - With an ingredient database (the one named by `--db`, else by `database:` in `.gram/config.yaml`, else `.gram/ingredients.yaml`), every mention of an ingredient it does not know is an `UNKNOWN_INGREDIENT`, with the closest name when there is one. `gram check` also lists what the editor leaves out for lack of a position: an ingredient only an imported module writes (`MISSING_INGREDIENT`), an entry with no nutrition (`MISSING_MACROS`) or no mass (`UNKNOWN_MASS`). `--skip-db` leaves the database out.
 - It follows the project's `lint:` settings and the `// gram-ignore` comments ([Configure the lint](/docs/reference/api/warnings/#configure-the-lint)), read from the `.gram/config.yaml` of each file's own project, as the editor does.
+- `--fix` <Since v="1.6.0" /> applies in place the fixes marked as preferred (`isPreferred`), those that leave no doubt about the intent: a unit or a duration written `15%min`, a spaced composite, `oz` after a volume, `&flour` for a raw ingredient, a deprecated frontmatter key, a missing blank line between two steps. It lints the fixed text again and repeats, five passes at most, then ends on `N fixes applied, M remaining` above the report of what is left. Its guarantee: it only edits the files it checks, never a module they import with `@use` nor the ingredient database, and never creates a file; a recipe that parsed still parses, and a problem it fixed does not come back. A file is written once, at the end, and only when it changed. It follows `lint.rules` and `// gram-ignore`: a check turned off is never fixed. An ingredient the database does not know is never renamed to the closest name, since that would change the recipe. The exit code is that of the check after the fixes.
 - Only errors make the command fail (exit code 1). Pass `--strict` to treat every warning and info as an error (ideal for CI pipelines), ingredients missing from the database included; a `hint` never fails it. To keep one check out of a strict run, lower it to `hint` or turn it off in `lint.rules`; `--skip-db` keeps the database out.
-- Options: `--db <path>`, `--skip-db`, `--strict`, `--stock <specifiers>`, `--format <text|json>`.
+- Options: `--db <path>`, `--skip-db`, `--strict`, `--stock <specifiers>`, `--fix`, `--format <text|json>`.
 
 ##### JSON report
 
-<Since v="1.6.0" /> `--format json` writes a single JSON document on stdout, and nothing else: every other message goes to stderr. The exit code is the same as in the terminal. When no file matches, the report is still printed, empty, and the command fails.
+<Since v="1.6.0" /> `--format json` writes a single JSON document on stdout, and nothing else: every other message goes to stderr. The exit code is the same as in the terminal. When no file matches, the report is still printed, empty, and the command fails. With `--fix`, the report gives the diagnostics left after the fixes, and each file the number of fixes applied to it (`fixed`); the summary line is not printed.
 
 ```json
 {
@@ -145,6 +147,7 @@ gram check --format json > report.json    # A report for a script, a CI or an AI
 | --- | --- |
 | `version` | `1`. A field may be added without changing it; a field renamed, removed or retyped moves it to `2`. |
 | `files[]` | Every checked file, in order: `file` (relative to the current directory, with `/`) and `uri` (a `file://` URL). |
+| `files[].fixed` | With `--fix` only: the number of fixes applied to the file (`0` when it was left as it was). |
 | `diagnostics[]` | Every diagnostic, file by file, each file's in text order. |
 | `file`, `uri` | The checked file the diagnostic is shown in. |
 | `line`, `col`, `endLine`, `endCol` | Where it starts and ends, counted from 1, as in `file:line:col`. Columns count UTF-16 code units, like `loc`: an emoji takes two. Absent for a diagnostic of the whole file. |

@@ -49,6 +49,22 @@ describe("MERGED_STEP_LINE", () => {
 		expect(merged(fixOnce(text))).toEqual([]);
 	});
 
+	it("leaves a line alone when it cannot open a block: a bare '[Action]', a header with text after its anchor", () => {
+		expect(merged(`${TITLE}Mix.\n[Stir]\n`)).toEqual([]);
+		expect(merged(`${TITLE}Mix.\n[Stir]  \r\n`)).toEqual([]);
+		expect(merged(`${TITLE}Mix @a{1} ->&d\n[Stir]\n`)).toEqual([]);
+		expect(merged(".\n[U]")).toEqual([]);
+		expect(merged(".\n[U]\rp")).toEqual([]);
+		expect(() => getAST(`${TITLE}Mix.\n\n[Stir]\n`)).toThrow();
+		expect(merged(`${TITLE}Mix.\n## A Wait ~{60min}.\n`)).toEqual([]);
+		expect(merged(".\n## ~{}.")).toEqual([]);
+		expect(() => getAST(`${TITLE}Mix.\n\n## A Wait ~{60min}.\n`)).toThrow();
+		// With something after the bracket, or nothing after the anchor, it
+		// opens the next block.
+		expect(merged(`${TITLE}Mix.\n[Stir] .\n`)).toHaveLength(1);
+		expect(merged(`${TITLE}Mix.\n## A Wait ~{60 min}\n`)).toHaveLength(1);
+	});
+
 	it("keeps the file's CRLF line breaks in the fix", () => {
 		const text = "Mix @a{1}.\r\n[Bake] it.\r\n";
 		expect(fixOnce(text)).toBe("Mix @a{1}.\r\n\r\n[Bake] it.\r\n");

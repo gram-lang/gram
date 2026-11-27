@@ -1,11 +1,12 @@
 import { defineCommand } from "citty";
-import { spinner } from "@clack/prompts";
+import { log, spinner } from "@clack/prompts";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
 import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { checkFiles } from "../services/checker";
 import {
+	fixSummary,
 	renderCheckResult,
 	reportRejectedIngredients,
 } from "../ui/diagnostics";
@@ -45,6 +46,12 @@ export default defineCommand({
 			type: "string",
 			description:
 				"Comma-separated @use specifiers already on hand for this check (e.g. @bases/pate.gram,./levain.gram)",
+		},
+		fix: {
+			type: "boolean",
+			description:
+				"Apply the safe fixes in place (preferred fixes of the checked files only, never a @use dependency nor a new file), then report what is left",
+			default: false,
 		},
 		format: {
 			type: "string",
@@ -91,6 +98,7 @@ export default defineCommand({
 			strict: args.strict,
 			paths: config.paths,
 			stock,
+			fix: args.fix,
 		});
 
 		s?.stop(`Checked ${n} file${n !== 1 ? "s" : ""}.`);
@@ -99,6 +107,8 @@ export default defineCommand({
 			process.stdout.write(`${JSON.stringify(checkReport(result), null, 2)}\n`);
 		} else {
 			renderCheckResult(result);
+			// In JSON the counts are in the report (`files[].fixed`, `diagnostics`).
+			if (args.fix) log.info(fixSummary(result));
 		}
 		reportUnusedStock("gram check", "checked", stock, [result]);
 

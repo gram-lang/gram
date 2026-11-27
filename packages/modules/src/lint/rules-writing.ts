@@ -6,6 +6,7 @@
  */
 import type { CompilationResult } from "@gram-lang/kitchen";
 import {
+	getAST,
 	type IngredientAST,
 	isComment,
 	isIntermediateDecl,
@@ -84,6 +85,21 @@ export function lostIngredients(
 
 /** `startAction` of the grammar: `[Action]` opening a line. */
 const ACTION_LINE = /^[ \t]*\[[^\]\n]+\]/;
+/**
+ * Whether `line` can open a block on its own. When it cannot, the blank line
+ * would turn text the parser reads into a syntax error: a bare `[Action]`
+ * (nothing after the bracket, or a lone `\r` right after it, which ends a
+ * line for the parser too), a `## Title ~{5 min}.` with text after its
+ * anchor. Only run on a line the rule already picked.
+ */
+function opensBlock(line: string): boolean {
+	try {
+		getAST(line);
+		return true;
+	} catch {
+		return false;
+	}
+}
 /** `header` of the grammar: `##`, then a blank or the end of the line. */
 const HEADER_LINE = /^[ \t]*##(?:[ \t]|\r?$)/;
 
@@ -94,7 +110,9 @@ const HEADER_LINE = /^[ \t]*##(?:[ \t]|\r?$)/;
  * (a section, which vanishes), or any line after one that ends with
  * `->&name` (the step's output: what follows is another step). A plain line
  * break inside a step stays legitimate (`A step,\nthe same step.`). The fix,
- * preferred, inserts the blank line.
+ * preferred, inserts the blank line. A line that cannot open a block on its
+ * own (`opensBlock`) is left alone, whatever the line above: the blank line
+ * would only turn it into a parse error.
  */
 export function mergedStepLines(ctx: RuleContext): RuleDiagnostic[] {
 	const { text } = ctx;
@@ -133,7 +151,7 @@ export function mergedStepLines(ctx: RuleContext): RuleDiagnostic[] {
 			if (HEADER_LINE.test(line)) reason = "header";
 			else if (ACTION_LINE.test(line)) reason = "action";
 			else if (decl) reason = "intermediate";
-			if (!reason) continue;
+			if (!reason || !opensBlock(line)) continue;
 			const message =
 				reason === "header"
 					? "This '##' line is read as text of the step above, not as a section: leave a blank line before it."
