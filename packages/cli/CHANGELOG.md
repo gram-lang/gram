@@ -1,5 +1,26 @@
 # @gram-lang/cli
 
+## 1.5.2
+
+### Patch Changes
+
+- 585e622: **CLI / Import**: `gram import` now tells you which step failed (source, recipe extraction, or AI model), handles more website recipe formats without crashing, and stops generating `#` comments in frontmatter.
+- 0d23679: **CLI**: Commands (`view`, `export`, `print`, `build`, `plan`, `shop`, `scale`, `cook`…) now fail cleanly on syntax errors instead of showing an empty recipe, `gram print` prints the file path if no browser is available, and multi-file commands process files in sorted order.
+- Updated dependencies [9a09465]
+- Updated dependencies [ccdbca7]
+- Updated dependencies [4115529]
+- Updated dependencies [daddb56]
+- Updated dependencies [3f20d76]
+- Updated dependencies [14f9a9f]
+  - @gram-lang/kitchen@1.5.2
+  - @gram-lang/analyzer@1.5.2
+  - @gram-lang/renderer@1.5.2
+  - @gram-lang/i18n@1.5.2
+  - @gram-lang/format@1.5.2
+  - @gram-lang/parser@1.5.2
+  - @gram-lang/modules@1.5.2
+  - @gram-lang/scheduler@1.5.2
+
 ## 1.5.1
 
 ### Patch Changes

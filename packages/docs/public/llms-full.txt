@@ -750,6 +750,8 @@ You can rename an `@ingredient` for display purposes using a colon `:` immediate
 
 **Format**: `@Real Name:Display Name{Quantity}`
 
+The display name starts right after the colon, with no space. A colon followed by a space is ordinary punctuation: `Heat the @butter: then add the onions.` keeps `: then add the onions.` as text *(since v1.6.0)*.
+
 <CodeTabs>
 ```gram title="Code"
 [Deglaze] With @dry white wine:wine{100ml}.
@@ -966,6 +968,8 @@ You can rename an equipment item for display while keeping a clean canonical slu
 ```gram
 [Use] The #cast iron skillet:skillet{}.
 ```
+
+The display name is glued to the colon: in `Heat the #pan: then add oil.`, the colon followed by a space is punctuation and the rest of the line stays text *(since v1.6.0)*.
   **Alternatives**
 
 You can declare acceptable equipment substitutions using the pipe `|` operator:
@@ -2029,6 +2033,20 @@ When turning an existing recipe into `.gram`, working through these five points 
 5. **Review** — Before finalizing, check for the mistakes listed below: kebab-case names, units inside cookware braces, missing `@&` on repeat mentions, redundant `->&name` declarations, and standalone steps that only prepare an ingredient for a later step.
 
 
+## Check the result with `gram check`
+
+A generated file is not done until [`gram check`](/docs/reference/tooling/cli/#gram-check-pattern) accepts it. Its JSON report is made to be read back by the script or the model that wrote the recipe, so the loop closes on its own:
+
+1. Generate the `.gram` file.
+2. Run `gram check recipe.gram --fix --format json`. `--fix` first applies the fixes that leave no doubt (a `15%min` duration, a missing blank line, a deprecated key…), then the report lists what is left: the exit code says whether an error remains; each diagnostic gives its `code`, its place (`line` and `col`, from 1), its `message`, and sometimes a fix to weigh (`fixes`).
+3. Correct what it reports, by rewriting the passage or applying a fix that fits, and run it again until no error is left. Add `--strict` to also clear the warnings.
+
+```bash
+gram check recipe.gram --fix --format json | jq '.diagnostics[] | {code, line, col, message}'
+```
+
+Most of the mistakes below have a code of their own, so the report says which section of this page applies. The codes are described in the [warnings reference](/docs/reference/api/warnings/).
+
 ## Common mistakes
 
 These are the errors that show up most often in programmatically generated `.gram` files.
@@ -2745,53 +2763,62 @@ const warningInfo: Record<WarningCode, WarningCodeInfo>;
 
 | Code | Severity | Message template |
 | --- | --- | --- |
-| `VARIABLE_NOT_FOUND` | warning | `Cannot resolve relative quantity: target intermediate '&{targetName}' is not defined.` |
-| `RELATIVE_QUANTITY_UNRESOLVED` | warning | `Cannot resolve relative quantity: target ingredient '@{targetName}' was not found in the current section.` |
-| `RELATIVE_QUANTITY_UNKNOWN_MASS` | warning | `Cannot compute the amount of '{item}': undefined` |
-| `CIRCULAR_REFERENCE` | error | `Circular reference detected: '{name}' depends on itself.` |
-| `UNDEFINED_REFERENCE` | error | `Undefined reference '{prefix}{name}' — no prior step or section produces this item.` |
-| `MISSING_UNIT` | warning | `{type} requires an explicit unit (e.g. min, s, °C).` |
-| `INVALID_UNIT` | warning | `Invalid unit "{value}" for {type}.` |
-| `SCOPE_CONFLICT` | error | `Intermediate variable '&{varName}' is redefined; variable names must be unique across the recipe.` |
-| `MISSING_INGREDIENT` | warning | `Ingredient "{id}" not found in database — nutritional metrics and density conversions unavailable.` |
-| `MISSING_MACROS` | info | `Ingredient "{id}" has no macronutrient data in database — nutritional totals are partial.` |
-| `UNKNOWN_MASS` | info | `Cannot calculate mass for "{id}" — omitted from nutritional totals.` |
-| `INVALID_MODIFIER_COMBINATION` | warning | `Incompatible modifiers on "{item}": {combination}.` |
-| `COMPOSITE_PARENT_CONFLICT` | error | `Composite child "{childName}" was already linked to parent "{previousParent}" — using it with a different parent "{newParent}" here means both will share the same database entry, which is very likely wrong.` |
-| `INVALID_BAKERS_REFERENCE` | warning | `'{item}' cannot be used as the Baker's percentage reference (*).` |
-| `NO_BAKERS_REFERENCE` | warning | `Baker's percentages (%) are used but no base flour (*) was designated.` |
-| `MULTIPLE_BAKERS_PERCENTAGE` | warning | `'{item}' is also marked as the baker's percentage base (*), but '{reference}' already is: only one ingredient can be. '{reference}' stays the base.` |
-| `TIME_PARADOX` | warning | `Timeline conflict: {cause} is pulled earlier than recipe start to satisfy {conflict}.` |
-| `TRACK_CONTENTION` | info | `Resource contention on track '{trackName}': delayed by {delay} min for '{item}'.` |
-| `DAY_OVERFLOW` | warning | `Working day {day} (from section '{section}') starts NaN h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-{day}1d}, or shorten the rest.` |
-| `PASSIVE_OVERLAP_SAME_COOKWARE` | info | `Two passive timers overlap and both use #{cookware}: {item} and {other}. If one is meant to follow the other, give them the same named track, for example ~_{cookware}{…}, so they take turns.` |
-| `DURATION_OUT_OF_RANGE` | warning | `Timer "{item}" is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.` |
-| `AMBIGUOUS_NUMBER` | warning | `"{value}" on "{item}" was read as {read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write {suggestion} if that is the number you meant.` |
-| `INVALID_DURATION` | warning | `Timer duration "{value}" on "{item}" is not read: {reason} Did you mean ~{{suggestion}}? It is not counted in the total time.` |
-| `INVALID_QUANTITY` | warning | `Quantity "{value}" of "{item}" is not read: {reason} Did you mean {{suggestion}}? It is not counted in the shopping list or the nutrition.` |
-| `OZ_AFTER_VOLUME` | info | `"{value}" of "{item}" is a weight: oz weighs, {suggestion} measures a volume. Write {suggestion} if a volume is meant.` |
-| `SPACED_COMPOSITE` | warning | `"{item}" and "{parent}" are read as two separate ingredients: a composite takes "<" with no space around it. Write {suggestion} right after "{item}" if "{item}" comes from "{parent}"; as written, both are counted in the shopping list.` |
-| `DEPRECATED_FRONTMATTER_KEY` | warning | `Frontmatter key "{key}" of module "{specifier}" is deprecated and will be removed in 2.0.0: write "{suggestion}" in that module instead.` |
-| `REFERENCE_TO_INGREDIENT` | warning | `"&{name}" refers to an intermediate, but "{name}" is a raw ingredient: write {suggestion} to mention it again.` |
-| `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
-| `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
-| `MODULE_CYCLE` | error | `Circular module import detected: {chain}.` |
-| `MODULE_DEPTH_EXCEEDED` | error | `Import depth limit exceeded ({depth}) while importing "{specifier}".` |
-| `MODULE_EXPORT_NOT_FOUND` | error | `Module "{specifier}" does not export '&{exported}' — it exists in the module but isn't re-exported. Add '-> &{exported}' to the section that produces it.` |
-| `UNUSED_IMPORT` | warning | `Unused import '&{local}' from "{specifier}".` |
-| `UNRESOLVED_MODULE_YIELD` | error | `Cannot compute yield for '&{binding}' from "{specifier}": missing physical mass data for one or more ingredients.` |
-| `ESTIMATED_MODULE_YIELD` | warning | `Yield of '&{binding}' from "{specifier}" is estimated using standard ingredient densities or unit weights. Scale factor is approximate.` |
-| `MODULE_UNIT_MISMATCH` | error | `Unit mismatch for '&{binding}' from "{specifier}": requested in '{requestedUnit}' but yields in '{yieldUnit}' without a conversion density.` |
-| `MODULE_BATCH_INTERPRETATION` | info | `'&{binding}' from "{specifier}" requested without unit — scaled as {batches} batch(es) of the module.` |
-| `IMPORTED_BAKERS_REFERENCE_DROPPED` | info | `Baker's percentage base (*) from "{specifier}" is scoped to its own module and was not imported.` |
-| `DENSITY_OVERRIDE_SHADOWED` | info | `Density for "{ingredient}" in host recipe ({hostValue}) overrides module "{specifier}" ({moduleValue}).` |
-| `MODULE_SURPLUS` | info | `Scaling "{specifier}" for '&{binding}' yields a surplus: {surplus}.` |
-| `MODULE_SPECIFIER_INVALID` | error | `Invalid module path "{specifier}": {reason}` |
-| `MODULE_SCHEME_UNSUPPORTED` | error | `Unsupported URL scheme in module specifier: "{specifier}".` |
-| `STOCKED_RETRO_PLANNING_IGNORED` | warning | `Stocked module "{specifier}" has a retro-planning offset "~{...}", which is ignored because stocked items require no prep time.` |
-| `RETRO_PLANNING_OVERRIDE_SHADOWED` | info | `Host retro-planning offset on "@use {specifier}" overrides the module's internal offset.` |
-| `MODULE_BINDING_SHADOWS_INGREDIENT` | warning | `Imported binding '&{binding}' from "{specifier}" shares name with a database ingredient.` |
-| `STOCKED_DESTRUCTURED_NUTRITION_BLENDED` | info | `Stocked module "{specifier}" uses destructured imports — nutrition profile is averaged across the entire module.` |
+| [`VARIABLE_NOT_FOUND`](#variable_not_found) | warning | `Cannot resolve relative quantity: target intermediate '&{targetName}' is not defined.` |
+| [`RELATIVE_QUANTITY_UNRESOLVED`](#relative_quantity_unresolved) | warning | `Cannot resolve relative quantity: target ingredient '@{targetName}' was not found in the current section.` |
+| [`RELATIVE_QUANTITY_UNKNOWN_MASS`](#relative_quantity_unknown_mass) | warning | `Cannot compute the amount of '{item}': undefined` |
+| [`CIRCULAR_REFERENCE`](#circular_reference) | error | `Circular reference detected: '{name}' depends on itself.` |
+| [`UNDEFINED_REFERENCE`](#undefined_reference) | error | `Undefined reference '{prefix}{name}' — no prior step or section produces this item.` |
+| [`MISSING_UNIT`](#missing_unit) | warning | `{type} requires an explicit unit (e.g. min, s, °C).` |
+| [`INVALID_UNIT`](#invalid_unit) | warning | `Invalid unit "{value}" for {type}.` |
+| [`SCOPE_CONFLICT`](#scope_conflict) | error | `Intermediate variable '&{varName}' is redefined; variable names must be unique across the recipe.` |
+| [`MISSING_INGREDIENT`](#missing_ingredient) | warning | `Ingredient "{id}" not found in database — nutritional metrics and density conversions unavailable.` |
+| [`MISSING_MACROS`](#missing_macros) | info | `Ingredient "{id}" has no macronutrient data in database — nutritional totals are partial.` |
+| [`UNKNOWN_MASS`](#unknown_mass) | info | `Cannot calculate mass for "{id}" — omitted from nutritional totals.` |
+| [`INVALID_MODIFIER_COMBINATION`](#invalid_modifier_combination) | warning | `Incompatible modifiers on "{item}": {combination}.` |
+| [`COMPOSITE_PARENT_CONFLICT`](#composite_parent_conflict) | error | `Composite child "{childName}" was already linked to parent "{previousParent}" — using it with a different parent "{newParent}" here means both will share the same database entry, which is very likely wrong.` |
+| [`INVALID_BAKERS_REFERENCE`](#invalid_bakers_reference) | warning | `'{item}' cannot be used as the Baker's percentage reference (*).` |
+| [`NO_BAKERS_REFERENCE`](#no_bakers_reference) | warning | `Baker's percentages (%) are used but no base flour (*) was designated.` |
+| [`MULTIPLE_BAKERS_PERCENTAGE`](#multiple_bakers_percentage) | warning | `'{item}' is also marked as the baker's percentage base (*), but '{reference}' already is: only one ingredient can be. '{reference}' stays the base.` |
+| [`TIME_PARADOX`](#time_paradox) | warning | `Timeline conflict: {cause} is pulled earlier than recipe start to satisfy {conflict}.` |
+| [`TRACK_CONTENTION`](#track_contention) | info | `Resource contention on track '{trackName}': delayed by {delay} min for '{item}'.` |
+| [`DAY_OVERFLOW`](#day_overflow) | warning | `Working day {day} (from section '{section}') starts NaN h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-{day}1d}, or shorten the rest.` |
+| [`PASSIVE_OVERLAP_SAME_COOKWARE`](#passive_overlap_same_cookware) | info | `Two passive timers overlap and both use #{cookware}: {item} and {other}. If one is meant to follow the other, give them the same named track, for example ~_{cookware}{…}, so they take turns.` |
+| [`DURATION_OUT_OF_RANGE`](#duration_out_of_range) | warning | `Timer "{item}" is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.` |
+| [`AMBIGUOUS_NUMBER`](#ambiguous_number) | warning | `"{value}" on "{item}" was read as {read}: Gram reads a comma between two digits as a decimal and has no thousands separator. Write {suggestion} if that is the number you meant.` |
+| [`INVALID_DURATION`](#invalid_duration) | warning | `Timer duration "{value}" on "{item}" is not read: {reason} Did you mean ~{{suggestion}}? It is not counted in the total time.` |
+| [`INVALID_QUANTITY`](#invalid_quantity) | warning | `Quantity "{value}" of "{item}" is not read: {reason} Did you mean {{suggestion}}? It is not counted in the shopping list or the nutrition.` |
+| [`OZ_AFTER_VOLUME`](#oz_after_volume) | info | `"{value}" of "{item}" is a weight: oz weighs, {suggestion} measures a volume. Write {suggestion} if a volume is meant.` |
+| [`SPACED_COMPOSITE`](#spaced_composite) | warning | `"{item}" and "{parent}" are read as two separate ingredients: a composite takes "<" with no space around it. Write {suggestion} right after "{item}" if "{item}" comes from "{parent}"; as written, both are counted in the shopping list.` |
+| [`DEPRECATED_FRONTMATTER_KEY`](#deprecated_frontmatter_key) | warning | `Frontmatter key "{key}" of module "{specifier}" is deprecated and will be removed in 2.0.0: write "{suggestion}" in that module instead.` |
+| [`REFERENCE_TO_INGREDIENT`](#reference_to_ingredient) | warning | `"&{name}" refers to an intermediate, but "{name}" is a raw ingredient: write {suggestion} to mention it again.` |
+| [`MODULE_NOT_FOUND`](#module_not_found) | error | `Module "{specifier}" could not be found or resolved.` |
+| [`MODULE_PARSE_ERROR`](#module_parse_error) | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
+| [`MODULE_CYCLE`](#module_cycle) | error | `Circular module import detected: {chain}.` |
+| [`MODULE_DEPTH_EXCEEDED`](#module_depth_exceeded) | error | `Import depth limit exceeded ({depth}) while importing "{specifier}".` |
+| [`MODULE_EXPORT_NOT_FOUND`](#module_export_not_found) | error | `Module "{specifier}" does not export '&{exported}' — it exists in the module but isn't re-exported. Add '-> &{exported}' to the section that produces it.` |
+| [`UNUSED_IMPORT`](#unused_import) | warning | `Unused import '&{local}' from "{specifier}".` |
+| [`UNRESOLVED_MODULE_YIELD`](#unresolved_module_yield) | error | `Cannot compute yield for '&{binding}' from "{specifier}": missing physical mass data for one or more ingredients.` |
+| [`ESTIMATED_MODULE_YIELD`](#estimated_module_yield) | warning | `Yield of '&{binding}' from "{specifier}" is estimated using standard ingredient densities or unit weights. Scale factor is approximate.` |
+| [`MODULE_UNIT_MISMATCH`](#module_unit_mismatch) | error | `Unit mismatch for '&{binding}' from "{specifier}": requested in '{requestedUnit}' but yields in '{yieldUnit}' without a conversion density.` |
+| [`MODULE_BATCH_INTERPRETATION`](#module_batch_interpretation) | info | `'&{binding}' from "{specifier}" requested without unit — scaled as {batches} batch(es) of the module.` |
+| [`IMPORTED_BAKERS_REFERENCE_DROPPED`](#imported_bakers_reference_dropped) | info | `Baker's percentage base (*) from "{specifier}" is scoped to its own module and was not imported.` |
+| [`DENSITY_OVERRIDE_SHADOWED`](#density_override_shadowed) | info | `Density for "{ingredient}" in host recipe ({hostValue}) overrides module "{specifier}" ({moduleValue}).` |
+| [`MODULE_SURPLUS`](#module_surplus) | info | `Scaling "{specifier}" for '&{binding}' yields a surplus: {surplus}.` |
+| [`MODULE_SPECIFIER_INVALID`](#module_specifier_invalid) | error | `Invalid module path "{specifier}": {reason}` |
+| [`MODULE_SCHEME_UNSUPPORTED`](#module_scheme_unsupported) | error | `Unsupported URL scheme in module specifier: "{specifier}".` |
+| [`STOCKED_RETRO_PLANNING_IGNORED`](#stocked_retro_planning_ignored) | warning | `Stocked module "{specifier}" has a retro-planning offset "~{...}", which is ignored because stocked items require no prep time.` |
+| [`RETRO_PLANNING_OVERRIDE_SHADOWED`](#retro_planning_override_shadowed) | info | `Host retro-planning offset on "@use {specifier}" overrides the module's internal offset.` |
+| [`MODULE_BINDING_SHADOWS_INGREDIENT`](#module_binding_shadows_ingredient) | warning | `Imported binding '&{binding}' from "{specifier}" shares name with a database ingredient.` |
+| [`STOCKED_DESTRUCTURED_NUTRITION_BLENDED`](#stocked_destructured_nutrition_blended) | info | `Stocked module "{specifier}" uses destructured imports — nutrition profile is averaged across the entire module.` |
+| [`PARSE_ERROR`](#parse_error) | error | `{message}` |
+| [`COMPILE_ERROR`](#compile_error) | error | `{message}` |
+| [`MISSING_TITLE`](#missing_title) | warning | `Recipe is missing a 'title' in frontmatter.` |
+| [`UNUSED_INTERMEDIATE`](#unused_intermediate) | warning | `Intermediate '->&{name}' is declared but never used.` |
+| [`UNKNOWN_INGREDIENT`](#unknown_ingredient) | info | `'@{name}' not found in the ingredient database. Did you mean '@{suggestion}'?` |
+| [`LOST_INGREDIENT`](#lost_ingredient) | warning | `'@{name}' is written but not read as an ingredient: the '//' before it on this line starts a comment.` |
+| [`MERGED_STEP_LINE`](#merged_step_line) | info | `This line is read as text of the step above: leave a blank line before it.` |
+| [`SUSPECT_INGREDIENT_NAME`](#suspect_ingredient_name) | hint | `'{name}' reads more like a sentence than an ingredient name: a preparation may belong in parentheses after the quantity.` |
+| [`UNREAD_FRONTMATTER`](#unread_frontmatter) | warning | `The frontmatter is not read: a '#' or indented line is not a 'key: value' line, so the whole block is taken as the text of a step.` |
 
 ### `VARIABLE_NOT_FOUND`
 A relative quantity references an intermediate variable (`50% of &name`) that hasn't been declared as an intermediate output (`->&name`) anywhere in the recipe. **Fix**: declare the variable before referencing it, or check for a typo in the name.
@@ -2881,6 +2908,10 @@ A timer or section anchor uses numbers and units Gram recognizes, but in an ambi
 
 **Fix**: follow the suggested format in `.message` (e.g. `~{1h30}`, `~{1:30 min}`, `~{1h30-2h}`). *(since v1.6.0)* For Cooklang's separator (`~{15%min}`), `data.suggestion` holds the duration Gram reads once the `%` is a space (`15 min`), which the language server's quick fix writes in the braces. Unknown units after a number still raise `INVALID_UNIT`, and bare numbers raise `MISSING_UNIT`.
 
+### `DEPRECATED_FRONTMATTER_KEY`
+
+*(since v1.6.0)* The frontmatter uses a deprecated key, removed in 2.0.0: `servings` (write `portions`), `yield` or `yields` (write `makes`). It is raised even when the key to write is also there (that one wins). The warning carries no `loc` (the AST keeps no position for the frontmatter's keys) but `data: { key, suggestion }`: the language server shows it struck through on the key and offers to rename it, or to remove its line when the key to write is already there. Raised by an imported module, `data.specifier` names it and the diagnostic stays on its `@use` line. **Fix**: rename the key as the message says. See [Deprecated features](/docs/how-to/deprecations/).
+
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`->&name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
 
@@ -2928,6 +2959,140 @@ Multiple passive timers share the same equipment track (e.g. `~_oven`) and canno
 ### `PASSIVE_OVERLAP_SAME_COOKWARE`
 
 Two passive timers overlap in time, in steps that cite the same cookware (`#oven` in both), with no named track in common. If one is meant to follow the other, they are probably on one oven: the plan shows them side by side. **Fix**: give them the same named track (`~_oven{30min}` then `~_oven{20min}`) so they take turns; if both fit in the oven at once, this is only an informational notice. Only names are compared (`#oven` with `#oven`), so it works whatever the language of the recipe, and the overlap is read on the default timeline.
+
+### `MODULE_PARSE_ERROR`
+
+A module imported by `@use` does not parse, so none of its sections can be spliced in. On the checked document itself, the message is the parser's own. **Fix**: open the imported file and fix the syntax error the message quotes.
+
+### `MODULE_CYCLE`
+
+Two or more modules import each other, directly or through others (`a.gram` imports `b.gram`, which imports `a.gram`). The message lists the chain. **Fix**: move what both need into a third module that imports neither.
+
+### `MODULE_DEPTH_EXCEEDED`
+
+The chain of imports is deeper than Gram follows. **Fix**: flatten the chain: import the base directly from the recipe that needs it.
+
+### `MODULE_EXPORT_NOT_FOUND`
+
+A binding of `@use` names something the module does not export (`as &sauce` when the module's sections export `&base`). Only a section-level `->&name` is exported: when the name exists in the module as a step-level `->&`, the message says it is not re-exported, and the language server offers to add `->&name` to the header of the section that declares it, in the module. Otherwise it suggests the closest export. **Fix**: use one of the listed exports, or export the name from the module.
+
+### `UNUSED_IMPORT`
+
+A binding of `@use` is never used in the recipe. **Fix**: use it (`&name`), or remove it from the `@use` line.
+
+### `UNRESOLVED_MODULE_YIELD`
+
+The recipe asks for a quantity of an imported intermediate (`&dough{300 g}`), but the module's yield cannot be weighed: one of its ingredients has no known mass. The module cannot be scaled to the quantity asked. **Fix**: give that ingredient a mass, or a density or unit weight in the ingredient database.
+
+### `ESTIMATED_MODULE_YIELD`
+
+The module's yield was weighed with standard densities or unit weights, so the scale factor applied to it is an estimate. **Fix**: write the module's ingredients in grams for an exact factor, or accept the estimate.
+
+### `MODULE_UNIT_MISMATCH`
+
+The recipe asks for an imported intermediate in a unit the module's yield does not convert to (a volume for a yield in grams, with no density). **Fix**: ask for it in the unit of its yield, or give the module a density.
+
+### `MODULE_BATCH_INTERPRETATION`
+
+An imported intermediate is asked for with a number and no unit (`&dough{2}`): it is read as that many batches of the module. **Fix**: an informational notice; write a unit to ask for a quantity instead.
+
+### `IMPORTED_BAKERS_REFERENCE_DROPPED`
+
+The module marks a baker's-percentage base (`@*flour`), which stays scoped to the module: the importing recipe does not inherit it. **Fix**: an informational notice; mark a base in the importing recipe if it needs one.
+
+### `DENSITY_OVERRIDE_SHADOWED`
+
+The importing recipe and the module both override the density of the same ingredient (`densities:`), with different values: the importing recipe's value wins. **Fix**: an informational notice; keep a single value if the difference is not meant.
+
+### `MODULE_SURPLUS`
+
+Several bindings of one `@use` are asked for in quantities that do not match the module's proportions: the module is scaled for the one that needs the most, so another one comes out larger than the recipe uses. The message gives the surplus. **Fix**: an informational notice; adjust the quantities if the surplus is not meant.
+
+### `MODULE_SPECIFIER_INVALID`
+
+The path of a `@use` has a shape Gram does not read: an absolute path (`/home/…`, not portable), a `hub:` path (not supported yet), a path that starts with neither `./`, `../` nor `@…/`, or one that does not end in `.gram`. The message gives the reason. **Fix**: write a relative path, `@/…` from the project root, or `@alias/…` with an alias declared under `paths:` in `.gram/config.yaml`.
+
+### `MODULE_SCHEME_UNSUPPORTED`
+
+The path of a `@use` is a URL (`https://…`, or any other `scheme://`): modules are read from the project only. **Fix**: copy the module into the project and import it by its path.
+
+### `STOCKED_RETRO_PLANNING_IGNORED`
+
+A module imported as stock (`--stock`) carries a retro-planning offset (`~{-1d}`): a stocked item is already made, so the offset is ignored. **Fix**: remove the offset, or import the module without `--stock` to schedule its preparation.
+
+### `RETRO_PLANNING_OVERRIDE_SHADOWED`
+
+The `@use` line sets a retro-planning offset that replaces the one the module sets itself. **Fix**: an informational notice; keep one of the two if the difference is not meant.
+
+### `MODULE_BINDING_SHADOWS_INGREDIENT`
+
+The local name of an imported intermediate is also the name of an ingredient of the database (`as &butter`), which makes the two easy to confuse in the nutrition and the shopping list. **Fix**: give the binding another local name (`as &brown_butter`).
+
+### `STOCKED_DESTRUCTURED_NUTRITION_BLENDED`
+
+A stocked module is imported with several bindings (`as { &a, &b }`): its nutrition is known for the whole module only, so each binding gets the module's average profile. **Fix**: an informational notice; split the module if each part needs its own nutrition.
+
+## Codes of the lint layer
+
+*(since v1.6.0)* The language server reads its diagnostics from `@gram-lang/modules/lint` (experimental, see the [Modules API](/docs/reference/api/modules/#lint)), which reports the compiler's warnings above and adds checks of its own, found in the source rather than in the compiled recipe. Their severity can also be `hint`, which never fails a build, even under `--strict`. Each diagnostic links to its section of this page.
+
+### `PARSE_ERROR`
+
+The document does not parse: the message is the parser's, at the place it stopped. No other diagnostic is reported until it parses. **Fix**: correct the syntax at the place shown.
+
+### `COMPILE_ERROR`
+
+The document parses, but compiling or analyzing it failed (a scale that cannot be applied, say). It is shown at the top of the file. **Fix**: correct what the message names.
+
+### `MISSING_TITLE`
+
+The frontmatter has no `title:` (or there is no frontmatter). The views fall back to a generic title. When the file opens a frontmatter, the language server offers to add the key. **Fix**: add `title: …` to the frontmatter.
+
+### `UNUSED_INTERMEDIATE`
+
+A step declares an intermediate (`->&sauce`) that no step uses, neither as a reference (`&sauce`) nor as the target of a share, a ratio or a proportional timer (`@salt{2% &sauce}`). One declared on a section heading is never reported: it is what a module exports, or the name of the finished dish. The language server offers to remove it. **Fix**: use it, or remove the `->&`.
+
+### `UNKNOWN_INGREDIENT`
+
+An ingredient is not found in the ingredient database, resolved as the nutrition resolves it (its name, its aliases, the same slug). Only checked when a database is loaded. The language server offers the closest name of the database (the first, when several are as close), never as the preferred fix: renaming an ingredient changes the recipe, so neither an editor's auto fix nor `gram check --fix` applies it. A second fix, never preferred, adds the ingredient to the database the editor reads (the file named by `database:` in `.gram/config.yaml`, else `.gram/ingredients.yaml`): an entry with its `name` and a commented skeleton of the fields to fill in (aliases, category, allergens and diets as `tags`, density, unit weight, nutrition per 100 g). It is not offered when the database already has an entry under that name. **Fix**: correct the spelling, or add the ingredient (or a plural, in its `aliases`) to the database.
+
+### `LOST_INGREDIENT`
+
+An ingredient is written but never read: a `//` earlier on the same line turned the rest of it into a comment, so `Mix @flour{200 g} // to taste, @salt{}` has no salt, in the shopping list or anywhere else. Only a `//` in the middle of a step counts: a whole `//` line and a `/* … */` block are comments written on purpose. No fix is offered, since only the author knows whether the comment or the ingredient is the mistake. **Fix**: move the comment to its own line, or end it before the ingredient.
+
+### `MERGED_STEP_LINE`
+
+A line meant to start a new block is read as more text of the step above, because a single line break does not end a step: a line opening with `[Action]` (the action of the next step), a `## …` line (the section vanishes), or any line after one ending with `->&name` (the step's output, after which another step was most likely meant). A plain line break inside a step stays valid (`A step,` then `the same step.` on the next line), and a line that could not open a block on its own is left alone (a bare `[Action]` with nothing after it, a `## …` with text after its `~{…}`): a blank line would only make it a syntax error. The language server offers to insert the blank line, as the preferred fix. **Fix**: leave a blank line before the line.
+
+### `SUSPECT_INGREDIENT_NAME`
+
+The name of an ingredient written with braces reads like a sentence: it holds `, `, `; `, `. ` (after a word of four letters or more, so `St. John's wort` is left alone), `、` or `。`, or it has more than 6 words or more than 40 characters. Only a hint: `@dark chocolate 70%, in drops{200 g}` is a valid name, but `drops` most likely belongs in the preparation. Where a break splits the name, the language server offers, never as the preferred fix, to move the rest into parentheses: `@dark chocolate 70%{200 g}(in drops)`. **Fix**: keep the name short, and the rest in the preparation.
+
+### `UNREAD_FRONTMATTER`
+
+The file opens a `---` block with keys, but the recipe has no metadata at all: a line the frontmatter does not accept, a `# …` comment or an indented line (`  - flour: 0.55`), made the whole block plain text of a step, title included. Shown on that line; `MISSING_TITLE` is then left out when the block writes a `title:`. On a `# …` line, the language server offers to remove it (not as the preferred fix); never on an indented line, which holds data. **Fix**: remove the comment, and write lists inline (`densities: [flour:0.55, milk:1.03]`).
+
+## Configure the lint
+
+*(since v1.6.0)* A project tunes the checks of the editor and of [`gram check`](/docs/reference/tooling/cli/#gram-check-pattern) in `.gram/config.yaml`: a code can be turned off, or shown at another severity (`hint`, `info` or `warning`). An `error` is never turned off nor lowered, so a broken recipe cannot be hidden.
+
+```yaml
+lint:
+  rules:
+    UNKNOWN_INGREDIENT: off
+    UNUSED_INTERMEDIATE: hint
+```
+
+A single block can also be left out with a `// gram-ignore` comment on its own line, naming one or more codes:
+
+```gram
+## Sauce
+
+// gram-ignore UNUSED_INTERMEDIATE
+Reduce @stock{200 ml}. ->&reduction
+```
+
+The comment covers the block right after it: a whole step, however many lines it spans, or the line of a section heading (not the steps below it). Several `// gram-ignore` lines in a row add up. A bare `// gram-ignore`, with no code, does nothing. Diagnostics outside any step or heading (the frontmatter, the `@use` lines, those shown at the top of the file) cannot carry one: a comment cannot be written there without changing the file's meaning, so they are set in `.gram/config.yaml`. Never write `// gram-ignore` at the end of a step's line: `//` there turns the rest of the line into a comment.
 
 ## Related resources
 

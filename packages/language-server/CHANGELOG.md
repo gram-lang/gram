@@ -1,5 +1,15 @@
 # @gram-lang/language-server
 
+## 1.5.2
+
+### Patch Changes
+
+- 09d4c11: **Language Server**: Fixed ingredient database detection and false warnings in editors:
+  - Now reads `database:` from `.gram/config.yaml` (updating live on edit), detects `.gram/ingredients.yaml` in more editors, and translates the "Preview" button.
+  - Unknown-ingredient warnings and nutrition hovers now match actual nutrition lookup (ignoring case, accents, hyphens, and apostrophes, without guessing plurals).
+  - Intermediates used in percentages/ratios/timers or declared on section headings (`## Dough ->&dough`) are no longer flagged as unused.
+- 14f9a9f: **Kitchen & Language Server**: Writing spaces around `<` in a composite (`@lemon zest{1} < @lemon{2}`) now raises a `SPACED_COMPOSITE` warning with a one-click fix in the editor instead of silently counting both ingredients.
+
 ## 1.5.1
 
 No changes in this release.

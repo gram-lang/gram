@@ -1,5 +1,17 @@
 # @gram-lang/modules
 
+## 1.5.2
+
+### Patch Changes
+
+- Updated dependencies [9a09465]
+- Updated dependencies [ccdbca7]
+- Updated dependencies [daddb56]
+- Updated dependencies [14f9a9f]
+  - @gram-lang/kitchen@1.5.2
+  - @gram-lang/analyzer@1.5.2
+  - @gram-lang/parser@1.5.2
+
 ## 1.5.1
 
 ### Patch Changes

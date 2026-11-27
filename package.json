@@ -2,13 +2,13 @@
   "name": "gram",
   "devDependencies": {
     "@biomejs/biome": "2.5.3",
-    "@changesets/assemble-release-plan": "^7.0.0",
-    "@changesets/cli": "^3.0.3",
-    "@changesets/config": "^4.0.1",
-    "@changesets/read": "^1.0.1",
+    "@changesets/assemble-release-plan": "^7.1.0",
+    "@changesets/cli": "^3.1.0",
+    "@changesets/config": "^4.1.0",
+    "@changesets/read": "^1.1.0",
     "@manypkg/get-packages": "^3.1.0",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "lefthook": "^2.2.2",
+    "lefthook": "^2.2.4",
     "tsup": "^8.5.1",
     "turbo": "^2.11.13",
     "typescript": "^6.0.3"

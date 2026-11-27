@@ -641,6 +641,9 @@ h3 {
 }
 
 .gram-recipe .kit-list li {
+	display: inline-block;
+	width: 100%;
+	vertical-align: top;
 	break-inside: avoid;
 	page-break-inside: avoid;
 	margin-bottom: 2.5pt;
@@ -655,7 +658,7 @@ h3 {
 
 .gram-recipe .kit-list label {
 	display: flex;
-	align-items: baseline;
+	align-items: flex-start;
 	gap: 6pt;
 }
 
@@ -666,10 +669,9 @@ h3 {
 	flex-shrink: 0;
 	width: 8pt;
 	height: 8pt;
-	margin: 0;
+	margin: 2pt 0 0;
 	border: 1pt solid var(--black);
 	border-radius: 1.5pt;
-	transform: translateY(0.5pt);
 }
 
 .gram-recipe .kit-list label > span {
