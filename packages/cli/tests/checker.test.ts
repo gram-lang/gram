@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import { writeFile, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { IngredientData } from "@gram-lang/analyzer";
 import { checkFiles } from "../src/services/checker";
 
 describe("checkFiles — warning severity", () => {
@@ -10,7 +11,11 @@ describe("checkFiles — warning severity", () => {
 	const path = join(tmpdir(), `gram-checker-test-${Date.now()}.gram`);
 
 	beforeAll(async () => {
-		await writeFile(path, "## Section\nWait for ~timer{10}.\n", "utf-8");
+		await writeFile(
+			path,
+			"---\ntitle: Wait\n---\n\n## Section\n\nWait for ~timer{10}.\n",
+			"utf-8",
+		);
 	});
 
 	afterAll(async () => {
@@ -67,12 +72,17 @@ describe("checkFiles — deprecated frontmatter key", () => {
 });
 
 describe("checkFiles — ingredients missing from the database", () => {
-	// An empty database resolves nothing, so @flour lands in
-	// analyzed.missingIngredients and gives a "Database" diagnostic.
+	// The database knows sugar, not flour: @flour is an UNKNOWN_INGREDIENT,
+	// on its mention, the verdict the editor shows.
 	const path = join(tmpdir(), `gram-checker-db-test-${Date.now()}.gram`);
+	const db = { sugar: { name: "Sugar" } as unknown as IngredientData };
 
 	beforeAll(async () => {
-		await writeFile(path, "## Section\n\nMix @flour{100 g}.\n", "utf-8");
+		await writeFile(
+			path,
+			"---\ntitle: Bread\n---\n\n## Section\n\nMix @flour{100 g}.\n",
+			"utf-8",
+		);
 	});
 
 	afterAll(async () => {
@@ -80,21 +90,25 @@ describe("checkFiles — ingredients missing from the database", () => {
 	});
 
 	const databaseDiagnostics = (r: Awaited<ReturnType<typeof checkFiles>>) =>
-		r.diagnostics.filter((d) => d.category === "Database");
+		r.diagnostics.filter((d) => d.code === "UNKNOWN_INGREDIENT");
 
-	it('reports a missing ingredient as a "warning" by default', async () => {
-		const result = await checkFiles([path], { db: {} });
-		const db = databaseDiagnostics(result);
-		expect(db).toHaveLength(1);
-		expect(db[0]?.level).toBe("warning");
+	it('reports a missing ingredient as an "info", on its mention, by default', async () => {
+		const result = await checkFiles([path], { db });
+		const found = databaseDiagnostics(result);
+		expect(found).toHaveLength(1);
+		expect(found[0]?.level).toBe("info");
+		expect([found[0]?.line, found[0]?.col]).toEqual([7, 5]);
+		expect(result.diagnostics.map((d) => d.code)).not.toContain(
+			"MISSING_INGREDIENT",
+		);
 		expect(result.hasErrors).toBe(false);
 	});
 
 	it('promotes a missing ingredient to "error" under --strict', async () => {
-		const result = await checkFiles([path], { db: {}, strict: true });
-		const db = databaseDiagnostics(result);
-		expect(db).toHaveLength(1);
-		expect(db[0]?.level).toBe("error");
+		const result = await checkFiles([path], { db, strict: true });
+		const found = databaseDiagnostics(result);
+		expect(found).toHaveLength(1);
+		expect(found[0]?.level).toBe("error");
 		expect(result.hasErrors).toBe(true);
 	});
 

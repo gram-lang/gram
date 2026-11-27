@@ -112,7 +112,7 @@ describe("UNKNOWN_INGREDIENT agrees with the nutrition", () => {
 			"",
 			DB,
 		).find((d) => d.code === "UNKNOWN_INGREDIENT");
-		expect(diag?.data).toEqual({ suggestion: "Carotte" });
+		expect(diag?.data).toEqual({ name: "carottes", suggestion: "Carotte" });
 		expect(diag?.message).toContain("Did you mean '@Carotte'?");
 	});
 
@@ -122,7 +122,7 @@ describe("UNKNOWN_INGREDIENT agrees with the nutrition", () => {
 			"",
 			DB,
 		).find((d) => d.code === "UNKNOWN_INGREDIENT");
-		expect(diag?.data).toEqual({ suggestion: "Beurre doux" });
+		expect(diag?.data).toEqual({ name: "buter", suggestion: "Beurre doux" });
 	});
 
 	it("says nothing without a database", () => {

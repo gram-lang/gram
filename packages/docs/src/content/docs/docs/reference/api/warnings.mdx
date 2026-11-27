@@ -301,7 +301,7 @@ The file opens a `---` block with keys, but the recipe has no metadata at all: a
 
 ## Configure the lint
 
-<Since v="1.6.0" /> A project tunes the editor's checks in `.gram/config.yaml`: a code can be turned off, or shown at another severity (`hint`, `info` or `warning`). An `error` is never turned off nor lowered, so a broken recipe cannot be hidden.
+<Since v="1.6.0" /> A project tunes the checks of the editor and of [`gram check`](/docs/reference/tooling/cli/#gram-check-pattern) in `.gram/config.yaml`: a code can be turned off, or shown at another severity (`hint`, `info` or `warning`). An `error` is never turned off nor lowered, so a broken recipe cannot be hidden.
 
 ```yaml
 lint:

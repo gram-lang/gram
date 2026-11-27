@@ -1,26 +1,9 @@
 import type { Position, Range } from "vscode-languageserver";
+import { buildLineIndex, offsetToPosition } from "@gram-lang/modules/lint";
 
-export function buildLineIndex(text: string): number[] {
-	const starts = [0];
-	for (let i = 0; i < text.length; i++) {
-		if (text[i] === "\n") starts.push(i + 1);
-	}
-	return starts;
-}
-
-export function offsetToPosition(
-	lineStarts: number[],
-	offset: number,
-): Position {
-	let lo = 0,
-		hi = lineStarts.length - 1;
-	while (lo < hi) {
-		const mid = (lo + hi + 1) >> 1;
-		if (lineStarts[mid]! <= offset) lo = mid;
-		else hi = mid - 1;
-	}
-	return { line: lo, character: offset - lineStarts[lo]! };
-}
+// Shared with `gram check` (`@gram-lang/modules/lint`), so both count the
+// same lines and UTF-16 columns.
+export { buildLineIndex, offsetToPosition };
 
 export function locToRange(
 	lineStarts: number[],
