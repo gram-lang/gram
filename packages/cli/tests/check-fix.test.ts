@@ -174,9 +174,12 @@ describe("gram check --fix", () => {
 
 	it("gives each file its fixed count in JSON, with only the diagnostics left, and stderr stays quiet", async () => {
 		const dir = await project({ "r.gram": CHAIN, "d.gram": DURATION });
+		// Named, not globbed: a glob lists files in the directory's own order.
 		const { code, out, err } = gram(
 			dir,
 			"check",
+			"r.gram",
+			"d.gram",
 			"--fix",
 			"--skip-db",
 			"--format",
@@ -190,8 +193,8 @@ describe("gram check --fix", () => {
 				f.fixed,
 			]),
 		).toEqual([
-			["d.gram", 1],
 			["r.gram", 2],
+			["d.gram", 1],
 		]);
 		expect(report.diagnostics).toEqual([]);
 		expect(err).toBe("");
