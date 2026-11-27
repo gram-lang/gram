@@ -280,13 +280,16 @@
 	color: var(--grey);
 }
 .gram-run-sheet .kit-list li {
+	display: inline-block;
+	width: 100%;
+	vertical-align: top;
 	margin-bottom: 2pt;
 	break-inside: avoid;
 	page-break-inside: avoid;
 }
 .gram-run-sheet .kit-list label {
 	display: flex;
-	align-items: baseline;
+	align-items: flex-start;
 }
 .gram-run-sheet .kit-list label > span {
 	display: grid;
@@ -312,12 +315,12 @@
 .gram-run-sheet .kit-list input[type="checkbox"] {
 	appearance: none;
 	-webkit-appearance: none;
+	flex-shrink: 0;
 	width: 8pt;
 	height: 8pt;
 	border: 1pt solid #000;
 	border-radius: 1.5pt;
-	margin-right: 6pt;
-	vertical-align: -1pt;
+	margin: 2pt 6pt 0 0;
 }
 .gram-run-sheet .section-exec-card > .exec-steps-list {
 	margin: 5pt 8pt 5pt 24pt;
