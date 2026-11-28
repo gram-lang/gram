@@ -100,7 +100,7 @@ function maskFrontmatter(text: string): string {
 		}
 		return blank(text.slice(0, end)) + text.slice(end);
 	}
-	const match = text.match(/^---\n[\s\S]*?\n---/);
+	const match = text.match(/^---\r?\n[\s\S]*?\r?\n---/);
 	if (!match) return text;
 	return blank(match[0]) + text.slice(match[0].length);
 }

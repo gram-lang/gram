@@ -179,6 +179,69 @@ function fromWarning(
  * @experimental
  */
 export function lintDocument(input: LintInput): LintDiagnostic[] {
+	// The rules scan the text for `\n` (`\r\n` ends with one). A lone `\r`
+	// (old Mac line ending) becomes a `\n` for them: same length, so every
+	// offset still points at the same place of the real text. Their fixes
+	// write `\n`, put back in the line ending of the file.
+	if (!input.text.includes("\r")) return lintLineFeeds(input);
+	const text = input.text.replace(/\r(?!\n)/g, "\n");
+	return lintLineFeeds(text === input.text ? input : { ...input, text }).map(
+		(d) => withLineEndings(d, input.uri, input.text),
+	);
+}
+
+/**
+ * The line ending a fix writes at `offset` of `text`: that of the last line
+ * break before it, else the first one of the text. In a file that mixes
+ * them, a `\n` written right after a lone `\r` would join it into one
+ * `\r\n` instead of adding a line.
+ */
+function lineEndingAt(text: string, offset: number): string {
+	const kindAt = (i: number) =>
+		text[i] === "\n"
+			? text[i - 1] === "\r"
+				? "\r\n"
+				: "\n"
+			: text[i + 1] === "\n"
+				? "\r\n"
+				: "\r";
+	for (let i = offset - 1; i >= 0; i--)
+		if (text[i] === "\n" || text[i] === "\r") return kindAt(i);
+	const first = text.search(/[\r\n]/);
+	return first === -1 ? "\n" : kindAt(first);
+}
+
+/** `d` with the line breaks its fixes write into `uri` in the line endings of `text`. */
+function withLineEndings(
+	d: LintDiagnostic,
+	uri: string,
+	text: string,
+): LintDiagnostic {
+	if (!d.fixes) return d;
+	return {
+		...d,
+		fixes: d.fixes.map((fix) => ({
+			...fix,
+			edits: fix.edits.map((edit) =>
+				edit.kind === "patch" && edit.uri === uri
+					? {
+							...edit,
+							patches: edit.patches.map((p) => {
+								const eol = lineEndingAt(text, p.start);
+								return {
+									...p,
+									replacement: p.replacement.replace(/\r\n|\r|\n/g, eol),
+								};
+							}),
+						}
+					: edit,
+			),
+		})),
+	};
+}
+
+/** `lintDocument` on a text whose line breaks all end with `\n`. */
+function lintLineFeeds(input: LintInput): LintDiagnostic[] {
 	const found: RuleDiagnostic[] = [];
 
 	if (input.parseError) {

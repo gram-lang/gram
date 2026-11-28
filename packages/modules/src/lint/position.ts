@@ -12,14 +12,15 @@ export interface LinePosition {
 
 /**
  * The offset where each line of `text` starts: `[0, …]`, one entry after
- * each `\n`.
+ * each line break, `\n`, `\r\n` or a lone `\r` (as the LSP counts lines).
  *
  * @experimental
  */
 export function buildLineIndex(text: string): number[] {
 	const starts = [0];
 	for (let i = 0; i < text.length; i++) {
-		if (text[i] === "\n") starts.push(i + 1);
+		const c = text[i];
+		if (c === "\n" || (c === "\r" && text[i + 1] !== "\n")) starts.push(i + 1);
 	}
 	return starts;
 }
