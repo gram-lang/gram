@@ -129,6 +129,105 @@ export function timeBudget(length: number): number {
 	return 200 + 0.05 * length;
 }
 
+/**
+ * The patches that turn the LF version of a text into its `eol` version:
+ * every `\n` replaced, in text order (`mapSpan` reads them as such).
+ */
+function lineEndingPatches(lf: string, eol: string): TextPatch[] {
+	const patches: TextPatch[] = [];
+	for (let i = lf.indexOf("\n"); i !== -1; i = lf.indexOf("\n", i + 1))
+		patches.push({ start: i, end: i + 1, replacement: eol });
+	return patches;
+}
+
+/**
+ * One line per diagnostic of `text`, its loc moved by `patches`, sorted:
+ * comparable across line endings. An offset between the `\r` and the `\n`
+ * of a line break counts as after it: a span that stops inside a line break
+ * (a parse error on it covers its first character) covers that break.
+ */
+function lintFingerprint(
+	text: string,
+	diagnostics: readonly LintDiagnostic[],
+	patches: readonly TextPatch[] = [],
+): string[] {
+	const snap = (o: number) =>
+		text[o - 1] === "\r" && text[o] === "\n" ? o + 1 : o;
+	return diagnostics
+		.map((d) => {
+			const loc = d.loc ? mapSpan(patches, d.loc) : null;
+			return loc ? `${d.code}@${snap(loc.start)}-${snap(loc.end)}` : d.code;
+		})
+		.sort();
+}
+
+/**
+ * I-line-endings: a file whose line endings are all `\r\n` (Windows) or
+ * all `\r` (old Mac) means the same as its LF version, through the whole
+ * chain: same parse outcome, same compilation (compared like
+ * `format-preserves-meaning`, no extra rule in normalize.ts), the same
+ * formatted text (the formatter always writes LF), the same lint codes at
+ * the same places once the line endings are mapped, and preferred fixes
+ * that give the same text with the file's own line endings kept.
+ */
+function lineEndingsViolation(p: Prepared): Violation | null {
+	const id = "line-endings";
+	const lf = p.withLineEndings("\n");
+	for (const [name, eol] of [
+		["CRLF", "\r\n"],
+		["CR", "\r"],
+	] as const) {
+		const other = p.withLineEndings(eol);
+		if (other === lf) continue;
+		if (lf.parse.ok !== other.parse.ok)
+			return violation(
+				id,
+				`${name} ${other.parse.ok ? "parses" : "does not parse"}, LF ${lf.parse.ok ? "does" : "does not"}`,
+			);
+		if (lf.compile?.ok && other.compile && !other.compile.ok)
+			return violation(id, `${name} no longer compiles`, other.compile.error);
+		if (lf.compile?.ok && other.compile?.ok) {
+			const diff = firstDifference(
+				normalize(lf.compile.value),
+				normalize(other.compile.value),
+			);
+			if (diff)
+				return violation(
+					id,
+					`${name} compiles differently at ${pathShape(diff)}`,
+				);
+		}
+		if (lf.format.ok && other.format.ok) {
+			if (lf.format.value.content !== other.format.value.content)
+				return violation(id, `${name} formats differently`);
+		} else if (lf.format.ok !== other.format.ok)
+			return violation(id, `formatGram throws on only one of LF and ${name}`);
+		if (lf.lint.ok && other.lint.ok) {
+			const patches = lineEndingPatches(lf.source, eol);
+			const expected = lintFingerprint(
+				other.source,
+				lf.lint.value,
+				patches,
+			).join(", ");
+			const actual = lintFingerprint(other.source, other.lint.value).join(", ");
+			if (expected !== actual)
+				return violation(id, `${name} lints differently`);
+			const lfFixed = lf.fixed;
+			const otherFixed = other.fixed;
+			if (
+				lfFixed &&
+				otherFixed &&
+				otherFixed.after.source !== lfFixed.after.source.replace(/\n/g, eol)
+			)
+				return violation(
+					id,
+					`the preferred fixes give a different text in ${name}`,
+				);
+		}
+	}
+	return null;
+}
+
 export const INVARIANTS: readonly Invariant[] = [
 	{
 		id: "parse-contract",
@@ -300,6 +399,10 @@ export const INVARIANTS: readonly Invariant[] = [
 				);
 			return null;
 		},
+	},
+	{
+		id: "line-endings",
+		check: lineEndingsViolation,
 	},
 	{
 		id: "time-budget",

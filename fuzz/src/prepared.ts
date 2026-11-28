@@ -131,6 +131,19 @@ export class Prepared {
 		});
 	}
 
+	/**
+	 * The source with every line ending (`\r\n`, `\r` or `\n`) rewritten to
+	 * `eol`, prepared in turn; this very instance when nothing changes.
+	 */
+	withLineEndings(eol: "\n" | "\r\n" | "\r"): Prepared {
+		return this.#memo(`eol:${JSON.stringify(eol)}`, () => {
+			const source = this.source.replace(/\r\n|\r|\n/g, eol);
+			return source === this.source
+				? this
+				: new Prepared(source, this.database);
+		});
+	}
+
 	/** `formatGram` run again on its own output. */
 	get reformat(): Outcome<Formatted> | null {
 		return this.#memo("reformat", () => {
