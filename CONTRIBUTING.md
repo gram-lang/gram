@@ -95,6 +95,8 @@ If you encounter a bug or unexpected behavior:
 1. Check existing issues on [git.gram-lang.org](https://git.gram-lang.org/gram-lang/gram/issues).
 2. Open a **Bug report** issue providing a minimal reproducible `.gram` snippet, the steps to reproduce, and the expected output.
 
+A **security vulnerability** never goes into a public issue: follow [SECURITY.md](SECURITY.md) to report it privately.
+
 ### Syntax proposals (RFCs)
 
 Gram is a language specification. Adding new syntax or altering keyword behavior affects the grammar, compiler, formatter, language server, and documentation.
