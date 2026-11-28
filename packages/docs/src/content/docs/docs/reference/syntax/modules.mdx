@@ -49,6 +49,7 @@ The imported recipe's steps are seamlessly inlined into the timeline: a base's r
 * The specifier must end in `.gram`.
 * Supported formats: relative path (`./`, `../`), project root (`@/`), or custom alias (`@alias/`).
 * Paths are strictly confined to the project root containing `.gram/` — absolute paths or URLs are rejected.
+* Separate folders with `/` only, on every system: a backslash (`\`) is rejected, so a recipe written on Windows still resolves on macOS and Linux.
 
 
 ## Project-root & aliased paths

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { loadModuleGraph } from "../src/graph";
+import { loadModuleGraph, validateSpecifier } from "../src/graph";
 import { createFakeHost } from "./fake-host";
 
 // Phase B of the module-imports RFC (.notes/plan-ajout-imports-recettes.md):
@@ -203,5 +203,66 @@ describe("loadModuleGraph", () => {
 
 		expect(graph.diagnostics).toEqual([]);
 		expect(graph.order).toEqual(["/d.gram", "/c.gram", "/b.gram", "/a.gram"]);
+	});
+});
+
+// Windows portability and hardening of `@use` paths: a backslash is a
+// separator on Windows only (the recipe would not resolve on macOS/Linux)
+// and a null byte must never reach the filesystem. Both are refused before
+// the shape check, so a Windows absolute path gets the helpful message.
+describe("validateSpecifier: Windows paths and hardening", () => {
+	const BACKSLASH = 'use forward slashes "/" in @use paths';
+
+	it.each([
+		["C:\\foo.gram"],
+		["\\\\server\\share\\a.gram"],
+		["./sub\\base.gram"],
+		["@/sub\\base.gram"],
+		["@bases/sub\\base.gram"],
+	])("refuses %p with the backslash reason", (specifier) => {
+		expect(validateSpecifier(specifier)).toEqual({
+			ok: false,
+			code: "MODULE_SPECIFIER_INVALID",
+			reason: BACKSLASH,
+		} as never);
+	});
+
+	it("refuses a Windows drive path written with forward slashes", () => {
+		const result = validateSpecifier("C:/foo.gram");
+		expect(result.ok).toBe(false);
+		expect(result).toMatchObject({ code: "MODULE_SPECIFIER_INVALID" });
+	});
+
+	it("refuses a null byte", () => {
+		expect(validateSpecifier("./a\0.gram")).toEqual({
+			ok: false,
+			code: "MODULE_SPECIFIER_INVALID",
+			reason: "a path cannot contain a null byte",
+		} as never);
+	});
+
+	it("leaves traversal outside the project to the host's confinement", () => {
+		// Purely syntactic: whether "../.." escapes depends on the project
+		// root, which only the host knows (see the CLI and LSP host tests).
+		expect(validateSpecifier("./a/../../outside.gram")).toEqual({ ok: true });
+	});
+
+	it("accepts a folder whose name starts with '..'", () => {
+		expect(validateSpecifier("./..notes/a.gram")).toEqual({ ok: true });
+		expect(validateSpecifier("@/..notes/a.gram")).toEqual({ ok: true });
+	});
+
+	it("reports the backslash reason as a graph diagnostic", async () => {
+		const host = createFakeHost({
+			"/a.gram": '@use "./sub\\base.gram" as &b\n\n## S\n\n[Use] &b{1}.\n',
+			"/sub/base.gram": "## Base\n\n[Mix] the @flour{200g}.\n",
+		});
+		const graph = await loadModuleGraph("/a.gram", host);
+
+		expect(graph.diagnostics.map((d) => d.code)).toEqual([
+			"MODULE_SPECIFIER_INVALID",
+		]);
+		expect(graph.diagnostics[0]?.message).toContain("forward slashes");
+		expect(graph.modules.has("/sub/base.gram")).toBe(false);
 	});
 });

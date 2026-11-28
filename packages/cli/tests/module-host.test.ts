@@ -54,4 +54,28 @@ describe("createCliModuleHost", () => {
 		const host = createCliModuleHost(root);
 		expect(() => host.resolve("@/../outside.gram", entry)).toThrow();
 	});
+
+	it("rejects a nested traversal that escapes the project root", () => {
+		const host = createCliModuleHost(root);
+		expect(() => host.resolve("./sub/../../outside.gram", entry)).toThrow(
+			/outside the project root/,
+		);
+	});
+
+	it("rejects a sibling folder whose name merely starts like the root", () => {
+		const host = createCliModuleHost(root);
+		expect(() => host.resolve("../project-other/a.gram", entry)).toThrow(
+			/outside the project root/,
+		);
+	});
+
+	it("accepts a legitimate folder whose name starts with '..'", () => {
+		const host = createCliModuleHost(root);
+		expect(host.resolve("./..notes/a.gram", entry)).toBe(
+			join(root, "..notes/a.gram"),
+		);
+		expect(host.resolve("@/..notes/a.gram", join(root, "deep/r.gram"))).toBe(
+			join(root, "..notes/a.gram"),
+		);
+	});
 });

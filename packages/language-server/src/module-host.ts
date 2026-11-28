@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { dirname, isAbsolute, relative, resolve } from "node:path";
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import type { ModuleHost } from "@gram-lang/modules";
 
 // Matches `@/rest.gram` (bare root, alias = "") and `@alias/rest.gram" — the
@@ -16,7 +16,9 @@ function confine(
 ): string {
 	const rel = relative(projectRoot, resolved);
 	if (rel === "") return resolved;
-	if (rel.startsWith("..") || isAbsolute(rel)) {
+	// `rel === ".."` or `../...` escapes the root; a bare `startsWith("..")`
+	// would also reject a legitimate folder named e.g. `..notes`.
+	if (rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
 		throw new Error(
 			`"${specifier}" resolves outside the project root (${projectRoot}).`,
 		);

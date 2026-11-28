@@ -85,4 +85,30 @@ describe("createLspModuleHost", () => {
 		const host = createLspModuleHost(dir, { get: () => undefined });
 		expect(await host.read(uri)).toBe("## Base (on disk)\n");
 	});
+
+	describe("confinement edge cases", () => {
+		const root = "/project";
+		const fromUri = pathToFileURL(join(root, "recipe.gram")).toString();
+		const host = createLspModuleHost(root, { get: () => undefined });
+
+		it("rejects a nested traversal that escapes the project root", () => {
+			expect(() => host.resolve("./sub/../../outside.gram", fromUri)).toThrow(
+				/outside the project root/,
+			);
+		});
+
+		it("rejects a sibling folder whose name merely starts like the root", () => {
+			expect(() => host.resolve("../project-other/a.gram", fromUri)).toThrow(
+				/outside the project root/,
+			);
+		});
+
+		it("accepts a legitimate folder whose name starts with '..', as a file: uri", () => {
+			const expected = pathToFileURL(
+				join(root, "..notes", "a.gram"),
+			).toString();
+			expect(host.resolve("./..notes/a.gram", fromUri)).toBe(expected);
+			expect(host.resolve("@/..notes/a.gram", fromUri)).toBe(expected);
+		});
+	});
 });

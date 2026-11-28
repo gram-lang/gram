@@ -10,7 +10,7 @@ import type { ModuleHost, ModuleGraph, ModuleRecord } from "./host";
 
 const DEFAULT_MAX_DEPTH = 32;
 
-type SpecifierValidation =
+export type SpecifierValidation =
 	| { ok: true }
 	| {
 			ok: false;
@@ -28,8 +28,30 @@ type SpecifierValidation =
  * `resolve()` may reject further (e.g. the CLI host confines a relative
  * path to the project root) — this only rejects the forms no host should
  * ever attempt to resolve at all.
+ *
+ * Exported so every reader of a specifier (the graph loader, the language
+ * server's `@use … as {…}` completion, ...) shares one answer to "is this
+ * specifier acceptable?".
  */
-function validateSpecifier(specifier: string): SpecifierValidation {
+export function validateSpecifier(specifier: string): SpecifierValidation {
+	// Checked first, so a Windows path like `C:\foo.gram` gets the message
+	// that actually helps rather than the generic shape error below: `\` is
+	// a separator on Windows only, so a recipe using it would not resolve on
+	// macOS or Linux.
+	if (specifier.includes("\\")) {
+		return {
+			ok: false,
+			code: ModuleWarningCode.MODULE_SPECIFIER_INVALID,
+			reason: 'use forward slashes "/" in @use paths',
+		};
+	}
+	if (specifier.includes("\0")) {
+		return {
+			ok: false,
+			code: ModuleWarningCode.MODULE_SPECIFIER_INVALID,
+			reason: "a path cannot contain a null byte",
+		};
+	}
 	if (/^[a-z][a-z0-9+.-]*:\/\//i.test(specifier)) {
 		return { ok: false, code: ModuleWarningCode.MODULE_SCHEME_UNSUPPORTED };
 	}

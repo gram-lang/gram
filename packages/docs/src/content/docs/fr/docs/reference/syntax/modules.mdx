@@ -49,6 +49,7 @@ Les directives `@use` se placent en tête de fichier, immédiatement après le f
 * Le chemin d'accès doit obligatoirement inclure l'extension `.gram`.
 * Trois formats sont pris en charge : chemin relatif (`./`, `../`), racine du projet (`@/`) ou alias personnalisé (`@alias/`).
 * Par sécurité, tous les chemins doivent rester circonscrits à votre projet (le répertoire abritant le dossier `.gram/`) : les chemins absolus sur le disque ou les URL distantes ne sont pas autorisés.
+* Les dossiers se séparent toujours par `/`, quel que soit le système : l'antislash (`\`) est refusé, pour qu'une recette écrite sous Windows se résolve aussi sous macOS et Linux.
 
 
 ## Chemins depuis la racine et alias
